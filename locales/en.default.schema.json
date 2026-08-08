@@ -1,0 +1,918 @@
+{
+  "settings_schema": {
+    "brand": {
+      "name": "Brand",
+      "paragraph": "Defaults throughout this theme come from the Glorious design. Every value can be changed here without touching code.",
+      "favicon": {
+        "label": "Favicon"
+      },
+      "wordmark": {
+        "label": "Wordmark letters",
+        "info": "Set as individual letters spread edge to edge in the hero and footer."
+      },
+      "wordmark_mark": {
+        "label": "Wordmark centre mark",
+        "info": "Optional emblem substituted for the first O."
+      }
+    },
+    "layout": {
+      "name": "Layout",
+      "page_width": {
+        "label": "Maximum page width"
+      },
+      "page_width_narrow": {
+        "label": "Narrow page width",
+        "info": "Used by the craft and visit layouts."
+      },
+      "content_width": {
+        "label": "Maximum reading width"
+      },
+      "gutter_min": {
+        "label": "Page gutter (narrow screens)"
+      },
+      "gutter_max": {
+        "label": "Page gutter (wide screens)"
+      },
+      "grid_min_column": {
+        "label": "Minimum product column width",
+        "info": "Product grids reflow when columns would get narrower than this."
+      }
+    },
+    "typography": {
+      "name": "Typography",
+      "paragraph": "The theme ships with Italiana and Karla self-hosted. Turn the bundled fonts off to pick from Shopify's library instead.",
+      "use_bundled_fonts": {
+        "label": "Use the bundled Glorious fonts",
+        "info": "Italiana for display, Karla for body."
+      },
+      "font_heading": {
+        "label": "Display font",
+        "info": "Only used when the bundled fonts are turned off."
+      },
+      "font_body": {
+        "label": "Body font",
+        "info": "Only used when the bundled fonts are turned off."
+      },
+      "body_header": "Body text",
+      "type_base_min": {
+        "label": "Base size (narrow screens)"
+      },
+      "type_base_max": {
+        "label": "Base size (wide screens)"
+      },
+      "type_ratio_min": {
+        "label": "Type scale (narrow screens)"
+      },
+      "type_ratio_max": {
+        "label": "Type scale (wide screens)"
+      },
+      "body_leading": {
+        "label": "Body line height"
+      },
+      "display_header": "Display headings",
+      "display_paragraph": "The oversized section titles that run edge to edge. These scale with the viewport rather than stepping at breakpoints.",
+      "display_min": {
+        "label": "Display size floor"
+      },
+      "display_grow": {
+        "label": "Display growth rate",
+        "info": "How fast display headings grow with screen width."
+      },
+      "display_max": {
+        "label": "Display size ceiling"
+      },
+      "display_leading": {
+        "label": "Display line height"
+      },
+      "display_tracking": {
+        "label": "Display letter spacing"
+      },
+      "display_uppercase": {
+        "label": "Uppercase display headings"
+      },
+      "section_header": "Section headings",
+      "section_heading_min": {
+        "label": "Section heading floor"
+      },
+      "section_heading_grow": {
+        "label": "Section heading growth rate"
+      },
+      "section_heading_max": {
+        "label": "Section heading ceiling"
+      },
+      "headings_header": "Headings",
+      "heading_leading": {
+        "label": "Heading line height"
+      },
+      "heading_tracking": {
+        "label": "Heading letter spacing"
+      },
+      "micro_header": "Micro labels",
+      "micro_paragraph": "The small uppercase eyebrow text above section headings and inside cards.",
+      "micro_size": {
+        "label": "Micro label size"
+      },
+      "micro_tracking": {
+        "label": "Micro label letter spacing"
+      }
+    },
+    "spacing": {
+      "name": "Spacing",
+      "space_base_min": {
+        "label": "Base spacing (narrow screens)"
+      },
+      "space_base_max": {
+        "label": "Base spacing (wide screens)"
+      },
+      "section_padding_default": {
+        "label": "Default section padding"
+      }
+    },
+    "colors": {
+      "name": "Colors",
+      "paragraph": "Porcelain is the default page scheme. Noir carries the hero, the craft section and the footer.",
+      "background": {
+        "label": "Background"
+      },
+      "background_gradient": {
+        "label": "Background gradient"
+      },
+      "text": {
+        "label": "Body text"
+      },
+      "heading": {
+        "label": "Headings"
+      },
+      "muted": {
+        "label": "Secondary text"
+      },
+      "accent": {
+        "label": "Accent",
+        "info": "The gold used for micro labels, rules and emblems."
+      },
+      "border": {
+        "label": "Borders"
+      },
+      "surface": {
+        "label": "Card surface"
+      },
+      "button": {
+        "label": "Primary button background"
+      },
+      "button_label": {
+        "label": "Primary button text"
+      },
+      "button_hover": {
+        "label": "Primary button hover"
+      },
+      "secondary_button_label": {
+        "label": "Secondary button text"
+      },
+      "link": {
+        "label": "Links"
+      },
+      "error": {
+        "label": "Error",
+        "info": "Used by form errors and the remove control in the bag."
+      }
+    },
+    "shape": {
+      "name": "Shape",
+      "paragraph": "The design pairs square cards and imagery with fully rounded buttons.",
+      "radius_base": {
+        "label": "Card and image corner radius"
+      },
+      "radius_arch": {
+        "label": "Arched image radius",
+        "info": "The tall arch on the about and visit photographs."
+      },
+      "border_width": {
+        "label": "Border width"
+      },
+      "hairline_opacity": {
+        "label": "Hairline strength",
+        "info": "Opacity of the thin rules that separate rows and sections."
+      },
+      "shadow_opacity": {
+        "label": "Card hover shadow"
+      }
+    },
+    "buttons": {
+      "name": "Buttons",
+      "button_radius": {
+        "label": "Button corner radius",
+        "info": "At the maximum the button is fully rounded into a pill, as in the design."
+      },
+      "button_padding_x": {
+        "label": "Horizontal padding"
+      },
+      "button_padding_y": {
+        "label": "Vertical padding"
+      },
+      "button_size": {
+        "label": "Label size"
+      },
+      "button_tracking": {
+        "label": "Label letter spacing"
+      },
+      "button_border_width": {
+        "label": "Border width"
+      },
+      "button_uppercase": {
+        "label": "Uppercase button text"
+      }
+    },
+    "product_cards": {
+      "name": "Product cards",
+      "card_image_ratio": {
+        "label": "Image shape"
+      },
+      "card_image_fit": {
+        "label": "Image fit",
+        "info": "The design shows jewellery uncropped against white."
+      },
+      "card_text_align": {
+        "label": "Text alignment"
+      },
+      "card_show_vendor": {
+        "label": "Show vendor"
+      },
+      "card_show_metal": {
+        "label": "Show metal line",
+        "info": "Reads the product's Metal option or metafield when present."
+      },
+      "card_hover_image": {
+        "label": "Reveal second image on hover"
+      },
+      "card_show_add": {
+        "label": "Show add to bag button"
+      },
+      "card_add_label": {
+        "label": "Add button label"
+      }
+    },
+    "cart": {
+      "name": "Cart",
+      "paragraph": "The drawer and the cart page are alternatives, not both — whichever is chosen here is where the bag action goes.",
+      "cart_type": {
+        "label": "Opening the bag",
+        "info": "Without JavaScript the bag always falls back to the cart page.",
+        "drawer": "Slide out a drawer",
+        "page": "Go to the cart page"
+      },
+      "cart_drawer_on_add": {
+        "label": "Open the drawer after adding",
+        "info": "Only applies while the drawer is chosen above."
+      }
+    },
+    "localization": {
+      "name": "Localization",
+      "paragraph": "Selectors appear only when more than one country or language is published in your markets.",
+      "header_country": "Country and currency",
+      "show_country_header": {
+        "label": "Show country selector in the header"
+      },
+      "show_country_footer": {
+        "label": "Show country selector in the footer"
+      },
+      "header_language": "Language",
+      "show_language_header": {
+        "label": "Show language selector in the header"
+      },
+      "show_language_footer": {
+        "label": "Show language selector in the footer"
+      }
+    },
+    "motion": {
+      "name": "Motion",
+      "paragraph": "Motion is disabled automatically for visitors who ask their device to reduce it.",
+      "motion_enabled": {
+        "label": "Enable transitions"
+      },
+      "motion_reveal": {
+        "label": "Reveal sections on scroll"
+      },
+      "motion_duration": {
+        "label": "Transition duration"
+      }
+    },
+    "options": {
+      "subtle": "Subtle",
+      "moderate": "Moderate",
+      "balanced": "Balanced",
+      "strong": "Strong",
+      "dramatic": "Dramatic",
+      "left": "Left",
+      "center": "Center",
+      "right": "Right",
+      "top": "Top",
+      "middle": "Middle",
+      "bottom": "Bottom",
+      "small": "Small",
+      "medium": "Medium",
+      "large": "Large",
+      "adapt": "Match the image",
+      "square": "Square",
+      "portrait": "Portrait",
+      "tall_portrait": "Tall portrait",
+      "landscape": "Landscape",
+      "wide": "Wide",
+      "contain": "Fit the whole piece",
+      "cover": "Fill the frame",
+      "solid": "Solid",
+      "outline": "Outline",
+      "text_link": "Text link"
+    }
+  },
+  "sections": {
+    "all": {
+      "color_scheme": {
+        "label": "Color scheme"
+      },
+      "spacing_header": "Spacing",
+      "padding_top": {
+        "label": "Top padding"
+      },
+      "padding_bottom": {
+        "label": "Bottom padding"
+      },
+      "width": {
+        "label": "Width"
+      },
+      "width_page": "Page width",
+      "width_narrow": "Narrow",
+      "width_full": "Full bleed",
+      "heading": {
+        "label": "Heading"
+      },
+      "subheading": {
+        "label": "Micro label"
+      },
+      "text": {
+        "label": "Text"
+      },
+      "image": {
+        "label": "Image"
+      },
+      "link": {
+        "label": "Link"
+      },
+      "link_label": {
+        "label": "Link label"
+      },
+      "full_height": {
+        "label": "Fill the screen height",
+        "info": "The section occupies the full viewport, as in the design."
+      },
+      "content_alignment": {
+        "label": "Content alignment"
+      },
+      "layout": {
+        "label": "Layout"
+      },
+      "image_first": "Image first",
+      "text_first": "Text first"
+    },
+    "announcement_bar": {
+      "name": "Announcement bar",
+      "show_all": {
+        "label": "Show every message at once",
+        "info": "When off, only the first message is shown."
+      },
+      "blocks": {
+        "message": {
+          "name": "Message",
+          "text": {
+            "label": "Text"
+          }
+        }
+      }
+    },
+    "header": {
+      "name": "Header",
+      "nav_mode": {
+        "paragraph": "The design gives the homepage a floating pill and the inner pages a full bar, so the two are set separately.",
+        "home_label": "On the homepage",
+        "inner_label": "On every other page",
+        "info": "Expand on scroll uses the hero title as its cue where there is one, and the distance below otherwise.",
+        "bar": "Full-width bar",
+        "morph": "Floating pill, expanding to a bar on scroll",
+        "pill": "Floating pill"
+      },
+      "scroll_threshold": {
+        "label": "Scroll distance before it expands",
+        "info": "Only used on pages with no hero title to measure against."
+      },
+      "overlay_home": {
+        "label": "Let the homepage hero sit under the bar",
+        "info": "The bar starts transparent over the hero and turns solid on scroll. Other templates always reserve its height."
+      },
+      "actions_header": "Actions",
+      "show_contact": {
+        "label": "Show contact link"
+      },
+      "contact_label": {
+        "label": "Contact label"
+      },
+      "contact_link": {
+        "label": "Contact link"
+      },
+      "show_account": {
+        "label": "Show account"
+      },
+      "show_search": {
+        "label": "Show search"
+      },
+      "show_bag": {
+        "label": "Show bag"
+      },
+      "search_header": "Search",
+      "search_paragraph": "The overlay searches as the visitor types. With it switched off the search action goes to the search page instead.",
+      "search_overlay": {
+        "label": "Open search as an overlay",
+        "info": "Opens over the page, and with ⌘K, Ctrl+K or /."
+      },
+      "search_popular": {
+        "label": "Popular searches",
+        "info": "Separate with commas. Shown before anything is typed."
+      },
+      "search_collection": {
+        "label": "Featured pieces",
+        "info": "Shown in the overlay before anything is typed."
+      },
+      "menu_header": "Menu overlay",
+      "menu_paragraph": "Menu rows are numbered automatically in the order they appear here. Bag and Search are added last when they are switched on above.",
+      "menu_address": {
+        "label": "Address"
+      },
+      "menu_address_link": {
+        "label": "Map link"
+      },
+      "blocks": {
+        "link": {
+          "name": "Menu row"
+        },
+        "category": {
+          "name": "Category shortcut"
+        }
+      }
+    },
+    "footer": {
+      "name": "Footer",
+      "show_wordmark": {
+        "label": "Show the letterform wordmark"
+      },
+      "show_payment_icons": {
+        "label": "Show payment icons"
+      },
+      "copyright": {
+        "label": "Copyright line",
+        "info": "The year is added automatically."
+      },
+      "blocks": {
+        "menu": {
+          "name": "Link column",
+          "heading": {
+            "label": "Column heading"
+          },
+          "actions_info": "Set a link's URL to #newsletter or #cookie-preferences to make it open that overlay instead of navigating.",
+          "menu": {
+            "label": "Menu",
+            "info": "Pick a navigation menu to use instead of the links below."
+          },
+          "label_n": {
+            "label_1": "Link 1",
+            "label_2": "Link 2",
+            "label_3": "Link 3",
+            "label_4": "Link 4",
+            "label_5": "Link 5",
+            "label_6": "Link 6",
+            "label_7": "Link 7",
+            "label_8": "Link 8"
+          },
+          "url_n": {
+            "url_1": "Link 1 URL",
+            "url_2": "Link 2 URL",
+            "url_3": "Link 3 URL",
+            "url_4": "Link 4 URL",
+            "url_5": "Link 5 URL",
+            "url_6": "Link 6 URL",
+            "url_7": "Link 7 URL",
+            "url_8": "Link 8 URL"
+          }
+        },
+        "text": {
+          "name": "Text column",
+          "heading": {
+            "label": "Column heading"
+          },
+          "text": {
+            "label": "Text"
+          }
+        },
+        "contact": {
+          "name": "Salon details",
+          "heading": {
+            "label": "Column heading"
+          },
+          "address": {
+            "label": "Address"
+          },
+          "address_link": {
+            "label": "Map link"
+          },
+          "hours": {
+            "label": "Opening hours"
+          },
+          "phone": {
+            "label": "Telephone"
+          },
+          "email": {
+            "label": "Email"
+          }
+        },
+        "social": {
+          "name": "Social links",
+          "heading": {
+            "label": "Column heading"
+          }
+        },
+        "newsletter": {
+          "name": "Newsletter",
+          "heading": {
+            "label": "Column heading"
+          },
+          "text": {
+            "label": "Text"
+          }
+        }
+      }
+    },
+    "hero": {
+      "name": "Hero",
+      "wordmark_header": "Wordmark",
+      "show_wordmark": {
+        "label": "Show the letterform wordmark"
+      },
+      "show_sparkles": {
+        "label": "Show sparkles"
+      },
+      "show_arcs": {
+        "label": "Show decorative arcs"
+      },
+      "portrait_header": "Portrait",
+      "image": {
+        "label": "Portrait image",
+        "info": "A dark portrait wearing the collection works best."
+      },
+      "carousel_header": "Piece carousel",
+      "carousel_paragraph": "Add one metal per switch. Each carries its own collection, and the carousel shows two pieces at a time from whichever is selected.",
+      "metal_label": {
+        "label": "Switch heading"
+      },
+      "blocks": {
+        "heading": {
+          "name": "Heading",
+          "size": {
+            "label": "Size"
+          }
+        },
+        "detail": {
+          "name": "Detail row"
+        },
+        "metal": {
+          "name": "Metal",
+          "collection": {
+            "label": "Collection",
+            "info": "The pieces the carousel shows while this metal is selected."
+          }
+        },
+        "text": {
+          "name": "Text"
+        },
+        "buttons": {
+          "name": "Buttons",
+          "button_label": {
+            "label": "Primary button"
+          },
+          "button_link": {
+            "label": "Primary link"
+          },
+          "button_label_2": {
+            "label": "Secondary button"
+          },
+          "button_link_2": {
+            "label": "Secondary link"
+          }
+        }
+      }
+    },
+    "lookbook": {
+      "name": "Lookbook",
+      "hint": {
+        "label": "Hint under the stage"
+      },
+      "points_header": "Points",
+      "pin_style": {
+        "label": "Point style",
+        "dot": "Dot",
+        "number": "Numbered",
+        "plus": "Plus"
+      },
+      "pulse": {
+        "label": "Pulse until a point is chosen"
+      },
+      "list_header": "In this look",
+      "show_list": {
+        "label": "Show the piece list beside the stage"
+      },
+      "point": {
+        "product_1": "Point 1 — piece",
+        "product_2": "Point 2 — piece",
+        "product_3": "Point 3 — piece",
+        "product_4": "Point 4 — piece",
+        "x": "From the left",
+        "y": "From the top",
+        "in": "Appears at (seconds)",
+        "out": "Disappears at (seconds)"
+      },
+      "blocks": {
+        "scene": {
+          "name": "Look",
+          "label": {
+            "label": "Tab label"
+          },
+          "tag": {
+            "label": "Caption",
+            "info": "Shown in the corner of the stage."
+          },
+          "video": {
+            "label": "Film",
+            "info": "Used instead of the image. Plays muted and looped while the stage is on screen."
+          },
+          "points_header": "Points",
+          "points_paragraph": "Place each point as a percentage across and down the stage. The seconds only apply to a film — leave them empty and the point is always shown."
+        }
+      }
+    },
+    "featured_products": {
+      "name": "Featured products",
+      "collection": {
+        "label": "Collection"
+      },
+      "products_to_show": {
+        "label": "Products to show"
+      },
+      "columns": {
+        "label": "Maximum columns",
+        "info": "Fewer columns are used automatically when there isn't room."
+      },
+      "mobile_columns": {
+        "label": "Columns on a phone",
+        "info": "Two keeps the grid browsable on a narrow screen even though it takes each card below the minimum column width.",
+        "one": "One",
+        "two": "Two"
+      },
+      "show_view_all": {
+        "label": "Show the view all link"
+      },
+      "view_all_label": {
+        "label": "View all label",
+        "info": "Leave blank to show the collection's product count."
+      }
+    },
+    "category_grid": {
+      "name": "Category grid",
+      "columns": {
+        "label": "Maximum columns"
+      },
+      "image_ratio": {
+        "label": "Image shape"
+      },
+      "show_counts": {
+        "label": "Show product counts"
+      },
+      "blocks": {
+        "category": {
+          "name": "Category",
+          "collection": {
+            "label": "Collection"
+          },
+          "title": {
+            "label": "Title",
+            "info": "Falls back to the collection title."
+          },
+          "image": {
+            "label": "Image",
+            "info": "Falls back to the collection image."
+          },
+          "link_label": {
+            "label": "Hover label"
+          }
+        }
+      }
+    },
+    "promises": {
+      "name": "Promises",
+      "blocks": {
+        "promise": {
+          "name": "Promise",
+          "icon": {
+            "label": "Icon"
+          },
+          "heading": {
+            "label": "Heading"
+          },
+          "text": {
+            "label": "Text"
+          }
+        }
+      },
+      "icons": {
+        "shipping": "Insured shipping",
+        "support": "Personal assistance",
+        "secure": "Secure payment",
+        "handcraft": "Handcrafted",
+        "certified": "Certified quality",
+        "none": "None"
+      }
+    },
+    "craft": {
+      "name": "The craft",
+      "media_header": "Media",
+      "video": {
+        "label": "Video",
+        "info": "Plays muted and looped. Falls back to the image when empty."
+      },
+      "video_url": {
+        "label": "External video URL"
+      },
+      "show_frame": {
+        "label": "Show the offset frame"
+      },
+      "blocks": {
+        "spec": {
+          "name": "Specification row",
+          "label": {
+            "label": "Label"
+          },
+          "value": {
+            "label": "Value"
+          }
+        },
+        "buttons": {
+          "name": "Buttons"
+        }
+      }
+    },
+    "about": {
+      "name": "About",
+      "arch": {
+        "label": "Arch the image top"
+      },
+      "caption_left": {
+        "label": "Caption, left"
+      },
+      "caption_right": {
+        "label": "Caption, right"
+      },
+      "blocks": {
+        "paragraph": {
+          "name": "Paragraph"
+        },
+        "buttons": {
+          "name": "Buttons"
+        }
+      }
+    },
+    "testimonials": {
+      "name": "Testimonials",
+      "autorotate": {
+        "label": "Rotate automatically"
+      },
+      "interval": {
+        "label": "Seconds between quotes"
+      },
+      "blocks": {
+        "quote": {
+          "name": "Quote",
+          "text": {
+            "label": "Quote"
+          },
+          "author": {
+            "label": "Attribution"
+          }
+        }
+      }
+    },
+    "visit": {
+      "name": "Visit",
+      "arch": {
+        "label": "Arch the image top"
+      },
+      "caption_left": {
+        "label": "Caption, left"
+      },
+      "caption_right": {
+        "label": "Caption, right"
+      },
+      "show_rule": {
+        "label": "Show the top rule"
+      },
+      "blocks": {
+        "detail": {
+          "name": "Detail row",
+          "label": {
+            "label": "Label"
+          },
+          "value": {
+            "label": "Value"
+          },
+          "link": {
+            "label": "Link"
+          }
+        },
+        "buttons": {
+          "name": "Buttons"
+        }
+      }
+    },
+    "rich_text": {
+      "name": "Rich text",
+      "blocks": {
+        "heading": {
+          "name": "Heading",
+          "size": {
+            "label": "Size"
+          }
+        },
+        "text": {
+          "name": "Text"
+        },
+        "button": {
+          "name": "Button",
+          "label": {
+            "label": "Label"
+          },
+          "style": {
+            "label": "Style"
+          }
+        }
+      }
+    },
+    "newsletter": {
+      "name": "Newsletter",
+      "button_label": {
+        "label": "Button label"
+      }
+    },
+    "newsletter_popup": {
+      "name": "Newsletter popup",
+      "enabled": {
+        "label": "Enable the popup"
+      },
+      "delay": {
+        "label": "Delay before it appears",
+        "info": "Shown once per visitor until they subscribe or dismiss it. Footer links reopen it at any time."
+      },
+      "fine_print": {
+        "label": "Small print"
+      },
+      "success_header": "After subscribing",
+      "offer_code": {
+        "label": "Offer code"
+      }
+    },
+    "cart_drawer": {
+      "name": "Bag drawer",
+      "paragraph": "Shown only while the cart is set to a drawer in Theme settings → Cart.",
+      "note": {
+        "label": "Note above the buttons"
+      },
+      "secondary_label": {
+        "label": "Secondary button"
+      },
+      "secondary_link": {
+        "label": "Secondary link"
+      }
+    },
+    "cookie_banner": {
+      "name": "Cookie notice",
+      "enabled": {
+        "label": "Enable the notice"
+      },
+      "policy_label": {
+        "label": "Policy link label"
+      },
+      "policy_link": {
+        "label": "Policy link"
+      },
+      "decline_label": {
+        "label": "Decline label"
+      },
+      "accept_label": {
+        "label": "Accept label"
+      }
+    }
+  }
+}

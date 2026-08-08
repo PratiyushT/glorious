@@ -1,0 +1,57 @@
+<div class="page-width simple-template">
+  <div class="stack">
+    <h1 class="h3">{{ 'general.search.search' | t }}</h1>
+
+    <form action="{{ routes.search_url }}" method="get" role="search" class="form-row">
+      <label class="visually-hidden" for="search-input">{{ 'general.search.search' | t }}</label>
+      <input
+        class="field"
+        id="search-input"
+        type="search"
+        name="q"
+        value="{{ search.terms | escape }}"
+        placeholder="{{ 'general.search.placeholder' | t }}"
+      >
+      <button type="submit" class="btn btn--primary">{{ 'general.search.search' | t }}</button>
+    </form>
+
+    {%- if search.performed -%}
+      {%- if search.results_count > 0 -%}
+        <p class="text-sm text-muted">
+          {{ 'general.search.results_with_count' | t: count: search.results_count }}
+        </p>
+
+        {%- paginate search.results by 24 -%}
+          <div class="grid-auto" style="--cols: 4;">
+            {%- for item in search.results -%}
+              {%- if item.object_type == 'product' -%}
+                {% render 'product-card', product: item %}
+              {%- else -%}
+                <a class="card" href="{{ item.url }}">
+                  <span class="card__title">{{ item.title }}</span>
+                </a>
+              {%- endif -%}
+            {%- endfor -%}
+          </div>
+
+          {%- if paginate.pages > 1 -%}
+            <div class="btn-row" style="justify-content: center;">
+              {%- if paginate.previous -%}
+                <a class="btn btn--secondary" href="{{ paginate.previous.url }}">
+                  {{ 'general.pagination.previous' | t }}
+                </a>
+              {%- endif -%}
+              {%- if paginate.next -%}
+                <a class="btn btn--secondary" href="{{ paginate.next.url }}">
+                  {{ 'general.pagination.next' | t }}
+                </a>
+              {%- endif -%}
+            </div>
+          {%- endif -%}
+        {%- endpaginate -%}
+      {%- else -%}
+        <p class="text-muted">{{ 'general.search.no_results' | t: terms: search.terms }}</p>
+      {%- endif -%}
+    {%- endif -%}
+  </div>
+</div>

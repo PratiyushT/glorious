@@ -1,0 +1,123 @@
+{
+  "name": "t:sections.header.name",
+  "type": "header",
+  "sections": {
+    "header": {
+      "type": "header",
+      "settings": {
+        "color_scheme": "scheme_2",
+        "nav_mode_home": "morph",
+        "nav_mode": "bar",
+        "scroll_threshold": 60,
+        "overlay_home": true,
+        "show_contact": true,
+        "contact_label": "Contact",
+        "contact_link": "/pages/contact",
+        "show_account": true,
+        "show_search": true,
+        "show_bag": true,
+        "search_overlay": true,
+        "search_popular": "Emerald, Halo, Hoop earrings, Pendant",
+        "menu_address": "8140 N MacArthur Blvd #120, Irving, TX",
+        "menu_address_link": "https://www.google.com/maps/place/Glorious+By+Pramukham+Jewelers+-Gold+and+Diamond+Store/@32.9196733,-96.9570255,15z"
+      },
+      "blocks": {
+        "link-home": {
+          "type": "link",
+          "settings": { "label": "Home", "url": "/" }
+        },
+        "link-collection": {
+          "type": "link",
+          "settings": { "label": "The Collection", "url": "/collections/all" }
+        },
+        "link-about": {
+          "type": "link",
+          "settings": { "label": "About Us", "url": "/pages/about" }
+        },
+        "link-contact": {
+          "type": "link",
+          "settings": { "label": "Contact", "url": "/pages/contact" }
+        },
+        "link-account": {
+          "type": "link",
+          "settings": { "label": "Account", "url": "/account" }
+        },
+        "cat-rings": {
+          "type": "category",
+          "settings": { "label": "Rings", "url": "/collections/rings" }
+        },
+        "cat-earrings": {
+          "type": "category",
+          "settings": { "label": "Earrings", "url": "/collections/earrings" }
+        },
+        "cat-bracelets": {
+          "type": "category",
+          "settings": { "label": "Bracelets", "url": "/collections/bracelets" }
+        },
+        "cat-necklaces": {
+          "type": "category",
+          "settings": { "label": "Necklaces & Pendants", "url": "/collections/necklaces" }
+        },
+        "social": {
+          "type": "social",
+          "settings": {
+            "instagram": "https://www.instagram.com/gloriousjewelers/",
+            "facebook": "https://www.facebook.com/gloriousjewelers",
+            "pinterest": "https://in.pinterest.com/gloriousjewelers/"
+          }
+        }
+      },
+      "block_order": [
+        "link-home",
+        "link-collection",
+        "link-about",
+        "link-contact",
+        "link-account",
+        "cat-rings",
+        "cat-earrings",
+        "cat-bracelets",
+        "cat-necklaces",
+        "social"
+      ]
+    },
+    "cart-drawer": {
+      "type": "cart-drawer",
+      "settings": {
+        "color_scheme": "scheme_1",
+        "note": "Sales tax calculated at checkout. Fully insured delivery, signed for at your door — or buy at the salon.",
+        "secondary_label": "Salon",
+        "secondary_link": "/#visit"
+      }
+    },
+    "newsletter-popup": {
+      "type": "newsletter-popup",
+      "settings": {
+        "enabled": true,
+        "color_scheme": "scheme_1",
+        "delay": 2,
+        "eyebrow": "The Glorious List",
+        "heading": "Take 10% Off Your First Order",
+        "text": "Sign up for early access to new collections, private previews, and your welcome offer.",
+        "fine_print": "By subscribing you agree to receive email from Glorious Jewelers. Unsubscribe anytime.",
+        "success_heading": "You're on the List",
+        "success_text": "Enjoy 10% off your first order with the code below.",
+        "offer_code": "GLORIOUS10"
+      }
+    },
+    "cookie-banner": {
+      "type": "cookie-banner",
+      "settings": {
+        "enabled": true,
+        "color_scheme": "scheme_1",
+        "delay": 1,
+        "eyebrow": "Cookies",
+        "text": "We use cookies to improve your browsing experience and analyze site traffic. See our",
+        "policy_label": "Cookie Policy",
+        "policy_link": "/pages/cookies",
+        "decline_label": "Decline",
+        "accept_label": "Accept"
+      }
+    }
+  },
+  "order": ["header", "cart-drawer", "newsletter-popup", "cookie-banner"]
+}

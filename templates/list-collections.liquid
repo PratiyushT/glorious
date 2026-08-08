@@ -1,0 +1,28 @@
+<div class="page-width simple-template">
+  <div class="stack">
+    <h1 class="h3">{{ page_title }}</h1>
+
+    <div class="grid-auto" style="--cols: 3;">
+      {%- for collection in collections -%}
+        <a class="card" href="{{ collection.url }}">
+          <div class="card__media media" style="aspect-ratio: 4 / 3;">
+            {%- if collection.featured_image -%}
+              {{
+                collection.featured_image
+                | image_url: width: 1000
+                | image_tag:
+                  widths: '300,500,700,1000',
+                  sizes: '(min-width: 60rem) 33vw, 100vw',
+                  loading: 'lazy',
+                  alt: collection.title
+              }}
+            {%- else -%}
+              {{ 'collection-1' | placeholder_svg_tag: 'placeholder-svg' }}
+            {%- endif -%}
+          </div>
+          <span class="card__title">{{ collection.title }}</span>
+        </a>
+      {%- endfor -%}
+    </div>
+  </div>
+</div>

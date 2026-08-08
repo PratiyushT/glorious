@@ -1,0 +1,72 @@
+{%- comment -%}
+  Announcement bar. Each message is a block, so merchants add, reorder and
+  remove them from the editor without touching code.
+{%- endcomment -%}
+
+{%- if section.blocks.size > 0 -%}
+  <div class="announcement scheme-{{ section.settings.color_scheme }}">
+    <div class="page-width">
+      {%- for block in section.blocks -%}
+        {%- if block.settings.text != blank -%}
+          <div {{ block.shopify_attributes }}>
+            {%- if block.settings.link != blank -%}
+              <a href="{{ block.settings.link }}">{{ block.settings.text }}</a>
+            {%- else -%}
+              {{ block.settings.text }}
+            {%- endif -%}
+          </div>
+          {%- unless section.settings.show_all -%}
+            {%- break -%}
+          {%- endunless -%}
+        {%- endif -%}
+      {%- endfor -%}
+    </div>
+  </div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "t:sections.announcement_bar.name",
+  "tag": "aside",
+  "settings": [
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:sections.all.color_scheme.label",
+      "default": "scheme_2"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_all",
+      "label": "t:sections.announcement_bar.show_all.label",
+      "info": "t:sections.announcement_bar.show_all.info",
+      "default": false
+    }
+  ],
+  "blocks": [
+    {
+      "type": "message",
+      "name": "t:sections.announcement_bar.blocks.message.name",
+      "settings": [
+        {
+          "type": "inline_richtext",
+          "id": "text",
+          "label": "t:sections.announcement_bar.blocks.message.text.label",
+          "default": "Complimentary insured shipping on every order"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "t:sections.all.link.label"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:sections.announcement_bar.name",
+      "blocks": [{ "type": "message" }]
+    }
+  ]
+}
+{% endschema %}

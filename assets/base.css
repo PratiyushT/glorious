@@ -1,0 +1,3934 @@
+/* ===================================================================
+   Glorious — base stylesheet
+
+   No literal size, colour, or breakpoint appears below. Every value is a
+   custom property emitted by snippets/theme-tokens.liquid, compiled from
+   theme editor settings. Layout reflows on intrinsic size — grid auto-fit,
+   flex-wrap thresholds, container queries, clamp() — never on device width.
+   =================================================================== */
+
+/* ---- Reset ------------------------------------------------------- */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
+  overflow-x: hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-body);
+  font-weight: var(--font-body-weight);
+  font-style: var(--font-body-style);
+  font-size: var(--fs-base);
+  line-height: var(--body-leading);
+  color: var(--c-text);
+  background-color: var(--c-bg);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-style: var(--font-display-style);
+  font-weight: var(--display-weight);
+  line-height: var(--heading-leading);
+  letter-spacing: var(--heading-tracking);
+  text-wrap: balance;
+  color: var(--c-heading);
+}
+
+p, ul, ol, figure, blockquote {
+  margin: 0;
+}
+
+img, picture, video, canvas, svg {
+  display: block;
+  max-width: 100%;
+}
+
+button, input, select, textarea {
+  font: inherit;
+  color: inherit;
+}
+
+a {
+  color: var(--c-link);
+  text-underline-offset: 0.2em;
+}
+
+::selection {
+  background: var(--c-accent);
+  color: var(--c-bg);
+}
+
+:focus-visible {
+  outline: 2px solid var(--c-accent);
+  outline-offset: 3px;
+}
+
+/* ---- UI leading ---------------------------------------------------
+   `body` carries --body-leading (1.85 by default), which is right for
+   running prose and wrong for everything else. On a single-line label it
+   adds ~8px of half-leading above and below, and that quietly inflates
+   every gap in a component past the design's spacing — a 22px drawer
+   title lands in a 56px box, a 12px close pill in a 40px one.
+
+   The design's own `body` sets no line-height at all: prose declares its
+   leading and UI text is left at normal. These roots restore that. Any
+   multi-line text inside them states its own line-height, so nothing here
+   is relying on inheritance for readability.                            */
+
+.hero,
+.nav-menu,
+.search-overlay,
+.drawer__panel {
+  line-height: normal;
+}
+
+/* ---- Utilities --------------------------------------------------- */
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.skip-link {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 100;
+  padding: var(--space-xs) var(--space-sm);
+  background: var(--c-bg);
+  color: var(--c-text);
+  transform: translateY(-150%);
+}
+
+.skip-link:focus {
+  transform: translateY(0);
+}
+
+.hairline {
+  height: var(--border-width);
+  background: var(--c-hairline);
+}
+
+/* ---- Layout primitives ------------------------------------------- */
+
+/* --page-width is the width of the CONTENT, with the gutter outside it, which
+   is how the design measures: its sections pad from the viewport edge and the
+   inner block is capped at 1560px. Capping the border box instead would make
+   every section a gutter's worth narrower than the design on each side — 88px
+   in total, enough that the four category cards could never reach four
+   across. */
+.page-width {
+  width: 100%;
+  max-width: calc(var(--page-width) + var(--gutter) * 2);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+.page-width--narrow {
+  max-width: calc(var(--page-width-narrow) + var(--gutter) * 2);
+}
+
+.page-width--reading {
+  max-width: calc(var(--content-width) + var(--gutter) * 2);
+}
+
+.section {
+  padding-block: var(--pad-top, var(--space-2xl)) var(--pad-bottom, var(--space-2xl));
+}
+
+/* Sections the design gives the whole screen to. min-height rather than a
+   fixed height, so content is never clipped on short viewports. */
+.section--tall {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 100svh;
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--stack-gap, var(--space-sm));
+}
+
+.stack--tight { --stack-gap: var(--space-2xs); }
+.stack--loose { --stack-gap: var(--space-lg); }
+
+.stack--center {
+  align-items: center;
+  text-align: center;
+}
+
+/* Auto-reflowing grid capped at --cols. Columns collapse whenever they
+   would fall below --grid-min. No breakpoints involved. */
+.grid-auto {
+  --cols: 4;
+  --gap: var(--space-lg);
+  --min: var(--grid-min);
+  --min-pct: 100%;
+  display: grid;
+  gap: var(--gap);
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(
+      max(
+        min(var(--min), var(--min-pct)),
+        calc((100% - (var(--cols) - 1) * var(--gap)) / var(--cols))
+      ),
+      1fr
+    )
+  );
+}
+
+/* Two-up that folds when either half drops below --split-min. */
+.split {
+  --split-min: 24rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2xl);
+  align-items: var(--split-align, center);
+}
+
+.split > * {
+  flex: 1 1 var(--split-min);
+  min-width: 0;
+}
+
+.split--reverse {
+  flex-direction: row-reverse;
+}
+
+/* ---- Type -------------------------------------------------------- */
+
+/* The oversized edge-to-edge section titles. */
+.display {
+  font-family: var(--font-display);
+  font-weight: var(--display-weight);
+  font-size: var(--fs-display);
+  line-height: var(--display-leading);
+  letter-spacing: var(--display-tracking);
+  text-transform: var(--display-transform);
+  color: var(--c-heading);
+  margin-inline-start: -0.05em;
+  white-space: nowrap;
+  overflow: hidden;
+  user-select: none;
+}
+
+/* Wordmark — letters distributed across the full measure. */
+.wordmark {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-family: var(--font-display);
+  font-size: var(--fs-display);
+  line-height: 1;
+  color: var(--c-accent);
+  user-select: none;
+}
+
+.wordmark--ivory {
+  color: var(--c-heading);
+}
+
+.wordmark img {
+  height: 0.75em;
+  width: auto;
+  align-self: center;
+}
+
+.h1 { font-size: var(--fs-display); font-family: var(--font-display); }
+.h2 { font-size: var(--fs-section); font-family: var(--font-display); }
+.h3 { font-size: var(--fs-2xl); font-family: var(--font-display); }
+.h4 { font-size: var(--fs-xl); font-family: var(--font-display); }
+.h5 { font-size: var(--fs-lg); font-family: var(--font-display); }
+
+.text-sm { font-size: var(--fs-sm); }
+.text-xs { font-size: var(--fs-xs); }
+.text-muted { color: var(--c-muted); }
+.text-accent { color: var(--c-accent); }
+
+/* Letterspaced uppercase eyebrow. */
+.micro {
+  display: inline-block;
+  font-family: var(--font-body);
+  font-size: var(--micro-size);
+  letter-spacing: var(--micro-tracking);
+  text-transform: uppercase;
+  line-height: 1.5;
+  color: var(--c-accent);
+}
+
+.micro--muted {
+  color: var(--c-muted);
+  letter-spacing: calc(var(--micro-tracking) * 0.77);
+}
+
+.measure {
+  max-width: var(--content-width);
+}
+
+.measure--center {
+  margin-inline: auto;
+}
+
+.rte > * + * {
+  margin-top: var(--space-xs);
+}
+
+.rte a {
+  color: var(--c-link);
+}
+
+.rte ul,
+.rte ol {
+  padding-inline-start: 1.25em;
+}
+
+.align-left   { text-align: left; }
+.align-center { text-align: center; align-items: center; }
+.align-right  { text-align: right; align-items: flex-end; }
+
+/* ---- Section header ---------------------------------------------- */
+
+.section-header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--space-xs) var(--space-lg);
+  margin-block: var(--space-xs) var(--space-lg);
+}
+
+.section-header--center {
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+/* A display heading sets line-height below 1, so its box ends level with the
+   letters and offers no breathing room of its own. Every section that has a
+   subheading gets that room from .section-header's bottom margin — which
+   means a section without one (the category grid) had its grid sitting
+   flush against the title. The gap has to belong to the heading, not to an
+   optional row that may not be there. Matches the margin the header would
+   have contributed, so the rhythm is the same either way. */
+.display + .grid-auto,
+.display + .promises {
+  margin-top: var(--space-lg);
+}
+
+/* Underlined text link used beside section headings. */
+.link-rule {
+  display: inline-block;
+  font-size: var(--micro-size);
+  letter-spacing: calc(var(--micro-tracking) * 0.77);
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--c-text);
+  border-bottom: var(--border-width) solid color-mix(in srgb, var(--c-text) 35%, transparent);
+  padding-bottom: 0.4em;
+  transition: color var(--duration) var(--ease),
+              border-color var(--duration) var(--ease);
+}
+
+.link-rule:hover {
+  color: var(--c-accent);
+  border-color: var(--c-accent);
+}
+
+/* ---- Buttons ----------------------------------------------------- */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75em;
+  padding: var(--button-padding-y) var(--button-padding-x);
+  border: var(--button-border-width) solid transparent;
+  border-radius: var(--button-radius);
+  font-family: var(--font-body);
+  font-size: var(--button-size);
+  line-height: 1.2;
+  text-transform: var(--button-transform);
+  letter-spacing: var(--button-tracking);
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color var(--duration) var(--ease),
+              color var(--duration) var(--ease),
+              border-color var(--duration) var(--ease);
+}
+
+.btn--primary {
+  background-color: var(--c-button);
+  color: var(--c-button-label);
+  border-color: var(--c-button);
+}
+
+.btn--primary:hover {
+  background-color: var(--c-button-hover);
+  border-color: var(--c-button-hover);
+}
+
+.btn--outline {
+  background-color: transparent;
+  color: var(--c-button-secondary-label);
+  border-color: color-mix(in srgb, var(--c-accent) 55%, transparent);
+}
+
+.btn--outline:hover {
+  background-color: var(--c-button-secondary-label);
+  color: var(--c-bg);
+  border-color: var(--c-button-secondary-label);
+}
+
+/* Square-cornered button used inside product cards. */
+.btn--square {
+  width: 100%;
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--c-text);
+  border-color: color-mix(in srgb, var(--c-text) 28%, transparent);
+  padding-block: calc(var(--button-padding-y) * 0.7);
+}
+
+.btn--square:hover {
+  background: var(--c-text);
+  color: var(--c-bg);
+  border-color: var(--c-text);
+}
+
+.btn--link {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--c-text);
+  border-bottom: var(--border-width) solid color-mix(in srgb, var(--c-text) 30%, transparent);
+  border-radius: 0;
+}
+
+.btn--link:hover {
+  color: var(--c-accent);
+  border-color: var(--c-accent);
+}
+
+.btn-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2xs) var(--space-sm);
+}
+
+/* ---- Media ------------------------------------------------------- */
+
+.media {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius);
+  background-color: var(--c-veil);
+}
+
+.media > img,
+.media > video,
+.media > svg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.media--contain > img {
+  object-fit: contain;
+}
+
+.media--adapt > img {
+  height: auto;
+}
+
+/* The tall arch on the about and visit photographs. */
+.media--arch {
+  border-radius: var(--radius-arch) var(--radius-arch) var(--radius) var(--radius);
+}
+
+/* A hairline frame offset outside the media. */
+.media-frame {
+  position: relative;
+}
+
+.media-frame::after {
+  content: "";
+  position: absolute;
+  inset: calc(var(--space-3xs) * -1);
+  border: var(--border-width) solid color-mix(in srgb, var(--c-accent) 32%, transparent);
+  pointer-events: none;
+}
+
+.caption-row {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.3em 1em;
+  margin-top: var(--space-2xs);
+  font-size: var(--micro-size);
+  letter-spacing: calc(var(--micro-tracking) * 0.68);
+  text-transform: uppercase;
+  color: var(--c-muted);
+}
+
+/* ---- Hero ---------------------------------------------------------
+   A 1:1 rebuild of the design's hero. Every number here is the design's
+   own, held in a custom property rather than inlined, so the default is
+   exact and any one of them can still be retuned in one place.
+
+   This is the one block in the stylesheet that carries literal sizes.
+   The design art-directs the hero to the pixel against a fixed viewport
+   height, and re-deriving it from the fluid scales would change it.     */
+
+.hero {
+  --hero-top: clamp(74px, 9vh, 110px);
+  --hero-side: clamp(18px, 4vw, 44px);
+  --hero-bottom: clamp(28px, 4vw, 56px);
+  --hero-wordmark-size: clamp(2.9rem, 12.5vw, 12.4rem);
+  --hero-max: 1560px;
+
+  --hero-cols: 1fr;
+  --hero-areas: "b" "a" "c" "d";
+  --hero-gap: 18px 20px;
+  --hero-portrait-max: min(62vw, 26dvh);
+  --hero-text-align: center;
+  --hero-justify: center;
+  --hero-intro-mx: auto;
+  --hero-rule-margin: 16px auto 18px;
+  --hero-cards-align: center;
+
+  --hero-card-max: 225px;
+  --hero-carousel-max: 560px;
+  --hero-arrow-pad: 40px;
+  --hero-arrow-beside: flex;
+  --hero-arrow-below: none;
+  --hero-cta-row: flex;
+  --hero-cta-col: none;
+
+  position: relative;
+  isolation: isolate;
+  box-sizing: border-box;
+  height: 100dvh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding:
+    calc(var(--hero-top) + var(--hero-wordmark-size) + 14px)
+    var(--hero-side)
+    var(--hero-bottom);
+}
+
+/* Medium: the portrait spans both rows, copy and cards stack beside it. */
+@media (min-width: 61.875rem) {
+  .hero {
+    --hero-cols: 1fr 1.15fr;
+    --hero-areas: "a b" "c b";
+    --hero-gap: 26px clamp(24px, 3vw, 40px);
+    --hero-portrait-max: min(46dvh, 560px);
+    --hero-text-align: left;
+    --hero-justify: flex-start;
+    --hero-intro-mx: 0;
+    --hero-rule-margin: 24px 0 30px;
+    --hero-cards-align: start;
+
+    --hero-arrow-pad: 0px;
+    --hero-arrow-beside: none;
+    --hero-arrow-below: flex;
+    --hero-cta-row: none;
+    --hero-cta-col: inline-flex;
+  }
+}
+
+/* The cards step up on their own threshold, not with the grid tiers — the
+   design bumps them at 1000px while the three-column arrangement waits for
+   1100px, so between the two the cards are already at their full size in the
+   medium layout. */
+@media (min-width: 62.5rem) {
+  .hero {
+    --hero-card-max: 247.5px;
+    --hero-carousel-max: 616px;
+  }
+}
+
+/* Wide: the design's three columns, arrows back beside the cards. */
+@media (min-width: 68.75rem) {
+  .hero {
+    --hero-cols: 1fr 1.9fr 1fr;
+    --hero-areas: "a b c";
+    --hero-portrait-max: min(44dvh, 780px);
+    --hero-cards-align: end;
+
+    --hero-arrow-pad: 40px;
+    --hero-arrow-beside: flex;
+    --hero-arrow-below: none;
+  }
+}
+
+.hero__wordmark {
+  position: absolute;
+  top: var(--hero-top);
+  left: var(--hero-side);
+  right: var(--hero-side);
+  z-index: 4;
+  pointer-events: none;
+}
+
+.hero__wordmark-inner {
+  max-width: var(--hero-max);
+  margin-inline: auto;
+  overflow: visible clip;
+  padding-inline: 0.04em;
+}
+
+.hero__letters {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-family: var(--font-display);
+  font-size: var(--hero-wordmark-size);
+  line-height: 1;
+  color: var(--c-accent);
+  text-shadow: 0 0 60px color-mix(in srgb, var(--c-accent) 25%, transparent);
+  user-select: none;
+}
+
+/* Each letter rises from below its own line, 60ms apart. */
+.hero__letters span {
+  display: inline-block;
+  transform: translateY(112%);
+  animation: gj-hero-line 0.95s cubic-bezier(0.19, 1, 0.22, 1) forwards;
+  animation-delay: calc(var(--letter, 0) * 60ms + 100ms);
+}
+
+@keyframes gj-hero-line {
+  to { transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero__letters span {
+    transform: none;
+    animation: none;
+  }
+}
+
+/* The grid is centred in whatever height is left under the wordmark. */
+.hero__fit {
+  position: relative;
+  z-index: 2;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.hero__grid {
+  width: 100%;
+  max-width: var(--hero-max);
+  margin-inline: auto;
+  display: grid;
+  grid-template-columns: var(--hero-cols);
+  grid-template-areas: var(--hero-areas);
+  align-items: center;
+  gap: var(--hero-gap);
+}
+
+.hero__copy {
+  grid-area: a;
+  min-width: 0;
+  align-self: center;
+  padding-bottom: 8px;
+  text-align: var(--hero-text-align);
+  animation: gj-fade-in 1s ease 0.7s both;
+}
+
+.hero__intro {
+  margin-inline: var(--hero-intro-mx);
+  max-width: min(100%, 440px);
+  font-size: clamp(1rem, 1.2vw, 1.13rem);
+  line-height: 1.85;
+  color: color-mix(in srgb, var(--c-text) 75%, transparent);
+}
+
+.hero__detail-label {
+  margin-top: 20px;
+  font-size: 0.78rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--c-text) 45%, transparent);
+}
+
+.hero__intro + .hero__detail-label {
+  margin-top: 26px;
+}
+
+.hero__detail-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 26px;
+  margin-top: 12px;
+  justify-content: var(--hero-justify);
+}
+
+.hero__choice {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: clamp(0.94rem, 1.1vw, 1.06rem);
+  color: color-mix(in srgb, var(--c-text) 55%, transparent);
+  transition: color var(--duration) var(--ease);
+}
+
+.hero__choice.is-on {
+  color: var(--c-heading);
+}
+
+.hero__dot {
+  width: 16px;
+  height: 16px;
+  display: grid;
+  place-items: center;
+  border: var(--border-width) solid color-mix(in srgb, var(--c-text) 35%, transparent);
+  border-radius: 50%;
+  transition: border-color var(--duration) var(--ease);
+}
+
+.hero__dot > span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: transparent;
+  transition: background var(--duration) var(--ease);
+}
+
+.hero__choice.is-on .hero__dot {
+  border-color: var(--c-accent);
+}
+
+.hero__choice.is-on .hero__dot > span {
+  background: var(--c-accent);
+}
+
+.hero__rule {
+  height: var(--border-width);
+  max-width: 300px;
+  margin: var(--hero-rule-margin);
+  background: color-mix(in srgb, var(--c-text) 18%, transparent);
+}
+
+.hero__cta {
+  display: var(--hero-cta-col);
+  align-items: center;
+  gap: 12px;
+  padding: 17px 34px;
+  border-radius: 999px;
+  background: var(--c-accent);
+  color: var(--c-bg);
+  text-decoration: none;
+  font-size: clamp(0.78rem, 0.9vw, 0.84rem);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  transition: background var(--duration) var(--ease), color var(--duration) var(--ease);
+}
+
+.hero__cta:hover {
+  background: var(--c-heading);
+  color: var(--c-bg);
+}
+
+/* At the narrow arrangement the CTA leaves the copy column for its own row. */
+.hero__cta-row {
+  grid-area: d;
+  display: var(--hero-cta-row);
+  justify-content: center;
+  margin-top: 2px;
+}
+
+.hero__cta-row .hero__cta {
+  display: inline-flex;
+  padding-inline: 40px;
+}
+
+.hero__portrait {
+  grid-area: b;
+  width: 100%;
+  max-width: var(--hero-portrait-max);
+  margin-inline: auto;
+  align-self: center;
+  justify-self: center;
+  animation: gj-fade-in 1.1s ease 0.5s both;
+}
+
+.hero__portrait-frame {
+  position: relative;
+  aspect-ratio: 3 / 4;
+  overflow: hidden;
+  background: radial-gradient(70% 55% at 50% 42%, #1C1812 0%, #0D0C0A 100%);
+}
+
+.hero__portrait-frame > img,
+.hero__portrait-frame > svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.hero__portrait-fade {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 26%;
+  background: linear-gradient(180deg, transparent, color-mix(in srgb, var(--c-bg) 90%, transparent));
+  pointer-events: none;
+}
+
+.hero__cards {
+  grid-area: c;
+  min-width: 0;
+  width: 100%;
+  align-self: var(--hero-cards-align);
+  animation: gj-fade-in 1s ease 0.9s both;
+}
+
+/* ---- Hero carousel --------------------------------------------------
+   Its own query container: the card captions and the arrow height are
+   sized against the carousel's width, not the screen's, so the pair of
+   cards stays in proportion in any column it lands in.                  */
+
+.hero-carousel {
+  container-type: inline-size;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  max-width: var(--hero-carousel-max);
+  margin-inline: auto;
+  padding-inline: var(--hero-arrow-pad);
+}
+
+.hero-carousel__window {
+  display: flex;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+  justify-content: center;
+  touch-action: pan-y;
+}
+
+.hero-carousel__pool {
+  display: contents;
+}
+
+.hero-carousel__pool[hidden] {
+  display: none;
+}
+
+.hero-carousel__arrow {
+  display: var(--hero-arrow-beside);
+  align-items: center;
+  padding: 6px;
+  border: 0;
+  background: none;
+  color: color-mix(in srgb, var(--c-text) 60%, transparent);
+  cursor: pointer;
+  font-size: 1.25rem;
+  transition: color var(--duration) var(--ease);
+}
+
+.hero-carousel__arrow:hover {
+  color: var(--c-accent);
+}
+
+.hero-carousel__arrow--prev,
+.hero-carousel__arrow--next {
+  position: absolute;
+  top: 0;
+  height: calc(min((100cqw - 92px) / 2, var(--hero-card-max)) * 1.18);
+}
+
+.hero-carousel__arrow--prev { left: 0; }
+.hero-carousel__arrow--next { right: 0; }
+
+/* Nothing to cycle through: the controls would be a lie. */
+.hero-carousel.is-static .hero-carousel__arrow {
+  display: none;
+}
+
+.hero-carousel__below[hidden] {
+  display: none;
+}
+
+.hero-carousel__below {
+  display: var(--hero-arrow-below);
+  justify-content: center;
+  gap: 34px;
+  margin-top: 14px;
+}
+
+.hero-carousel__below .hero-carousel__arrow {
+  position: static;
+  display: flex;
+  height: auto;
+  padding: 8px 12px;
+}
+
+.hero-card {
+  container-type: inline-size;
+  flex: 1;
+  min-width: 0;
+  max-width: var(--hero-card-max);
+  text-decoration: none;
+  animation: gj-card 0.5s ease both;
+  animation-delay: calc(var(--card, 0) * 80ms);
+}
+
+/* Only the pair in the window is on show; the rest of the pool waits. */
+.hero-card[hidden] {
+  display: none;
+}
+
+.hero-card__frame {
+  display: block;
+  position: relative;
+  aspect-ratio: 1 / 1.18;
+  border-radius: 26px;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--c-text) 5%, transparent);
+  border: var(--border-width) solid color-mix(in srgb, var(--c-accent) 22%, transparent);
+}
+
+.hero-card__frame > img,
+.hero-card__frame > svg {
+  position: absolute;
+  inset: 8%;
+  width: 84%;
+  height: 84%;
+  object-fit: contain;
+  border-radius: 18px;
+  background: #FFFFFF;
+}
+
+.hero-card__name {
+  display: block;
+  margin-top: 10px;
+  padding-inline: 2px;
+  font-size: min(0.78rem, 11cqw);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--c-text) 68%, transparent);
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@keyframes gj-card {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.hero__glow {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: radial-gradient(
+    85% 60% at 50% 20%,
+    color-mix(in srgb, var(--c-accent) 12%, transparent) 0%,
+    transparent 62%
+  );
+  pointer-events: none;
+}
+
+.hero__arc {
+  position: absolute;
+  z-index: 0;
+  color: var(--c-accent);
+  pointer-events: none;
+}
+
+.hero__arc--left {
+  left: -80px;
+  top: 10px;
+  width: min(42vw, 500px);
+  opacity: 0.4;
+}
+
+.hero__arc--right {
+  right: -110px;
+  top: 70px;
+  width: min(44vw, 520px);
+  opacity: 0.35;
+}
+
+.hero__sparkles {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+}
+
+.hero__sparkles span {
+  position: absolute;
+  font-size: var(--size, 1em);
+  color: color-mix(in srgb, var(--c-accent) 85%, #fff);
+  animation: gj-twinkle var(--dur, 4s) ease-in-out var(--delay, 0s) infinite;
+}
+
+@keyframes gj-twinkle {
+  0%, 100% { opacity: 0.15; transform: scale(0.7); }
+  50%      { opacity: 0.9;  transform: scale(1.1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero__sparkles span {
+    animation: none;
+    opacity: 0.5;
+  }
+}
+
+.craft__media {
+  display: flex;
+  justify-content: center;
+}
+
+.craft__media > * {
+  width: 100%;
+}
+
+/* ---- Product card ------------------------------------------------ */
+
+.card {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  height: 100%;
+  background: var(--c-surface);
+  border: var(--border-width) solid var(--c-hairline);
+  color: var(--c-text);
+  text-align: var(--card-align);
+}
+
+.card__media {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  background: var(--c-surface);
+}
+
+.card__media img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: var(--card-fit);
+  transition: opacity var(--duration) var(--ease);
+}
+
+.card__media .card__hover {
+  opacity: 0;
+}
+
+.card:hover .card__hover {
+  opacity: 1;
+}
+
+.card:hover .card__primary {
+  opacity: 0;
+}
+
+.card__body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4em;
+  padding: var(--space-xs);
+}
+
+.card__title {
+  font-family: var(--font-body);
+  font-size: var(--fs-sm);
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  line-height: 1.5;
+  color: var(--c-heading);
+  text-decoration: none;
+}
+
+.card__title:hover {
+  color: var(--c-accent);
+}
+
+.card__meta {
+  font-size: var(--micro-size);
+  letter-spacing: calc(var(--micro-tracking) * 0.64);
+  text-transform: uppercase;
+  color: var(--c-muted);
+}
+
+.card__price {
+  font-size: var(--fs-sm);
+  letter-spacing: 0.08em;
+  color: var(--c-text);
+}
+
+.card__price s {
+  color: var(--c-muted);
+  margin-inline-end: 0.5em;
+}
+
+.card__add {
+  margin-top: var(--space-3xs);
+}
+
+.badge {
+  position: absolute;
+  top: var(--space-3xs);
+  inset-inline-start: var(--space-3xs);
+  z-index: 2;
+  padding: 0.3em 0.8em;
+  background: var(--c-text);
+  color: var(--c-bg);
+  font-size: var(--micro-size);
+  letter-spacing: calc(var(--micro-tracking) * 0.5);
+  text-transform: uppercase;
+}
+
+/* ---- Category card ----------------------------------------------- */
+
+/* Only the horizontal padding scales — the design holds the vertical
+   spacing fixed, so the header keeps its proportions on a phone instead of
+   collapsing with the spacing scale. */
+.cat-card {
+  --cat-pad-x: clamp(1.13rem, 3vw, 2.13rem);
+
+  display: flex;
+  flex-direction: column;
+  text-decoration: none;
+  color: var(--c-text);
+  background: var(--c-surface);
+  border: var(--border-width) solid color-mix(in srgb, var(--c-text) 8%, transparent);
+  line-height: normal;
+}
+
+.cat-card__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 14px;
+  padding: 20px var(--cat-pad-x) 14px;
+  font-family: var(--font-display);
+  font-size: clamp(1.5rem, 2.4vw, 2.1rem);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--c-heading);
+}
+
+.cat-card__count {
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  letter-spacing: 0.17em;
+  color: color-mix(in srgb, var(--c-text) 45%, transparent);
+}
+
+.cat-card__rule {
+  height: var(--border-width);
+  background: color-mix(in srgb, var(--c-text) 30%, transparent);
+  margin: auto var(--cat-pad-x) 0;
+}
+
+.cat-card__media {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  margin-top: 16px;
+  background: var(--c-surface);
+}
+
+.cat-card__media img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 1.3s var(--ease);
+}
+
+.cat-card:hover .cat-card__media img {
+  transform: scale(1.06);
+}
+
+.cat-card__reveal {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  background: linear-gradient(180deg, transparent 35%, color-mix(in srgb, #000 62%, transparent) 100%);
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.55s ease, transform 0.65s var(--ease);
+}
+
+.cat-card:hover .cat-card__reveal,
+.cat-card:focus-visible .cat-card__reveal {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.cat-card__reveal span {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-inline: var(--cat-pad-x);
+  padding: 14px 0 16px;
+  border-top: var(--border-width) solid color-mix(in srgb, #FBF8F2 55%, transparent);
+  font-size: 0.75rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #F4EFE4;
+}
+
+/* ---- Lookbook -------------------------------------------------------
+   The design's "Shop the look". Its own literals, like the hero: the stage
+   is art-directed against the viewport height and the points are placed in
+   percentages of it, so the spacing scale is the wrong ruler here.
+
+   Noir whatever scheme the page is in, so it carries its own ivory and its
+   own gold for the same reason the overlays do.                          */
+
+.lookbook {
+  --c-ivory: #EFE9DC;
+  --lookbook-max: 1180px;
+
+  padding-inline: var(--gutter);
+  line-height: normal;
+}
+
+.lookbook__inner {
+  max-width: var(--lookbook-max);
+  margin-inline: auto;
+}
+
+.lookbook__eyebrow {
+  display: block;
+  font-size: 0.75rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--c-accent);
+}
+
+.lookbook__title {
+  margin-top: 12px;
+  font-family: var(--font-display);
+  font-size: clamp(2.6rem, 9.5vw, 5.4rem);
+  line-height: 0.98;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--c-heading);
+}
+
+.lookbook__intro {
+  margin-top: 14px;
+  max-width: 520px;
+  font-size: 0.97rem;
+  line-height: 1.8;
+  color: color-mix(in srgb, var(--c-text) 62%, transparent);
+  text-wrap: pretty;
+}
+
+/* The rail scrolls rather than wrapping, and hides its scrollbar — the
+   tabs are a single line of the design's micro type. */
+.lookbook__rail {
+  display: flex;
+  gap: 26px;
+  overflow-x: auto;
+  margin: clamp(1.5rem, 4vw, 2.38rem) -4px 0;
+  padding: 0 4px 4px;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.lookbook__rail::-webkit-scrollbar {
+  display: none;
+}
+
+.lookbook__tab {
+  flex: none;
+  padding: 8px 0 10px;
+  border: 0;
+  border-bottom: var(--border-width) solid transparent;
+  background: none;
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--c-text) 45%, transparent);
+  transition: color 0.35s ease, border-color 0.35s ease;
+}
+
+.lookbook__tab.is-active {
+  color: var(--c-heading);
+  border-bottom-color: var(--c-accent);
+}
+
+.lookbook__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 560px);
+  justify-content: center;
+  gap: clamp(1.5rem, 4vw, 3.25rem);
+  margin-top: clamp(1.25rem, 3vw, 2rem);
+}
+
+/* Wide enough for the list to sit beside the stage and stay with it. */
+@media (min-width: 61.25rem) {
+  .lookbook__grid {
+    grid-template-columns: minmax(0, 560px) minmax(280px, 380px);
+  }
+
+  .lookbook__list-inner {
+    position: sticky;
+    top: 86px;
+  }
+}
+
+/* Capped against the viewport height too, so a tall stage cannot push the
+   list off the screen. */
+.lookbook__main {
+  min-width: 0;
+  width: min(100%, 62vh);
+}
+
+.lookbook__stage {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+  background: var(--c-surface);
+  border: var(--border-width) solid color-mix(in srgb, var(--c-accent) 16%, transparent);
+}
+
+.lookbook__scene {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+.lookbook__scene[hidden] {
+  display: none;
+}
+
+.lookbook__scene img,
+.lookbook__scene video,
+.lookbook__scene svg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  background: var(--c-surface);
+}
+
+.lookbook__scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, #0D0C0A 34%, transparent) 0%,
+    transparent 26%,
+    transparent 58%,
+    color-mix(in srgb, #0D0C0A 50%, transparent) 100%
+  );
+}
+
+.lookbook__tag {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  z-index: 4;
+  font-size: 0.66rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--c-heading) 82%, transparent);
+  text-shadow: 0 1px 6px color-mix(in srgb, #0D0C0A 80%, transparent);
+  pointer-events: none;
+}
+
+/* ---- Lookbook points ------------------------------------------------ */
+
+.lookbook-pin {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  z-index: 5;
+  width: 44px;
+  height: 44px;
+  margin: -22px 0 0 -22px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  animation: gj-fade-in 0.5s ease both;
+}
+
+.lookbook-pin[hidden] {
+  display: none;
+}
+
+/* Off unless the section asks for it. */
+.lookbook-pin__ring {
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: var(--border-width) solid color-mix(in srgb, var(--c-heading) 70%, transparent);
+  pointer-events: none;
+  opacity: 0;
+}
+
+.lookbook[data-pulse] .lookbook-pin__ring {
+  opacity: 1;
+  animation: gj-look-pulse 2.8s ease-out infinite;
+}
+
+/* The ring is an idle invitation. A point that is chosen, or under the
+   cursor, has already been noticed. */
+.lookbook[data-pulse] .lookbook-pin.is-active .lookbook-pin__ring,
+.lookbook[data-pulse] .lookbook-pin:hover .lookbook-pin__ring {
+  opacity: 0;
+  animation: none;
+}
+
+@keyframes gj-look-pulse {
+  0%       { transform: scale(0.7); opacity: 0.75; }
+  70%,100% { transform: scale(1.9); opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lookbook-pin__ring {
+    animation: none !important;
+  }
+}
+
+.lookbook-pin__dot {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--c-heading) 96%, transparent);
+  box-shadow: 0 2px 12px color-mix(in srgb, #0D0C0A 60%, transparent);
+  /* The number only shows in the numbered and plus treatments. */
+  font-size: 0;
+  color: transparent;
+  display: grid;
+  place-items: center;
+  transition: width 0.35s ease, height 0.35s ease, background 0.35s ease;
+}
+
+.lookbook-pin.is-active .lookbook-pin__dot {
+  width: 16px;
+  height: 16px;
+  background: var(--c-accent);
+}
+
+/* Numbered and plus share a badge; only their glyph differs. */
+.lookbook[data-pin-style="number"] .lookbook-pin__dot,
+.lookbook[data-pin-style="plus"] .lookbook-pin__dot {
+  width: 28px;
+  height: 28px;
+  box-sizing: border-box;
+  border: var(--border-width) solid color-mix(in srgb, var(--c-heading) 72%, transparent);
+  background: color-mix(in srgb, #0D0C0A 50%, transparent);
+  color: var(--c-heading);
+  font-family: var(--font-body);
+  font-size: 0.69rem;
+  letter-spacing: 0.06em;
+  line-height: 1;
+  backdrop-filter: blur(4px);
+  transition: all 0.35s ease;
+}
+
+.lookbook[data-pin-style="plus"] .lookbook-pin__dot {
+  font-size: 0;
+}
+
+.lookbook[data-pin-style="plus"] .lookbook-pin__dot::before {
+  content: "+";
+  font-size: 0.81rem;
+}
+
+.lookbook[data-pin-style="number"] .lookbook-pin.is-active .lookbook-pin__dot,
+.lookbook[data-pin-style="plus"] .lookbook-pin.is-active .lookbook-pin__dot {
+  background: var(--c-accent);
+  border-color: var(--c-accent);
+  color: var(--c-bg);
+}
+
+/* ---- Lookbook card -------------------------------------------------- */
+
+.lookbook-card {
+  position: absolute;
+  z-index: 6;
+  left: 12px;
+  right: 12px;
+  bottom: 14px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px;
+  background: color-mix(in srgb, #F4F0E8 97%, transparent);
+  color: #191510;
+  box-shadow: 0 22px 50px -24px color-mix(in srgb, #000 80%, transparent);
+  animation: gj-look-card 0.42s var(--ease) both;
+}
+
+.lookbook-card[hidden] {
+  display: none;
+}
+
+@media (min-width: 61.25rem) {
+  .lookbook-card {
+    left: 14px;
+    right: auto;
+    width: 330px;
+  }
+}
+
+@keyframes gj-look-card {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.lookbook-card__top {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.lookbook-card__thumb {
+  flex: none;
+  width: 64px;
+  height: 64px;
+  overflow: hidden;
+  background: #FFFFFF;
+}
+
+.lookbook-card__thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.lookbook-card__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.lookbook-card__cat {
+  display: block;
+  font-size: 0.66rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #9A7836;
+}
+
+.lookbook-card__name {
+  display: block;
+  margin-top: 5px;
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  line-height: 1.15;
+}
+
+.lookbook-card__metal {
+  display: block;
+  margin-top: 5px;
+  font-size: 0.78rem;
+  letter-spacing: 0.05em;
+  color: color-mix(in srgb, #191510 60%, transparent);
+}
+
+.lookbook-card__close {
+  flex: none;
+  width: 30px;
+  height: 30px;
+  margin: -4px -4px 0 0;
+  border: 0;
+  background: none;
+  color: color-mix(in srgb, #191510 55%, transparent);
+  cursor: pointer;
+  font-size: 0.88rem;
+  line-height: 1;
+  transition: color var(--duration) var(--ease);
+}
+
+.lookbook-card__close:hover {
+  color: #191510;
+}
+
+.lookbook-card__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding-top: 12px;
+  border-top: var(--border-width) solid color-mix(in srgb, #191510 14%, transparent);
+}
+
+.lookbook-card__price {
+  font-size: 0.94rem;
+  letter-spacing: 0.06em;
+}
+
+.lookbook-card__actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.lookbook-card__details {
+  padding-bottom: 3px;
+  border-bottom: var(--border-width) solid color-mix(in srgb, #191510 30%, transparent);
+  color: color-mix(in srgb, #191510 72%, transparent);
+  font-size: 0.72rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: color var(--duration) var(--ease), border-color var(--duration) var(--ease);
+}
+
+.lookbook-card__details:hover {
+  color: #9A7836;
+  border-color: #9A7836;
+}
+
+.lookbook-card__add-form {
+  display: flex;
+}
+
+.lookbook-card__add {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: var(--border-width) solid #C7A15C;
+  border-radius: 999px;
+  background: #C7A15C;
+  color: #14110D;
+  cursor: pointer;
+  transition: background var(--duration) var(--ease),
+              border-color var(--duration) var(--ease),
+              color var(--duration) var(--ease);
+}
+
+.lookbook-card__add:hover {
+  background: #191510;
+  border-color: #191510;
+  color: #F4F0E8;
+}
+
+/* ---- Lookbook film controls ----------------------------------------- */
+
+.lookbook-film {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 6px;
+}
+
+.lookbook-film[hidden] {
+  display: none;
+}
+
+.lookbook-film__play {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  background: none;
+  color: color-mix(in srgb, var(--c-text) 80%, transparent);
+  cursor: pointer;
+  font-size: 0.81rem;
+  transition: color var(--duration) var(--ease);
+}
+
+.lookbook-film__play:hover {
+  color: var(--c-accent);
+}
+
+.lookbook-film__bar {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.lookbook-film__track,
+.lookbook-film__fill {
+  position: absolute;
+  height: 2px;
+}
+
+.lookbook-film__track {
+  left: 0;
+  right: 0;
+  background: color-mix(in srgb, var(--c-text) 16%, transparent);
+}
+
+.lookbook-film__fill {
+  left: 0;
+  width: 0%;
+  background: var(--c-accent);
+}
+
+.lookbook-film__marks span {
+  position: absolute;
+  top: 50%;
+  width: 1px;
+  height: 11px;
+  margin-top: -5.5px;
+  background: color-mix(in srgb, var(--c-text) 45%, transparent);
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.lookbook-film__time {
+  flex: none;
+  min-width: 72px;
+  text-align: right;
+  font-size: 0.69rem;
+  letter-spacing: 0.1em;
+  color: color-mix(in srgb, var(--c-text) 45%, transparent);
+  font-variant-numeric: tabular-nums;
+}
+
+.lookbook__hint {
+  margin-top: 12px;
+  max-width: min(100%, 420px);
+  font-size: 0.69rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--c-text) 40%, transparent);
+}
+
+/* ---- Lookbook list -------------------------------------------------- */
+
+.lookbook__list {
+  min-width: 0;
+}
+
+.lookbook__list-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 14px;
+  padding-bottom: 12px;
+}
+
+.lookbook__list-title {
+  font-size: 0.72rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #9A7836;
+}
+
+.lookbook__list-count {
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  color: color-mix(in srgb, var(--c-text) 40%, transparent);
+}
+
+.lookbook__rows[hidden] {
+  display: none;
+}
+
+.lookbook-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-top: var(--border-width) solid color-mix(in srgb, var(--c-text) 12%, transparent);
+  transition: background 0.35s ease;
+}
+
+.lookbook__rows > .lookbook-row:first-child {
+  border-top-color: color-mix(in srgb, var(--c-text) 22%, transparent);
+}
+
+.lookbook-row.is-active {
+  background: color-mix(in srgb, var(--c-accent) 7%, transparent);
+}
+
+.lookbook-row__main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+  text-align: start;
+  font-family: var(--font-body);
+}
+
+.lookbook-row__thumb {
+  flex: none;
+  width: 56px;
+  height: 56px;
+  overflow: hidden;
+  background: #FFFFFF;
+}
+
+.lookbook-row__thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.lookbook-row__body {
+  flex: 1;
+  min-width: 0;
+  display: block;
+}
+
+.lookbook-row__line {
+  display: flex;
+  align-items: baseline;
+  gap: 9px;
+  min-width: 0;
+}
+
+.lookbook-row__num {
+  flex: none;
+  font-size: 0.66rem;
+  letter-spacing: 0.14em;
+  color: color-mix(in srgb, var(--c-text) 35%, transparent);
+}
+
+.lookbook-row.is-active .lookbook-row__num {
+  color: var(--c-accent);
+}
+
+.lookbook-row__name {
+  flex: 1;
+  min-width: 0;
+  font-family: var(--font-display);
+  font-size: 1.09rem;
+  line-height: 1.2;
+  color: color-mix(in srgb, var(--c-text) 80%, transparent);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition: color 0.35s ease;
+}
+
+.lookbook-row.is-active .lookbook-row__name {
+  color: var(--c-heading);
+}
+
+.lookbook-row__meta {
+  display: block;
+  margin-top: 5px;
+  padding-inline-start: 24px;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  color: color-mix(in srgb, var(--c-text) 45%, transparent);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lookbook-row__add-form {
+  display: flex;
+}
+
+.lookbook-row__add {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: color-mix(in srgb, var(--c-text) 55%, transparent);
+  cursor: pointer;
+  line-height: 1;
+  transition: color var(--duration) var(--ease);
+}
+
+.lookbook-row__add:hover {
+  color: var(--c-accent);
+}
+
+.lookbook__list-foot {
+  padding-top: 18px;
+  border-top: var(--border-width) solid color-mix(in srgb, var(--c-text) 14%, transparent);
+}
+
+.lookbook__all {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 6px;
+  border-bottom: var(--border-width) solid color-mix(in srgb, var(--c-text) 28%, transparent);
+  color: color-mix(in srgb, var(--c-text) 72%, transparent);
+  font-size: 0.72rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: color 0.35s ease, border-color 0.35s ease;
+}
+
+.lookbook__all:hover {
+  color: var(--c-accent);
+  border-color: var(--c-accent);
+}
+
+/* ---- Promises grid --------------------------------------------------
+   Art-directed, not auto-fitting. The design gives five cards three
+   distinct arrangements, and the middle one exists purely to centre the
+   orphan row — a 6-column grid where each card spans 2, so the two cards
+   left over sit in columns 2–5 with a half-column of air either side.
+   `auto-fit` cannot express that, which is why this grid is spelled out.
+
+   Container queries rather than the design's media queries, so the section
+   stays right in a narrow column too. The thresholds are the design's 860px
+   and 1240px viewports converted to the width this grid actually gets
+   inside .page-width's gutters.                                          */
+
+.promises {
+  container-type: inline-size;
+}
+
+.promises__grid {
+  display: grid;
+  gap: var(--grid-gap);
+  grid-template-columns: repeat(2, 1fr);
+}
+
+/* An odd number of cards leaves the last one alone: give it the full row
+   rather than half of one. */
+.promises__grid > :last-child:nth-child(odd) {
+  grid-column: span 2;
+}
+
+@container (min-width: 50rem) {
+  .promises__grid {
+    grid-template-columns: repeat(6, 1fr);
+  }
+
+  .promises__grid > * {
+    grid-column: span 2;
+  }
+
+  /* Only when there are exactly five. With six there is no orphan row, and
+     shifting the fourth card would open a hole instead of closing one. */
+  .promises__grid:has(> :nth-child(5):last-child) > :nth-child(4) {
+    grid-column: 2 / span 2;
+  }
+}
+
+@container (min-width: 72.5rem) {
+  .promises__grid {
+    grid-template-columns: repeat(5, 1fr);
+  }
+
+  .promises__grid > *,
+  .promises__grid > :last-child:nth-child(odd),
+  .promises__grid:has(> :nth-child(5):last-child) > :nth-child(4) {
+    grid-column: span 1;
+  }
+}
+
+/* ---- Promise card ---------------------------------------------------
+   The design's own metrics. Held in properties rather than inlined so the
+   default is exact and each one is still a single edit.                  */
+
+.promise-card {
+  --promise-pad-top: clamp(1.38rem, 2.4vw, 1.88rem);
+  --promise-pad-x: clamp(1.13rem, 2.2vw, 1.75rem);
+  --promise-pad-bottom: clamp(1.63rem, 2.8vw, 2.13rem);
+  --promise-emblem: clamp(2.88rem, 4vw, 3.38rem);
+  --promise-rule-gap: clamp(1rem, 1.8vw, 1.38rem);
+
+  position: relative;
+  overflow: hidden;
+  background: var(--c-surface);
+  border: var(--border-width) solid color-mix(in srgb, var(--c-text) 8%, transparent);
+  padding: var(--promise-pad-top) var(--promise-pad-x) var(--promise-pad-bottom);
+  line-height: normal;
+  transition: border-color 0.5s ease,
+              transform 0.55s var(--ease),
+              box-shadow 0.5s ease;
+}
+
+.promise-card:hover {
+  border-color: color-mix(in srgb, var(--c-accent) 42%, transparent);
+  transform: translateY(-4px);
+  box-shadow: 0 22px 44px -32px color-mix(in srgb, var(--c-text) 55%, transparent);
+}
+
+.promise-card__top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.promise-card__emblem {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: var(--promise-emblem);
+  height: var(--promise-emblem);
+  border: var(--border-width) solid color-mix(in srgb, var(--c-accent) 26%, transparent);
+  background: color-mix(in srgb, var(--c-accent) 4%, var(--c-surface));
+  color: var(--c-accent);
+  transition: border-color 0.5s ease, background 0.5s ease;
+}
+
+.promise-card:hover .promise-card__emblem {
+  border-color: color-mix(in srgb, var(--c-accent) 60%, transparent);
+  background: color-mix(in srgb, var(--c-accent) 9%, var(--c-surface));
+}
+
+.promise-card__num {
+  font-size: 0.69rem;
+  letter-spacing: 0.2em;
+  color: color-mix(in srgb, var(--c-accent) 50%, transparent);
+  transition: color 0.5s ease;
+}
+
+.promise-card:hover .promise-card__num {
+  color: color-mix(in srgb, var(--c-accent) 90%, transparent);
+}
+
+.promise-card__rule {
+  display: block;
+  height: var(--border-width);
+  width: 28px;
+  background: color-mix(in srgb, var(--c-accent) 55%, transparent);
+  margin: var(--promise-rule-gap) 0 14px;
+  transition: width 0.7s var(--ease);
+}
+
+.promise-card:hover .promise-card__rule {
+  width: 100%;
+}
+
+.promise-card__title {
+  font-family: var(--font-display);
+  font-size: clamp(1.05rem, 1.75vw, 1.35rem);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  line-height: 1.3;
+  color: var(--c-heading);
+}
+
+.promise-card__text {
+  margin-top: 10px;
+  font-size: 0.88rem;
+  line-height: 1.75;
+  color: color-mix(in srgb, var(--c-text) 58%, transparent);
+  text-wrap: pretty;
+}
+
+.promise-card__corner {
+  position: absolute;
+  right: 11px;
+  bottom: 11px;
+  width: 13px;
+  height: 13px;
+  border-right: var(--border-width) solid color-mix(in srgb, var(--c-accent) 60%, transparent);
+  border-bottom: var(--border-width) solid color-mix(in srgb, var(--c-accent) 60%, transparent);
+  opacity: 0.3;
+  transition: opacity 0.5s ease;
+  pointer-events: none;
+}
+
+.promise-card:hover .promise-card__corner {
+  opacity: 1;
+}
+
+/* ---- Specification rows ------------------------------------------ */
+
+.spec-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
+  align-items: baseline;
+  gap: 0.3em var(--space-md);
+  padding-block: var(--space-2xs);
+  border-top: var(--border-width) solid var(--c-hairline);
+}
+
+.spec-row:last-child {
+  border-bottom: var(--border-width) solid var(--c-hairline);
+}
+
+.spec-row__label {
+  font-size: var(--micro-size);
+  letter-spacing: calc(var(--micro-tracking) * 0.82);
+  text-transform: uppercase;
+  color: var(--c-muted);
+}
+
+.spec-row__value {
+  font-family: var(--font-display);
+  font-size: var(--fs-md);
+  color: var(--c-heading);
+  overflow-wrap: anywhere;
+}
+
+.spec-row__value a {
+  color: inherit;
+  text-decoration: none;
+  border-bottom: var(--border-width) solid color-mix(in srgb, var(--c-text) 25%, transparent);
+}
+
+/* ---- Testimonials ------------------------------------------------ */
+
+.quotes {
+  position: relative;
+  display: grid;
+}
+
+.quote {
+  grid-area: 1 / 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--space-sm);
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity calc(var(--duration) * 2) var(--ease),
+              transform calc(var(--duration) * 2) var(--ease);
+  pointer-events: none;
+}
+
+.quote.is-active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.quote__text {
+  font-family: var(--font-display);
+  font-size: var(--fs-2xl);
+  line-height: 1.4;
+  color: var(--c-heading);
+  text-wrap: pretty;
+}
+
+.quote__author {
+  font-size: var(--micro-size);
+  letter-spacing: calc(var(--micro-tracking) * 0.9);
+  text-transform: uppercase;
+  color: var(--c-muted);
+}
+
+.quote-dots {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-3xs);
+  margin-top: var(--space-sm);
+}
+
+.quote-dots button {
+  height: 2px;
+  width: var(--space-sm);
+  padding: 0;
+  border: none;
+  background: color-mix(in srgb, var(--c-text) 25%, transparent);
+  cursor: pointer;
+  transition: width var(--duration) var(--ease), background var(--duration) var(--ease);
+}
+
+.quote-dots button[aria-selected="true"] {
+  width: var(--space-xl);
+  background: var(--c-accent);
+}
+
+/* ---- Navigation --------------------------------------------------
+   One element in two states. The bar is at rest; .nav--pill transitions
+   width, height, offset, radius and padding into the centred pill, so the
+   morph the design describes actually animates instead of swapping nodes.
+
+   The nav is its own query container, which means the pill automatically
+   gets the compact treatment — at 264px wide the label rules simply stop
+   matching. No separate pill-only overrides needed.                      */
+
+/* The nav is centred in BOTH states and only its width changes.
+
+   This is the whole trick, and getting it wrong is what makes the morph
+   look broken: if the bar were `left: 0; right: 0` and the pill
+   `left: 50%; transform: translateX(-50%)`, then flipping the class would
+   move all three of those properties. None of them is in the transition
+   list, and `right: auto` cannot be interpolated at any rate — so the nav
+   would snap to the left edge in one frame and only then stretch.
+
+   Holding left, right and transform constant means the expansion is the
+   width transition alone, growing symmetrically from the centre. */
+.nav {
+  container-type: inline-size;
+  position: fixed;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  z-index: 120;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3xs);
+  height: 4.125rem;
+  padding: 0 clamp(1rem, 4vw, 2.5rem);
+  background-color: color-mix(in srgb, var(--c-bg) 88%, transparent);
+  backdrop-filter: blur(14px);
+  border: var(--border-width) solid transparent;
+  border-bottom-color: color-mix(in srgb, var(--c-accent) 18%, transparent);
+  color: var(--c-text);
+  transition:
+    background-color 0.4s ease,
+    border-color 0.4s ease,
+    color 0.35s ease,
+    width 0.5s var(--ease),
+    top 0.5s var(--ease),
+    height 0.5s var(--ease),
+    padding 0.5s var(--ease),
+    border-radius 0.5s var(--ease);
+}
+
+/* Transparent while the hero is still under it — and with no blur, or it
+   would frost the hero it is supposed to be invisible over. */
+.nav--overlay:not(.is-solid):not(.nav--pill) {
+  background-color: transparent;
+  border-bottom-color: transparent;
+  backdrop-filter: none;
+}
+
+/* The cap lives inside width rather than in a separate max-width. The design
+   pairs a 264px width with max-width:min(94vw,760px), but 264px is under
+   760px at every viewport, so the only thing that guard ever does is stop the
+   pill exceeding 94vw on a very narrow screen — which min() says directly.
+
+   Keeping it out of max-width matters: max-width would have to animate too
+   (or it clamps the bar to the pill's cap the instant the class flips, and
+   the bar snaps inward before it collapses), and a second animated length
+   fighting the first is what left the pill stuck at 18px. One property
+   drives the morph. */
+.nav--pill {
+  top: 0.875rem;
+  width: min(16.5rem, 94vw);
+  height: 3.25rem;
+  padding: 0.3125rem 0.5rem;
+  border-radius: 999px;
+  border-color: color-mix(in srgb, var(--c-accent) 18%, transparent);
+  background-color: color-mix(in srgb, var(--c-surface) 68%, transparent);
+}
+
+.nav-spacer {
+  height: 4.125rem;
+}
+
+.nav__menu-button {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 0.75em;
+  padding: var(--space-3xs) 0.6rem;
+  border: 0;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: var(--micro-size);
+  letter-spacing: calc(var(--micro-tracking) * 0.77);
+  text-transform: uppercase;
+  transition: opacity var(--duration) var(--ease);
+}
+
+.nav__menu-button:hover {
+  opacity: 0.7;
+}
+
+/* Two rules of unequal length — the short one picks up the gold. */
+.nav__bars {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.nav__bars span {
+  display: block;
+  height: 1px;
+  background: currentColor;
+  transition: width var(--duration) var(--ease);
+}
+
+.nav__bars span:first-child { width: 24px; }
+.nav__bars span:last-child  { width: 15px; background: var(--c-accent); }
+
+.nav__logo {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  color: inherit;
+  white-space: nowrap;
+  opacity: 1;
+  visibility: visible;
+  /* Fading in as the bar opens out. */
+  transition: opacity 0.45s ease, visibility 0s;
+}
+
+.nav__actions {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.nav__action {
+  display: flex;
+  align-items: center;
+  gap: 0.45em;
+  padding: var(--space-3xs) 0.6rem;
+  border: 0;
+  background: none;
+  color: inherit;
+  text-decoration: none;
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: var(--micro-size);
+  letter-spacing: calc(var(--micro-tracking) * 0.77);
+  text-transform: uppercase;
+  transition: opacity var(--duration) var(--ease);
+}
+
+.nav__action:hover {
+  opacity: 0.7;
+}
+
+.nav__count {
+  margin-inline-start: -0.15em;
+  color: var(--c-accent);
+  font-size: var(--micro-size);
+  letter-spacing: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Compact by default: icons, no labels, no Contact. */
+.nav__action-label,
+.nav__action--contact {
+  display: none;
+}
+
+@container (min-width: 62.5rem) {
+  /* Room for the full treatment — labels replace icons and the logo centres. */
+  .nav__action-label { display: inline; }
+  .nav__action svg { display: none; }
+  .nav__action--contact { display: flex; }
+
+  .nav__logo {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+  }
+}
+
+/* These two drop out on a small screen, not in a narrow nav — the design
+   keeps "Menu" beside the rules even in the 264px pill, so asking the
+   container would wrongly strip it there. The label and logo rules above
+   are the opposite case: the pill genuinely wants that icon treatment, and
+   it gets it for free by simply not matching the container query. */
+@media (max-width: 35rem) {
+  .nav__menu-label { display: none; }
+}
+
+@media (max-width: 23.75rem) {
+  .nav__action--account { display: none; }
+}
+
+/* The pill is too narrow for the wordmark, but it cannot be display:none —
+   that cannot be animated, so the letters would pop in and out instead of
+   crossing over with the width. Taken out of flow so the pill still closes
+   to its 264px, and faded on the design's own asymmetric timings: out fast
+   as the bar collapses, in gently as it opens. */
+.nav--pill .nav__logo {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.07s linear, visibility 0s linear 0.08s;
+}
+
+/* ---- Wordmark lockup --------------------------------------------- */
+
+.lockup {
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--font-display);
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.lockup__letter {
+  letter-spacing: var(--lockup-tracking);
+}
+
+/* The emblem stands in for a letter, so the letter before it keeps its
+   tracking while the run after it must not push a trailing gap. */
+.lockup__letter:last-child {
+  margin-inline-end: calc(var(--lockup-tracking) * -1);
+}
+
+.lockup__mark {
+  flex: 0 0 auto;
+  aspect-ratio: 139 / 154;
+  width: auto;
+  height: var(--lockup-mark);
+  margin-inline: 1px 7px;
+  transform: translateY(-4%);
+}
+
+.lockup--sm {
+  --lockup-tracking: clamp(0.14em, 1.2vw, 0.28em);
+  --lockup-mark: clamp(1.25rem, 5vw, 1.7rem);
+  font-size: clamp(1.06rem, 4.6vw, 1.44rem);
+}
+
+.lockup--md {
+  --lockup-tracking: 0.2em;
+  --lockup-mark: clamp(1.4rem, 3.4vw, 2.2rem);
+  font-size: clamp(1.25rem, 3.2vw, 2rem);
+}
+
+.lockup--lg {
+  --lockup-tracking: 0.2em;
+  --lockup-mark: clamp(1.4rem, 3.4vw, 2.5rem);
+  font-size: clamp(1.25rem, 3.2vw, 2.25rem);
+}
+
+/* ---- Full-screen overlays: shared -------------------------------- */
+
+/* The menu and search share a head. Both surfaces are noir regardless of the
+   merchant's schemes, because in the design they are one dark room the whole
+   site drops into. */
+.overlay-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  padding: var(--space-sm) clamp(1.25rem, 5vw, 4rem);
+  animation: gj-fade-in 0.5s ease 0.05s both;
+}
+
+.overlay-head__logo {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  color: #EFE9DC;
+}
+
+.overlay-head__close {
+  flex: none;
+  border: var(--border-width) solid color-mix(in srgb, #EFE9DC 28%, transparent);
+  border-radius: 999px;
+  background: none;
+  color: #EFE9DC;
+  cursor: pointer;
+  padding: 0.56rem 1.13rem;
+  font-family: var(--font-body);
+  font-size: var(--micro-size);
+  letter-spacing: calc(var(--micro-tracking) * 0.77);
+  text-transform: uppercase;
+  transition: background var(--duration) var(--ease);
+}
+
+.overlay-head__close:hover {
+  background: color-mix(in srgb, var(--c-ivory) 10%, transparent);
+}
+
+/* These two are noir whatever scheme the page is in, so they carry their own
+   ivory and their own gold. Inheriting --c-accent from the page would drop the
+   light-background gold onto a near-black surface, which is the wrong cut. */
+.nav-menu,
+.search-overlay {
+  --c-ivory: #EFE9DC;
+  --c-accent: #C7A15C;
+}
+
+@keyframes gj-row-in {
+  from { opacity: 0; transform: translateY(26px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes gj-row-out {
+  from { opacity: 1; transform: translateY(0); }
+  to   { opacity: 0; transform: translateY(26px); }
+}
+
+/* ---- Menu overlay -------------------------------------------------
+   The close is not the open played backwards. Rows enter top-down and
+   leave bottom-up, and the backdrop only fades once the last row has
+   gone — so the overlay empties before it disappears.
+
+   Both directions are derived from --row (this element's rank) and
+   --rows (how many ranks there are), which the Liquid emits. Nothing
+   here assumes a particular number of menu items.                     */
+
+.nav-menu {
+  /* Cascade timing. --menu-span is when the last row has finished leaving. */
+  --menu-step: 60ms;
+  --menu-lead: 50ms;
+  --menu-span: calc((var(--rows, 8) - 1) * var(--menu-step) + var(--menu-lead) + var(--menu-step));
+
+  position: fixed;
+  inset: 0;
+  z-index: 250;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  background: color-mix(in srgb, #0B0A08 97%, transparent);
+  backdrop-filter: blur(18px);
+  color: #EFE9DC;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  animation: gj-fade-in 0.35s ease both;
+}
+
+.nav-menu[hidden] {
+  display: none;
+}
+
+.nav-menu.is-closing {
+  animation: gj-fade-out 0.4s ease calc(var(--menu-span) + 50ms) both;
+}
+
+.nav-menu.is-closing .overlay-head {
+  animation: gj-fade-out 0.5s ease 0.3s both;
+}
+
+/* Every ranked element in the overlay rides the same two delays. */
+.nav-menu__item,
+.nav-menu__categories,
+.nav-menu__foot {
+  --in-delay: calc(var(--row, 0) * var(--menu-step) + var(--menu-lead));
+  --out-delay: calc(var(--menu-span) - var(--row, 0) * var(--menu-step) - var(--menu-lead));
+  animation: gj-row-in 0.6s var(--ease) var(--in-delay) both;
+}
+
+.nav-menu.is-closing .nav-menu__item,
+.nav-menu.is-closing .nav-menu__categories,
+.nav-menu.is-closing .nav-menu__foot {
+  animation: gj-row-out 0.6s cubic-bezier(0.64, 0, 0.78, 0) var(--out-delay) both;
+}
+
+.nav-menu__body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(0.75rem, 2.6vh, 1.6rem);
+  padding: clamp(1rem, 4vh, 2rem) clamp(1.25rem, 5vw, 4rem);
+}
+
+.nav-menu__list {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: clamp(0.6rem, 2.2vh, 1.25rem);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.nav-menu__link {
+  display: block;
+  font-family: var(--font-display);
+  font-size: clamp(2.4rem, min(7.2vw, 7.4vh), 4.9rem);
+  line-height: 1.14;
+  color: #EFE9DC;
+  text-decoration: none;
+  transition: color var(--duration) var(--ease);
+}
+
+.nav-menu__link:hover,
+.nav-menu__link:focus-visible {
+  color: var(--c-accent);
+}
+
+.nav-menu__num {
+  display: inline-block;
+  width: clamp(1.6rem, 3vw, 2.5rem);
+  font-family: var(--font-body);
+  font-size: var(--micro-size);
+  letter-spacing: 0.2em;
+  color: var(--c-accent);
+  vertical-align: 0.9em;
+}
+
+.nav-menu__aside {
+  margin-inline-start: 1.1rem;
+  font-family: var(--font-body);
+  font-size: var(--micro-size);
+  letter-spacing: calc(var(--micro-tracking) * 0.77);
+  color: var(--c-accent);
+  vertical-align: 0.55em;
+}
+
+.nav-menu__categories {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.6rem 1.6rem;
+  margin-top: clamp(0.75rem, 2.6vh, 1.6rem);
+}
+
+.nav-menu__category {
+  font-size: var(--micro-size);
+  letter-spacing: calc(var(--micro-tracking) * 0.82);
+  text-transform: uppercase;
+  color: color-mix(in srgb, #EFE9DC 60%, transparent);
+  text-decoration: none;
+  transition: color var(--duration) var(--ease);
+}
+
+.nav-menu__category:hover {
+  color: var(--c-accent);
+}
+
+.nav-menu__foot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0 clamp(1.25rem, 5vw, 4rem) var(--space-md);
+  text-align: center;
+}
+
+.nav-menu__social {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.6rem 2rem;
+}
+
+.nav-menu__social a,
+.nav-menu__address {
+  font-size: var(--micro-size);
+  letter-spacing: calc(var(--micro-tracking) * 0.73);
+  text-transform: uppercase;
+  color: color-mix(in srgb, #EFE9DC 55%, transparent);
+  text-decoration: none;
+}
+
+.nav-menu__social a:hover,
+a.nav-menu__address:hover {
+  color: var(--c-accent);
+}
+
+/* ---- Search overlay -----------------------------------------------
+   Shares the menu's noir room and its head. Unlike the menu it closes as
+   one piece, which is what the design does — there is no list to empty.
+
+   It is its own query container so the keyboard hint drops out on a
+   narrow screen without consulting the viewport.                       */
+
+.search-overlay {
+  container-type: inline-size;
+  position: fixed;
+  inset: 0;
+  z-index: 252;
+  display: flex;
+  flex-direction: column;
+  background: color-mix(in srgb, #0B0A08 97%, transparent);
+  backdrop-filter: blur(18px);
+  color: var(--c-ivory);
+  overscroll-behavior: contain;
+  animation: gj-fade-in 0.3s ease both;
+}
+
+.search-overlay[hidden] {
+  display: none;
+}
+
+.search-overlay.is-closing {
+  animation: gj-fade-out 0.35s ease both;
+}
+
+.search-overlay.is-closing .overlay-head,
+.search-overlay.is-closing .search-overlay__top,
+.search-overlay.is-closing .search-overlay__results {
+  animation: gj-fade-out 0.3s ease both;
+}
+
+.search-overlay__body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-inline: clamp(1.25rem, 5vw, 4rem);
+}
+
+.search-overlay__inner {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 53.75rem;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.search-overlay__top {
+  flex: none;
+  padding-top: clamp(1.63rem, 7vh, 4.5rem);
+  animation: gj-row-in 0.55s var(--ease) 0.08s both;
+}
+
+.search-overlay__field {
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  padding: 0 0 1rem;
+  border: 0;
+  border-bottom: var(--border-width) solid color-mix(in srgb, var(--c-accent) 35%, transparent);
+  border-radius: 0;
+  background: none;
+  outline: none;
+  font-family: var(--font-display);
+  font-size: clamp(1.9rem, 5vw, 3.2rem);
+  line-height: 1.15;
+  color: var(--c-ivory);
+  caret-color: var(--c-accent);
+  transition: border-color var(--duration) var(--ease);
+}
+
+.search-overlay__field:focus {
+  border-bottom-color: color-mix(in srgb, var(--c-accent) 70%, transparent);
+}
+
+.search-overlay__field::placeholder {
+  color: color-mix(in srgb, var(--c-ivory) 26%, transparent);
+  letter-spacing: 0.08em;
+}
+
+/* Chrome draws its own clear affordance, which does not belong on this. */
+.search-overlay__field::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.search-overlay__meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.63rem 1.13rem;
+  margin-top: 0.88rem;
+}
+
+.search-overlay__popular {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+}
+
+.search-overlay__popular-label,
+.search-overlay__count {
+  font-size: var(--micro-size);
+  letter-spacing: calc(var(--micro-tracking) * 0.82);
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--c-ivory) 38%, transparent);
+}
+
+.search-overlay__term {
+  padding: 0 0 0.19rem;
+  border: 0;
+  border-bottom: var(--border-width) solid color-mix(in srgb, var(--c-accent) 35%, transparent);
+  background: none;
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: var(--micro-size);
+  letter-spacing: calc(var(--micro-tracking) * 0.64);
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--c-ivory) 62%, transparent);
+  transition: color var(--duration) var(--ease);
+}
+
+.search-overlay__term:hover {
+  color: var(--c-accent);
+}
+
+.search-overlay__hint {
+  margin-inline-start: auto;
+  font-size: var(--micro-size);
+  letter-spacing: calc(var(--micro-tracking) * 0.55);
+  color: color-mix(in srgb, var(--c-ivory) 32%, transparent);
+}
+
+@container (max-width: 35rem) {
+  .search-overlay__hint {
+    display: none;
+  }
+}
+
+.search-overlay__results {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  margin-top: clamp(1rem, 3vh, 1.63rem);
+  padding-bottom: var(--space-xl);
+  animation: gj-row-in 0.55s var(--ease) 0.16s both;
+}
+
+.search-group {
+  margin-bottom: var(--space-md);
+}
+
+.search-group__label {
+  padding: 0 0.88rem 0.63rem;
+  border-bottom: var(--border-width) solid color-mix(in srgb, var(--c-ivory) 8%, transparent);
+  font-size: var(--micro-size);
+  letter-spacing: var(--micro-tracking);
+  text-transform: uppercase;
+  color: var(--c-accent);
+}
+
+.search-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.63rem 0.88rem;
+  border-bottom: var(--border-width) solid color-mix(in srgb, var(--c-ivory) 5%, transparent);
+  color: var(--c-ivory);
+  text-decoration: none;
+  transition: background 0.18s ease;
+}
+
+.search-row:hover,
+.search-row.is-selected {
+  background: color-mix(in srgb, var(--c-ivory) 7%, transparent);
+}
+
+.search-row__thumb {
+  flex: none;
+  width: 3.25rem;
+  height: 3.25rem;
+  object-fit: cover;
+  background: color-mix(in srgb, var(--c-ivory) 8%, transparent);
+}
+
+.search-row__glyph {
+  flex: none;
+  box-sizing: border-box;
+  width: 3.25rem;
+  height: 3.25rem;
+  display: grid;
+  place-items: center;
+  border: var(--border-width) solid color-mix(in srgb, var(--c-accent) 25%, transparent);
+}
+
+.search-row__glyph > span {
+  width: 0.44rem;
+  height: 0.44rem;
+  border: var(--border-width) solid var(--c-accent);
+  transform: rotate(45deg);
+}
+
+.search-row__title {
+  flex: 1;
+  min-width: 0;
+  font-family: var(--font-display);
+  font-size: clamp(1.06rem, 2.2vw, 1.31rem);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* What the highlight filter marks up as matched. */
+.search-row__title strong {
+  font-weight: inherit;
+  color: var(--c-accent);
+}
+
+.search-row__meta {
+  flex: none;
+  font-size: var(--micro-size);
+  letter-spacing: calc(var(--micro-tracking) * 0.73);
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--c-ivory) 45%, transparent);
+}
+
+.search-all {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.06rem 0.88rem;
+  border-top: var(--border-width) solid color-mix(in srgb, var(--c-accent) 22%, transparent);
+  color: var(--c-accent);
+  text-decoration: none;
+  font-size: var(--micro-size);
+  letter-spacing: calc(var(--micro-tracking) * 0.9);
+  text-transform: uppercase;
+  transition: background 0.18s ease;
+}
+
+.search-all:hover,
+.search-all.is-selected {
+  background: color-mix(in srgb, var(--c-accent) 8%, transparent);
+}
+
+.search-empty {
+  padding: var(--space-lg) 0.88rem;
+}
+
+.search-empty__title {
+  font-family: var(--font-display);
+  font-size: clamp(1.25rem, 3vw, 1.63rem);
+  color: var(--c-ivory);
+}
+
+.search-empty__text {
+  margin-top: 0.63rem;
+  font-size: var(--fs-sm);
+  color: color-mix(in srgb, var(--c-ivory) 50%, transparent);
+}
+
+.search-empty__link {
+  display: inline-block;
+  margin-top: var(--space-sm);
+  padding-bottom: 0.25rem;
+  border-bottom: var(--border-width) solid color-mix(in srgb, var(--c-accent) 40%, transparent);
+  font-size: var(--micro-size);
+  letter-spacing: calc(var(--micro-tracking) * 0.82);
+  text-transform: uppercase;
+  color: var(--c-accent);
+  text-decoration: none;
+}
+
+/* ---- Bag drawer ---------------------------------------------------- */
+
+.drawer {
+  position: fixed;
+  inset: 0;
+  z-index: 245;
+}
+
+.drawer[hidden] {
+  display: none;
+}
+
+.drawer .overlay__veil {
+  background: color-mix(in srgb, #0B0A08 45%, transparent);
+  animation: gj-fade-in 0.45s ease both;
+}
+
+.drawer.is-closing .overlay__veil {
+  animation: gj-fade-out 0.35s ease both;
+}
+
+.drawer__panel {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: min(92vw, 26.88rem);
+  display: flex;
+  flex-direction: column;
+  background: var(--c-surface);
+  border-inline-start: var(--border-width) solid var(--c-hairline);
+  box-shadow: -24px 0 60px var(--c-shadow);
+  animation: gj-drawer-in 0.55s var(--ease) both;
+}
+
+.drawer.is-closing .drawer__panel {
+  animation: gj-drawer-out 0.4s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+/* 103% rather than 100%: the panel's shadow has to clear the edge too. */
+@keyframes gj-drawer-in {
+  from { transform: translateX(103%); }
+  to   { transform: translateX(0); }
+}
+
+@keyframes gj-drawer-out {
+  from { transform: translateX(0); }
+  to   { transform: translateX(103%); }
+}
+
+.drawer__inner {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.drawer__head {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.88rem;
+  padding: var(--space-sm) clamp(1.25rem, 5vw, 1.88rem);
+  border-bottom: var(--border-width) solid var(--c-hairline);
+}
+
+.drawer__title {
+  font-family: var(--font-display);
+  font-size: var(--fs-xl);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--c-heading);
+}
+
+.drawer__count {
+  margin-inline-start: 0.5em;
+  font-family: var(--font-body);
+  font-size: var(--micro-size);
+  letter-spacing: calc(var(--micro-tracking) * 0.77);
+  color: var(--c-muted);
+  vertical-align: 0.15em;
+}
+
+/* The close pill is shared with the dark overlays, so it needs the light
+   treatment here. */
+.drawer__close {
+  border-color: color-mix(in srgb, var(--c-text) 30%, transparent);
+  color: var(--c-text);
+}
+
+.drawer__close:hover {
+  background: var(--c-text);
+  border-color: var(--c-text);
+  color: var(--c-bg);
+}
+
+.drawer__body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-inline: clamp(1.25rem, 5vw, 1.88rem);
+}
+
+.drawer-lines {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Removal collapses the row before the line is dropped, so the list closes
+   the gap instead of jumping. 1fr to 0fr is animatable; height is not. */
+.drawer-row__collapse {
+  display: grid;
+  grid-template-rows: 1fr;
+  transition: grid-template-rows 0.36s cubic-bezier(0.33, 0, 0.15, 1) 0.1s;
+}
+
+.drawer-row[data-leaving] .drawer-row__collapse {
+  grid-template-rows: 0fr;
+}
+
+.drawer-row__clip {
+  overflow: hidden;
+  min-height: 0;
+}
+
+.drawer-row__body {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding-block: var(--space-xs);
+  border-bottom: var(--border-width) solid var(--c-hairline);
+  transition: opacity 0.2s ease,
+              transform 0.3s cubic-bezier(0.33, 0, 0.15, 1),
+              filter 0.24s ease;
+}
+
+.drawer-row[data-leaving] .drawer-row__body {
+  opacity: 0;
+  transform: translateX(16px);
+  filter: blur(3px);
+}
+
+.drawer-row__thumb {
+  flex: none;
+  width: 4rem;
+  height: 4rem;
+  overflow: hidden;
+  border: var(--border-width) solid var(--c-hairline);
+  background: var(--c-surface);
+}
+
+.drawer-row__thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.drawer-row__info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.drawer-row__name {
+  font-family: var(--font-display);
+  font-size: var(--fs-md);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  line-height: 1.3;
+  color: var(--c-heading);
+  text-decoration: none;
+}
+
+.drawer-row__name:hover {
+  color: var(--c-accent);
+}
+
+.drawer-row__meta {
+  font-size: var(--micro-size);
+  letter-spacing: calc(var(--micro-tracking) * 0.64);
+  text-transform: uppercase;
+  color: var(--c-muted);
+}
+
+.drawer-qty {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.38rem;
+}
+
+.drawer-qty__btn {
+  width: 1.5rem;
+  height: 1.5rem;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  border: var(--border-width) solid color-mix(in srgb, var(--c-text) 35%, transparent);
+  border-radius: 50%;
+  background: none;
+  color: var(--c-text);
+  cursor: pointer;
+  font-size: 0.9rem;
+  line-height: 1;
+  transition: background var(--duration) var(--ease),
+              color var(--duration) var(--ease),
+              border-color var(--duration) var(--ease);
+}
+
+.drawer-qty__btn:hover {
+  background: var(--c-text);
+  border-color: var(--c-text);
+  color: var(--c-bg);
+}
+
+.drawer-qty__value {
+  min-width: 0.88rem;
+  text-align: center;
+  font-size: var(--fs-sm);
+  color: var(--c-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.drawer-row__aside {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.63rem;
+}
+
+.drawer-row__price {
+  font-size: var(--fs-sm);
+  letter-spacing: 0.06em;
+  color: var(--c-text);
+}
+
+.drawer-row__remove {
+  padding: 0.44rem 0.88rem;
+  border: var(--border-width) solid color-mix(in srgb, var(--c-error) 40%, transparent);
+  border-radius: 999px;
+  background: none;
+  color: var(--c-error);
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: var(--micro-size);
+  letter-spacing: calc(var(--micro-tracking) * 0.64);
+  text-transform: uppercase;
+  transition: background var(--duration) var(--ease),
+              color var(--duration) var(--ease),
+              border-color var(--duration) var(--ease);
+}
+
+.drawer-row__remove:hover {
+  background: var(--c-error);
+  border-color: var(--c-error);
+  color: var(--c-bg);
+}
+
+.drawer-empty {
+  padding-block: var(--space-2xl);
+  text-align: center;
+}
+
+.drawer-empty__title {
+  font-family: var(--font-display);
+  font-size: var(--fs-2xl);
+  color: var(--c-heading);
+}
+
+.drawer-empty__text {
+  margin: 0.75rem auto var(--space-md);
+  max-width: 17.5rem;
+  font-size: var(--fs-sm);
+  line-height: 1.8;
+  color: var(--c-muted);
+}
+
+.drawer__foot {
+  flex: none;
+  padding: var(--space-sm) clamp(1.25rem, 5vw, 1.88rem) var(--space-md);
+  border-top: var(--border-width) solid var(--c-hairline);
+  background: var(--c-bg);
+}
+
+.drawer__subtotal {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.88rem;
+}
+
+.drawer__subtotal-label {
+  font-size: var(--micro-size);
+  letter-spacing: calc(var(--micro-tracking) * 0.82);
+  text-transform: uppercase;
+  color: var(--c-muted);
+}
+
+.drawer__subtotal-value {
+  font-size: var(--fs-md);
+  letter-spacing: 0.08em;
+  color: var(--c-text);
+}
+
+.drawer__note {
+  margin: 0.63rem 0 var(--space-xs);
+  font-size: var(--fs-sm);
+  line-height: 1.7;
+  color: var(--c-muted);
+  text-wrap: pretty;
+}
+
+.drawer__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.63rem;
+}
+
+.drawer__checkout {
+  flex: 1 1 10rem;
+}
+
+.drawer__secondary {
+  flex: 0 0 auto;
+}
+
+/* ---- Announcement bar -------------------------------------------- */
+
+.announcement {
+  padding-block: var(--space-3xs);
+  text-align: center;
+  font-size: var(--micro-size);
+  letter-spacing: calc(var(--micro-tracking) * 0.6);
+  text-transform: uppercase;
+}
+
+.announcement a {
+  color: inherit;
+}
+
+/* ---- Footer ------------------------------------------------------ */
+
+/* The footer's own metrics are the design's, held here rather than taken
+   from the spacing scale — the design keeps them fixed rather than easing
+   them down on a phone. */
+.footer {
+  line-height: normal;
+}
+
+/* The social row and the copyright row sit outside the column block, so they
+   need the footer's own width to query. */
+.footer .page-width {
+  container-type: inline-size;
+}
+
+.footer__social {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 22px;
+  padding-bottom: 22px;
+}
+
+@container (max-width: 36.85rem) {
+  .footer__social {
+    padding-bottom: 24px;
+  }
+}
+
+.footer__wordmark {
+  padding: clamp(0.63rem, 1.4vw, 1.63rem) 4px;
+}
+
+.footer__wordmark .wordmark {
+  font-size: clamp(2.5rem, 11vw, 10.6rem);
+}
+
+/* The column row is its own query container, so the accordion threshold
+   follows the footer's width rather than the device's. The thresholds are
+   the design's 640px and 1100px viewports converted to the width this block
+   actually gets inside the page gutters. */
+.footer__cols {
+  container-type: inline-size;
+}
+
+.footer__grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 34px 24px;
+  padding: 34px 4px 36px;
+}
+
+@container (min-width: 36.86rem) {
+  .footer__grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@container (min-width: 63.25rem) {
+  .footer__grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.footer__col-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2xs);
+  width: 100%;
+  padding: 0 0 16px;
+  border: 0;
+  background: none;
+  color: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+
+.footer__col-mark {
+  font-size: 1rem;
+  line-height: 1;
+  color: color-mix(in srgb, var(--c-text) 55%, transparent);
+}
+
+.footer__col-mark::before {
+  content: "+";
+}
+
+.footer__col[data-open] .footer__col-mark::before {
+  content: "\2212";
+}
+
+.footer__col-panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* The clip is its own element and carries nothing else. Padding on the
+   clipping box cannot be clipped, so a collapsed panel would keep showing
+   its padding — and with it a sliver of the first row. */
+.footer__col-clip {
+  overflow: hidden;
+  min-height: 0;
+}
+
+.footer__col[data-open] .footer__col-panel {
+  grid-template-rows: 1fr;
+}
+
+.footer__col-links {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 16px;
+  padding-bottom: 22px;
+}
+
+/* Wide enough for columns: the heading stops being a control and every
+   panel is simply open. */
+@container (min-width: 36.86rem) {
+  .footer__col-toggle {
+    cursor: default;
+    pointer-events: none;
+  }
+
+  .footer__col-mark {
+    display: none;
+  }
+
+  .footer__col-panel {
+    grid-template-rows: 1fr;
+  }
+
+  .footer__col-links {
+    padding-bottom: 0;
+  }
+}
+
+/* Accordion mode. The design rules under every row and lets the wordmark's
+   own rule serve as the line above the first, so the divider goes on the
+   bottom — and the last is dropped, because the rule that already follows
+   the whole block closes it. Border-top instead would double up against the
+   wordmark's rule. The grid's padding goes too, so the first row sits
+   directly under it. */
+@container (max-width: 36.85rem) {
+  .footer__grid {
+    padding-block: 0;
+  }
+
+  .footer__col {
+    border-bottom: var(--border-width) solid color-mix(in srgb, var(--c-text) 18%, transparent);
+  }
+
+  .footer__col:last-child {
+    border-bottom: 0;
+  }
+
+  .footer__col-toggle {
+    padding: 18px 0;
+  }
+
+  .footer__col-links {
+    padding: 2px 0 22px;
+  }
+}
+
+.footer__heading {
+  font-family: var(--font-body);
+  font-size: 0.69rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--c-text) 45%, transparent);
+}
+
+/* In accordion mode the heading is the row label, and the design gives it
+   the weight of a link rather than of a column heading. */
+@container (max-width: 36.85rem) {
+  .footer__heading {
+    font-size: 0.75rem;
+    letter-spacing: 0.17em;
+    color: color-mix(in srgb, var(--c-text) 75%, transparent);
+  }
+}
+
+.footer__link,
+.footer__text {
+  font-size: 0.75rem;
+  letter-spacing: 0.17em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--c-text) 70%, transparent);
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+
+/* Only the salon entries wrap, so only they get the looser leading. */
+.footer__col--salon .footer__link,
+.footer__col--salon .footer__text {
+  line-height: 1.7;
+}
+
+.footer__link {
+  transition: color var(--duration) var(--ease);
+}
+
+.footer__link:hover {
+  color: var(--c-heading);
+}
+
+/* An action row must read as a link, not a control. */
+.footer__link--action {
+  padding: 0;
+  border: 0;
+  background: none;
+  text-align: start;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.footer__bottom {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px 24px;
+  padding-top: 22px;
+  font-size: 0.75rem;
+  letter-spacing: 0.14em;
+  color: color-mix(in srgb, var(--c-text) 42%, transparent);
+}
+
+@container (max-width: 36.85rem) {
+  .footer__bottom {
+    padding-top: 20px;
+  }
+}
+
+/* ---- Overlays: newsletter modal ----------------------------------- */
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 240;
+  display: grid;
+  place-items: center;
+  padding: clamp(0.6rem, 3vw, 2.5rem);
+}
+
+.overlay[hidden] {
+  display: none;
+}
+
+.overlay__veil {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  padding: 0;
+  background: color-mix(in srgb, #0D0C0A 55%, transparent);
+  backdrop-filter: blur(6px);
+  cursor: pointer;
+  animation: gj-fade-in 0.3s ease both;
+}
+
+.overlay.is-closing .overlay__veil {
+  animation: gj-fade-out 0.3s ease both;
+}
+
+@keyframes gj-fade-in  { from { opacity: 0; } to { opacity: 1; } }
+@keyframes gj-fade-out { from { opacity: 1; } to { opacity: 0; } }
+
+.modal {
+  position: relative;
+  width: min(55rem, 100%);
+  max-height: 92vh;
+  overflow: auto;
+  overscroll-behavior: contain;
+  background: var(--c-bg);
+  color: var(--c-text);
+  animation: gj-modal-in 0.45s var(--ease) both;
+}
+
+.overlay.is-closing .modal {
+  animation: gj-modal-out 0.32s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+@keyframes gj-modal-in {
+  from { opacity: 0; transform: translateY(18px) scale(0.985); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes gj-modal-out {
+  from { opacity: 1; transform: translateY(0) scale(1); }
+  to   { opacity: 0; transform: translateY(18px) scale(0.985); }
+}
+
+.modal__close {
+  position: absolute;
+  top: 0.75rem;
+  inset-inline-end: 0.75rem;
+  z-index: 5;
+  width: 2.375rem;
+  height: 2.375rem;
+  display: grid;
+  place-items: center;
+  border: 0;
+  background: none;
+  color: var(--c-text);
+  cursor: pointer;
+  font-size: 1rem;
+  transition: opacity var(--duration) var(--ease);
+}
+
+.modal__close:hover {
+  opacity: 0.55;
+}
+
+.modal__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 21.25rem), 1fr));
+}
+
+.modal__media {
+  position: relative;
+  min-height: clamp(13.75rem, 55vw, 30rem);
+  overflow: hidden;
+  background: var(--c-veil);
+}
+
+.modal__media img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.modal__body {
+  padding: clamp(1.9rem, 5vw, 3.4rem) clamp(1.5rem, 4.5vw, 3.1rem);
+}
+
+.modal__form {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 100%;
+}
+
+.modal__title {
+  margin-top: 0.85em;
+  font-size: clamp(1.75rem, 3.6vw, 2.5rem);
+  line-height: 1.12;
+  text-wrap: pretty;
+}
+
+.modal__text {
+  margin-top: 0.85em;
+  font-size: var(--fs-sm);
+  line-height: 1.65;
+  color: var(--c-muted);
+}
+
+.modal__field {
+  width: 100%;
+  margin-top: 1.5rem;
+  padding: 0.7rem 0;
+  border: 0;
+  border-bottom: var(--border-width) solid color-mix(in srgb, var(--c-text) 30%, transparent);
+  border-radius: 0;
+  background: none;
+  color: var(--c-text);
+  font-size: var(--fs-sm);
+  letter-spacing: 0.06em;
+  outline: none;
+  transition: border-color var(--duration) var(--ease);
+}
+
+.modal__field:focus {
+  border-bottom-color: var(--c-text);
+}
+
+.modal__error {
+  margin-top: 0.5rem;
+  font-size: var(--fs-xs);
+  color: var(--c-error);
+}
+
+.modal__submit {
+  width: 100%;
+  margin-top: 1.15rem;
+  border-radius: var(--radius);
+}
+
+.modal__decline {
+  align-self: center;
+  margin-top: 1rem;
+  padding: 0.25rem;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: var(--fs-xs);
+  letter-spacing: calc(var(--micro-tracking) * 0.64);
+  text-transform: uppercase;
+  color: var(--c-muted);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.modal__decline:hover {
+  color: var(--c-text);
+}
+
+.modal__code {
+  margin-top: 1.4rem;
+  padding: 0.9rem 1.15rem;
+  border: var(--border-width) solid color-mix(in srgb, var(--c-text) 30%, transparent);
+  text-align: center;
+  font-size: var(--fs-sm);
+  letter-spacing: 0.26em;
+}
+
+.modal__fine {
+  margin-top: 1.15rem;
+  font-size: var(--fs-xs);
+  line-height: 1.6;
+  color: color-mix(in srgb, var(--c-text) 40%, transparent);
+}
+
+/* ---- Overlays: cookie notice -------------------------------------- */
+
+.cookie-banner {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 230;
+  display: flex;
+  justify-content: center;
+  padding: 0 clamp(0.6rem, 2vw, 1.5rem) clamp(0.6rem, 2vw, 1.5rem);
+  pointer-events: none;
+}
+
+.cookie-banner[hidden] {
+  display: none;
+}
+
+.cookie-banner__panel {
+  pointer-events: auto;
+  box-sizing: border-box;
+  width: min(55rem, 100%);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2xs) clamp(1.25rem, 3vw, 2.1rem);
+  padding: clamp(1.15rem, 3vw, 1.5rem) clamp(1.15rem, 3.5vw, 1.9rem);
+  background: var(--c-surface);
+  border: var(--border-width) solid color-mix(in srgb, var(--c-text) 12%, transparent);
+  box-shadow: 0 12px 34px color-mix(in srgb, #0D0C0A 14%, transparent);
+  animation: gj-cookie-in 0.45s var(--ease) both;
+}
+
+.cookie-banner.is-closing .cookie-banner__panel {
+  animation: gj-cookie-out 0.32s ease both;
+}
+
+@keyframes gj-cookie-in {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes gj-cookie-out {
+  from { opacity: 1; transform: translateY(0); }
+  to   { opacity: 0; transform: translateY(16px); }
+}
+
+.cookie-banner__copy {
+  flex: 1 1 21rem;
+}
+
+.cookie-banner__text {
+  margin-top: 0.6em;
+  font-size: var(--fs-sm);
+  line-height: 1.6;
+  color: var(--c-muted);
+  text-wrap: pretty;
+}
+
+.cookie-banner__text a {
+  color: var(--c-text);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.cookie-banner__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3xs);
+  margin-inline-start: auto;
+}
+
+.cookie-banner__btn {
+  width: auto;
+  border-radius: var(--radius);
+}
+
+/* ---- Localization ------------------------------------------------ */
+
+.localization {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2xs);
+}
+
+.localization select {
+  padding: 0.5em 0.8em;
+  background: transparent;
+  color: inherit;
+  border: var(--border-width) solid var(--c-hairline);
+  border-radius: var(--radius);
+  font-size: var(--micro-size);
+  letter-spacing: calc(var(--micro-tracking) * 0.5);
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+/* ---- Forms ------------------------------------------------------- */
+
+.form-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3xs);
+  width: 100%;
+  max-width: 30rem;
+}
+
+.form-row .field {
+  flex: 1 1 12rem;
+  min-width: 0;
+}
+
+.field {
+  width: 100%;
+  padding: var(--button-padding-y) var(--space-xs);
+  border: var(--border-width) solid var(--c-border);
+  border-radius: var(--button-radius);
+  background: transparent;
+  color: var(--c-text);
+}
+
+.field::placeholder {
+  color: var(--c-muted);
+}
+
+.form-status {
+  font-size: var(--fs-sm);
+  color: var(--c-muted);
+}
+
+.form-status--error {
+  color: var(--c-error);
+}
+
+/* ---- Scroll reveal ----------------------------------------------- */
+
+.js .reveal {
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity calc(var(--duration) * 2) var(--ease),
+              transform calc(var(--duration) * 2) var(--ease);
+  transition-delay: var(--reveal-delay, 0ms);
+}
+
+.js .reveal.is-visible,
+.no-js .reveal {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .js .reveal {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ---- Placeholders ------------------------------------------------ */
+
+.placeholder {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  aspect-ratio: var(--ratio, 3 / 4);
+  background: var(--c-veil);
+  color: var(--c-muted);
+  font-size: var(--fs-sm);
+}
+
+.placeholder-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  fill: color-mix(in srgb, var(--c-text) 22%, transparent);
+  background-color: var(--c-veil);
+}
+
+/* ---- Minimal templates -------------------------------------------
+   Placeholder styling for templates that ship unstyled until their
+   turn comes. Enough structure to browse, not a finished design.     */
+
+.simple-template {
+  padding-block: var(--space-2xl);
+}

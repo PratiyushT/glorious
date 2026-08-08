@@ -1,0 +1,153 @@
+{%- comment -%}
+  Full-screen search overlay.
+
+  A real GET form to the search route, so it works with JavaScript switched off
+  and submitting always lands on the search page. With JavaScript on, typing
+  fetches sections/predictive-search.liquid and swaps the rendered rows in;
+  the form is never the thing that renders results.
+
+  The resting state — the design's "Browse" and "Featured pieces" — is rendered
+  server-side, so opening the overlay shows something immediately rather than
+  waiting on a request.
+
+  Accepts:
+    section - the header section, for its blocks and settings.
+{%- endcomment -%}
+
+{%- liquid
+  assign cat_blocks = section.blocks | where: 'type', 'category'
+  assign featured = section.settings.search_collection
+  assign popular = section.settings.search_popular | split: ','
+-%}
+
+<div
+  class="search-overlay"
+  data-overlay="search"
+  data-overlay-modal
+  role="dialog"
+  aria-modal="true"
+  aria-label="{{ 'general.search.search' | t }}"
+  hidden
+>
+  {% render 'overlay-head', close_action: 'search', row: 0 %}
+
+  <div class="search-overlay__body">
+    <div class="search-overlay__inner">
+      <div class="search-overlay__top" style="--row: 1;">
+        <form
+          class="search-overlay__form"
+          action="{{ routes.search_url }}"
+          method="get"
+          role="search"
+          data-search-form
+        >
+          <input type="hidden" name="options[prefix]" value="last">
+          <label class="visually-hidden" for="search-overlay-input">
+            {{ 'general.search.search' | t }}
+          </label>
+          <input
+            class="search-overlay__field"
+            id="search-overlay-input"
+            type="search"
+            name="q"
+            placeholder="{{ 'general.search.overlay_placeholder' | t }}"
+            autocomplete="off"
+            spellcheck="false"
+            data-search-input
+          >
+        </form>
+
+        <div class="search-overlay__meta">
+          {%- if popular.size > 0 -%}
+            <div class="search-overlay__popular" data-search-popular>
+              <span class="search-overlay__popular-label">
+                {{ 'general.search.popular' | t }}
+              </span>
+              {%- for term in popular -%}
+                {%- assign trimmed = term | strip -%}
+                {%- if trimmed != blank -%}
+                  <button class="search-overlay__term" type="button" data-search-term="{{ trimmed | escape }}">
+                    {{ trimmed }}
+                  </button>
+                {%- endif -%}
+              {%- endfor -%}
+            </div>
+          {%- endif -%}
+
+          <span class="search-overlay__count" data-search-count hidden></span>
+
+          <span class="search-overlay__hint">{{ 'general.search.keyboard_hint' | t }}</span>
+        </div>
+      </div>
+
+      {%- comment -%}
+        A plain region of links, not a combobox listbox: every row has to stay
+        a real link so it works without scripting, and arrow-key selection is
+        announced with aria-current rather than a listbox role the markup
+        could not honestly support.
+      {%- endcomment -%}
+      <div
+        class="search-overlay__results"
+        id="search-overlay-results"
+        style="--row: 2;"
+        aria-live="polite"
+        aria-label="{{ 'general.search.results_label' | t }}"
+        data-search-scroller
+      >
+        {%- comment -%} The resting state: shown until a query returns rows. {%- endcomment -%}
+        <div class="search-results" data-search-resting>
+          {%- if cat_blocks.size > 0 -%}
+            <div class="search-group">
+              <div class="search-group__label">{{ 'general.search.group_browse' | t }}</div>
+              {%- assign label_collection = 'general.search.kind_collection' | t -%}
+              {%- for block in cat_blocks -%}
+                {%- if block.settings.label != blank -%}
+                  {%- liquid
+                    assign row_url = block.settings.url | default: routes.all_products_collection_url
+                    assign row_title = block.settings.label | escape
+                  -%}
+                  {% render 'search-row',
+                    url: row_url,
+                    title: row_title,
+                    meta: label_collection
+                  %}
+                {%- endif -%}
+              {%- endfor -%}
+            </div>
+          {%- endif -%}
+
+          {%- if featured != blank and featured.products.size > 0 -%}
+            <div class="search-group">
+              <div class="search-group__label">{{ 'general.search.group_featured' | t }}</div>
+              {%- for product in featured.products limit: 8 -%}
+                {%- liquid
+                  assign kind = product.type | default: product.vendor
+                  if product.price_varies
+                    assign price_label = 'products.from_price' | t: price: product.price_min | money
+                  else
+                    assign price_label = product.price | money
+                  endif
+                  if kind != blank
+                    assign row_meta = kind | append: ' · ' | append: price_label
+                  else
+                    assign row_meta = price_label
+                  endif
+                  assign row_title = product.title | escape
+                -%}
+                {% render 'search-row',
+                  url: product.url,
+                  title: row_title,
+                  meta: row_meta,
+                  image: product.featured_media
+                %}
+              {%- endfor -%}
+            </div>
+          {%- endif -%}
+        </div>
+
+        {%- comment -%} Live predictive results land here. {%- endcomment -%}
+        <div data-search-live hidden></div>
+      </div>
+    </div>
+  </div>
+</div>

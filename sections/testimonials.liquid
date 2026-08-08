@@ -1,0 +1,143 @@
+{%- comment -%}
+  Testimonials. Quotes cross-fade in place; the dots are real buttons so the
+  set is reachable by keyboard. With JavaScript off, the first quote shows and
+  the rest follow it in the document rather than disappearing.
+{%- endcomment -%}
+
+<section
+  class="section scheme-{{ section.settings.color_scheme }}"
+  style="{% render 'section-style', padding_top: section.settings.padding_top, padding_bottom: section.settings.padding_bottom %}"
+>
+  <div class="page-width page-width--reading align-center">
+    {%- if section.settings.subheading != blank -%}
+      <span class="micro reveal">{{ section.settings.subheading }}</span>
+    {%- endif -%}
+
+    {%- if section.blocks.size > 0 -%}
+      <div
+        class="quotes reveal"
+        data-quotes
+        data-autorotate="{{ section.settings.autorotate }}"
+        data-interval="{{ section.settings.interval | times: 1000 }}"
+        style="--reveal-delay: 100ms; margin-top: var(--space-md);"
+      >
+        {%- for block in section.blocks -%}
+          <figure
+            class="quote{% if forloop.first %} is-active{% endif %}"
+            data-quote
+            {{ block.shopify_attributes }}
+          >
+            <blockquote class="quote__text">&ldquo;{{ block.settings.text }}&rdquo;</blockquote>
+            {%- if block.settings.author != blank -%}
+              <figcaption class="quote__author">{{ block.settings.author }}</figcaption>
+            {%- endif -%}
+          </figure>
+        {%- endfor -%}
+      </div>
+
+      {%- if section.blocks.size > 1 -%}
+        <div class="quote-dots" role="tablist" data-quote-dots>
+          {%- for block in section.blocks -%}
+            <button
+              type="button"
+              role="tab"
+              aria-selected="{% if forloop.first %}true{% else %}false{% endif %}"
+              aria-label="{{ 'testimonials.show_quote' | t: number: forloop.index }}"
+            ></button>
+          {%- endfor -%}
+        </div>
+      {%- endif -%}
+    {%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "t:sections.testimonials.name",
+  "tag": "div",
+  "settings": [
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:sections.all.color_scheme.label",
+      "default": "scheme_1"
+    },
+    {
+      "type": "text",
+      "id": "subheading",
+      "label": "t:sections.all.subheading.label",
+      "default": "Word of Mouth"
+    },
+    {
+      "type": "checkbox",
+      "id": "autorotate",
+      "label": "t:sections.testimonials.autorotate.label",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "interval",
+      "label": "t:sections.testimonials.interval.label",
+      "min": 3,
+      "max": 15,
+      "step": 1,
+      "unit": "s",
+      "default": 7
+    },
+    {
+      "type": "header",
+      "content": "t:sections.all.spacing_header"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "t:sections.all.padding_top.label",
+      "min": 0,
+      "max": 200,
+      "step": 4,
+      "unit": "px",
+      "default": 104
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "t:sections.all.padding_bottom.label",
+      "min": 0,
+      "max": 200,
+      "step": 4,
+      "unit": "px",
+      "default": 56
+    }
+  ],
+  "blocks": [
+    {
+      "type": "quote",
+      "name": "t:sections.testimonials.blocks.quote.name",
+      "settings": [
+        {
+          "type": "text",
+          "id": "text",
+          "label": "t:sections.testimonials.blocks.quote.text.label",
+          "default": "The craftsmanship is extraordinary and the service even more so."
+        },
+        {
+          "type": "text",
+          "id": "author",
+          "label": "t:sections.testimonials.blocks.quote.author.label",
+          "default": "Manjit Kaur — Google Review"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:sections.testimonials.name",
+      "blocks": [
+        { "type": "quote" },
+        { "type": "quote", "settings": { "author": "Nisarg P — Google Review" } },
+        { "type": "quote", "settings": { "author": "Rahul Jogula — Google Review" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

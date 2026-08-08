@@ -1,0 +1,122 @@
+{%- comment -%}
+  Cookie notice.
+
+  Shown until a choice is stored, and reopened by any #cookie-preferences
+  action so a visitor can revisit the decision from the footer.
+
+  The choice is recorded with Shopify's Customer Privacy API when it is
+  available, so declining actually suppresses tracking rather than only hiding
+  the banner. The stored key is kept regardless, which is what drives whether
+  the banner reappears.
+{%- endcomment -%}
+
+{%- comment -%}
+  The wrapper is a positioning frame only — it spans the viewport and passes
+  clicks through. The colour scheme, and so the background, belongs to the
+  panel; on the wrapper it would paint an opaque band across the page.
+{%- endcomment -%}
+{%- if section.settings.enabled -%}
+  <div
+    class="cookie-banner"
+    data-overlay="cookie-preferences"
+    data-delay="{{ section.settings.delay | times: 1000 }}"
+    data-storage-key="glorious-cookies"
+    hidden
+  >
+    <div
+      class="cookie-banner__panel scheme-{{ section.settings.color_scheme }}"
+      role="dialog"
+      aria-label="{{ section.settings.eyebrow | default: 'Cookies' | escape }}"
+    >
+      <div class="cookie-banner__copy">
+        {%- if section.settings.eyebrow != blank -%}
+          <span class="micro">{{ section.settings.eyebrow }}</span>
+        {%- endif -%}
+        <p class="cookie-banner__text">
+          {{ section.settings.text }}
+          {%- if section.settings.policy_link != blank -%}
+            <a href="{{ section.settings.policy_link }}">{{ section.settings.policy_label }}</a>.
+          {%- endif -%}
+        </p>
+      </div>
+
+      <div class="cookie-banner__actions">
+        <button class="btn btn--square cookie-banner__btn" type="button" data-cookie-choice="essential">
+          {{ section.settings.decline_label | default: 'Decline' }}
+        </button>
+        <button class="btn btn--primary cookie-banner__btn" type="button" data-cookie-choice="all">
+          {{ section.settings.accept_label | default: 'Accept' }}
+        </button>
+      </div>
+    </div>
+  </div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "t:sections.cookie_banner.name",
+  "tag": "div",
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "enabled",
+      "label": "t:sections.cookie_banner.enabled.label",
+      "default": true
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:sections.all.color_scheme.label",
+      "default": "scheme_3"
+    },
+    {
+      "type": "range",
+      "id": "delay",
+      "label": "t:sections.newsletter_popup.delay.label",
+      "min": 0,
+      "max": 10,
+      "step": 1,
+      "unit": "s",
+      "default": 1
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "t:sections.all.subheading.label",
+      "default": "Cookies"
+    },
+    {
+      "type": "text",
+      "id": "text",
+      "label": "t:sections.all.text.label",
+      "default": "We use cookies to improve your browsing experience and analyze site traffic. See our"
+    },
+    {
+      "type": "text",
+      "id": "policy_label",
+      "label": "t:sections.cookie_banner.policy_label.label",
+      "default": "Cookie Policy"
+    },
+    {
+      "type": "url",
+      "id": "policy_link",
+      "label": "t:sections.cookie_banner.policy_link.label"
+    },
+    {
+      "type": "text",
+      "id": "decline_label",
+      "label": "t:sections.cookie_banner.decline_label.label",
+      "default": "Decline"
+    },
+    {
+      "type": "text",
+      "id": "accept_label",
+      "label": "t:sections.cookie_banner.accept_label.label",
+      "default": "Accept"
+    }
+  ],
+  "enabled_on": {
+    "groups": ["header"]
+  }
+}
+{% endschema %}

@@ -1,0 +1,38 @@
+{%- comment -%}
+  One footer column entry.
+
+  Most entries are links. Two are not: the design's "Newsletter" and "Cookie
+  Preferences" rows reopen an overlay rather than navigating. Rather than add a
+  separate block type for those, an entry whose URL carries #newsletter or
+  #cookie-preferences renders as a button wired to that overlay — so the
+  convention also works for items coming from a Shopify navigation menu.
+
+  Accepts:
+    label - visible text.
+    url   - destination, or an action token.
+{%- endcomment -%}
+
+{%- liquid
+  assign action = ''
+  if url contains '#newsletter'
+    assign action = 'newsletter'
+  elsif url contains '#cookie-preferences'
+    assign action = 'cookie-preferences'
+  endif
+-%}
+
+{%- if action != blank -%}
+  <button class="footer__link footer__link--action" type="button" data-overlay-open="{{ action }}">
+    {{ label }}
+  </button>
+{%- elsif url != blank -%}
+  <a
+    class="footer__link"
+    href="{{ url }}"
+    {% if url contains '://' %}target="_blank" rel="noopener"{% endif %}
+  >
+    {{ label }}
+  </a>
+{%- else -%}
+  <span class="footer__text">{{ label }}</span>
+{%- endif -%}

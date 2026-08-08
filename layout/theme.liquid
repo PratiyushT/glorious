@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="{{ request.locale.iso_code }}" class="no-js">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="canonical" href="{{ canonical_url }}">
+    <link rel="preconnect" href="https://cdn.shopify.com" crossorigin>
+
+    {%- if settings.use_bundled_fonts -%}
+      {{ 'italiana-400-latin.woff2' | asset_url | preload_tag: as: 'font', type: 'font/woff2', crossorigin: 'anonymous' }}
+      {{ 'karla-400-latin.woff2' | asset_url | preload_tag: as: 'font', type: 'font/woff2', crossorigin: 'anonymous' }}
+    {%- endif -%}
+
+    {%- if settings.favicon != blank -%}
+      <link rel="icon" type="image/png" href="{{ settings.favicon | image_url: width: 64, height: 64 }}">
+    {%- else -%}
+      <link rel="icon" type="image/png" href="{{ 'favicon.png' | asset_url }}">
+    {%- endif -%}
+
+    <title>
+      {{ page_title }}
+      {%- if current_tags %} &ndash; {{ 'general.meta.tags' | t: tags: current_tags | join: ', ' }}{% endif -%}
+      {%- if current_page != 1 %} &ndash; {{ 'general.meta.page' | t: page: current_page }}{% endif -%}
+      {%- unless page_title contains shop.name %} &ndash; {{ shop.name }}{% endunless -%}
+    </title>
+
+    {%- if page_description -%}
+      <meta name="description" content="{{ page_description | escape }}">
+    {%- endif -%}
+
+    <script>
+      document.documentElement.classList.remove('no-js');
+      document.documentElement.classList.add('js');
+    </script>
+
+    {%- comment -%}
+      Shopify-library webfonts, only when the bundled Glorious faces are off.
+      The bundled @font-face rules live in the token snippet alongside their
+      metric-matched fallbacks.
+    {%- endcomment -%}
+    {%- unless settings.use_bundled_fonts -%}
+      {%- liquid
+        assign body_bold = settings.font_body | font_modify: 'weight', 'bold'
+        assign body_italic = settings.font_body | font_modify: 'style', 'italic'
+        assign heading_bold = settings.font_heading | font_modify: 'weight', 'bold'
+      -%}
+      {% style %}
+        {{ settings.font_body | font_face: font_display: 'swap' }}
+        {{ body_bold | font_face: font_display: 'swap' }}
+        {{ body_italic | font_face: font_display: 'swap' }}
+        {{ settings.font_heading | font_face: font_display: 'swap' }}
+        {{ heading_bold | font_face: font_display: 'swap' }}
+      {% endstyle %}
+    {%- endunless -%}
+
+    {% render 'theme-tokens' %}
+
+    {{ 'base.css' | asset_url | stylesheet_tag }}
+
+    <script src="{{ 'theme.js' | asset_url }}" defer="defer"></script>
+
+    {{ content_for_header }}
+  </head>
+
+  <body class="scheme-scheme_1 template-{{ template.name | handle }}">
+    <a class="skip-link" href="#main">{{ 'accessibility.skip_to_content' | t }}</a>
+
+    {% sections 'header-group' %}
+
+    <main id="main">
+      {{ content_for_layout }}
+    </main>
+
+    {% sections 'footer-group' %}
+  </body>
+</html>

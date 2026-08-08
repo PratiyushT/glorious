@@ -1,0 +1,18 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "glorious-theme",
+      "runtimeExecutable": "shopify",
+      "runtimeArgs": [
+        "theme",
+        "dev",
+        "--store",
+        "glorious-jweller.myshopify.com",
+        "--path",
+        "D:\\Code\\glorious"
+      ],
+      "port": 9292
+    }
+  ]
+}

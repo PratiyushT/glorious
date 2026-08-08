@@ -1,0 +1,78 @@
+{%- comment -%}
+  Bag drawer.
+
+  Only rendered when the theme's cart setting is set to the drawer — the two
+  are exclusive, so a store either slides the bag out or sends the visitor to
+  the cart page, never both.
+
+  Lives in the header group because it belongs to the nav: the bag action, the
+  menu's bag row and any add-to-bag on the page all open this one element.
+
+  theme.js keeps it in step with the cart by asking Shopify to re-render this
+  section after each change, so quantities, line prices and the subtotal are
+  always Liquid's numbers rather than arithmetic done in the browser.
+{%- endcomment -%}
+
+{%- if settings.cart_type == 'drawer' -%}
+  <div
+    class="drawer"
+    data-overlay="cart"
+    data-overlay-modal
+    data-cart-drawer
+    data-section-id="{{ section.id }}"
+    data-open-on-add="{{ settings.cart_drawer_on_add }}"
+    hidden
+  >
+    <div class="overlay__veil" data-overlay-close="cart"></div>
+
+    <aside
+      class="drawer__panel scheme-{{ section.settings.color_scheme }}"
+      role="dialog"
+      aria-modal="true"
+      aria-label="{{ 'cart.title_bag' | t }}"
+    >
+      <div class="drawer__inner" data-drawer-contents>
+        {% render 'cart-drawer-contents', section: section %}
+      </div>
+    </aside>
+  </div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "t:sections.cart_drawer.name",
+  "tag": "div",
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "t:sections.cart_drawer.paragraph"
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:sections.all.color_scheme.label",
+      "default": "scheme_1"
+    },
+    {
+      "type": "text",
+      "id": "note",
+      "label": "t:sections.cart_drawer.note.label",
+      "default": "Sales tax calculated at checkout. Fully insured delivery, signed for at your door — or buy at the salon."
+    },
+    {
+      "type": "text",
+      "id": "secondary_label",
+      "label": "t:sections.cart_drawer.secondary_label.label",
+      "default": "Salon"
+    },
+    {
+      "type": "url",
+      "id": "secondary_link",
+      "label": "t:sections.cart_drawer.secondary_link.label"
+    }
+  ],
+  "enabled_on": {
+    "groups": ["header"]
+  }
+}
+{% endschema %}

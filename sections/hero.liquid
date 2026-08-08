@@ -1,0 +1,372 @@
+{%- comment -%}
+  Hero — a 1:1 rebuild of the design's homepage hero.
+
+  Every default below is the design's own value. The settings exist so a
+  merchant can move away from it, not so the theme starts somewhere else.
+
+  Three deliberate arrangements, not one reflow. The design art-directs the
+  grid at 990px and 1100px and the areas swap rather than resize:
+
+    narrow (<990)   b / a / c / d   portrait, copy, carousel, then the CTA
+    medium (<1100)  a b / c b       copy above carousel, portrait spanning
+    wide  (>=1100)  a b c           copy, portrait, carousel side by side
+
+  clamp() cannot move a grid area, so these are media queries — the one job
+  the theme's fluid scales genuinely cannot do.
+
+  The wordmark carries data-nav-anchor: the nav expands from pill to bar as
+  the bottom of it leaves, which is what the design measures against.
+{%- endcomment -%}
+
+{%- liquid
+  assign wordmark_source = settings.wordmark | default: shop.name | upcase
+  assign wordmark_letters = wordmark_source | split: ''
+
+  assign metal_blocks = section.blocks | where: 'type', 'metal'
+  assign detail_blocks = section.blocks | where: 'type', 'detail'
+  assign text_block = section.blocks | where: 'type', 'text' | first
+  assign button_block = section.blocks | where: 'type', 'buttons' | first
+-%}
+
+<section
+  class="hero scheme-{{ section.settings.color_scheme }}"
+  id="top"
+  data-hero
+>
+  <div class="hero__glow" aria-hidden="true"></div>
+
+  {%- if section.settings.show_arcs -%}
+    <svg class="hero__arc hero__arc--left" viewBox="0 0 520 520" fill="none" aria-hidden="true" focusable="false">
+      <circle cx="250" cy="255" r="180" stroke="currentColor" stroke-width="1.1" />
+      <path d="M70 185 A 265 265 0 0 0 250 470" stroke="currentColor" stroke-width="0.9" opacity=".85" />
+      <path d="M430 185 A 265 265 0 0 1 250 470" stroke="currentColor" stroke-width="0.9" opacity=".85" />
+      <path d="M115 235 A 200 200 0 0 0 250 425" stroke="currentColor" stroke-width="0.7" opacity=".5" />
+      <path d="M385 235 A 200 200 0 0 1 250 425" stroke="currentColor" stroke-width="0.7" opacity=".5" />
+      <circle cx="250" cy="42" r="11" fill="currentColor" opacity=".7" />
+      <circle cx="204" cy="58" r="6" fill="currentColor" opacity=".5" />
+      <circle cx="296" cy="58" r="6" fill="currentColor" opacity=".5" />
+    </svg>
+
+    <svg class="hero__arc hero__arc--right" viewBox="0 0 520 520" fill="none" aria-hidden="true" focusable="false">
+      <circle cx="265" cy="260" r="192" stroke="currentColor" stroke-width="1.1" />
+      <path d="M75 185 A 280 280 0 0 0 265 490" stroke="currentColor" stroke-width="0.9" opacity=".85" />
+      <path d="M455 185 A 280 280 0 0 1 265 490" stroke="currentColor" stroke-width="0.9" opacity=".85" />
+      <circle cx="265" cy="34" r="10" fill="currentColor" opacity=".65" />
+      <circle cx="221" cy="50" r="5.5" fill="currentColor" opacity=".45" />
+      <circle cx="309" cy="50" r="5.5" fill="currentColor" opacity=".45" />
+    </svg>
+  {%- endif -%}
+
+  {%- if section.settings.show_sparkles -%}
+    <div class="hero__sparkles" aria-hidden="true">
+      <span style="left: 7%;  top: 120px;   --size: 1.13rem; --dur: 3.8s; --delay: 0.4s;">&#10022;</span>
+      <span style="left: 38%; top: 84px;    --size: 0.69rem; --dur: 4.6s; --delay: 1.6s;">&#10022;</span>
+      <span style="right: 9%; top: 132px;   --size: 0.94rem; --dur: 4.2s; --delay: 2.4s;">&#10022;</span>
+      <span style="right: 30%; top: 66px;   --size: 0.63rem; --dur: 5s;   --delay: 3.1s;">&#10022;</span>
+      <span style="left: 16%; bottom: 18%;  --size: 0.75rem; --dur: 5.4s; --delay: 2s;">&#10022;</span>
+    </div>
+  {%- endif -%}
+
+  {%- if section.settings.show_wordmark -%}
+    <div class="hero__wordmark" data-nav-anchor>
+      <div class="hero__wordmark-inner">
+        <div class="hero__letters" role="img" aria-label="{{ wordmark_source }}">
+          {%- for letter in wordmark_letters -%}
+            <span style="--letter: {{ forloop.index0 }};" aria-hidden="true">{{ letter }}</span>
+          {%- endfor -%}
+        </div>
+      </div>
+    </div>
+  {%- endif -%}
+
+  <div class="hero__fit" data-hero-fit>
+    <div class="hero__grid" data-hero-grid>
+      <div class="hero__copy">
+        {%- if text_block != blank and text_block.settings.text != blank -%}
+          <div class="hero__intro rte" {{ text_block.shopify_attributes }}>
+            {{ text_block.settings.text }}
+          </div>
+        {%- endif -%}
+
+        {%- for block in detail_blocks -%}
+          {%- if block.settings.label != blank -%}
+            <div class="hero__detail-label" {{ block.shopify_attributes }}>{{ block.settings.label }}</div>
+            <div class="hero__detail-row">
+              <span class="hero__choice is-on">
+                <span class="hero__dot" aria-hidden="true"><span></span></span>
+                {{ block.settings.value }}
+              </span>
+            </div>
+          {%- endif -%}
+        {%- endfor -%}
+
+        {%- comment -%}
+          The metal switch is what changes the carousel's pool. Each option
+          points at its own collection, which is how "white gold" and "yellow
+          gold" become two sets of pieces without a client-side catalogue.
+        {%- endcomment -%}
+        {%- if metal_blocks.size > 0 -%}
+          <div class="hero__detail-label">{{ section.settings.metal_label }}</div>
+          <div class="hero__detail-row" role="group" aria-label="{{ section.settings.metal_label | escape }}">
+            {%- for block in metal_blocks -%}
+              <button
+                class="hero__choice{% if forloop.first %} is-on{% endif %}"
+                type="button"
+                data-hero-metal="{{ forloop.index0 }}"
+                aria-pressed="{% if forloop.first %}true{% else %}false{% endif %}"
+                {{ block.shopify_attributes }}
+              >
+                <span class="hero__dot" aria-hidden="true"><span></span></span>
+                {{ block.settings.label }}
+              </button>
+            {%- endfor -%}
+          </div>
+        {%- endif -%}
+
+        <div class="hero__rule" aria-hidden="true"></div>
+
+        {%- if button_block != blank and button_block.settings.button_label != blank -%}
+          <a
+            class="hero__cta"
+            href="{{ button_block.settings.button_link | default: routes.all_products_collection_url }}"
+            {{ button_block.shopify_attributes }}
+          >
+            {{ button_block.settings.button_label }}
+            <span aria-hidden="true">&rarr;</span>
+          </a>
+        {%- endif -%}
+      </div>
+
+      <div class="hero__portrait">
+        <div class="hero__portrait-frame">
+          {%- if section.settings.image != blank -%}
+            <img
+              src="{{ section.settings.image | image_url: width: 1200 }}"
+              srcset="{{ section.settings.image | image_url: width: 500 }} 500w, {{ section.settings.image | image_url: width: 800 }} 800w, {{ section.settings.image | image_url: width: 1200 }} 1200w"
+              sizes="(min-width: 68.75rem) 44vh, (min-width: 61.875rem) 46vh, 62vw"
+              alt="{{ section.settings.image.alt | escape }}"
+              width="{{ section.settings.image.width }}"
+              height="{{ section.settings.image.height }}"
+              loading="eager"
+              fetchpriority="high"
+            >
+          {%- else -%}
+            {{ 'lifestyle-1' | placeholder_svg_tag: 'placeholder-svg' }}
+          {%- endif -%}
+          <span class="hero__portrait-fade" aria-hidden="true"></span>
+        </div>
+      </div>
+
+      {%- comment -%}
+        Two pieces at a time out of the selected metal's collection. The whole
+        pool is rendered and the carousel shows a window of it, so stepping
+        never waits on a request and the pieces are still real links without
+        any scripting.
+      {%- endcomment -%}
+      <div class="hero__cards">
+        <div class="hero-carousel" data-hero-carousel>
+          <button class="hero-carousel__arrow hero-carousel__arrow--prev" type="button" data-hero-step="-1" aria-label="{{ 'hero.previous' | t }}">
+            &larr;
+          </button>
+
+          <div class="hero-carousel__window" data-hero-window>
+            {%- for block in metal_blocks -%}
+              {%- assign pool = block.settings.collection -%}
+              <div
+                class="hero-carousel__pool"
+                data-hero-pool="{{ forloop.index0 }}"
+                {% unless forloop.first %}hidden{% endunless %}
+              >
+                {%- if pool != blank and pool.products.size > 0 -%}
+                  {%- for product in pool.products limit: 12 -%}
+                    <a class="hero-card" href="{{ product.url }}" data-hero-card>
+                      <span class="hero-card__frame">
+                        {%- if product.featured_media -%}
+                          <img
+                            src="{{ product.featured_media | image_url: width: 500 }}"
+                            srcset="{{ product.featured_media | image_url: width: 300 }} 300w, {{ product.featured_media | image_url: width: 500 }} 500w, {{ product.featured_media | image_url: width: 760 }} 760w"
+                            sizes="15.5rem"
+                            alt=""
+                            width="{{ product.featured_media.width }}"
+                            height="{{ product.featured_media.height }}"
+                            loading="{% if forloop.index <= 2 %}eager{% else %}lazy{% endif %}"
+                          >
+                        {%- else -%}
+                          {{ 'product-1' | placeholder_svg_tag: 'placeholder-svg' }}
+                        {%- endif -%}
+                      </span>
+                      <span class="hero-card__name">{{ product.title }}</span>
+                    </a>
+                  {%- endfor -%}
+                {%- endif -%}
+              </div>
+            {%- endfor -%}
+          </div>
+
+          <button class="hero-carousel__arrow hero-carousel__arrow--next" type="button" data-hero-step="1" aria-label="{{ 'hero.next' | t }}">
+            &rarr;
+          </button>
+        </div>
+
+        {%- comment -%}
+          At the medium arrangement the portrait spans both rows and there is
+          no room beside the cards, so the same two controls sit under them.
+        {%- endcomment -%}
+        <div class="hero-carousel__below">
+          <button class="hero-carousel__arrow" type="button" data-hero-step="-1" aria-label="{{ 'hero.previous' | t }}">&larr;</button>
+          <button class="hero-carousel__arrow" type="button" data-hero-step="1" aria-label="{{ 'hero.next' | t }}">&rarr;</button>
+        </div>
+      </div>
+
+      {%- if button_block != blank and button_block.settings.button_label != blank -%}
+        <div class="hero__cta-row">
+          <a class="hero__cta" href="{{ button_block.settings.button_link | default: routes.all_products_collection_url }}">
+            {{ button_block.settings.button_label }}
+            <span aria-hidden="true">&rarr;</span>
+          </a>
+        </div>
+      {%- endif -%}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "t:sections.hero.name",
+  "tag": "section",
+  "settings": [
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:sections.all.color_scheme.label",
+      "default": "scheme_2"
+    },
+    {
+      "type": "header",
+      "content": "t:sections.hero.wordmark_header"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_wordmark",
+      "label": "t:sections.hero.show_wordmark.label",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_sparkles",
+      "label": "t:sections.hero.show_sparkles.label",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_arcs",
+      "label": "t:sections.hero.show_arcs.label",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "t:sections.hero.portrait_header"
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "t:sections.hero.image.label",
+      "info": "t:sections.hero.image.info"
+    },
+    {
+      "type": "header",
+      "content": "t:sections.hero.carousel_header"
+    },
+    {
+      "type": "paragraph",
+      "content": "t:sections.hero.carousel_paragraph"
+    },
+    {
+      "type": "text",
+      "id": "metal_label",
+      "label": "t:sections.hero.metal_label.label",
+      "default": "Metal:"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "text",
+      "name": "t:sections.hero.blocks.text.name",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "richtext",
+          "id": "text",
+          "label": "t:sections.all.text.label",
+          "default": "<p>Authentic handcrafted diamond jewelry with heritage character and refined radiance — IGI-certified stones, set in 18-karat gold.</p>"
+        }
+      ]
+    },
+    {
+      "type": "detail",
+      "name": "t:sections.hero.blocks.detail.name",
+      "settings": [
+        {
+          "type": "text",
+          "id": "label",
+          "label": "t:sections.visit.blocks.detail.label.label",
+          "default": "Gemstone:"
+        },
+        {
+          "type": "text",
+          "id": "value",
+          "label": "t:sections.visit.blocks.detail.value.label",
+          "default": "Diamond"
+        }
+      ]
+    },
+    {
+      "type": "metal",
+      "name": "t:sections.hero.blocks.metal.name",
+      "settings": [
+        {
+          "type": "text",
+          "id": "label",
+          "label": "t:sections.all.link_label.label",
+          "default": "Yellow Gold"
+        },
+        {
+          "type": "collection",
+          "id": "collection",
+          "label": "t:sections.hero.blocks.metal.collection.label",
+          "info": "t:sections.hero.blocks.metal.collection.info"
+        }
+      ]
+    },
+    {
+      "type": "buttons",
+      "name": "t:sections.hero.blocks.buttons.name",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "text",
+          "id": "button_label",
+          "label": "t:sections.hero.blocks.buttons.button_label.label",
+          "default": "Collections"
+        },
+        {
+          "type": "url",
+          "id": "button_link",
+          "label": "t:sections.hero.blocks.buttons.button_link.label"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:sections.hero.name",
+      "blocks": [
+        { "type": "text" },
+        { "type": "detail" },
+        { "type": "metal" },
+        { "type": "buttons" }
+      ]
+    }
+  ]
+}
+{% endschema %}

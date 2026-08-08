@@ -1,0 +1,26 @@
+{%- comment -%}
+  Spread wordmark — brand letters distributed edge to edge across the full
+  measure. Used by the hero and the footer.
+
+  Letters only, no emblem: the design reserves the mark for the inline lockup
+  (see wordmark-lockup). Letters come from the Brand settings, so renaming the
+  store changes the hero and the footer together.
+
+  Accepts:
+    variant - 'accent' (default, gold) or 'ivory' (heading colour).
+{%- endcomment -%}
+
+{%- liquid
+  assign source = settings.wordmark | default: shop.name | upcase
+  assign letters = source | split: ''
+-%}
+
+<div
+  class="wordmark{% if variant == 'ivory' %} wordmark--ivory{% endif %}"
+  role="img"
+  aria-label="{{ source }}"
+>
+  {%- for letter in letters -%}
+    <span aria-hidden="true">{{ letter }}</span>
+  {%- endfor -%}
+</div>

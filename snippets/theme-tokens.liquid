@@ -1,0 +1,274 @@
+{%- comment -%}
+  Compiles merchant settings into CSS custom properties.
+
+  Defaults come from the Glorious design, but nothing here is hardcoded — the
+  whole visual system is a function of config/settings_schema.json. base.css
+  consumes these variables and declares no literal size, colour or breakpoint.
+
+  Fluid formula, per step:
+    slope     = (max - min) / (viewport_max - viewport_min)
+    intercept = min - (slope * viewport_min)
+    value     = clamp(min, intercept + slope*100vw, max)
+{%- endcomment -%}
+
+{%- liquid
+  assign vw_min = 360.0
+  assign vw_max = 1440.0
+  assign root_px = 16.0
+  assign vw_span = vw_max | minus: vw_min
+
+  assign fs_min = settings.type_base_min | times: 1.0
+  assign fs_max = settings.type_base_max | times: 1.0
+  if fs_max < fs_min
+    assign fs_max = fs_min
+  endif
+
+  assign ratio_min = settings.type_ratio_min | times: 1.0
+  assign ratio_max = settings.type_ratio_max | times: 1.0
+
+  assign sp_min = settings.space_base_min | times: 1.0
+  assign sp_max = settings.space_base_max | times: 1.0
+  if sp_max < sp_min
+    assign sp_max = sp_min
+  endif
+
+  assign gut_min = settings.gutter_min | times: 1.0
+  assign gut_max = settings.gutter_max | times: 1.0
+  if gut_max < gut_min
+    assign gut_max = gut_min
+  endif
+
+  assign fs_names = 'xs,sm,base,md,lg,xl,2xl,3xl,4xl' | split: ','
+  assign sp_names = '3xs,2xs,xs,sm,md,lg,xl,2xl,3xl' | split: ','
+  assign sp_mults = '0.25,0.5,0.75,1,1.5,2,3,4,6' | split: ','
+-%}
+
+<style>
+  {%- if settings.use_bundled_fonts -%}
+  @font-face {
+    font-family: 'Italiana';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url({{ 'italiana-400-latin.woff2' | asset_url }}) format('woff2');
+  }
+  @font-face {
+    font-family: 'Karla';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url({{ 'karla-400-latin.woff2' | asset_url }}) format('woff2');
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+  }
+  @font-face {
+    font-family: 'Karla';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url({{ 'karla-400-latin-ext.woff2' | asset_url }}) format('woff2');
+    unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+  }
+  @font-face {
+    font-family: 'Karla';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url({{ 'karla-400-latin.woff2' | asset_url }}) format('woff2');
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+  }
+
+  {%- comment -%}
+    Metric-matched fallbacks. size-adjust keeps the substituted face on the same
+    footprint as the webfont, so swapping in does not shift the layout.
+  {%- endcomment -%}
+  @font-face {
+    font-family: 'Italiana Fallback';
+    src: local('Times New Roman'), local('Times'), local('Liberation Serif');
+    size-adjust: 100.4%;
+  }
+  @font-face {
+    font-family: 'Karla Fallback';
+    src: local('Arial'), local('Helvetica'), local('Liberation Sans');
+    size-adjust: 101.1%;
+  }
+  {%- endif -%}
+
+  :root {
+    /* ---- Fluid type scale ------------------------------------------- */
+    {%- for name in fs_names -%}
+      {%- liquid
+        assign exp = forloop.index0 | minus: 2
+        assign lo = fs_min
+        assign hi = fs_max
+
+        if exp > 0
+          for i in (1..exp)
+            assign lo = lo | times: ratio_min
+            assign hi = hi | times: ratio_max
+          endfor
+        elsif exp < 0
+          assign steps_down = 0 | minus: exp
+          for i in (1..steps_down)
+            assign lo = lo | divided_by: ratio_min
+            assign hi = hi | divided_by: ratio_max
+          endfor
+        endif
+
+        comment
+          A larger wide-screen ratio than narrow-screen ratio inverts the
+          negative steps: the mobile value ends up above the desktop one and
+          clamp() collapses to a constant with a nonsense negative vw term.
+          Flatten it deliberately instead of emitting that.
+        endcomment
+        if hi < lo
+          assign hi = lo
+        endif
+
+        assign slope = hi | minus: lo | divided_by: vw_span
+        assign shift = slope | times: vw_min
+        assign intercept = lo | minus: shift
+      -%}
+    --fs-{{ name }}: clamp({{ lo | divided_by: root_px | round: 4 }}rem, {{ intercept | divided_by: root_px | round: 4 }}rem + {{ slope | times: 100 | round: 4 }}vw, {{ hi | divided_by: root_px | round: 4 }}rem);
+    {%- endfor %}
+
+    /* ---- Fluid spacing scale ---------------------------------------- */
+    {%- for name in sp_names -%}
+      {%- liquid
+        assign mult = sp_mults[forloop.index0] | times: 1.0
+        assign lo = sp_min | times: mult
+        assign hi = sp_max | times: mult
+        assign slope = hi | minus: lo | divided_by: vw_span
+        assign shift = slope | times: vw_min
+        assign intercept = lo | minus: shift
+      -%}
+    --space-{{ name }}: clamp({{ lo | divided_by: root_px | round: 4 }}rem, {{ intercept | divided_by: root_px | round: 4 }}rem + {{ slope | times: 100 | round: 4 }}vw, {{ hi | divided_by: root_px | round: 4 }}rem);
+    {%- endfor %}
+
+    /* ---- Display headings -------------------------------------------
+       Sized directly against the viewport so the wordmark-style titles
+       hold their edge-to-edge proportion at every width.                */
+    --fs-display: clamp({{ settings.display_min | divided_by: root_px | round: 4 }}rem, {{ settings.display_grow | divided_by: 10.0 }}vw, {{ settings.display_max | divided_by: root_px | round: 4 }}rem);
+    --display-leading: {{ settings.display_leading | divided_by: 100.0 }};
+    --display-tracking: {{ settings.display_tracking | divided_by: 1000.0 }}em;
+    --display-transform: {% if settings.display_uppercase %}uppercase{% else %}none{% endif %};
+
+    /* Section headings — the sentence-case titles inside sections. */
+    --fs-section: clamp({{ settings.section_heading_min | divided_by: root_px | round: 4 }}rem, {{ settings.section_heading_grow | divided_by: 10.0 }}vw, {{ settings.section_heading_max | divided_by: root_px | round: 4 }}rem);
+
+    /* ---- Layout ------------------------------------------------------ */
+    {%- liquid
+      assign slope = gut_max | minus: gut_min | divided_by: vw_span
+      assign shift = slope | times: vw_min
+      assign intercept = gut_min | minus: shift
+    -%}
+    --gutter: clamp({{ gut_min | divided_by: root_px | round: 4 }}rem, {{ intercept | divided_by: root_px | round: 4 }}rem + {{ slope | times: 100 | round: 4 }}vw, {{ gut_max | divided_by: root_px | round: 4 }}rem);
+    {%- comment -%}
+      The gap between cards in the three product grids. One value, because the
+      design uses one for Most Loved, Our Products and Our Promises alike —
+      keeping them on the same token is what keeps the three reading as a set.
+      Deliberately the design's own curve rather than the 360→1440 spacing
+      scale, which would land half again too wide.
+    {%- endcomment -%}
+    --grid-gap: clamp(0.75rem, 2vw, 1.375rem);
+    --page-width: {{ settings.page_width }}px;
+    --page-width-narrow: {{ settings.page_width_narrow }}px;
+    --content-width: {{ settings.content_width }}px;
+    --grid-min: {{ settings.grid_min_column }}px;
+
+    /* ---- Typography -------------------------------------------------- */
+    {%- if settings.use_bundled_fonts -%}
+    --font-display: 'Italiana', 'Italiana Fallback', Georgia, serif;
+    --font-body: 'Karla', 'Karla Fallback', system-ui, sans-serif;
+    --font-body-weight: 400;
+    --font-body-style: normal;
+    --font-display-style: normal;
+    --display-weight: 400;
+    {%- else -%}
+    --font-display: {{ settings.font_heading.family }}, {{ settings.font_heading.fallback_families }};
+    --font-body: {{ settings.font_body.family }}, {{ settings.font_body.fallback_families }};
+    --font-body-weight: {{ settings.font_body.weight }};
+    --font-body-style: {{ settings.font_body.style }};
+    --font-display-style: {{ settings.font_heading.style }};
+    --display-weight: {{ settings.font_heading.weight }};
+    {%- endif %}
+    --heading-leading: {{ settings.heading_leading | divided_by: 100.0 }};
+    --heading-tracking: {{ settings.heading_tracking | divided_by: 1000.0 }}em;
+    --body-leading: {{ settings.body_leading | divided_by: 100.0 }};
+    --micro-size: {{ settings.micro_size }}px;
+    --micro-tracking: {{ settings.micro_tracking | divided_by: 1000.0 }}em;
+
+    /* ---- Shape ------------------------------------------------------- */
+    --radius: {{ settings.radius_base }}px;
+    --radius-sm: {{ settings.radius_base | divided_by: 2.0 | round: 2 }}px;
+    --radius-arch: clamp({{ settings.radius_arch | times: 0.55 | round: 0 }}px, 15vw, {{ settings.radius_arch }}px);
+    --border-width: {{ settings.border_width }}px;
+    --hairline: {{ settings.hairline_opacity }}%;
+    --shadow-strength: {{ settings.shadow_opacity }}%;
+
+    /* ---- Buttons ----------------------------------------------------- */
+    {%- comment -%}
+      Shopify caps a range at 101 steps, so the slider tops out at 50px rather
+      than a literal pill value. At the maximum, emit a radius large enough to
+      round any button fully — which is what the design specifies.
+    {%- endcomment -%}
+    --button-radius: {% if settings.button_radius >= 50 %}999px{% else %}{{ settings.button_radius }}px{% endif %};
+    --button-padding-x: {{ settings.button_padding_x }}px;
+    --button-padding-y: {{ settings.button_padding_y }}px;
+    --button-size: {{ settings.button_size }}px;
+    --button-tracking: {{ settings.button_tracking | divided_by: 1000.0 }}em;
+    --button-border-width: {{ settings.button_border_width }}px;
+    --button-transform: {% if settings.button_uppercase %}uppercase{% else %}none{% endif %};
+
+    /* ---- Product cards ----------------------------------------------- */
+    --card-fit: {{ settings.card_image_fit }};
+    --card-align: {{ settings.card_text_align }};
+
+    /* ---- Status ------------------------------------------------------
+       One colour, not per-scheme: an error reads the same everywhere.   */
+    --c-error: {{ settings.color_error | default: '#A2422C' }};
+
+    /* ---- Motion ------------------------------------------------------ */
+    --duration: {% if settings.motion_enabled %}{{ settings.motion_duration }}ms{% else %}0ms{% endif %};
+    --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :root {
+      --duration: 0ms;
+    }
+  }
+
+  /* ---- Color schemes -------------------------------------------------
+     One class per merchant-defined scheme. Sections adopt a scheme and
+     everything inside inherits through the same variables.               */
+  {%- for scheme in settings.color_schemes %}
+  .scheme-{{ scheme.id }} {
+    --c-bg: {{ scheme.settings.background }};
+    --c-text: {{ scheme.settings.text }};
+    --c-heading: {{ scheme.settings.heading | default: scheme.settings.text }};
+    --c-muted: {{ scheme.settings.muted | default: scheme.settings.text }};
+    --c-accent: {{ scheme.settings.accent | default: scheme.settings.text }};
+    --c-border: {{ scheme.settings.border | default: scheme.settings.text }};
+    --c-surface: {{ scheme.settings.surface | default: scheme.settings.background }};
+    --c-button: {{ scheme.settings.button }};
+    --c-button-label: {{ scheme.settings.button_label }};
+    --c-button-hover: {{ scheme.settings.button_hover | default: scheme.settings.button }};
+    --c-button-secondary-label: {{ scheme.settings.secondary_button_label | default: scheme.settings.text }};
+    --c-link: {{ scheme.settings.link | default: scheme.settings.text }};
+
+    {%- comment -%}
+      Derived from the scheme's own literal colours rather than var(--c-text),
+      so each scheme computes its own value instead of inheriting :root's.
+    {%- endcomment -%}
+    --c-hairline: color-mix(in srgb, {{ scheme.settings.text }} var(--hairline), transparent);
+    --c-shadow: color-mix(in srgb, {{ scheme.settings.text }} var(--shadow-strength), transparent);
+    --c-veil: color-mix(in srgb, {{ scheme.settings.text }} 6%, transparent);
+
+    color: var(--c-text);
+    background-color: var(--c-bg);
+    {%- if scheme.settings.background_gradient != blank %}
+    background-image: {{ scheme.settings.background_gradient }};
+    {%- endif %}
+  }
+  {%- endfor %}
+</style>

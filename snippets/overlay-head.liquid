@@ -1,0 +1,21 @@
+{%- comment -%}
+  The lockup-and-close row shared by the full-screen overlays.
+
+  The menu and the search overlay carry an identical head in the design, so
+  they carry one snippet here rather than two copies that drift apart.
+
+  Accepts:
+    close_action - 'menu' or an overlay name. Drives which controller the
+                   close button talks to.
+    row          - animation rank, so the head joins the staggered cascade.
+{%- endcomment -%}
+
+<div class="overlay-head" style="--row: {{ row | default: 0 }};">
+  <a class="overlay-head__logo" href="{{ routes.root_url }}">
+    {% render 'wordmark-lockup', size: 'lg' %}
+  </a>
+
+  <button class="overlay-head__close" type="button" data-overlay-close="{{ close_action }}">
+    {{ 'navigation.close' | t }}
+  </button>
+</div>

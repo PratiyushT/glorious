@@ -1,0 +1,63 @@
+<div class="page-width simple-template">
+  <div class="stack">
+    <h1 class="h3">{{ 'cart.title' | t }}</h1>
+
+    {%- if cart.item_count == 0 -%}
+      <p class="text-muted">{{ 'cart.empty' | t }}</p>
+      <div class="btn-row">
+        <a class="btn btn--primary" href="{{ routes.all_products_collection_url }}">
+          {{ 'general.continue_shopping' | t }}
+        </a>
+      </div>
+    {%- else -%}
+      {% form 'cart', cart, class: 'stack' %}
+        <div class="stack">
+          {%- for item in cart.items -%}
+            <div class="split" style="--split-min: 16rem; --split-align: flex-start;">
+              <div class="split" style="--split-min: 8rem; --split-align: flex-start;">
+                <div class="media" style="max-width: 6rem; aspect-ratio: 1 / 1;">
+                  {%- if item.image -%}
+                    {{ item.image | image_url: width: 300 | image_tag: loading: 'lazy', alt: item.title }}
+                  {%- endif -%}
+                </div>
+                <div class="stack stack--tight">
+                  <a class="card__title" href="{{ item.url }}">{{ item.product.title }}</a>
+                  {%- unless item.variant.title contains 'Default' -%}
+                    <span class="text-sm text-muted">{{ item.variant.title }}</span>
+                  {%- endunless -%}
+                  <span class="card__price">{{ item.final_line_price | money }}</span>
+                </div>
+              </div>
+
+              <div class="form-row" style="max-width: 14rem;">
+                <label class="visually-hidden" for="qty-{{ item.index | plus: 1 }}">
+                  {{ 'products.quantity' | t }}
+                </label>
+                <input
+                  class="field"
+                  id="qty-{{ item.index | plus: 1 }}"
+                  name="updates[]"
+                  type="number"
+                  min="0"
+                  value="{{ item.quantity }}"
+                >
+                <a class="btn btn--link" href="{{ item.url_to_remove }}">{{ 'cart.remove' | t }}</a>
+              </div>
+            </div>
+          {%- endfor -%}
+        </div>
+
+        <div class="footer__bottom">
+          <div class="stack stack--tight">
+            <span class="h5">{{ 'cart.subtotal' | t }}: {{ cart.total_price | money }}</span>
+            <span class="text-xs text-muted">{{ 'cart.taxes_note' | t }}</span>
+          </div>
+          <div class="btn-row">
+            <button type="submit" name="update" class="btn btn--secondary">{{ 'cart.update' | t }}</button>
+            <button type="submit" name="checkout" class="btn btn--primary">{{ 'cart.checkout' | t }}</button>
+          </div>
+        </div>
+      {% endform %}
+    {%- endif -%}
+  </div>
+</div>

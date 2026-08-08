@@ -1,0 +1,74 @@
+{
+  "current": {
+    "color_schemes": {
+      "scheme_1": {
+        "settings": {
+          "background": "#F4F0E8",
+          "background_gradient": "",
+          "text": "#191510",
+          "heading": "#191510",
+          "muted": "#75716B",
+          "accent": "#9A7836",
+          "border": "#D5D1CA",
+          "surface": "#FFFFFF",
+          "button": "#191510",
+          "button_label": "#F4F0E8",
+          "button_hover": "#9A7836",
+          "secondary_button_label": "#191510",
+          "link": "#191510"
+        }
+      },
+      "scheme_2": {
+        "settings": {
+          "background": "#0D0C0A",
+          "background_gradient": "",
+          "text": "#EFE9DC",
+          "heading": "#F4EFE4",
+          "muted": "#A6A299",
+          "accent": "#C7A15C",
+          "border": "#362D1C",
+          "surface": "#14110D",
+          "button": "#C7A15C",
+          "button_label": "#14110D",
+          "button_hover": "#F4EFE4",
+          "secondary_button_label": "#EFE9DC",
+          "link": "#EFE9DC"
+        }
+      },
+      "scheme_3": {
+        "settings": {
+          "background": "#FFFFFF",
+          "background_gradient": "",
+          "text": "#191510",
+          "heading": "#191510",
+          "muted": "#75716B",
+          "accent": "#9A7836",
+          "border": "#ECECEB",
+          "surface": "#FBF8F2",
+          "button": "#191510",
+          "button_label": "#F4F0E8",
+          "button_hover": "#9A7836",
+          "secondary_button_label": "#191510",
+          "link": "#191510"
+        }
+      },
+      "scheme_4": {
+        "settings": {
+          "background": "#191510",
+          "background_gradient": "",
+          "text": "#EFE9DC",
+          "heading": "#F4EFE4",
+          "muted": "#A6A299",
+          "accent": "#C7A15C",
+          "border": "#362D1C",
+          "surface": "#1A1712",
+          "button": "#C7A15C",
+          "button_label": "#14110D",
+          "button_hover": "#F4EFE4",
+          "secondary_button_label": "#EFE9DC",
+          "link": "#EFE9DC"
+        }
+      }
+    }
+  }
+}

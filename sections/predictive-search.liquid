@@ -1,0 +1,128 @@
+{%- comment -%}
+  Live results for the search overlay.
+
+  Requested by assets/theme.js as
+    /search/suggest?q=…&section_id=predictive-search
+  so the rows come back rendered by Liquid rather than assembled in JavaScript.
+  That keeps money formatting, translation and image sizing in the one place
+  that already knows how to do them, and it means the overlay needs no client
+  side search index.
+
+  Matched characters are wrapped by Shopify's `highlight` filter and picked out
+  in gold by base.css, which is the design's treatment.
+
+  Deliberately has no {% schema %}: it is never placed by a merchant, it only
+  answers the predictive search endpoint.
+{%- endcomment -%}
+
+{%- liquid
+  assign terms = predictive_search.terms
+  assign products = predictive_search.resources.products
+  assign collections = predictive_search.resources.collections
+  assign pages = predictive_search.resources.pages
+  assign articles = predictive_search.resources.articles
+
+  assign page_count = collections.size | plus: pages.size | plus: articles.size
+  assign total = products.size | plus: page_count
+-%}
+
+{%- comment -%}
+  The count travels as a rendered string rather than a number: pluralisation
+  is the locale file's job, not the browser's.
+{%- endcomment -%}
+<div
+  class="search-results"
+  data-search-live-inner
+  data-search-total="{{ total }}"
+  data-search-count-label="{{ 'general.search.results_with_count' | t: count: total | escape }}"
+>
+  {%- if predictive_search.performed -%}
+    {%- if products.size > 0 -%}
+      <div class="search-group">
+        <div class="search-group__label">{{ 'general.search.group_products' | t }}</div>
+        {%- for product in products -%}
+          {%- liquid
+            assign kind = product.type | default: product.vendor
+            if product.price_varies
+              assign price_label = 'products.from_price' | t: price: product.price_min | money
+            else
+              assign price_label = product.price | money
+            endif
+            if kind != blank
+              assign row_meta = kind | append: ' · ' | append: price_label
+            else
+              assign row_meta = price_label
+            endif
+            assign row_title = product.title | highlight: terms
+          -%}
+          {% render 'search-row',
+            url: product.url,
+            title: row_title,
+            meta: row_meta,
+            image: product.featured_media
+          %}
+        {%- endfor -%}
+      </div>
+    {%- endif -%}
+
+    {%- if page_count > 0 -%}
+      <div class="search-group">
+        <div class="search-group__label">{{ 'general.search.group_pages' | t }}</div>
+
+        {%- liquid
+          assign label_collection = 'general.search.kind_collection' | t
+          assign label_page = 'general.search.kind_page' | t
+          assign label_article = 'general.search.kind_article' | t
+        -%}
+
+        {%- for collection in collections -%}
+          {%- assign row_title = collection.title | highlight: terms -%}
+          {% render 'search-row',
+            url: collection.url,
+            title: row_title,
+            meta: label_collection,
+            image: collection.featured_image
+          %}
+        {%- endfor -%}
+
+        {%- for page in pages -%}
+          {%- assign row_title = page.title | highlight: terms -%}
+          {% render 'search-row',
+            url: page.url,
+            title: row_title,
+            meta: label_page
+          %}
+        {%- endfor -%}
+
+        {%- for article in articles -%}
+          {%- assign row_title = article.title | highlight: terms -%}
+          {% render 'search-row',
+            url: article.url,
+            title: row_title,
+            meta: label_article,
+            image: article.image
+          %}
+        {%- endfor -%}
+      </div>
+    {%- endif -%}
+
+    {%- if total > 0 -%}
+      <a
+        class="search-all"
+        href="{{ routes.search_url }}?q={{ terms | url_encode }}"
+        data-search-row
+      >
+        {{ 'general.search.see_all' | t: terms: terms }}
+        <span aria-hidden="true">&rarr;</span>
+      </a>
+    {%- else -%}
+      <div class="search-empty">
+        <p class="search-empty__title">{{ 'general.search.no_results' | t: terms: terms }}</p>
+        <p class="search-empty__text">{{ 'general.search.no_results_hint' | t }}</p>
+        <a class="search-empty__link" href="{{ routes.all_products_collection_url }}">
+          {{ 'general.search.browse_all' | t }}
+        </a>
+      </div>
+    {%- endif -%}
+  {%- endif -%}
+</div>

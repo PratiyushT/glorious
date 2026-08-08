@@ -1,0 +1,359 @@
+{%- comment -%}
+  Navigation.
+
+  A single <nav> that morphs rather than two elements swapping: the bar is the
+  resting state and adding .nav--pill transitions width, height, offset, radius
+  and padding into the centred pill. That way the transition the design
+  describes actually runs, and there is one thing to keep accessible.
+
+  The pill mode is emitted server-side rather than added by JavaScript, because
+  it is a resting state, not a reaction to scrolling — the design's homepage is
+  a pill from the first paint. Only the morph mode needs a scroll listener.
+
+  Menu items are blocks, not a Shopify linklist, so the design's content ships
+  working out of the box and stays editable without the merchant first building
+  navigation menus in admin.
+{%- endcomment -%}
+
+{%- liquid
+  assign menu_id = 'nav-menu-' | append: section.id
+  assign link_blocks = section.blocks | where: 'type', 'link'
+
+  assign cart_drawer = false
+  if settings.cart_type == 'drawer'
+    assign cart_drawer = true
+  endif
+
+  assign search_overlay = section.settings.search_overlay
+
+  comment
+    The overlay numbers every row continuously, including the two action rows,
+    so the count has to follow whatever the merchant has switched on.
+  endcomment
+  assign n = link_blocks.size
+  assign bag_number = 0
+  assign search_number = 0
+  if section.settings.show_bag
+    assign n = n | plus: 1
+    assign bag_number = n
+  endif
+  if section.settings.show_search
+    assign n = n | plus: 1
+    assign search_number = n
+  endif
+
+  comment
+    Overlay the first section only where a section is designed to sit under the
+    nav. Elsewhere reserve the bar's height so content is not covered.
+  endcomment
+  assign overlay = false
+  if section.settings.overlay_home and template.name == 'index'
+    assign overlay = true
+  endif
+
+  comment
+    The design gives the homepage and the inner pages different navs — a
+    floating pill over the hero, a full bar everywhere else. A section group is
+    shared by every template, so the two states are two settings rather than
+    one, and the template picks between them.
+  endcomment
+  assign nav_mode = section.settings.nav_mode
+  if template.name == 'index'
+    assign nav_mode = section.settings.nav_mode_home
+  endif
+
+  comment
+    The pill is the resting state for both the always-pill and the morphing
+    nav — morphing expands it into the bar on scroll, it does not collapse a
+    bar into a pill. Emitting that resting state from Liquid rather than from
+    JavaScript means the first paint is already right.
+  endcomment
+  assign is_pill = false
+  if nav_mode == 'pill' or nav_mode == 'morph'
+    assign is_pill = true
+  endif
+-%}
+
+<nav
+  class="nav scheme-{{ section.settings.color_scheme }}{% if overlay %} nav--overlay{% endif %}{% if is_pill %} nav--pill{% endif %}{% if nav_mode != 'morph' %} is-solid{% endif %}"
+  data-nav
+  data-nav-mode="{{ nav_mode }}"
+  data-nav-threshold="{{ section.settings.scroll_threshold }}"
+  aria-label="{{ 'accessibility.primary_navigation' | t }}"
+>
+  <button
+    class="nav__menu-button"
+    type="button"
+    data-overlay-open="menu"
+    aria-controls="{{ menu_id }}"
+    aria-expanded="false"
+  >
+    <span class="nav__bars" aria-hidden="true">
+      <span></span>
+      <span></span>
+    </span>
+    <span class="nav__menu-label" data-nav-text>{{ 'navigation.menu' | t }}</span>
+  </button>
+
+  <a class="nav__logo" href="{{ routes.root_url }}">
+    {% render 'wordmark-lockup', size: 'sm' %}
+  </a>
+
+  <div class="nav__actions">
+    {%- if section.settings.show_contact and section.settings.contact_link != blank -%}
+      <a class="nav__action nav__action--contact" href="{{ section.settings.contact_link }}">
+        {{ section.settings.contact_label | default: 'Contact' }}
+      </a>
+    {%- endif -%}
+
+    {%- if section.settings.show_account -%}
+      <a class="nav__action nav__action--account" href="{{ routes.account_url }}">
+        {% render 'icon', icon: 'nav-account' %}
+        <span class="nav__action-label">{{ 'accessibility.account' | t }}</span>
+      </a>
+    {%- endif -%}
+
+    {%- comment -%}
+      Both actions stay real links. theme.js upgrades them to the overlay and
+      the drawer when those are switched on, so nothing breaks without it.
+    {%- endcomment -%}
+    {%- if section.settings.show_search -%}
+      <a
+        class="nav__action"
+        href="{{ routes.search_url }}"
+        {% if search_overlay %}data-search-open{% endif %}
+      >
+        {% render 'icon', icon: 'nav-search' %}
+        <span class="nav__action-label">{{ 'general.search.search' | t }}</span>
+      </a>
+    {%- endif -%}
+
+    {%- if section.settings.show_bag -%}
+      <a
+        class="nav__action"
+        href="{{ routes.cart_url }}"
+        {% if cart_drawer %}data-drawer-open{% endif %}
+      >
+        {% render 'icon', icon: 'nav-bag' %}
+        <span class="nav__action-label">{{ 'navigation.bag' | t }}</span>
+        <span
+          class="nav__count"
+          data-cart-count
+          {% if cart.item_count == 0 %}hidden{% endif %}
+        >{{ cart.item_count }}</span>
+      </a>
+    {%- endif -%}
+  </div>
+</nav>
+
+{%- unless overlay -%}
+  <div class="nav-spacer" aria-hidden="true"></div>
+{%- endunless -%}
+
+{% render 'nav-menu',
+  section: section,
+  menu_id: menu_id,
+  link_blocks: link_blocks,
+  bag_number: bag_number,
+  search_number: search_number,
+  cart_drawer: cart_drawer,
+  search_overlay: search_overlay
+%}
+
+{%- if search_overlay -%}
+  {% render 'search-overlay', section: section %}
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "t:sections.header.name",
+  "tag": "div",
+  "settings": [
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:sections.all.color_scheme.label",
+      "default": "scheme_2"
+    },
+    {
+      "type": "paragraph",
+      "content": "t:sections.header.nav_mode.paragraph"
+    },
+    {
+      "type": "select",
+      "id": "nav_mode_home",
+      "label": "t:sections.header.nav_mode.home_label",
+      "options": [
+        { "value": "bar", "label": "t:sections.header.nav_mode.bar" },
+        { "value": "morph", "label": "t:sections.header.nav_mode.morph" },
+        { "value": "pill", "label": "t:sections.header.nav_mode.pill" }
+      ],
+      "default": "morph"
+    },
+    {
+      "type": "select",
+      "id": "nav_mode",
+      "label": "t:sections.header.nav_mode.inner_label",
+      "info": "t:sections.header.nav_mode.info",
+      "options": [
+        { "value": "bar", "label": "t:sections.header.nav_mode.bar" },
+        { "value": "morph", "label": "t:sections.header.nav_mode.morph" },
+        { "value": "pill", "label": "t:sections.header.nav_mode.pill" }
+      ],
+      "default": "bar"
+    },
+    {
+      "type": "range",
+      "id": "scroll_threshold",
+      "label": "t:sections.header.scroll_threshold.label",
+      "min": 0,
+      "max": 400,
+      "step": 10,
+      "unit": "px",
+      "default": 60
+    },
+    {
+      "type": "checkbox",
+      "id": "overlay_home",
+      "label": "t:sections.header.overlay_home.label",
+      "info": "t:sections.header.overlay_home.info",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "t:sections.header.actions_header"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_contact",
+      "label": "t:sections.header.show_contact.label",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "contact_label",
+      "label": "t:sections.header.contact_label.label",
+      "default": "Contact"
+    },
+    {
+      "type": "url",
+      "id": "contact_link",
+      "label": "t:sections.header.contact_link.label"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_account",
+      "label": "t:sections.header.show_account.label",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_search",
+      "label": "t:sections.header.show_search.label",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_bag",
+      "label": "t:sections.header.show_bag.label",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "t:sections.header.search_header"
+    },
+    {
+      "type": "paragraph",
+      "content": "t:sections.header.search_paragraph"
+    },
+    {
+      "type": "checkbox",
+      "id": "search_overlay",
+      "label": "t:sections.header.search_overlay.label",
+      "info": "t:sections.header.search_overlay.info",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "search_popular",
+      "label": "t:sections.header.search_popular.label",
+      "info": "t:sections.header.search_popular.info",
+      "default": "Emerald, Halo, Hoop earrings, Pendant"
+    },
+    {
+      "type": "collection",
+      "id": "search_collection",
+      "label": "t:sections.header.search_collection.label",
+      "info": "t:sections.header.search_collection.info"
+    },
+    {
+      "type": "header",
+      "content": "t:sections.header.menu_header"
+    },
+    {
+      "type": "paragraph",
+      "content": "t:sections.header.menu_paragraph"
+    },
+    {
+      "type": "text",
+      "id": "menu_address",
+      "label": "t:sections.header.menu_address.label",
+      "default": "8140 N MacArthur Blvd #120, Irving, TX"
+    },
+    {
+      "type": "url",
+      "id": "menu_address_link",
+      "label": "t:sections.header.menu_address_link.label"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "link",
+      "name": "t:sections.header.blocks.link.name",
+      "settings": [
+        {
+          "type": "text",
+          "id": "label",
+          "label": "t:sections.all.link_label.label",
+          "default": "Home"
+        },
+        {
+          "type": "url",
+          "id": "url",
+          "label": "t:sections.all.link.label"
+        }
+      ]
+    },
+    {
+      "type": "category",
+      "name": "t:sections.header.blocks.category.name",
+      "settings": [
+        {
+          "type": "text",
+          "id": "label",
+          "label": "t:sections.all.link_label.label",
+          "default": "Rings"
+        },
+        {
+          "type": "url",
+          "id": "url",
+          "label": "t:sections.all.link.label"
+        }
+      ]
+    },
+    {
+      "type": "social",
+      "name": "t:sections.footer.blocks.social.name",
+      "limit": 1,
+      "settings": [
+        { "type": "url", "id": "instagram", "label": "Instagram" },
+        { "type": "url", "id": "facebook", "label": "Facebook" },
+        { "type": "url", "id": "pinterest", "label": "Pinterest" }
+      ]
+    }
+  ],
+  "enabled_on": {
+    "groups": ["header"]
+  }
+}
+{% endschema %}

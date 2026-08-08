@@ -1,0 +1,35 @@
+{%- comment -%}
+  One result row in the search overlay.
+
+  Shared by the resting state (rendered server-side into the overlay) and the
+  live predictive results, so both look identical and the keyboard selection
+  can treat them as one list.
+
+  Accepts:
+    url        - destination.
+    title      - may already carry <strong> from the highlight filter, so it is
+                 emitted unescaped. Escape plain text at the call site.
+    meta       - trailing label, optional.
+    image      - image object. Falls back to the design's diamond glyph.
+{%- endcomment -%}
+
+<a class="search-row" href="{{ url }}" data-search-row>
+  {%- if image != blank -%}
+    <img
+      class="search-row__thumb"
+      src="{{ image | image_url: width: 104, height: 104, crop: 'center' }}"
+      alt=""
+      width="52"
+      height="52"
+      loading="lazy"
+    >
+  {%- else -%}
+    <span class="search-row__glyph" aria-hidden="true"><span></span></span>
+  {%- endif -%}
+
+  <span class="search-row__title">{{ title }}</span>
+
+  {%- if meta != blank -%}
+    <span class="search-row__meta">{{ meta }}</span>
+  {%- endif -%}
+</a>

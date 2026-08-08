@@ -1,0 +1,213 @@
+{%- comment -%}
+  Newsletter popup.
+
+  Appears once after a delay, remembers dismissal, and reopens whenever a
+  #newsletter action is triggered anywhere on the page.
+
+  The form posts to Shopify's customer endpoint rather than being faked in
+  JavaScript, so a real subscriber lands in the customer list. Shopify redirects
+  back after posting, and the modal reopens on the success state so the offer
+  code is actually shown.
+{%- endcomment -%}
+
+{%- comment -%}
+  The colour scheme belongs to the panel, not to the full-screen wrapper: a
+  scheme class paints a background, and on a fixed inset:0 element that fills
+  the screen with an opaque colour and the veil stops being a veil.
+{%- endcomment -%}
+{%- if section.settings.enabled -%}
+  <div
+    class="overlay overlay--modal"
+    data-overlay="newsletter"
+    data-overlay-modal
+    data-delay="{{ section.settings.delay | times: 1000 }}"
+    data-storage-key="glorious-newsletter"
+    hidden
+  >
+    <button class="overlay__veil" type="button" data-overlay-close="newsletter">
+      <span class="visually-hidden">{{ 'navigation.close' | t }}</span>
+    </button>
+
+    <div
+      class="modal scheme-{{ section.settings.color_scheme }}"
+      role="dialog"
+      aria-modal="true"
+      aria-label="{{ section.settings.heading | escape }}"
+    >
+      <button class="modal__close" type="button" data-overlay-close="newsletter">
+        <span class="visually-hidden">{{ 'navigation.close' | t }}</span>
+        <span aria-hidden="true">&#10005;</span>
+      </button>
+
+      <div class="modal__grid">
+        <div class="modal__media">
+          {%- if section.settings.image != blank -%}
+            <img
+              src="{{ section.settings.image | image_url: width: 900 }}"
+              srcset="{{ section.settings.image | image_url: width: 400 }} 400w, {{ section.settings.image | image_url: width: 700 }} 700w, {{ section.settings.image | image_url: width: 900 }} 900w"
+              sizes="(min-width: 56rem) 50vw, 100vw"
+              alt="{{ section.settings.image.alt | escape }}"
+              width="{{ section.settings.image.width }}"
+              height="{{ section.settings.image.height }}"
+              loading="lazy"
+            >
+          {%- else -%}
+            <img
+              src="{{ 'cat-necklaces.webp' | asset_url }}"
+              alt=""
+              aria-hidden="true"
+              width="1000"
+              height="1250"
+              loading="lazy"
+            >
+          {%- endif -%}
+        </div>
+
+        <div class="modal__body">
+          {%- form 'customer', class: 'modal__form' -%}
+            <input type="hidden" name="contact[tags]" value="newsletter">
+
+            {%- if form.posted_successfully? -%}
+              <span class="micro">{{ 'newsletter.welcome' | t }}</span>
+              <h2 class="modal__title">{{ section.settings.success_heading }}</h2>
+              <p class="modal__text">{{ section.settings.success_text }}</p>
+
+              {%- if section.settings.offer_code != blank -%}
+                <p class="modal__code">{{ section.settings.offer_code }}</p>
+              {%- endif -%}
+
+              <button class="btn btn--primary modal__submit" type="button" data-overlay-close="newsletter">
+                {{ 'newsletter.continue' | t }}
+              </button>
+            {%- else -%}
+              {%- if section.settings.eyebrow != blank -%}
+                <span class="micro">{{ section.settings.eyebrow }}</span>
+              {%- endif -%}
+
+              <h2 class="modal__title">{{ section.settings.heading }}</h2>
+
+              {%- if section.settings.text != blank -%}
+                <p class="modal__text">{{ section.settings.text }}</p>
+              {%- endif -%}
+
+              <label class="visually-hidden" for="newsletter-popup-email">
+                {{ 'newsletter.email' | t }}
+              </label>
+              <input
+                class="modal__field"
+                id="newsletter-popup-email"
+                type="email"
+                name="contact[email]"
+                placeholder="{{ 'newsletter.email' | t }}"
+                autocomplete="email"
+                required
+              >
+
+              {%- if form.errors -%}
+                <p class="modal__error">{{ form.errors.messages['email'] }}</p>
+              {%- endif -%}
+
+              <button class="btn btn--primary modal__submit" type="submit">
+                {{ 'newsletter.subscribe' | t }}
+              </button>
+
+              <button class="modal__decline" type="button" data-overlay-close="newsletter">
+                {{ 'newsletter.no_thanks' | t }}
+              </button>
+
+              {%- if section.settings.fine_print != blank -%}
+                <p class="modal__fine">{{ section.settings.fine_print }}</p>
+              {%- endif -%}
+            {%- endif -%}
+          {%- endform -%}
+        </div>
+      </div>
+    </div>
+  </div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "t:sections.newsletter_popup.name",
+  "tag": "div",
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "enabled",
+      "label": "t:sections.newsletter_popup.enabled.label",
+      "default": true
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:sections.all.color_scheme.label",
+      "default": "scheme_1"
+    },
+    {
+      "type": "range",
+      "id": "delay",
+      "label": "t:sections.newsletter_popup.delay.label",
+      "info": "t:sections.newsletter_popup.delay.info",
+      "min": 0,
+      "max": 20,
+      "step": 1,
+      "unit": "s",
+      "default": 2
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "t:sections.all.image.label"
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "t:sections.all.subheading.label",
+      "default": "The Glorious List"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "t:sections.all.heading.label",
+      "default": "Take 10% Off Your First Order"
+    },
+    {
+      "type": "text",
+      "id": "text",
+      "label": "t:sections.all.text.label",
+      "default": "Sign up for early access to new collections, private previews, and your welcome offer."
+    },
+    {
+      "type": "text",
+      "id": "fine_print",
+      "label": "t:sections.newsletter_popup.fine_print.label",
+      "default": "By subscribing you agree to receive email from Glorious Jewelers. Unsubscribe anytime."
+    },
+    {
+      "type": "header",
+      "content": "t:sections.newsletter_popup.success_header"
+    },
+    {
+      "type": "text",
+      "id": "success_heading",
+      "label": "t:sections.all.heading.label",
+      "default": "You're on the List"
+    },
+    {
+      "type": "text",
+      "id": "success_text",
+      "label": "t:sections.all.text.label",
+      "default": "Enjoy 10% off your first order with the code below."
+    },
+    {
+      "type": "text",
+      "id": "offer_code",
+      "label": "t:sections.newsletter_popup.offer_code.label",
+      "default": "GLORIOUS10"
+    }
+  ],
+  "enabled_on": {
+    "groups": ["header"]
+  }
+}
+{% endschema %}

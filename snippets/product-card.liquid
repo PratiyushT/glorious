@@ -1,0 +1,135 @@
+{%- comment -%}
+  Product card.
+
+  Shape, fit, alignment and which lines appear all come from the global
+  "Product cards" settings, so every grid in the theme stays consistent and a
+  merchant restyles them in one place.
+
+  Accepts:
+    product - product object. Renders a placeholder when blank.
+    loading - 'lazy' (default) or 'eager'.
+    sizes   - sizes attribute. Defaults to a four-up grid.
+{%- endcomment -%}
+
+{%- liquid
+  assign ratio = settings.card_image_ratio
+  assign img_loading = loading | default: 'lazy'
+  assign img_sizes = sizes | default: '(min-width: 60rem) 25vw, 50vw'
+  assign hover_media = product.media[1]
+
+  assign metal = blank
+  if settings.card_show_metal
+    assign metal = product.metafields.custom.metal.value
+    if metal == blank
+      for option in product.options_with_values
+        assign name_down = option.name | downcase
+        if name_down contains 'metal' or name_down contains 'gold'
+          assign metal = option.selected_value | default: option.values.first
+          break
+        endif
+      endfor
+    endif
+  endif
+-%}
+
+{%- if product == blank -%}
+  <div class="card">
+    <div class="card__media">
+      <div class="placeholder" style="--ratio: {% if ratio == 'adapt' %}3 / 4{% else %}{{ ratio | replace: '/', ' / ' }}{% endif %};">
+        {{ 'product-1' | placeholder_svg_tag: 'placeholder-svg' }}
+      </div>
+    </div>
+    <div class="card__body">
+      <span class="card__title">{{ 'onboarding.product_title' | t }}</span>
+      <span class="card__price">{{ 1999 | money }}</span>
+    </div>
+  </div>
+{%- else -%}
+  <div class="card">
+    <a
+      class="card__media"
+      href="{{ product.url }}"
+      tabindex="-1"
+      aria-hidden="true"
+      style="aspect-ratio: {% if ratio == 'adapt' %}3 / 4{% else %}{{ ratio | replace: '/', ' / ' }}{% endif %};"
+    >
+      {%- if product.featured_media -%}
+        <img
+          class="card__primary"
+          src="{{ product.featured_media | image_url: width: 800 }}"
+          srcset="{{ product.featured_media | image_url: width: 300 }} 300w, {{ product.featured_media | image_url: width: 600 }} 600w, {{ product.featured_media | image_url: width: 900 }} 900w, {{ product.featured_media | image_url: width: 1200 }} 1200w"
+          sizes="{{ img_sizes }}"
+          alt="{{ product.featured_media.alt | escape }}"
+          width="{{ product.featured_media.width }}"
+          height="{{ product.featured_media.height }}"
+          loading="{{ img_loading }}"
+        >
+
+        {%- if settings.card_hover_image and hover_media -%}
+          <img
+            class="card__hover"
+            src="{{ hover_media | image_url: width: 800 }}"
+            srcset="{{ hover_media | image_url: width: 300 }} 300w, {{ hover_media | image_url: width: 600 }} 600w, {{ hover_media | image_url: width: 900 }} 900w, {{ hover_media | image_url: width: 1200 }} 1200w"
+            sizes="{{ img_sizes }}"
+            alt=""
+            aria-hidden="true"
+            width="{{ hover_media.width }}"
+            height="{{ hover_media.height }}"
+            loading="lazy"
+          >
+        {%- endif -%}
+      {%- else -%}
+        {{ 'product-1' | placeholder_svg_tag: 'placeholder-svg' }}
+      {%- endif -%}
+
+      {%- if product.available == false -%}
+        <span class="badge">{{ 'products.sold_out' | t }}</span>
+      {%- elsif product.compare_at_price > product.price -%}
+        <span class="badge">{{ 'products.on_sale' | t }}</span>
+      {%- endif -%}
+    </a>
+
+    <div class="card__body">
+      {%- if settings.card_show_vendor and product.vendor != blank -%}
+        <span class="card__meta">{{ product.vendor }}</span>
+      {%- endif -%}
+
+      <a class="card__title" href="{{ product.url }}">{{ product.title }}</a>
+
+      {%- if metal != blank -%}
+        <span class="card__meta">{{ metal }}</span>
+      {%- endif -%}
+
+      <span class="card__price">
+        {%- if product.compare_at_price > product.price -%}
+          <s>{{ product.compare_at_price | money }}</s>
+        {%- endif -%}
+        {%- if product.price_varies -%}
+          {{ 'products.from_price' | t: price: product.price_min | money }}
+        {%- else -%}
+          {{ product.price | money }}
+        {%- endif -%}
+      </span>
+
+      {%- if settings.card_show_add -%}
+        {%- if product.available -%}
+          {%- comment -%}
+            A plain product form, so adding works without scripting. theme.js
+            intercepts it when the bag drawer is on and posts it in the
+            background instead, then slides the drawer out.
+          {%- endcomment -%}
+          {%- form 'product', product, class: 'card__add', data-cart-add: '' -%}
+            <input type="hidden" name="id" value="{{ product.selected_or_first_available_variant.id }}">
+            <button type="submit" name="add" class="btn btn--square">
+              {{ settings.card_add_label | default: 'Add to Bag' }}
+            </button>
+          {%- endform -%}
+        {%- else -%}
+          <span class="btn btn--square card__add" aria-disabled="true">
+            {{ 'products.sold_out' | t }}
+          </span>
+        {%- endif -%}
+      {%- endif -%}
+    </div>
+  </div>
+{%- endif -%}

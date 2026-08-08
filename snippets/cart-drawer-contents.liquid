@@ -1,0 +1,136 @@
+{%- comment -%}
+  Everything inside the bag drawer panel.
+
+  Kept apart from the section shell because this is the part that gets replaced
+  after a quantity change: theme.js asks Shopify to re-render the section and
+  swaps this subtree in, leaving the panel — and its open state and animation —
+  untouched.
+
+  Accepts:
+    section - the cart-drawer section, for its settings.
+{%- endcomment -%}
+
+{%- comment -%}
+  The item count rides along on the markup so the nav badge can be updated
+  from whatever the section just rendered, rather than from a second request
+  or arithmetic done in the browser.
+{%- endcomment -%}
+<div class="drawer__count-source" data-cart-count-value="{{ cart.item_count }}" hidden></div>
+
+<div class="drawer__head">
+  <span class="drawer__title">
+    {{ 'cart.title_bag' | t }}
+    {%- if cart.item_count > 0 -%}
+      <span class="drawer__count">{{ cart.item_count }}</span>
+    {%- endif -%}
+  </span>
+
+  <button class="overlay-head__close drawer__close" type="button" data-overlay-close="cart">
+    {{ 'navigation.close' | t }}
+  </button>
+</div>
+
+<div class="drawer__body" data-drawer-scroller>
+  {%- if cart.item_count == 0 -%}
+    <div class="drawer-empty">
+      <p class="drawer-empty__title">{{ 'cart.empty' | t }}</p>
+      <p class="drawer-empty__text">{{ 'cart.empty_text' | t }}</p>
+      <a class="btn btn--primary" href="{{ routes.all_products_collection_url }}">
+        {{ 'cart.browse' | t }}
+      </a>
+    </div>
+  {%- else -%}
+    <ul class="drawer-lines">
+      {%- for item in cart.items -%}
+        <li class="drawer-row" data-cart-line="{{ forloop.index }}">
+          <div class="drawer-row__collapse">
+            <div class="drawer-row__clip">
+              <div class="drawer-row__body">
+                <a class="drawer-row__thumb" href="{{ item.url }}" tabindex="-1" aria-hidden="true">
+                  {%- if item.image -%}
+                    <img
+                      src="{{ item.image | image_url: width: 128, height: 128, crop: 'center' }}"
+                      alt=""
+                      width="64"
+                      height="64"
+                      loading="lazy"
+                    >
+                  {%- endif -%}
+                </a>
+
+                <div class="drawer-row__info">
+                  <a class="drawer-row__name" href="{{ item.url }}">{{ item.product.title }}</a>
+
+                  {%- unless item.variant.title contains 'Default' -%}
+                    <span class="drawer-row__meta">{{ item.variant.title }}</span>
+                  {%- endunless -%}
+
+                  {%- if item.selling_plan_allocation -%}
+                    <span class="drawer-row__meta">{{ item.selling_plan_allocation.selling_plan.name }}</span>
+                  {%- endif -%}
+
+                  <div class="drawer-qty">
+                    <button
+                      class="drawer-qty__btn"
+                      type="button"
+                      data-cart-step="-1"
+                      aria-label="{{ 'cart.decrease' | t: title: item.product.title | escape }}"
+                    >
+                      &minus;
+                    </button>
+                    <span class="drawer-qty__value" data-cart-qty>{{ item.quantity }}</span>
+                    <button
+                      class="drawer-qty__btn"
+                      type="button"
+                      data-cart-step="1"
+                      aria-label="{{ 'cart.increase' | t: title: item.product.title | escape }}"
+                    >
+                      &plus;
+                    </button>
+                  </div>
+                </div>
+
+                <div class="drawer-row__aside">
+                  <span class="drawer-row__price">{{ item.final_line_price | money }}</span>
+                  <button
+                    class="drawer-row__remove"
+                    type="button"
+                    data-cart-remove
+                    aria-label="{{ 'cart.remove_title' | t: title: item.product.title | escape }}"
+                  >
+                    {{ 'cart.remove' | t }}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </li>
+      {%- endfor -%}
+    </ul>
+  {%- endif -%}
+</div>
+
+{%- if cart.item_count > 0 -%}
+  <div class="drawer__foot">
+    <div class="drawer__subtotal">
+      <span class="drawer__subtotal-label">{{ 'cart.subtotal' | t }}</span>
+      <span class="drawer__subtotal-value">{{ cart.total_price | money }}</span>
+    </div>
+
+    {%- if section.settings.note != blank -%}
+      <p class="drawer__note">{{ section.settings.note }}</p>
+    {%- endif -%}
+
+    <form action="{{ routes.cart_url }}" method="post" class="drawer__actions">
+      <button class="btn btn--primary drawer__checkout" type="submit" name="checkout">
+        {{ 'cart.checkout' | t }}
+      </button>
+
+      {%- if section.settings.secondary_label != blank -%}
+        <a class="btn btn--outline drawer__secondary" href="{{ section.settings.secondary_link | default: routes.root_url }}">
+          {{ section.settings.secondary_label }}
+        </a>
+      {%- endif -%}
+    </form>
+  </div>
+{%- endif -%}

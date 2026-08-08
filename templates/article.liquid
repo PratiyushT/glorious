@@ -1,0 +1,22 @@
+<div class="page-width simple-template">
+  <article class="stack measure measure--center">
+    <h1 class="h3">{{ article.title }}</h1>
+    <span class="card__vendor">{{ article.published_at | date: '%B %e, %Y' }}</span>
+
+    {%- if article.image -%}
+      <div class="media" style="aspect-ratio: 16 / 9;">
+        {{
+          article.image
+          | image_url: width: 1600
+          | image_tag:
+            widths: '400,600,800,1200,1600',
+            sizes: '100vw',
+            loading: 'eager',
+            alt: article.title
+        }}
+      </div>
+    {%- endif -%}
+
+    <div class="rte">{{ article.content }}</div>
+  </article>
+</div>

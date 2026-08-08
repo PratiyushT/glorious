@@ -1,0 +1,71 @@
+{%- comment -%}
+  Inline wordmark lockup — the emblem stands in for the first repeated letter,
+  so the brand reads GL[mark]RIOUS on one line. Used in the nav bar, the nav
+  pill and the menu overlay header.
+
+  The emblem has a light and a dark cut; which one is used follows the surface
+  it sits on rather than being hardcoded.
+
+  Accepts:
+    size    - 'sm' (nav), 'md' (default), 'lg' (menu overlay).
+    on_dark - true to use the light emblem. Defaults to true.
+{%- endcomment -%}
+
+{%- liquid
+  assign source = settings.wordmark | default: shop.name | upcase
+  assign letters = source | split: ''
+  assign scale = size | default: 'md'
+
+  assign use_light = true
+  if on_dark == false
+    assign use_light = false
+  endif
+
+  assign mark = settings.wordmark_mark
+  if mark == blank
+    if use_light
+      assign mark_url = 'glorious-mark-white.png' | asset_url
+    else
+      assign mark_url = 'glorious-mark-dark.png' | asset_url
+    endif
+  else
+    assign mark_url = mark | image_url: width: 300
+  endif
+
+  comment
+    Find the first letter that has already appeared — the emblem replaces it.
+  endcomment
+  assign mark_index = -1
+  assign seen = ''
+  for letter in letters
+    if seen contains letter
+      assign mark_index = forloop.index0
+      break
+    endif
+    assign seen = seen | append: letter
+  endfor
+-%}
+
+<span class="lockup lockup--{{ scale }}" role="img" aria-label="{{ source }}">
+  {%- for letter in letters -%}
+    {%- if forloop.index0 == mark_index -%}
+      <img
+        class="lockup__mark"
+        src="{{ mark_url }}"
+        alt=""
+        aria-hidden="true"
+        width="139"
+        height="154"
+        loading="eager"
+      >
+    {%- else -%}
+      {%- liquid
+        assign is_lead = false
+        if mark_index > 0 and forloop.index0 < mark_index
+          assign is_lead = true
+        endif
+      -%}
+      <span class="lockup__letter{% if is_lead %} lockup__letter--lead{% endif %}" aria-hidden="true">{{ letter }}</span>
+    {%- endif -%}
+  {%- endfor -%}
+</span>

@@ -1,0 +1,162 @@
+{%- comment -%}
+  Full-screen navigation overlay.
+
+  Rows are numbered continuously across links and the two action rows, matching
+  the design, and the numbering is generated from block order so adding or
+  removing an item renumbers the set.
+
+  Each row carries its rank as --row, and the container carries the total as
+  --rows. That pair is what lets the close animation run the design's reverse
+  cascade — the last row leaves first — without hardcoding a row count.
+
+  Rendered inert (hidden, not focusable) until opened, so the links never
+  appear in the tab order behind the page.
+
+  Accepts:
+    section, menu_id, link_blocks, bag_number, search_number, cart_drawer,
+    search_overlay
+{%- endcomment -%}
+
+{%- liquid
+  assign cat_blocks = section.blocks | where: 'type', 'category'
+  assign social_blocks = section.blocks | where: 'type', 'social'
+  assign social = social_blocks.first
+
+  comment
+    One rank past the last numbered row: the design animates the category
+    shortcuts and the footer together, after everything else.
+  endcomment
+  assign tail_row = link_blocks.size
+  if bag_number > tail_row
+    assign tail_row = bag_number
+  endif
+  if search_number > tail_row
+    assign tail_row = search_number
+  endif
+  assign total_rows = tail_row | plus: 1
+-%}
+
+<div
+  class="nav-menu"
+  id="{{ menu_id }}"
+  data-overlay="menu"
+  data-overlay-modal
+  role="dialog"
+  aria-modal="true"
+  aria-label="{{ 'accessibility.menu' | t }}"
+  style="--rows: {{ total_rows }};"
+  hidden
+>
+  {% render 'overlay-head', close_action: 'menu', row: 0 %}
+
+  <div class="nav-menu__body">
+    <ul class="nav-menu__list">
+      {%- for block in link_blocks -%}
+        {%- if block.settings.label != blank -%}
+          <li
+            class="nav-menu__item"
+            style="--row: {{ forloop.index0 }};"
+            {{ block.shopify_attributes }}
+          >
+            <a class="nav-menu__link" href="{{ block.settings.url | default: routes.root_url }}">
+              <span class="nav-menu__num" aria-hidden="true">
+                {{ forloop.index | prepend: '0' | slice: -2, 2 }}
+              </span>
+              {{ block.settings.label }}
+            </a>
+          </li>
+        {%- endif -%}
+      {%- endfor -%}
+
+      {%- comment -%}
+        Both action rows stay real links to real pages. With the drawer or the
+        overlay switched on, theme.js intercepts the click and opens it in
+        place instead — so the row still goes somewhere useful when scripting
+        is unavailable.
+      {%- endcomment -%}
+      {%- if bag_number > 0 -%}
+        <li class="nav-menu__item" style="--row: {{ bag_number | minus: 1 }};">
+          <a
+            class="nav-menu__link"
+            href="{{ routes.cart_url }}"
+            {% if cart_drawer %}data-drawer-open data-from-menu{% endif %}
+          >
+            <span class="nav-menu__num" aria-hidden="true">
+              {{ bag_number | prepend: '0' | slice: -2, 2 }}
+            </span>
+            {{ 'navigation.your_bag' | t }}
+            <span class="nav-menu__aside">
+              {%- if cart.item_count > 0 -%}
+                {{ 'navigation.bag_count' | t: count: cart.item_count }}
+              {%- else -%}
+                {{ 'navigation.bag_empty' | t }}
+              {%- endif -%}
+            </span>
+          </a>
+        </li>
+      {%- endif -%}
+
+      {%- if search_number > 0 -%}
+        <li class="nav-menu__item" style="--row: {{ search_number | minus: 1 }};">
+          <a
+            class="nav-menu__link"
+            href="{{ routes.search_url }}"
+            {% if search_overlay %}data-search-open data-from-menu{% endif %}
+          >
+            <span class="nav-menu__num" aria-hidden="true">
+              {{ search_number | prepend: '0' | slice: -2, 2 }}
+            </span>
+            {{ 'general.search.search' | t }}
+          </a>
+        </li>
+      {%- endif -%}
+    </ul>
+
+    {%- if cat_blocks.size > 0 -%}
+      <div class="nav-menu__categories" style="--row: {{ tail_row }};">
+        {%- for block in cat_blocks -%}
+          {%- if block.settings.label != blank -%}
+            <a
+              class="nav-menu__category"
+              href="{{ block.settings.url | default: routes.all_products_collection_url }}"
+              {{ block.shopify_attributes }}
+            >
+              {{ block.settings.label }}
+            </a>
+          {%- endif -%}
+        {%- endfor -%}
+      </div>
+    {%- endif -%}
+  </div>
+
+  <div class="nav-menu__foot" style="--row: {{ tail_row }};">
+    {%- if social != blank -%}
+      <div class="nav-menu__social">
+        {%- if social.settings.instagram != blank -%}
+          <a href="{{ social.settings.instagram }}" target="_blank" rel="noopener">Instagram</a>
+        {%- endif -%}
+        {%- if social.settings.facebook != blank -%}
+          <a href="{{ social.settings.facebook }}" target="_blank" rel="noopener">Facebook</a>
+        {%- endif -%}
+        {%- if social.settings.pinterest != blank -%}
+          <a href="{{ social.settings.pinterest }}" target="_blank" rel="noopener">Pinterest</a>
+        {%- endif -%}
+      </div>
+    {%- endif -%}
+
+    {%- if section.settings.menu_address != blank -%}
+      {%- if section.settings.menu_address_link != blank -%}
+        <a
+          class="nav-menu__address"
+          href="{{ section.settings.menu_address_link }}"
+          target="_blank"
+          rel="noopener"
+        >
+          {{ section.settings.menu_address }}
+        </a>
+      {%- else -%}
+        <span class="nav-menu__address">{{ section.settings.menu_address }}</span>
+      {%- endif -%}
+    {%- endif -%}
+  </div>
+</div>

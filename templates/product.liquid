@@ -1,0 +1,83 @@
+{%- comment -%}
+  Placeholder product template. Functional (variants, add to cart) but not yet
+  designed — it gets rebuilt as a section-based template once the design lands.
+{%- endcomment -%}
+
+<div class="page-width simple-template">
+  <div class="split" style="--split-min: 24rem; --split-align: flex-start;">
+    <div class="stack">
+      {%- for media in product.media limit: 6 -%}
+        <div class="media">
+          {{
+            media
+            | image_url: width: 1600
+            | image_tag:
+              widths: '400,600,800,1200,1600',
+              sizes: '(min-width: 60rem) 50vw, 100vw',
+              loading: 'lazy',
+              alt: media.alt
+          }}
+        </div>
+      {%- else -%}
+        <div class="placeholder">{{ 'product-1' | placeholder_svg_tag: 'placeholder-svg' }}</div>
+      {%- endfor -%}
+    </div>
+
+    <div class="stack">
+      {%- if product.vendor != blank -%}
+        <span class="card__vendor">{{ product.vendor }}</span>
+      {%- endif -%}
+
+      <h1 class="h3">{{ product.title }}</h1>
+
+      <p class="h5">
+        {%- if product.compare_at_price > product.price -%}
+          <s class="text-muted">{{ product.compare_at_price | money }}</s>
+        {%- endif -%}
+        {{ product.price | money }}
+      </p>
+
+      {% form 'product', product, class: 'stack stack--tight' %}
+        {%- unless product.has_only_default_variant -%}
+          {%- for option in product.options_with_values -%}
+            <label class="text-sm" for="option-{{ forloop.index }}">{{ option.name }}</label>
+            <select class="field" id="option-{{ forloop.index }}" disabled>
+              {%- for value in option.values -%}
+                <option value="{{ value | escape }}">{{ value }}</option>
+              {%- endfor -%}
+            </select>
+          {%- endfor -%}
+          <p class="text-xs text-muted">
+            Variant switching is wired up when this template is rebuilt against the design.
+          </p>
+        {%- endunless -%}
+
+        <select name="id" class="visually-hidden" aria-hidden="true">
+          {%- for variant in product.variants -%}
+            <option
+              value="{{ variant.id }}"
+              {% if variant == product.selected_or_first_available_variant %}selected{% endif %}
+            >
+              {{ variant.title }}
+            </option>
+          {%- endfor -%}
+        </select>
+
+        <button
+          type="submit"
+          name="add"
+          class="btn btn--primary"
+          {% unless product.available %}disabled{% endunless %}
+        >
+          {%- if product.available -%}
+            {{ 'products.add_to_cart' | t }}
+          {%- else -%}
+            {{ 'products.sold_out' | t }}
+          {%- endif -%}
+        </button>
+      {% endform %}
+
+      <div class="rte">{{ product.description }}</div>
+    </div>
+  </div>
+</div>

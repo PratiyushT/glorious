@@ -1,0 +1,128 @@
+{
+  "general": {
+    "meta": {
+      "tags": "Tagged \"{{ tags }}\"",
+      "page": "Page {{ page }}"
+    },
+    "search": {
+      "search": "Search",
+      "placeholder": "Search products",
+      "overlay_placeholder": "Search the maison",
+      "results_label": "Search results",
+      "results_with_count": {
+        "one": "{{ count }} result",
+        "other": "{{ count }} results"
+      },
+      "no_results": "No matches for “{{ terms }}”",
+      "no_results_hint": "Check the spelling, or try a broader word — “ring”, “gold”, “emerald”.",
+      "browse_all": "Browse the full collection",
+      "see_all": "See all results for “{{ terms }}”",
+      "popular": "Popular",
+      "keyboard_hint": "↑↓ navigate · ↵ open · esc close",
+      "group_browse": "Browse",
+      "group_featured": "Featured pieces",
+      "group_products": "Pieces",
+      "group_pages": "Pages",
+      "kind_collection": "Collection",
+      "kind_page": "Page",
+      "kind_article": "Journal"
+    },
+    "pagination": {
+      "previous": "Previous",
+      "next": "Next"
+    },
+    "continue_shopping": "Continue shopping"
+  },
+  "accessibility": {
+    "skip_to_content": "Skip to content",
+    "primary_navigation": "Primary",
+    "menu": "Menu",
+    "close": "Close",
+    "cart": "Cart",
+    "account": "Account"
+  },
+  "localization": {
+    "country_label": "Country / region",
+    "language_label": "Language",
+    "update": "Update"
+  },
+  "products": {
+    "sold_out": "Sold out",
+    "on_sale": "Sale",
+    "from_price": "From {{ price }}",
+    "add_to_cart": "Add to cart",
+    "quantity": "Quantity",
+    "unavailable": "Unavailable"
+  },
+  "collections": {
+    "view_all": "View all",
+    "view_all_count": {
+      "one": "View all {{ count }} piece",
+      "other": "View all {{ count }} pieces"
+    },
+    "empty": "No products found."
+  },
+  "cart": {
+    "title": "Cart",
+    "title_bag": "Your Bag",
+    "empty": "Your bag is empty.",
+    "empty_text": "Pieces you add will wait for you here.",
+    "browse": "Browse the Collection",
+    "subtotal": "Subtotal",
+    "checkout": "Checkout",
+    "update": "Update",
+    "remove": "Remove",
+    "remove_title": "Remove {{ title }}",
+    "increase": "Add one {{ title }}",
+    "decrease": "Remove one {{ title }}",
+    "taxes_note": "Taxes and shipping calculated at checkout."
+  },
+  "navigation": {
+    "menu": "Menu",
+    "close": "Close",
+    "bag": "Bag",
+    "your_bag": "Your Bag",
+    "bag_count": {
+      "one": "{{ count }} piece",
+      "other": "{{ count }} pieces"
+    },
+    "bag_empty": "Empty"
+  },
+  "newsletter": {
+    "email": "Email address",
+    "subscribe": "Subscribe",
+    "success": "Thanks for subscribing.",
+    "welcome": "Welcome",
+    "no_thanks": "No thanks",
+    "continue": "Continue Shopping"
+  },
+  "hero": {
+    "previous": "Previous pieces",
+    "next": "Next pieces"
+  },
+  "lookbook": {
+    "scenes": "Looks",
+    "in_this_look": "In this look",
+    "show_piece": "Show {{ title }}",
+    "add": "Add {{ title }} to bag",
+    "details": "Details",
+    "play": "Play the film",
+    "pieces_count": {
+      "one": "{{ count }} piece",
+      "other": "{{ count }} pieces"
+    }
+  },
+  "testimonials": {
+    "show_quote": "Show review {{ number }}"
+  },
+  "blogs": {
+    "read_more": "Read more"
+  },
+  "onboarding": {
+    "product_title": "Example product"
+  },
+  "404": {
+    "title": "Page not found",
+    "subtext": "The page you were looking for doesn't exist."
+  }
+}
