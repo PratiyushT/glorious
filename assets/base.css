@@ -499,7 +499,7 @@ a {
    have contributed, so the rhythm is the same either way. */
 .display + .grid-auto,
 .display + .promises,
-.display + .fp-carousel {
+.display + .row-carousel {
   margin-top: var(--space-lg);
 }
 
@@ -1641,48 +1641,57 @@ a.card__title::after {
   text-transform: uppercase;
 }
 
-/* ---- Featured products carousel -------------------------------------
-   The optional carousel layout of the Most Loved row. Not in the design —
-   its homepage lays that row out as a grid — but every part of how this one
-   moves is: "slide" is the quick view gallery's track (`transform 0.6s
-   var(--ease)`), "fade" is the hero carousel's swap (`gj-card`, 80ms apart),
-   and the arrows are `.hero-carousel__below`'s, centred under the track.
+/* ---- Row carousel ----------------------------------------------------
+   The optional carousel layout of a section's row — Most Loved and Our
+   Products offer it, from one shell in `snippets/row-carousel.liquid`. Not in
+   the design, which lays both rows out as grids and has no slider anywhere,
+   but every part of how this one moves is: "slide" is the quick view gallery's
+   track (`transform 0.6s var(--ease)`), "fade" is the hero carousel's swap
+   (`gj-card`, 80ms apart), and the arrow is the design's own row control from
+   "Find by shape", bared and enlarged.
 
-   The track is the very same `.grid-auto grid-auto--products` element the
-   grid layout uses. Without scripting that is all it is — every card in it,
-   every link real — and the controls, which could not work, stay hidden. The
-   script adds `data-fp-live` and the rules below take over from there.      */
+   The track is the very same `.grid-auto` element the grid layout uses, with
+   whatever modifier that section's grid carries. Without scripting that is all
+   it is — every card in it, every link real — and the controls, which could
+   not work, stay hidden. The script adds `data-row-live` and the rules below
+   take over from there.                                                      */
 
-.fp-carousel {
+.row-carousel {
   /* The one gap between the track and its controls, wherever they are put: the
      row's own margin under or over the track, and the marks' margin when the
      arrows sit either side of it. */
-  --fp-controls-gap: clamp(1.25rem, 3vw, 1.75rem);
+  --row-controls-gap: clamp(1.25rem, 3vw, 1.75rem);
 
   /* The arrow's target, the glyph inside it, and the air between it and the
      track when it is beside one. 46px and 10px are the design's own; the glyph
-     is not — see .fp-carousel__arrow. */
-  --fp-arrow-size: 2.875rem;
-  --fp-arrow-glyph: 1.75rem;
-  --fp-arrow-gap: 10px;
+     is not — see .row-carousel__arrow. */
+  --row-arrow-size: 2.875rem;
+  --row-arrow-glyph: 1.75rem;
+  --row-arrow-gap: 10px;
 }
 
-.fp-carousel__viewport {
+.row-carousel__viewport {
   position: relative;
 }
 
 /* How many cards fit is `.grid-auto`'s question, not this component's, so it
    is not answered twice. The ruler is a box carrying the grid's own width
    expression; the script divides the track's width by whatever the browser
-   resolved it to. Every threshold — the 440px single-column override that
+   resolved it to. Every threshold — the single-column override that
    `.grid-auto--products` carries included — therefore stays in the stylesheet
    beside the grid's own, and the two layouts can never disagree about a
    column count.
 
+   The expression is `.grid-auto`'s, not the product grid's, so it serves any
+   row this component wraps: `--min`, `--min-pct`, `--cols` and `--gap` are all
+   declared on `.grid-auto` itself and inherit into this box from whichever
+   track it sits in. `--min-pct` defaults to 100% there, which is what lets a
+   grid that never set it — Our Products — measure correctly.
+
    Out of flow, so it is not a grid item and creates no track of its own; its
-   percentages resolve against `.fp-carousel__viewport`, which is exactly as
+   percentages resolve against `.row-carousel__viewport`, which is exactly as
    wide as the track. */
-.fp-carousel__ruler {
+.row-carousel__ruler {
   position: absolute;
   top: 0;
   left: 0;
@@ -1695,21 +1704,33 @@ a.card__title::after {
   );
 }
 
+/* The product grid's own hard override, and scoped to it: this is the 660px
+   threshold `.grid-auto--products` states below, not a rule about every row.
+   A category row reaches one column on its own 360px floor and must be left to
+   do so. Keep the two in step — the carousel measures this box to decide how
+   many cards make a page. */
 @media (max-width: 41.25rem) {
-  .fp-carousel__ruler {
+  .grid-auto--products > .row-carousel__ruler {
     width: 100%;
   }
 }
 
-.fp-carousel__cell {
+/* A grid of one, so the card fills the cell the way it fills a column in the
+   plain layout. Without it the cell stretches to the row and the card inside
+   sizes to its own content, so a page of cards whose titles wrap differently
+   ends with ragged bottoms where the grid has them level. The product card
+   escapes that only because it declares `height: 100%`; the category card does
+   not, and should not have to — this is the cell's job. */
+.row-carousel__cell {
+  display: grid;
   min-width: 0;
 }
 
-.fp-carousel__cell[hidden] {
+.row-carousel__cell[hidden] {
   display: none;
 }
 
-/* Live. The track stops reflowing and becomes a row of exactly --fp-per
+/* Live. The track stops reflowing and becomes a row of exactly --row-per
    columns, which is the number the ruler above yielded. Both motions share
    this sizing: "slide" lays the whole list out and translates it, "fade"
    hides everything but the page on show, so the visible cards are the only
@@ -1719,21 +1740,21 @@ a.card__title::after {
    visitor pinch and double-tap zoom across the whole row: both touch listeners
    are passive and never call preventDefault, and `clip` means this is not a
    scroll container, so there is no pan to suppress. */
-.fp-carousel[data-fp-live] .fp-carousel__viewport {
+.row-carousel[data-row-live] .row-carousel__viewport {
   overflow-x: clip;
   overflow-y: visible;
 }
 
-.fp-carousel[data-fp-live] .fp-carousel__track {
+.row-carousel[data-row-live] .row-carousel__track {
   grid-template-columns: none;
   grid-auto-flow: column;
-  grid-auto-columns: calc((100% - (var(--fp-per, 1) - 1) * var(--gap)) / var(--fp-per, 1));
+  grid-auto-columns: calc((100% - (var(--row-per, 1) - 1) * var(--gap)) / var(--row-per, 1));
 }
 
-/* A page is the track's own width plus one gap: --fp-per columns and the
-   --fp-per gaps that follow them. */
-.fp-carousel[data-fp-live][data-fp-motion='slide'] .fp-carousel__track {
-  transform: translateX(calc(var(--fp-page, 0) * (-100% - var(--gap))));
+/* A page is the track's own width plus one gap: --row-per columns and the
+   --row-per gaps that follow them. */
+.row-carousel[data-row-live][data-row-motion='slide'] .row-carousel__track {
+  transform: translateX(calc(var(--row-page, 0) * (-100% - var(--gap))));
   transition: transform 0.6s var(--ease);
 }
 
@@ -1741,26 +1762,26 @@ a.card__title::after {
    fade, 80ms apart. It is what fade mode replays on every change; in slide
    mode it plays once, which is the stagger the grid gets from `.reveal`.
 
-   It is held **paused** until the row is scrolled to. `data-fp-live` goes on
+   It is held **paused** until the row is scrolled to. `data-row-live` goes on
    at DOMContentLoaded, so without this the whole entrance — 500ms plus the
    stagger — is spent while `.reveal` still has the block at opacity 0, and
    the row a visitor scrolls down to has already finished animating and fades
    in flat. `both` fill holds the cards at the keyframe's start meanwhile, so
    a paused animation is the waiting state as well as the entrance. */
-.fp-carousel[data-fp-live] .fp-carousel__cell > * {
+.row-carousel[data-row-live] .row-carousel__cell > * {
   animation: gj-card 0.5s ease both;
-  animation-delay: calc(var(--fp-card, 0) * 80ms);
+  animation-delay: calc(var(--row-card, 0) * 80ms);
   animation-play-state: paused;
 }
 
-.fp-carousel[data-fp-live].is-visible .fp-carousel__cell > * {
+.row-carousel[data-row-live].is-visible .row-carousel__cell > * {
   animation-play-state: running;
 }
 
 /* `.reveal` is on the carousel to *time* that entrance, not to play one of
    its own: the block itself must not fade, or every card fades twice — once
    with the row and once on its own curve. The cards are the entrance. */
-.js .fp-carousel.reveal {
+.js .row-carousel.reveal {
   opacity: 1;
   transform: none;
   transition: none;
@@ -1769,25 +1790,25 @@ a.card__title::after {
 /* The control row, under the track by default and over it on request. The
    arrows may instead be placed either side of the track, in which case there
    is no row at all — see the grid further down. */
-.fp-carousel__controls {
+.row-carousel__controls {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 22px;
-  margin-top: var(--fp-controls-gap);
+  margin-top: var(--row-controls-gap);
 }
 
-.fp-carousel[data-fp-arrows='top'] .fp-carousel__controls {
+.row-carousel[data-row-arrows='top'] .row-carousel__controls {
   margin-top: 0;
-  margin-bottom: var(--fp-controls-gap);
+  margin-bottom: var(--row-controls-gap);
 }
 
 /* Nothing to cycle through: the controls would be a lie. Each of the three
    states them separately, because beside the track they are three elements
    with nothing wrapping them. */
-.fp-carousel__controls[hidden],
-.fp-carousel__arrow[hidden],
-.fp-carousel__dots[hidden] {
+.row-carousel__controls[hidden],
+.row-carousel__arrow[hidden],
+.row-carousel__dots[hidden] {
   display: none;
 }
 
@@ -1806,29 +1827,29 @@ a.card__title::after {
    The box stays 46px square with the glyph centred in it, so dropping the ring
    costs nothing in target size and moves nothing in the layout either — the
    grid columns beside the track are the same width as before. */
-.fp-carousel__arrow {
+.row-carousel__arrow {
   display: flex;
   align-items: center;
   justify-content: center;
   flex: 0 0 auto;
-  width: var(--fp-arrow-size);
-  height: var(--fp-arrow-size);
+  width: var(--row-arrow-size);
+  height: var(--row-arrow-size);
   padding: 0;
   border: 0;
   background: none;
   color: var(--c-text);
   cursor: pointer;
-  font-size: var(--fp-arrow-glyph);
+  font-size: var(--row-arrow-glyph);
   line-height: 1;
   transition: color var(--duration) var(--ease), opacity var(--duration) var(--ease);
 }
 
-.fp-carousel__arrow:hover {
+.row-carousel__arrow:hover {
   color: var(--c-accent);
 }
 
 /* The row is bounded rather than looping, so an end really is an end. */
-.fp-carousel__arrow[disabled] {
+.row-carousel__arrow[disabled] {
   opacity: 0.28;
   cursor: default;
   color: var(--c-text);
@@ -1850,14 +1871,14 @@ a.card__title::after {
    and only caps at the width it is given when they do not. Anything narrower
    is flexbox shrinking it, which `min-width: 0` allows.
 
-   The mark's own geometry is declared here rather than on `.fp-carousel__dot`
+   The mark's own geometry is declared here rather than on `.row-carousel__dot`
    because the script reads these three to work out the shift — the same
    arrangement as the ruler above, where the stylesheet stays the one place a
    measurement is stated. */
-.fp-carousel__dots {
-  --fp-mark: 22px;
-  --fp-mark-on: 34px;
-  --fp-mark-gap: 8px;
+.row-carousel__dots {
+  --row-mark: 22px;
+  --row-mark-on: 34px;
+  --row-mark-gap: 8px;
 
   width: fit-content;
   max-width: 100%;
@@ -1869,25 +1890,25 @@ a.card__title::after {
   overflow-y: visible;
 }
 
-.fp-carousel__dots-track {
+.row-carousel__dots-track {
   display: flex;
   align-items: center;
-  gap: var(--fp-mark-gap);
+  gap: var(--row-mark-gap);
   /* Whole pixels, worked out by the script and set on the carousel. The travel
      borrows the mark's own timing rather than the track's 0.6s, so a mark
      widening into the current one and the strip sliding under it are one
      movement. */
-  transform: translateX(calc(var(--fp-mark-shift, 0px) * -1));
+  transform: translateX(calc(var(--row-mark-shift, 0px) * -1));
   transition: transform var(--duration) var(--ease);
 }
 
 /* Hairlines rather than dots — the brand marks a set with a rule, not a
    circle. The button is 18px tall so it is a real target; only the 2px
    inside it is painted. */
-.fp-carousel__dot {
+.row-carousel__dot {
   position: relative;
   flex: 0 0 auto;
-  width: var(--fp-mark, 22px);
+  width: var(--row-mark, 22px);
   height: 18px;
   padding: 0;
   border: 0;
@@ -1896,11 +1917,11 @@ a.card__title::after {
   transition: width var(--duration) var(--ease);
 }
 
-.fp-carousel__dot[hidden] {
+.row-carousel__dot[hidden] {
   display: none;
 }
 
-.fp-carousel__dot::before {
+.row-carousel__dot::before {
   content: '';
   position: absolute;
   inset: 8px 0;
@@ -1908,15 +1929,15 @@ a.card__title::after {
   transition: background var(--duration) var(--ease);
 }
 
-.fp-carousel__dot:hover::before {
+.row-carousel__dot:hover::before {
   background: color-mix(in srgb, var(--c-text) 45%, transparent);
 }
 
-.fp-carousel__dot[aria-current='true'] {
-  width: var(--fp-mark-on, 34px);
+.row-carousel__dot[aria-current='true'] {
+  width: var(--row-mark-on, 34px);
 }
 
-.fp-carousel__dot[aria-current='true']::before {
+.row-carousel__dot[aria-current='true']::before {
   background: var(--c-accent);
 }
 
@@ -1944,11 +1965,11 @@ a.card__title::after {
    its own column to nothing — but a gap belongs to the grid and would stay,
    leaving the track 20px short on a row with a single page. The marks' top gap
    is a margin for the same reason. */
-.fp-carousel[data-fp-arrows='side'] {
+.row-carousel[data-row-arrows='side'] {
   container-type: inline-size;
 }
 
-.fp-carousel__frame {
+.row-carousel__frame {
   display: grid;
   align-items: center;
   grid-template-columns: auto minmax(0, 1fr) auto;
@@ -1957,39 +1978,39 @@ a.card__title::after {
     'dots dots dots';
 }
 
-.fp-carousel__frame > .fp-carousel__viewport {
+.row-carousel__frame > .row-carousel__viewport {
   grid-area: main;
 }
 
-.fp-carousel__frame > .fp-carousel__arrow--prev {
+.row-carousel__frame > .row-carousel__arrow--prev {
   grid-area: prev;
-  margin-inline-end: var(--fp-arrow-gap);
+  margin-inline-end: var(--row-arrow-gap);
 }
 
-.fp-carousel__frame > .fp-carousel__arrow--next {
+.row-carousel__frame > .row-carousel__arrow--next {
   grid-area: next;
-  margin-inline-start: var(--fp-arrow-gap);
+  margin-inline-start: var(--row-arrow-gap);
 }
 
 /* Naming the areas declares that second row whether or not anything is in it,
    so this gap is a margin too: a `row-gap` would leave a band of dead space
    under a row that has nothing to cycle through and has hidden its controls.
    Measured at 0px below the track on a single-page row. */
-.fp-carousel__frame > .fp-carousel__dots {
+.row-carousel__frame > .row-carousel__dots {
   grid-area: dots;
   justify-self: center;
-  margin-top: var(--fp-controls-gap);
+  margin-top: var(--row-controls-gap);
 }
 
 @container (max-width: 38rem) {
-  .fp-carousel__frame {
+  .row-carousel__frame {
     grid-template-areas:
       'main main main'
       'prev dots next';
   }
 
-  .fp-carousel__frame > .fp-carousel__arrow {
-    margin-top: var(--fp-controls-gap);
+  .row-carousel__frame > .row-carousel__arrow {
+    margin-top: var(--row-controls-gap);
   }
 }
 
@@ -1998,22 +2019,22 @@ a.card__title::after {
      it: without it this is (0,3,0) against (0,4,0) and never applies. The
      global reduced-motion block above would still collapse the duration, so
      this is belt and braces — but dead code that looks live is worse. */
-  .fp-carousel[data-fp-live][data-fp-motion='slide'] .fp-carousel__track {
+  .row-carousel[data-row-live][data-row-motion='slide'] .row-carousel__track {
     transition: none;
   }
 
-  .fp-carousel__dots-track {
+  .row-carousel__dots-track {
     transition: none;
   }
 
   /* Removed outright rather than sped up, so the paused state above cannot
      leave a card holding at opacity 0. */
-  .fp-carousel[data-fp-live] .fp-carousel__cell > * {
+  .row-carousel[data-row-live] .row-carousel__cell > * {
     animation: none;
   }
 
-  .fp-carousel__dot,
-  .fp-carousel__dot::before {
+  .row-carousel__dot,
+  .row-carousel__dot::before {
     transition: none;
   }
 }

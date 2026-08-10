@@ -238,8 +238,10 @@ see the search overlay below.
   Measured: 640px gives one column, 720px gives two.
 
   **Two queries carry this threshold and must move together**: the grid's own
-  and `.fp-carousel__ruler`'s, since the carousel measures that ruler to decide
-  how many cards make a page. Changing one alone is how the grid and the
+  and `.grid-auto--products > .row-carousel__ruler`'s, since the carousel
+  measures that ruler to decide how many cards make a page. Both are scoped to
+  the product grid — the ruler serves any row the carousel wraps, and a
+  category row must reach one column on its own floor instead. Changing one alone is how the grid and the
   carousel would quietly disagree about a column count. The design states it as a hard override —
   `@media (max-width:440px){[data-grid]{grid-template-columns:1fr !important}}`
   — because its `min(46%, 305px)` otherwise still fits two columns at 360px,
@@ -347,11 +349,45 @@ no collection is chosen, so the link always has a real destination and never
 becomes the `href="#"` this theme refuses to ship. Its label works the same
 way: `view_all_label`, falling back to the collection's product count.
 
-### Most Loved: grid or carousel
+### The row carousel
 
-`layout` picks one of two arrangements. **Grid is the default and is
-untouched** — the same `.grid-auto grid-auto--products`, the same per-card
-`.reveal` at the design's 60ms stagger.
+**One component, offered by two sections.** `layout` picks one of two
+arrangements on **Most Loved** and on **Our Products**, and both get the same
+three settings — `layout`, `carousel_motion`, `carousel_arrows`, the last two
+shown only in carousel mode. Their schema strings live under `sections.all.*`
+for that reason; they belong to no one section.
+
+`snippets/row-carousel.liquid` is the shell and **the shell only**: the root,
+the arrows, the viewport with its ruler, the marks. The caller renders its own
+cells — only it knows what a card is — and hands them over already wrapped in
+`.row-carousel__cell` with `data-row-cell`. So the two rows cannot drift apart,
+and adding the carousel to a third section is a `render` and three settings.
+
+It is `row-`, not `fp-`. The prefix was `fp-` for featured-products while it
+lived in that one section; a shared component naming itself after one of its
+callers is how the next reader is misled.
+
+**Grid is the default in both and is untouched** — Most Loved keeps
+`.grid-auto grid-auto--products` and its 60ms per-card `.reveal` stagger, Our
+Products keeps its plain `.grid-auto` at 80ms.
+
+- **The cell is a grid of one** (`.row-carousel__cell { display: grid }`), so
+  the card fills it the way it fills a column in the plain layout. Without that
+  the cell stretches to the row and the card sizes to its own content, and a
+  page whose titles wrap differently ends with ragged bottoms. `.card` escapes
+  it by declaring `height: 100%`; `.cat-card` does not, and should not have to.
+  Measured: three category cards level at 601px, each filling its cell.
+- **The ruler's expression is `.grid-auto`'s, not the product grid's**, so it
+  serves any row this wraps — `--min`, `--min-pct`, `--cols` and `--gap` are
+  declared on `.grid-auto` and inherit into the ruler from whichever track it
+  sits in. `--min-pct` defaults to `100%` there, which is what lets Our
+  Products, which never sets it, measure correctly. Verified: its ruler
+  resolves to its own 360px floor and the carousel reaches the same 3 columns
+  the grid does at 1280px.
+
+  The **660px single-column override is scoped to `.grid-auto--products`** on
+  the ruler as well as on the grid. It is that grid's own threshold, not a rule
+  about every row; a category row reaches one column on its own 360px floor.
 
 The carousel is **not in the design**: its homepage lays Most Loved out as a
 grid, and there is no slider anywhere in the 24 pages. Everything about *how*
@@ -403,7 +439,7 @@ afterthought.
   a product grid drops to one column, asked of the carousel's own width rather
   than the screen's, so a row in a narrow column gets the same answer.
 
-  **`.fp-carousel__frame` exists to be laid out, because `.fp-carousel` exists
+  **`.row-carousel__frame` exists to be laid out, because `.row-carousel` exists
   to be measured.** A container cannot be styled by a query against its own
   size, and what changes here is the arrangement, which lives on the container
   — the same reason `.promises` and `.footer__cols` are shaped this way.
@@ -421,14 +457,14 @@ afterthought.
   the track, and the track full width, on a single-page row.
 
   Beside the track the arrows and the marks are **three separate visibility
-  units** — nothing wraps them — so `data-fp-controls` goes on each and the
+  units** — nothing wraps them — so `data-row-controls` goes on each and the
   script hides every one it finds. Under or over the track that attribute is on
   the one control row, as before.
 - **The marks are a carousel of their own: a strip that travels, not a row that
   wraps.** A page is one card on a phone, so sixteen pieces is sixteen marks —
   more than fits beside the arrows. Wrapping was the old answer and it turned
   the control row into a paragraph of rules, pushing the arrows further from
-  the track with every extra page. Now `.fp-carousel__dots` is a window that
+  the track with every extra page. Now `.row-carousel__dots` is a window that
   clips and the strip inside it shifts to keep the current mark near the
   middle; what is off either end half-shows past the edge, which is how the row
   says there are pages before or after the ones in view.
@@ -442,8 +478,8 @@ afterthought.
   **The shift is arithmetic on the resting geometry, not a measurement.** The
   current mark is 12px wider than the rest and is still growing into that when
   the page changes, so a rect read at that moment is mid-transition and lands
-  the strip a few pixels out. `--fp-mark`, `--fp-mark-on` and `--fp-mark-gap`
-  are declared on `.fp-carousel__dots` and read back by `theme.js` — the ruler's
+  the strip a few pixels out. `--row-mark`, `--row-mark-on` and `--row-mark-gap`
+  are declared on `.row-carousel__dots` and read back by `theme.js` — the ruler's
   arrangement, where the stylesheet stays the one place a measurement is
   stated. Verified against a 100px window over 7 pages: 0, 0, 27, 57, 87, 114,
   114, with the current mark whole and centred throughout and flush at each end.
@@ -454,13 +490,13 @@ afterthought.
 - **The track is the same element in both layouts**, and without scripting
   that is all it is: the plain grid, every card in it, every link real. The
   controls are rendered `hidden` and the script unhides them only once there
-  is more than one page. `data-fp-live` is what hands the track over.
+  is more than one page. `data-row-live` is what hands the track over.
 - **How many cards fit is `.grid-auto`'s question and is not answered twice.**
-  `.fp-carousel__ruler` is one hidden, out-of-flow box carrying the grid's own
+  `.row-carousel__ruler` is one hidden, out-of-flow box carrying the grid's own
   width expression; `theme.js` divides the track's width by whatever the
   browser resolved it to. Every threshold therefore stays in the stylesheet
-  beside the grid's own — **including the 440px single-column override**,
-  which is a media query on the ruler. Re-deriving `auto-fit`'s rule in
+  beside the grid's own — **including the single-column override**, which is a
+  media query on the ruler, scoped to the product grid as the grid's own is. Re-deriving `auto-fit`'s rule in
   JavaScript is how the two layouts would quietly stop agreeing about a column
   count. Verified against the grid at 1190px (3 columns each) and at 375px
   (1 column each).
@@ -479,7 +515,7 @@ afterthought.
   something other than the page it is on. The viewport is `overflow-x: clip`
   (not `hidden`) for the reason given under "Things that cost time once" — it
   refuses the overflow without becoming a scroll container.
-- `--fp-per` must hold a number **before** `data-fp-live` goes on, or
+- `--row-per` must hold a number **before** `data-row-live` goes on, or
   `grid-auto-columns` is invalid at computed-value time and the row collapses
   to one column. The measurement is therefore taken while the track is still
   the plain grid, and only then is it handed over.
@@ -487,11 +523,11 @@ afterthought.
   card by card, and the cards' entrance is `gj-card`. Two entrances on the one
   element — a `.reveal` transition and a `gj-card` animation both driving
   opacity and transform — is what that avoids, which is why
-  `.js .fp-carousel.reveal` puts the block back to opacity 1 with no
+  `.js .row-carousel.reveal` puts the block back to opacity 1 with no
   transition: `.reveal` is there to *time* the entrance, not to play one.
 - **`gj-card` is held `animation-play-state: paused` until `is-visible`.**
-  `data-fp-live` goes on at `DOMContentLoaded`, so without this the whole
-  entrance — 500ms plus `(--fp-per - 1) × 80ms` of stagger — is spent while the
+  `data-row-live` goes on at `DOMContentLoaded`, so without this the whole
+  entrance — 500ms plus `(--row-per - 1) × 80ms` of stagger — is spent while the
   block is still at opacity 0 below the fold, and the row a visitor scrolls
   down to has already finished animating. It shipped that way and the carousel
   simply appeared, where the grid staggers on scroll-in.
@@ -500,7 +536,7 @@ afterthought.
   the cards hold at the keyframe's start rather than needing a second rule to
   hide them. Reduced motion drops the animation outright rather than shortening
   it, so a paused card can never be left at opacity 0.
-- **`.display + .fp-carousel` must be in the heading-gap rule beside
+- **`.display + .row-carousel` must be in the heading-gap rule beside
   `.display + .grid-auto`.** The carousel wraps the row, which breaks that
   adjacency — so a Most Loved with its subheading cleared and "view all" off
   had its cards flush against the title, in carousel mode *and* on the no-JS

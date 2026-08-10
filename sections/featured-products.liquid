@@ -24,7 +24,7 @@
   The marks are a strip that travels rather than a block that wraps, so a
   sixteen-page row still states where you are in one line: the current mark is
   held in the middle of its window and the ones either side half-show past the
-  edge. See `.fp-carousel__dots` in base.css.
+  edge. See `.row-carousel__dots` in base.css.
 
   Nothing here is load-bearing without scripting. The track is the very same
   `.grid-auto grid-auto--products` element in both layouts, so a visitor with
@@ -141,7 +141,7 @@
       {%- if collection.products.size > 0 -%}
         {%- for product in collection.products limit: limit -%}
           <div
-            {% if is_carousel %}class="fp-carousel__cell" data-fp-cell{% else %}class="reveal" style="--reveal-delay: {{ forloop.index0 | times: 60 }}ms;"{% endif %}
+            {% if is_carousel %}class="row-carousel__cell" data-row-cell{% else %}class="reveal" style="--reveal-delay: {{ forloop.index0 | times: 60 }}ms;"{% endif %}
           >
             {% render 'product-card', product: product %}
           </div>
@@ -149,7 +149,7 @@
       {%- else -%}
         {%- for i in (1..limit) -%}
           <div
-            {% if is_carousel %}class="fp-carousel__cell" data-fp-cell{% else %}class="reveal" style="--reveal-delay: {{ forloop.index0 | times: 60 }}ms;"{% endif %}
+            {% if is_carousel %}class="row-carousel__cell" data-row-cell{% else %}class="reveal" style="--reveal-delay: {{ forloop.index0 | times: 60 }}ms;"{% endif %}
           >
             {% render 'product-card' %}
           </div>
@@ -158,126 +158,15 @@
     {%- endcapture -%}
 
     {%- if is_carousel -%}
-      {%- comment -%}
-        Where the arrows go. Under the track by default, which is what the row
-        shipped with; over it; or either side of it, where they take columns of
-        their own rather than lying over a card — a card is clickable to its
-        edges here, and the hero sets its own arrows beside the cards rather
-        than on them.
-
-        Beside the track the two arrows and the marks are three separate
-        visibility units, since no one element wraps them; under or over it
-        they share the control row and it is the unit. `data-fp-controls` is
-        what the script hides when there is nothing to cycle through, so it
-        goes wherever that unit happens to be.
-      {%- endcomment -%}
-      {%- assign arrows_at = section.settings.carousel_arrows -%}
-      {%- assign side_arrows = false -%}
-      {%- if arrows_at == 'side' -%}
-        {%- assign side_arrows = true -%}
-      {%- endif -%}
-
-      {%- capture arrow_prev -%}
-        <button
-          class="fp-carousel__arrow fp-carousel__arrow--prev"
-          type="button"
-          data-fp-step="-1"
-          aria-label="{{ 'general.carousel.previous' | t }}"
-          {% if side_arrows %}data-fp-controls hidden{% endif %}
-        >
-          &larr;
-        </button>
-      {%- endcapture -%}
-
-      {%- capture arrow_next -%}
-        <button
-          class="fp-carousel__arrow fp-carousel__arrow--next"
-          type="button"
-          data-fp-step="1"
-          aria-label="{{ 'general.carousel.next' | t }}"
-          {% if side_arrows %}data-fp-controls hidden{% endif %}
-        >
-          &rarr;
-        </button>
-      {%- endcapture -%}
-
-      {%- comment -%}
-        The marks. The window clips and the track inside it is what moves, so
-        the set never wraps onto a second row however many pages there are —
-        the script shifts it by whole pixels through `--fp-mark-shift` and the
-        marks either side of the current one half-show past the edge.
-      {%- endcomment -%}
-      {%- capture marks -%}
-        <div
-          class="fp-carousel__dots"
-          data-fp-dots
-          {% if side_arrows %}data-fp-controls hidden{% endif %}
-        >
-          <div class="fp-carousel__dots-track" data-fp-dots-track>
-            {%- for i in (1..card_count) -%}
-              <button
-                class="fp-carousel__dot"
-                type="button"
-                data-fp-dot="{{ forloop.index0 }}"
-                aria-label="{{ 'general.carousel.go_to_page' | t: number: forloop.index }}"
-                hidden
-              ></button>
-            {%- endfor -%}
-          </div>
-        </div>
-      {%- endcapture -%}
-
-      {%- capture viewport -%}
-        <div class="fp-carousel__viewport" data-fp-viewport>
-          {%- comment -%}
-            The ruler. It is never seen and never in the flow — it exists so
-            the script can ask the browser how wide a column would be under
-            `.grid-auto`'s rule instead of re-deriving that rule in JavaScript.
-            Every threshold, the 440px single-column override included, stays
-            in the stylesheet where the grid's own are.
-          {%- endcomment -%}
-          <div class="fp-carousel__track grid-auto grid-auto--products" data-fp-track style="{{ grid_vars | strip }}">
-            <div class="fp-carousel__ruler" data-fp-ruler aria-hidden="true"></div>
-            {{ cards }}
-          </div>
-        </div>
-      {%- endcapture -%}
-
-      <div
-        class="fp-carousel reveal"
-        data-fp-carousel
-        data-fp-motion="{{ section.settings.carousel_motion }}"
-        data-fp-arrows="{{ arrows_at }}"
-        role="group"
-        aria-roledescription="{{ 'general.carousel.role' | t }}"
-        aria-label="{{ carousel_label | escape }}"
-      >
-        {%- if side_arrows -%}
-          {%- comment -%}
-            The frame exists to be laid out, because the carousel around it
-            exists to be measured: a container cannot be styled by a query
-            against its own size, and what changes on a narrow row here is the
-            arrangement — which lives on the container. Same shape, and the
-            same reason, as `.promises` and `.footer__cols`.
-          {%- endcomment -%}
-          <div class="fp-carousel__frame">
-            {{ arrow_prev }}
-            {{ viewport }}
-            {{ arrow_next }}
-            {{ marks }}
-          </div>
-        {%- elsif arrows_at == 'top' -%}
-          <div class="fp-carousel__controls" data-fp-controls hidden>
-            {{ arrow_prev }}{{ marks }}{{ arrow_next }}
-          </div>
-          {{ viewport }}
-        {%- else -%}
-          {{ viewport }}
-          <div class="fp-carousel__controls" data-fp-controls hidden>
-            {{ arrow_prev }}{{ marks }}{{ arrow_next }}
-          </div>
-        {%- endif -%}
-      </div>
+      {%- render 'row-carousel',
+        cells: cards,
+        count: card_count,
+        motion: section.settings.carousel_motion,
+        arrows: section.settings.carousel_arrows,
+        label: carousel_label,
+        track_class: 'grid-auto--products',
+        track_style: grid_vars
+      -%}
     {%- else -%}
       <div class="grid-auto grid-auto--products" style="{{ grid_vars | strip }}">
         {{ cards }}
@@ -318,15 +207,15 @@
       "type": "select",
       "id": "layout",
       "label": "t:sections.all.layout.label",
-      "info": "t:sections.featured_products.layout.info",
+      "info": "t:sections.all.layout.info",
       "options": [
         {
           "value": "grid",
-          "label": "t:sections.featured_products.layout.grid"
+          "label": "t:sections.all.layout.grid"
         },
         {
           "value": "carousel",
-          "label": "t:sections.featured_products.layout.carousel"
+          "label": "t:sections.all.layout.carousel"
         }
       ],
       "default": "grid"
@@ -334,16 +223,16 @@
     {
       "type": "select",
       "id": "carousel_motion",
-      "label": "t:sections.featured_products.carousel_motion.label",
-      "info": "t:sections.featured_products.carousel_motion.info",
+      "label": "t:sections.all.carousel_motion.label",
+      "info": "t:sections.all.carousel_motion.info",
       "options": [
         {
           "value": "slide",
-          "label": "t:sections.featured_products.carousel_motion.slide"
+          "label": "t:sections.all.carousel_motion.slide"
         },
         {
           "value": "fade",
-          "label": "t:sections.featured_products.carousel_motion.fade"
+          "label": "t:sections.all.carousel_motion.fade"
         }
       ],
       "default": "slide",
@@ -352,20 +241,20 @@
     {
       "type": "select",
       "id": "carousel_arrows",
-      "label": "t:sections.featured_products.carousel_arrows.label",
-      "info": "t:sections.featured_products.carousel_arrows.info",
+      "label": "t:sections.all.carousel_arrows.label",
+      "info": "t:sections.all.carousel_arrows.info",
       "options": [
         {
           "value": "bottom",
-          "label": "t:sections.featured_products.carousel_arrows.bottom"
+          "label": "t:sections.all.carousel_arrows.bottom"
         },
         {
           "value": "top",
-          "label": "t:sections.featured_products.carousel_arrows.top"
+          "label": "t:sections.all.carousel_arrows.top"
         },
         {
           "value": "side",
-          "label": "t:sections.featured_products.carousel_arrows.side"
+          "label": "t:sections.all.carousel_arrows.side"
         }
       ],
       "default": "bottom",

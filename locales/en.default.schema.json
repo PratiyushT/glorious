@@ -399,37 +399,45 @@
   },
   "sections": {
     "all": {
-      "color_scheme": {
-        "label": "Color scheme"
-      },
       "anchor": {
         "label": "Anchor",
         "info": "Lets other links jump here, e.g. /#visit. Leave empty for none."
       },
-      "spacing_header": "Spacing",
-      "padding_top": {
-        "label": "Top padding"
+      "carousel_arrows": {
+        "label": "Arrow position",
+        "info": "Beside the row, the arrows take room from the cards, so on a narrow screen they move back under it.",
+        "bottom": "Under the row",
+        "top": "Above the row",
+        "side": "Either side of the row"
       },
-      "padding_bottom": {
-        "label": "Bottom padding"
+      "carousel_motion": {
+        "label": "Carousel animation",
+        "info": "How one page gives way to the next.",
+        "slide": "Slide",
+        "fade": "Fade"
       },
-      "width": {
-        "label": "Width"
+      "color_scheme": {
+        "label": "Color scheme"
       },
-      "width_page": "Page width",
-      "width_narrow": "Narrow",
-      "width_full": "Full bleed",
+      "content_alignment": {
+        "label": "Content alignment"
+      },
+      "full_height": {
+        "label": "Fill the screen height",
+        "info": "The section occupies the full viewport, as in the design."
+      },
       "heading": {
         "label": "Heading"
       },
-      "subheading": {
-        "label": "Micro label"
-      },
-      "text": {
-        "label": "Text"
-      },
       "image": {
         "label": "Image"
+      },
+      "image_first": "Image first",
+      "layout": {
+        "label": "Layout",
+        "info": "The grid reflows on the width it is given. The carousel shows one page of that same grid at a time.",
+        "grid": "Grid",
+        "carousel": "Carousel"
       },
       "link": {
         "label": "Link"
@@ -437,18 +445,26 @@
       "link_label": {
         "label": "Link label"
       },
-      "full_height": {
-        "label": "Fill the screen height",
-        "info": "The section occupies the full viewport, as in the design."
+      "padding_bottom": {
+        "label": "Bottom padding"
       },
-      "content_alignment": {
-        "label": "Content alignment"
+      "padding_top": {
+        "label": "Top padding"
       },
-      "layout": {
-        "label": "Layout"
+      "spacing_header": "Spacing",
+      "subheading": {
+        "label": "Micro label"
       },
-      "image_first": "Image first",
-      "text_first": "Text first"
+      "text": {
+        "label": "Text"
+      },
+      "text_first": "Text first",
+      "width": {
+        "label": "Width"
+      },
+      "width_full": "Full bleed",
+      "width_narrow": "Narrow",
+      "width_page": "Page width"
     },
     "announcement_bar": {
       "name": "Announcement bar",
@@ -738,24 +754,6 @@
       "view_all_link": {
         "label": "View all link",
         "info": "Defaults to the collection above. Set this to send it somewhere else."
-      },
-      "layout": {
-        "info": "The grid reflows on the width it is given. The carousel shows one page of that same grid at a time.",
-        "grid": "Grid",
-        "carousel": "Carousel"
-      },
-      "carousel_motion": {
-        "label": "Carousel animation",
-        "info": "How one page gives way to the next.",
-        "slide": "Slide",
-        "fade": "Fade"
-      },
-      "carousel_arrows": {
-        "label": "Arrow position",
-        "info": "Beside the row, the arrows take room from the cards, so on a narrow screen they move back under it.",
-        "bottom": "Under the row",
-        "top": "Above the row",
-        "side": "Either side of the row"
       }
     },
     "category_grid": {

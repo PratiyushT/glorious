@@ -2070,39 +2070,40 @@
     });
   }
 
-  /* ---- Featured products carousel -------------------------------------
-     The Most Loved row's optional carousel. Every card is already in the
-     document — Liquid rendered the same `.grid-auto` the other layout ships
-     — so nothing here builds markup; it only decides which page is on show.
+  /* ---- Row carousel ----------------------------------------------------
+     The optional carousel layout of a section's row, shared by Most Loved and
+     Our Products. Every card is already in the document — Liquid rendered the
+     same `.grid-auto` the other layout ships — so nothing here builds markup;
+     it only decides which page is on show.
      Without this script the section simply stays that grid, which is why the
      controls are rendered hidden and are only unhidden once there is more
      than one page to move between.
 
-     How many cards fit is not worked out here. `.fp-carousel__ruler` carries
+     How many cards fit is not worked out here. `.row-carousel__ruler` carries
      `.grid-auto`'s own width expression and the browser resolves it, so the
      column count is read rather than re-derived — including the 440px
      single-column override, which is a media query on the ruler. The two
      layouts therefore cannot drift apart about a column count. */
 
-  function initProductCarousels(scope) {
-    scope.querySelectorAll('[data-fp-carousel]').forEach(function (root) {
-      if (!bindOnce(root, 'boundProductCarousel')) return;
+  function initRowCarousels(scope) {
+    scope.querySelectorAll('[data-row-carousel]').forEach(function (root) {
+      if (!bindOnce(root, 'boundRowCarousel')) return;
 
-      var viewport = root.querySelector('[data-fp-viewport]');
-      var track = root.querySelector('[data-fp-track]');
-      var ruler = root.querySelector('[data-fp-ruler]');
+      var viewport = root.querySelector('[data-row-viewport]');
+      var track = root.querySelector('[data-row-track]');
+      var ruler = root.querySelector('[data-row-ruler]');
       /* Every element that has no business being there while there is nothing
          to cycle through. Under or over the track that is the one control row;
          beside it there is no row, so it is the two arrows and the marks. */
-      var controls = Array.prototype.slice.call(root.querySelectorAll('[data-fp-controls]'));
-      var marks = root.querySelector('[data-fp-dots]');
-      var marksTrack = root.querySelector('[data-fp-dots-track]');
-      var dots = Array.prototype.slice.call(root.querySelectorAll('[data-fp-dot]'));
-      var cells = Array.prototype.slice.call(root.querySelectorAll('[data-fp-cell]'));
-      var arrows = Array.prototype.slice.call(root.querySelectorAll('[data-fp-step]'));
+      var controls = Array.prototype.slice.call(root.querySelectorAll('[data-row-controls]'));
+      var marks = root.querySelector('[data-row-dots]');
+      var marksTrack = root.querySelector('[data-row-dots-track]');
+      var dots = Array.prototype.slice.call(root.querySelectorAll('[data-row-dot]'));
+      var cells = Array.prototype.slice.call(root.querySelectorAll('[data-row-cell]'));
+      var arrows = Array.prototype.slice.call(root.querySelectorAll('[data-row-step]'));
       if (!viewport || !track || !ruler || !cells.length) return;
 
-      var fade = root.dataset.fpMotion === 'fade';
+      var fade = root.dataset.rowMotion === 'fade';
       var per = 0;
       var pages = 1;
       var page = 0;
@@ -2137,9 +2138,9 @@
         if (!marks || !marksTrack) return;
 
         var style = window.getComputedStyle(marks);
-        var mark = parseFloat(style.getPropertyValue('--fp-mark')) || 0;
-        var wide = parseFloat(style.getPropertyValue('--fp-mark-on')) || mark;
-        var gap = parseFloat(style.getPropertyValue('--fp-mark-gap')) || 0;
+        var mark = parseFloat(style.getPropertyValue('--row-mark')) || 0;
+        var wide = parseFloat(style.getPropertyValue('--row-mark-on')) || mark;
+        var gap = parseFloat(style.getPropertyValue('--row-mark-gap')) || 0;
         if (!mark) return;
 
         var win = marks.clientWidth;
@@ -2151,27 +2152,27 @@
         /* Centred, then held inside the strip's own ends: at either end the
            last mark sits flush and the peeking is all on the one side. */
         var shift = Math.min(Math.max(centre - win / 2, 0), Math.max(strip - win, 0));
-        root.style.setProperty('--fp-mark-shift', shift + 'px');
+        root.style.setProperty('--row-mark-shift', shift + 'px');
       }
 
       function paint(replay) {
         var next = measure();
         if (next !== per) {
           per = next;
-          root.style.setProperty('--fp-per', per);
+          root.style.setProperty('--row-per', per);
         }
 
         pages = Math.ceil(cells.length / per);
         if (page > pages - 1) page = pages - 1;
         if (page < 0) page = 0;
-        root.style.setProperty('--fp-page', page);
+        root.style.setProperty('--row-page', page);
 
         var first = page * per;
         var last = first + per;
 
         cells.forEach(function (cell, i) {
           var on = i >= first && i < last;
-          cell.style.setProperty('--fp-card', i % per);
+          cell.style.setProperty('--row-card', i % per);
 
           if (fade) {
             cell.hidden = !on;
@@ -2200,7 +2201,7 @@
         var focused = document.activeElement;
 
         arrows.forEach(function (arrow) {
-          var by = parseInt(arrow.dataset.fpStep, 10);
+          var by = parseInt(arrow.dataset.rowStep, 10);
           arrow.disabled = by < 0 ? page === 0 : page >= pages - 1;
         });
 
@@ -2239,14 +2240,14 @@
       }
 
       root.addEventListener('click', function (event) {
-        var step = event.target.closest('[data-fp-step]');
+        var step = event.target.closest('[data-row-step]');
         if (step) {
-          go(page + parseInt(step.dataset.fpStep, 10));
+          go(page + parseInt(step.dataset.rowStep, 10));
           return;
         }
 
-        var dot = event.target.closest('[data-fp-dot]');
-        if (dot) go(parseInt(dot.dataset.fpDot, 10));
+        var dot = event.target.closest('[data-row-dot]');
+        if (dot) go(parseInt(dot.dataset.rowDot, 10));
       });
 
       /* A swipe across a card's photographs belongs to the card — it steps
@@ -2297,10 +2298,10 @@
       }
 
       /* Measured while the track is still the plain grid, and only then handed
-         over: --fp-per has to hold a number before the live rules can size a
+         over: --row-per has to hold a number before the live rules can size a
          column, or `grid-auto-columns` is invalid and the row collapses. */
       paint(false);
-      root.setAttribute('data-fp-live', '');
+      root.setAttribute('data-row-live', '');
     });
   }
 
@@ -2729,7 +2730,7 @@
     initLocalization(scope);
     initFooter(scope);
     initHero(scope);
-    initProductCarousels(scope);
+    initRowCarousels(scope);
     initLookbook(scope);
     initCards(scope);
     initCardMetals(scope);

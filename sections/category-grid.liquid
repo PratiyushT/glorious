@@ -2,7 +2,25 @@
   Category grid — the "Our Products" panel. Each category is a block pointing
   at a collection, with title, count and image falling back to the collection's
   own data so a merchant only overrides what they want to differ.
+
+  The row is either that grid — unchanged, and the default — or the carousel
+  Most Loved offers, from the same `snippets/row-carousel.liquid`: the same two
+  motions, the same arrows in the same three places, the same travelling marks.
+  One component, so the two rows can never drift apart, and the cards are the
+  only thing either section renders for itself.
 {%- endcomment -%}
+
+{%- liquid
+  assign is_carousel = false
+  if section.settings.layout == 'carousel'
+    assign is_carousel = true
+  endif
+
+  assign carousel_label = section.settings.heading
+  if carousel_label == blank
+    assign carousel_label = 'general.carousel.label' | t
+  endif
+-%}
 
 <section
   class="section scheme-{{ section.settings.color_scheme }}"
@@ -23,8 +41,22 @@
       22.5rem is the design's 360px floor, and it is what decides when the row
       breaks. At 20rem the grid fitted an extra column roughly 120px of width
       too early at every tier.
+
+      The carousel reads the same properties off the very same element — its
+      ruler carries `.grid-auto`'s width expression and inherits these — so
+      neither layout can answer the column question differently.
     {%- endcomment -%}
-    <div class="grid-auto" style="--cols: {{ section.settings.columns }}; --gap: var(--grid-gap); --min: 22.5rem;">
+    {%- capture grid_vars -%}
+      --cols: {{ section.settings.columns }}; --gap: var(--grid-gap); --min: 22.5rem;
+    {%- endcapture -%}
+
+    {%- comment -%}
+      The cards are identical in both layouts. In the grid each carries its own
+      `.reveal` and the design's 80ms stagger; in the carousel the component
+      reveals as a whole and the cards' entrance is `gj-card`, staggered by
+      their place in the visible page.
+    {%- endcomment -%}
+    {%- capture cells -%}
       {%- for block in section.blocks -%}
         {%- liquid
           assign collection = collections[block.settings.collection]
@@ -32,10 +64,11 @@
           assign image = block.settings.image | default: collection.featured_image
           assign url = collection.url | default: routes.all_products_collection_url
         -%}
+        {%- if is_carousel -%}<div class="row-carousel__cell" data-row-cell>{%- endif -%}
         <a
-          class="cat-card reveal"
+          class="cat-card{% unless is_carousel %} reveal{% endunless %}"
           href="{{ url }}"
-          style="--reveal-delay: {{ forloop.index0 | times: 80 }}ms;"
+          {% unless is_carousel %}style="--reveal-delay: {{ forloop.index0 | times: 80 }}ms;"{% endunless %}
           {{ block.shopify_attributes }}
         >
           <span class="cat-card__head">
@@ -90,8 +123,24 @@
             </span>
           </span>
         </a>
+        {%- if is_carousel -%}</div>{%- endif -%}
       {%- endfor -%}
-    </div>
+    {%- endcapture -%}
+
+    {%- if is_carousel -%}
+      {%- render 'row-carousel',
+        cells: cells,
+        count: section.blocks.size,
+        motion: section.settings.carousel_motion,
+        arrows: section.settings.carousel_arrows,
+        label: carousel_label,
+        track_style: grid_vars
+      -%}
+    {%- else -%}
+      <div class="grid-auto" style="{{ grid_vars | strip }}">
+        {{ cells }}
+      </div>
+    {%- endif -%}
   </div>
 </section>
 
@@ -125,6 +174,63 @@
       "max": 5,
       "step": 1,
       "default": 4
+    },
+    {
+      "type": "select",
+      "id": "layout",
+      "label": "t:sections.all.layout.label",
+      "info": "t:sections.all.layout.info",
+      "options": [
+        {
+          "value": "grid",
+          "label": "t:sections.all.layout.grid"
+        },
+        {
+          "value": "carousel",
+          "label": "t:sections.all.layout.carousel"
+        }
+      ],
+      "default": "grid"
+    },
+    {
+      "type": "select",
+      "id": "carousel_motion",
+      "label": "t:sections.all.carousel_motion.label",
+      "info": "t:sections.all.carousel_motion.info",
+      "options": [
+        {
+          "value": "slide",
+          "label": "t:sections.all.carousel_motion.slide"
+        },
+        {
+          "value": "fade",
+          "label": "t:sections.all.carousel_motion.fade"
+        }
+      ],
+      "default": "slide",
+      "visible_if": "{{ section.settings.layout == 'carousel' }}"
+    },
+    {
+      "type": "select",
+      "id": "carousel_arrows",
+      "label": "t:sections.all.carousel_arrows.label",
+      "info": "t:sections.all.carousel_arrows.info",
+      "options": [
+        {
+          "value": "bottom",
+          "label": "t:sections.all.carousel_arrows.bottom"
+        },
+        {
+          "value": "top",
+          "label": "t:sections.all.carousel_arrows.top"
+        },
+        {
+          "value": "side",
+          "label": "t:sections.all.carousel_arrows.side"
+        }
+      ],
+      "default": "bottom",
+      "visible_if": "{{ section.settings.layout == 'carousel' }}"
     },
     {
       "type": "select",

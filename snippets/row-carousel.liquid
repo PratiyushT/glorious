@@ -1,0 +1,151 @@
+{%- comment -%}
+  The carousel shell, shared by every section whose row can be one — Most Loved
+  and Our Products today. It is deliberately the *shell* and nothing else: the
+  caller renders its own cells, because only the caller knows what a card is,
+  and hands them over already wrapped.
+
+  The carousel is **not in the design**. Every part of how it moves is, though,
+  which is what keeps it reading as the same maison rather than as a plugin
+  dropped in — see `.row-carousel` in base.css for where each motion, the
+  arrows and the marks come from.
+
+  Nothing here is load-bearing without scripting. The track is the very same
+  `.grid-auto` element the plain layout ships, so a visitor with no JavaScript
+  gets the grid — every card in it, every link real — and the controls, which
+  would be a lie, are rendered `hidden` and unhidden only once the script finds
+  more than one page.
+
+  Takes:
+    cells        the markup of every cell, each already wrapped in
+                 `.row-carousel__cell` with `data-row-cell`
+    count        how many marks to render — the most pages there could ever be,
+                 which is one card per page, so the number of cells
+    motion       `slide` or `fade`
+    arrows       `bottom`, `top` or `side`
+    label        the accessible name for the group
+    track_class  the grid classes the track carries, e.g. `grid-auto--products`
+    track_style  inline custom properties for that grid
+{%- endcomment -%}
+
+{%- liquid
+  assign arrows_at = arrows | default: 'bottom'
+
+  comment
+    Where the arrows go. Under the track by default, which is what the row
+    shipped with; over it; or either side of it, where they take columns of
+    their own rather than lying over a card — a card is clickable to its edges
+    here, and the hero sets its own arrows beside the cards rather than on them.
+
+    Beside the track the two arrows and the marks are three separate visibility
+    units, since no one element wraps them; under or over it they share the
+    control row and it is the unit. `data-row-controls` is what the script
+    hides when there is nothing to cycle through, so it goes wherever that unit
+    happens to be.
+  endcomment
+  assign side_arrows = false
+  if arrows_at == 'side'
+    assign side_arrows = true
+  endif
+-%}
+
+{%- capture arrow_prev -%}
+  <button
+    class="row-carousel__arrow row-carousel__arrow--prev"
+    type="button"
+    data-row-step="-1"
+    aria-label="{{ 'general.carousel.previous' | t }}"
+    {% if side_arrows %}data-row-controls hidden{% endif %}
+  >
+    &larr;
+  </button>
+{%- endcapture -%}
+
+{%- capture arrow_next -%}
+  <button
+    class="row-carousel__arrow row-carousel__arrow--next"
+    type="button"
+    data-row-step="1"
+    aria-label="{{ 'general.carousel.next' | t }}"
+    {% if side_arrows %}data-row-controls hidden{% endif %}
+  >
+    &rarr;
+  </button>
+{%- endcapture -%}
+
+{%- comment -%}
+  The marks. The window clips and the track inside it is what moves, so the set
+  never wraps onto a second row however many pages there are — the script
+  shifts it by whole pixels through `--row-mark-shift` and the marks either
+  side of the current one half-show past the edge.
+{%- endcomment -%}
+{%- capture marks -%}
+  <div
+    class="row-carousel__dots"
+    data-row-dots
+    {% if side_arrows %}data-row-controls hidden{% endif %}
+  >
+    <div class="row-carousel__dots-track" data-row-dots-track>
+      {%- for i in (1..count) -%}
+        <button
+          class="row-carousel__dot"
+          type="button"
+          data-row-dot="{{ forloop.index0 }}"
+          aria-label="{{ 'general.carousel.go_to_page' | t: number: forloop.index }}"
+          hidden
+        ></button>
+      {%- endfor -%}
+    </div>
+  </div>
+{%- endcapture -%}
+
+{%- capture viewport -%}
+  <div class="row-carousel__viewport" data-row-viewport>
+    {%- comment -%}
+      The ruler. It is never seen and never in the flow — it exists so the
+      script can ask the browser how wide a column would be under `.grid-auto`'s
+      rule instead of re-deriving that rule in JavaScript. Every threshold, the
+      product grid's single-column override included, stays in the stylesheet
+      where the grid's own are.
+    {%- endcomment -%}
+    <div class="row-carousel__track grid-auto {{ track_class }}" data-row-track style="{{ track_style | strip }}">
+      <div class="row-carousel__ruler" data-row-ruler aria-hidden="true"></div>
+      {{ cells }}
+    </div>
+  </div>
+{%- endcapture -%}
+
+<div
+  class="row-carousel reveal"
+  data-row-carousel
+  data-row-motion="{{ motion | default: 'slide' }}"
+  data-row-arrows="{{ arrows_at }}"
+  role="group"
+  aria-roledescription="{{ 'general.carousel.role' | t }}"
+  aria-label="{{ label | escape }}"
+>
+  {%- if side_arrows -%}
+    {%- comment -%}
+      The frame exists to be laid out, because the carousel around it exists to
+      be measured: a container cannot be styled by a query against its own size,
+      and what changes on a narrow row here is the arrangement — which lives on
+      the container. Same shape, and the same reason, as `.promises` and
+      `.footer__cols`.
+    {%- endcomment -%}
+    <div class="row-carousel__frame">
+      {{ arrow_prev }}
+      {{ viewport }}
+      {{ arrow_next }}
+      {{ marks }}
+    </div>
+  {%- elsif arrows_at == 'top' -%}
+    <div class="row-carousel__controls" data-row-controls hidden>
+      {{ arrow_prev }}{{ marks }}{{ arrow_next }}
+    </div>
+    {{ viewport }}
+  {%- else -%}
+    {{ viewport }}
+    <div class="row-carousel__controls" data-row-controls hidden>
+      {{ arrow_prev }}{{ marks }}{{ arrow_next }}
+    </div>
+  {%- endif -%}
+</div>
