@@ -39,7 +39,15 @@
           {{ block.shopify_attributes }}
         >
           <span class="cat-card__head">
-            <span>{{ title | default: 'Category' }}&nbsp;&nbsp;&rarr;</span>
+            {%- comment -%}
+              The arrow is 0.7em in the design (`<span style="font-size:.7em">→`),
+              not the heading's own size — it was set loose in the text node and
+              rendered as large as the word beside it.
+            {%- endcomment -%}
+            <span>
+              {{- title | default: 'Category' -}}
+              &nbsp;&nbsp;<span class="cat-card__head-arrow">&rarr;</span>
+            </span>
             {%- if section.settings.show_counts and collection != blank -%}
               <span class="cat-card__count">{{ collection.all_products_count }}</span>
             {%- endif -%}
@@ -62,10 +70,22 @@
               {{ 'collection-1' | placeholder_svg_tag: 'placeholder-svg' }}
             {%- endif -%}
 
+            {%- comment -%}
+              Three elements, as the design has it: the veil, the rule that
+              sits on it, and the label and the arrow as separate children of
+              that rule. The label was a bare text node with only the arrow
+              wrapped, which left `.cat-card__reveal span` — a *descendant*
+              selector — styling the arrow as though it were the rule: its own
+              border-top, its own margins and a full-width box. That is the
+              second line across the photograph, and it is what pushed "View
+              pieces" onto two rows.
+            {%- endcomment -%}
             <span class="cat-card__reveal" aria-hidden="true">
-              <span>
-                {{ block.settings.link_label | default: 'View pieces' }}
-                <span>&rarr;</span>
+              <span class="cat-card__reveal-row">
+                <span class="cat-card__reveal-label">
+                  {{- block.settings.link_label | default: 'View pieces' -}}
+                </span>
+                <span class="cat-card__reveal-arrow">&rarr;</span>
               </span>
             </span>
           </span>

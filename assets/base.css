@@ -1617,7 +1617,8 @@ a.card__title::after {
    spacing fixed, so the header keeps its proportions on a phone instead of
    collapsing with the spacing scale. */
 .cat-card {
-  --cat-pad-x: clamp(1.13rem, 3vw, 2.13rem);
+  /* 18px – 34px, the design's own. Not 1.13/2.13rem, which is 18.08 and 34.08. */
+  --cat-pad-x: clamp(1.125rem, 3vw, 2.125rem);
 
   display: flex;
   flex-direction: column;
@@ -1639,6 +1640,10 @@ a.card__title::after {
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--c-heading);
+}
+
+.cat-card__head-arrow {
+  font-size: 0.7em;
 }
 
 .cat-card__count {
@@ -1680,7 +1685,12 @@ a.card__title::after {
   inset: 0;
   display: flex;
   align-items: flex-end;
-  background: linear-gradient(180deg, transparent 35%, color-mix(in srgb, #000 62%, transparent) 100%);
+  /* The design's noir, not black: rgba(13,12,10,0) → rgba(13,12,10,.62). */
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, #0D0C0A 0%, transparent) 35%,
+    color-mix(in srgb, #0D0C0A 62%, transparent) 100%
+  );
   opacity: 0;
   transform: translateY(10px);
   transition: opacity 0.55s ease, transform 0.65s var(--ease);
@@ -1692,7 +1702,14 @@ a.card__title::after {
   transform: translateY(0);
 }
 
-.cat-card__reveal span {
+/* The rule that carries the label, and the label and arrow on it. Three
+   elements, as the design has them — and each styled by its own class rather
+   than by `.cat-card__reveal span`, which is a *descendant* selector and so
+   dressed the arrow as a second rule: its own border-top across the
+   photograph, its own margins, a full-width box, and the label pushed onto
+   two rows. The arrow is deliberately larger and untracked, which is also
+   the design's. */
+.cat-card__reveal-row {
   width: 100%;
   display: flex;
   justify-content: space-between;
@@ -1701,9 +1718,17 @@ a.card__title::after {
   margin-inline: var(--cat-pad-x);
   padding: 14px 0 16px;
   border-top: var(--border-width) solid color-mix(in srgb, #FBF8F2 55%, transparent);
+}
+
+.cat-card__reveal-label {
   font-size: 0.75rem;
   letter-spacing: 0.2em;
   text-transform: uppercase;
+  color: #F4EFE4;
+}
+
+.cat-card__reveal-arrow {
+  font-size: 1rem;
   color: #F4EFE4;
 }
 
