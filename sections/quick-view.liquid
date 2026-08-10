@@ -1,0 +1,18 @@
+{%- comment -%}
+  Quick view — the panel's contents, rendered on demand.
+
+  Deliberately schema-less, exactly like sections/predictive-search.liquid: a
+  merchant never places this, it only answers theme.js's request for
+  `<product url>?section_id=quick-view`. Because that request is made against
+  the product's own URL, `product` here is the real product object and every
+  price, translation and image size is Liquid's.
+
+  The wrapper is what the script looks for — it takes the inner HTML and drops
+  it into the overlay shell in snippets/quick-view.liquid.
+{%- endcomment -%}
+
+<div data-quick-view-inner>
+  {%- if product != blank -%}
+    {% render 'quick-view-contents', product: product %}
+  {%- endif -%}
+</div>

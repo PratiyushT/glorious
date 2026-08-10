@@ -1,0 +1,56 @@
+{%- comment -%}
+  Quick view — the overlay shell.
+
+  Empty until something is asked for. theme.js fetches
+  `<product url>?section_id=quick-view` and swaps the rendered panel in, exactly
+  as the search overlay fetches sections/predictive-search.liquid. Nothing about
+  the piece is assembled in the browser; the panel is Liquid's rendering of the
+  product, so money, translation and image sizing stay where they belong.
+
+  Rendered by sections/header.liquid, because it belongs to the cards that open
+  it and every template shares the header group.
+
+  A full-viewport overlay root must never carry a colour scheme class — that
+  paints the whole screen opaque and the veil has nothing left to veil. The
+  scheme goes on the panel.
+{%- endcomment -%}
+
+<div class="overlay overlay--quick" data-overlay="quick-view" data-overlay-modal hidden>
+  <button class="overlay__veil" type="button" data-overlay-close="quick-view">
+    <span class="visually-hidden">{{ 'navigation.close' | t }}</span>
+  </button>
+
+  <div
+    class="quick-view scheme-{{ settings.quick_view_color_scheme }}"
+    role="dialog"
+    aria-modal="true"
+    aria-label="{{ 'products.quick_view' | t }}"
+    data-quick-view-panel
+  >
+    {%- comment -%}
+      Named as the focus target explicitly: the veil is also a close control and
+      comes first in the document, so without this the overlay would open with
+      focus on a full-screen invisible button.
+    {%- endcomment -%}
+    <button
+      class="quick-view__close"
+      type="button"
+      data-overlay-close="quick-view"
+      data-overlay-autofocus
+      data-tip="{{ 'navigation.close' | t }}"
+    >
+      <span class="visually-hidden">{{ 'navigation.close' | t }}</span>
+      <span aria-hidden="true">&#10005;</span>
+    </button>
+
+    <div class="quick-view__contents" data-quick-view-contents></div>
+
+    {%- comment -%}
+      Shown while the panel is on its way. The overlay opens on the click rather
+      than on the response, so the piece is never a wait with nothing on screen.
+    {%- endcomment -%}
+    <p class="quick-view__loading" data-quick-view-loading>
+      <span class="visually-hidden">{{ 'products.quick_view_loading' | t }}</span>
+    </p>
+  </div>
+</div>

@@ -4293,6 +4293,669 @@ a.nav-menu__address:hover {
   color: color-mix(in srgb, var(--c-text) 40%, transparent);
 }
 
+/* ---- Overlays: quick view -------------------------------------------
+   A 1:1 rebuild of the design's `Quick View.dc.html`.
+
+   Like the card, its type is fixed rather than fluid — the panel is capped at
+   1300px and the design states every size as a literal, so the numbers live in
+   --qv-* properties here rather than coming off the scale. The two clamps that
+   *are* the design's own (the title and the column padding) are kept as clamps.
+
+   The gallery slides where the card cross-fades: one track translated by whole
+   slots, so a swipe reads as movement rather than a dissolve.               */
+
+.overlay--quick {
+  /* Above the drawer, as the design stacks them. */
+  z-index: 250;
+}
+
+.overlay--quick .overlay__veil {
+  background: color-mix(in srgb, #0D0C0A 62%, transparent);
+  backdrop-filter: blur(8px);
+}
+
+.quick-view {
+  --qv-gold: #C7A15C;
+  --qv-well: color-mix(in srgb, var(--c-text) 4%, var(--c-bg));
+  --qv-rule: color-mix(in srgb, var(--c-text) 12%, transparent);
+  /* The design's rgba(25,21,16,.22) — the edge of a control, a shade stronger
+     than the rules between rows. */
+  --qv-edge: color-mix(in srgb, var(--c-text) 22%, transparent);
+  --qv-label-size: 0.719rem;   /* 11.5px */
+  --qv-value-size: 0.938rem;   /* 15px */
+  --qv-price-size: 1.063rem;   /* 17px */
+  --qv-pad: clamp(1.375rem, 4vw, 3rem);
+  --qv-zoom-base: 1;
+
+  position: relative;
+  width: min(81.25rem, 100%);
+  max-height: 94vh;
+  overflow: auto;
+  overscroll-behavior: contain;
+  background: var(--c-bg);
+  color: var(--c-text);
+  animation: gj-modal-in 0.45s var(--ease) both;
+}
+
+.overlay.is-closing .quick-view {
+  animation: gj-modal-out 0.32s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+.quick-view__close {
+  position: absolute;
+  top: 0.75rem;
+  inset-inline-end: 0.75rem;
+  z-index: 5;
+  width: 2.375rem;
+  height: 2.375rem;
+  display: grid;
+  place-items: center;
+  border: var(--border-width) solid color-mix(in srgb, var(--c-text) 18%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--c-surface) 92%, transparent);
+  color: var(--c-text);
+  cursor: pointer;
+  font-size: 0.938rem;
+  line-height: 1;
+  transition: background var(--duration) var(--ease),
+              border-color var(--duration) var(--ease),
+              color var(--duration) var(--ease);
+}
+
+.quick-view__close:hover {
+  background: var(--c-text);
+  border-color: var(--c-text);
+  color: var(--c-bg);
+}
+
+/* Two columns while each half can hold 420px, one below. Intrinsic, so it
+   folds on a narrow section in the editor as readily as on a phone. */
+.quick-view__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 26.25rem), 1fr));
+}
+
+.quick-view__gallery {
+  position: relative;
+  min-height: clamp(21.25rem, 95vw, 30rem);
+  overflow: hidden;
+  background: var(--qv-well);
+}
+
+/* The design gives the gallery more height once there is room for the two
+   columns to sit side by side; below that it is stacked above the copy and a
+   shorter well keeps the price above the fold. */
+@media (min-width: 64.0625rem) {
+  .quick-view__gallery {
+    min-height: clamp(21.25rem, 95vw, 40rem);
+  }
+}
+
+.quick-view__track {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  width: calc(var(--qv-slides, 1) * 100%);
+  transform: translateX(calc(var(--qv-index, 0) * -100% / var(--qv-slides, 1)));
+  transition: transform 0.6s var(--ease);
+}
+
+.quick-view__slot {
+  position: relative;
+  flex: 0 0 calc(100% / var(--qv-slides, 1));
+  height: 100%;
+  overflow: hidden;
+}
+
+.quick-view__img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: var(--c-surface);
+  transform: translate(var(--qv-tx, 0px), var(--qv-ty, 0px))
+             scale(calc(var(--qv-zoom, 1) * var(--qv-zoom-base, 1)));
+  transform-origin: 50% 50%;
+  transition: transform 0.55s var(--ease), filter 0.9s ease 0.1s;
+}
+
+/* While a pointer is driving the zoom, the transform must follow it frame for
+   frame — an easing curve here would lag behind the finger. */
+.quick-view__img[data-quick-dragging] {
+  transition: filter 0.9s ease 0.1s;
+}
+
+.quick-view__img.is-blurred {
+  filter: blur(18px) saturate(0.7) brightness(1.14);
+}
+
+.quick-view__video.is-blurred {
+  filter: blur(16px) saturate(0.8);
+}
+
+[data-quick-zoomable] {
+  cursor: zoom-in;
+  touch-action: pan-y;
+}
+
+[data-quick-zoomable][data-quick-zoomed] {
+  cursor: grab;
+  touch-action: none;
+}
+
+[data-quick-zoomable][data-quick-dragging] {
+  cursor: grabbing;
+}
+
+.quick-view__arrow {
+  position: absolute;
+  top: 50%;
+  z-index: 3;
+  transform: translateY(-50%);
+  padding: 0.75rem;
+  border: 0;
+  background: none;
+  color: var(--c-text);
+  cursor: pointer;
+  filter: drop-shadow(0 1px 2px var(--c-surface))
+          drop-shadow(0 0 9px color-mix(in srgb, var(--c-surface) 85%, transparent));
+  transition: transform var(--duration) var(--ease), color var(--duration) var(--ease);
+}
+
+.quick-view__arrow--prev { inset-inline-start: 0.5rem; }
+.quick-view__arrow--next { inset-inline-end: 0.5rem; }
+
+.quick-view__arrow:hover {
+  color: var(--c-heading);
+}
+
+.quick-view__arrow--prev:hover { transform: translate(-2px, -50%); }
+.quick-view__arrow--next:hover { transform: translate(2px, -50%); }
+
+.quick-view__dots {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0.875rem;
+  z-index: 3;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 0.563rem;
+}
+
+.quick-view__dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--c-surface) 90%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--c-text) 18%, transparent);
+  cursor: pointer;
+  transition: background var(--duration) var(--ease);
+}
+
+.quick-view__dot.is-on {
+  background: var(--c-text);
+}
+
+/* The spin gets its label rather than a dot — it is a different kind of view,
+   not another photograph. */
+.quick-view__dot--spin {
+  width: auto;
+  height: 1.25rem;
+  display: grid;
+  place-items: center;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  font-family: var(--font-body);
+  font-size: 0.688rem;
+  letter-spacing: 0.14em;
+  line-height: 1;
+  color: color-mix(in srgb, var(--c-text) 45%, transparent);
+  filter: drop-shadow(0 1px 2px color-mix(in srgb, var(--c-surface) 90%, transparent));
+  transition: color var(--duration) var(--ease);
+}
+
+.quick-view__dot--spin.is-on {
+  background: none;
+  color: var(--c-text);
+}
+
+/* The whole photograph, with the part actually on screen framed in gold. Its
+   height and image come from the script, which is the only thing that knows
+   the gallery's proportion and how far the image has been dragged. */
+.quick-view__minimap {
+  position: absolute;
+  inset-inline-start: 0.875rem;
+  bottom: 0.875rem;
+  z-index: 4;
+  display: block;
+  overflow: hidden;
+  width: 6rem;
+  background: var(--c-surface) center / contain no-repeat;
+  border: var(--border-width) solid color-mix(in srgb, var(--c-text) 30%, transparent);
+  box-shadow: 0 6px 18px color-mix(in srgb, #0D0C0A 22%, transparent);
+  pointer-events: none;
+}
+
+.quick-view__minimap[hidden] {
+  display: none;
+}
+
+.quick-view__minimap-view {
+  position: absolute;
+  box-sizing: border-box;
+  border: 1.4px solid var(--qv-gold);
+  background: color-mix(in srgb, var(--qv-gold) 16%, transparent);
+  /* Darkens everything outside the frame without a second element. */
+  box-shadow: 0 0 0 200px color-mix(in srgb, #0D0C0A 16%, transparent);
+}
+
+.quick-view__info {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: clamp(1.5rem, 4vw, 3rem) var(--qv-pad) clamp(1.75rem, 4vw, 3rem);
+}
+
+.quick-view__cat {
+  font-size: var(--micro-size);
+  letter-spacing: calc(var(--micro-tracking) * 0.91);
+  text-transform: uppercase;
+  color: var(--c-accent);
+}
+
+.quick-view__title {
+  margin: 0.75rem 0 0.5rem;
+  font-family: var(--font-display);
+  font-weight: var(--display-weight);
+  font-size: clamp(1.8rem, 3.2vw, 2.6rem);
+  line-height: 1.12;
+  color: var(--c-heading);
+  text-wrap: pretty;
+}
+
+.quick-view__price {
+  margin-bottom: 1.25rem;
+  font-size: var(--qv-price-size);
+  letter-spacing: 0.08em;
+  color: var(--c-text);
+}
+
+.quick-view__price s {
+  color: var(--c-muted);
+  margin-inline-end: 0.5em;
+}
+
+.quick-view__price s[hidden] {
+  display: none;
+}
+
+/* ---- Quick view: the axes ----
+   One row per option, the design's own: a rule above it, the option's name at
+   the left and the chosen value at the right, and the control beneath. The
+   control is a swatch row, a row of pills or a select — see the note in
+   snippets/quick-view-contents.liquid for which axis gets which.
+
+   The numbers here are the design's literals, like the rest of this panel. */
+
+.quick-view__opt {
+  padding: 0.875rem 0.125rem 1rem;
+  border-top: var(--border-width) solid var(--qv-rule);
+}
+
+.quick-view__opt-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.875rem;
+}
+
+.quick-view__opt-label {
+  flex: none;
+  font-size: var(--qv-label-size);
+  letter-spacing: 0.17em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--c-text) 45%, transparent);
+}
+
+.quick-view__opt-value {
+  min-width: 0;
+  font-size: var(--qv-value-size);
+  text-align: end;
+  color: var(--c-text);
+}
+
+.quick-view__opt-note {
+  margin: 0.563rem 0 0;
+  font-size: 0.781rem;
+  line-height: 1.6;
+  color: color-mix(in srgb, var(--c-text) 55%, transparent);
+}
+
+.quick-view__swatches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.688rem;
+  margin-top: 0.75rem;
+}
+
+/* The button is only the target; .swatch-dot fills it and carries the paint,
+   the hairline and the ring, exactly as it does on a card. */
+.quick-view__swatch {
+  flex: none;
+  width: 2.75rem;
+  height: 2.75rem;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  cursor: pointer;
+}
+
+/* The design's ring is a 3px gap in the panel's own colour and then a 1px ink
+   round. It must be --c-bg here and --c-surface on a card: the card sits on its
+   own surface, the panel is the background. */
+.quick-view__swatch.is-selected .swatch-dot {
+  border-color: transparent;
+  box-shadow: 0 0 0 3px var(--c-bg), 0 0 0 4px var(--c-text);
+}
+
+.quick-view__pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.quick-view__pill {
+  flex: 1 1 0;
+  box-sizing: border-box;
+  min-width: 0;
+  max-width: 10.625rem;
+  min-height: 2.75rem;
+  padding: 0.688rem 0.813rem;
+  border: var(--border-width) solid var(--qv-edge);
+  border-radius: 0;
+  background: none;
+  color: var(--c-text);
+  font-family: var(--font-body);
+  font-size: 0.813rem;
+  letter-spacing: 0.1em;
+  /* The design keeps a pill on one line; a long value is clipped rather than
+     allowed to make one pill taller than the rest of the row. */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+  transition: background var(--duration) var(--ease),
+              border-color var(--duration) var(--ease),
+              color var(--duration) var(--ease);
+}
+
+.quick-view__pill.is-selected {
+  border-color: var(--c-text);
+  background: var(--c-text);
+  color: var(--c-bg);
+}
+
+.quick-view__field {
+  position: relative;
+  display: block;
+  margin-top: 0.75rem;
+}
+
+.quick-view__field select,
+.quick-view__engrave-field {
+  box-sizing: border-box;
+  width: 100%;
+  border: var(--border-width) solid var(--qv-edge);
+  border-radius: 0;
+  background: var(--c-surface);
+  color: var(--c-text);
+  font-family: var(--font-body);
+  font-size: 0.844rem;
+}
+
+.quick-view__field select {
+  appearance: none;
+  min-height: 2.875rem;
+  /* Room for the chevron on the trailing side. */
+  padding: 0.813rem 2.875rem 0.813rem 0.875rem;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+}
+
+.quick-view__field-arrow {
+  position: absolute;
+  inset-inline-end: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  pointer-events: none;
+  color: color-mix(in srgb, var(--c-text) 55%, transparent);
+}
+
+.quick-view__engrave-field {
+  margin-top: 0.625rem;
+  padding: 0.813rem;
+  letter-spacing: 0.06em;
+}
+
+.quick-view__engrave-field[hidden] {
+  display: none;
+}
+
+.quick-view__specs {
+  margin: 0;
+}
+
+.quick-view__spec {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.875rem;
+  padding: 0.75rem 0.125rem;
+  border-top: var(--border-width) solid var(--qv-rule);
+}
+
+.quick-view__spec:last-child {
+  border-bottom: var(--border-width) solid var(--qv-rule);
+}
+
+.quick-view__spec dt {
+  font-size: var(--qv-label-size);
+  letter-spacing: 0.17em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--c-text) 45%, transparent);
+}
+
+.quick-view__spec dd {
+  margin: 0;
+  font-size: var(--qv-value-size);
+  text-align: end;
+  color: var(--c-text);
+}
+
+.quick-view__form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: 0.625rem;
+  margin-top: 1.75rem;
+}
+
+.quick-view__add {
+  flex: 1 1 10.625rem;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.125rem;
+  border: var(--border-width) solid var(--qv-gold);
+  border-radius: 999px;
+  background: var(--qv-gold);
+  color: #14110D;
+  font-family: var(--font-body);
+  font-size: 0.781rem;
+  letter-spacing: 0.17em;
+  text-transform: uppercase;
+  text-align: center;
+  cursor: pointer;
+  transition: background var(--duration) var(--ease),
+              border-color var(--duration) var(--ease),
+              color var(--duration) var(--ease);
+}
+
+.quick-view__add:hover {
+  background: var(--c-text);
+  border-color: var(--c-text);
+  color: var(--c-bg);
+}
+
+/* Sold out, or a combination the shop does not make. The design has neither
+   state — it prices every combination — so this is the theme's own, and it is
+   the button that says so rather than the values, which stay listed whatever
+   the stock (the card's note works the same way). */
+.quick-view__add:disabled,
+.quick-view__add:disabled:hover {
+  background: none;
+  border-color: var(--qv-rule);
+  color: color-mix(in srgb, var(--c-text) 55%, transparent);
+  cursor: default;
+}
+
+.quick-view__reassurance {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.563rem;
+  margin: 0.813rem 0 0;
+  font-size: var(--micro-size);
+  letter-spacing: calc(var(--micro-tracking) * 0.68);
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--c-text) 72%, transparent);
+}
+
+.quick-view__reassurance svg {
+  flex: none;
+  display: block;
+  color: color-mix(in srgb, var(--c-accent) 90%, transparent);
+}
+
+.quick-view__full {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.125rem;
+  padding: 1.25rem var(--qv-pad);
+  border-top: var(--border-width) solid var(--qv-rule);
+  background: var(--qv-well);
+  color: var(--c-text);
+  font-size: var(--micro-size);
+  letter-spacing: calc(var(--micro-tracking) * 0.91);
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: background var(--duration) var(--ease);
+}
+
+.quick-view__full:hover {
+  background: color-mix(in srgb, var(--c-text) 8%, var(--c-bg));
+}
+
+.quick-view__full-arrow {
+  flex: none;
+  width: 2.125rem;
+  height: 2.125rem;
+  display: grid;
+  place-items: center;
+  border: var(--border-width) solid color-mix(in srgb, var(--c-accent) 55%, transparent);
+  border-radius: 999px;
+  color: var(--c-accent);
+  font-size: 0.938rem;
+  line-height: 1;
+  transition: background var(--duration) var(--ease),
+              border-color var(--duration) var(--ease),
+              color var(--duration) var(--ease);
+}
+
+.quick-view__full:hover .quick-view__full-arrow {
+  background: var(--c-accent);
+  border-color: var(--c-accent);
+  color: var(--c-bg);
+}
+
+/* ---- Quick view: waiting, and where the entrance goes ----
+   The overlay opens on the click rather than on the response, so there is
+   always a panel to look at while the piece is on its way.
+
+   **The panel does not play its entrance while it is waiting.** The design's
+   modal is never on screen at a size other than its final one — its data is
+   local, so it mounts with the piece already in it. Here the markup arrives
+   afterwards, and the panel was playing `gj-modal-in` against the skeleton and
+   then resizing once the piece landed: measured 473px → 885px, a 412px jump,
+   after the 450ms entrance had already finished. No skeleton size can fix that,
+   because the height is set by the info column and varies by piece.
+
+   So the wait is a plain fade, and the entrance is saved for the panel at its
+   real size. Removing `is-loading` changes the computed `animation-name` from
+   `gj-fade-in` to `gj-modal-in`, which restarts it at time 0 — one entrance,
+   the design's own, at the right geometry, with the piece in it. The panel is
+   never seen changing size.
+
+   Specificity is what makes this safe, and it is deliberate:
+   `.overlay.is-closing .quick-view` (0,3,0) still outranks
+   `.quick-view.is-loading` (0,2,0), so closing mid-fetch plays the exit.
+
+   Do NOT move the entrance onto `.quick-view__contents` instead: the panel's
+   own animation would still restart when the class is dropped, giving two
+   compounded entrances, and `.quick-view__close` is a sibling of the contents
+   so it would fall out of an entrance the design includes.
+
+   The skeleton stands in for the gallery, so it takes the gallery's own two
+   clamps rather than only the narrow one.                                  */
+.quick-view.is-loading {
+  animation: gj-fade-in 0.3s ease both;
+}
+
+.quick-view__loading {
+  display: none;
+  margin: 0;
+  min-height: clamp(21.25rem, 95vw, 30rem);
+}
+
+@media (min-width: 64.0625rem) {
+  .quick-view__loading {
+    min-height: clamp(21.25rem, 95vw, 40rem);
+  }
+}
+
+.quick-view.is-loading .quick-view__loading {
+  display: block;
+  background: linear-gradient(
+    100deg,
+    var(--qv-well) 30%,
+    color-mix(in srgb, var(--c-text) 8%, var(--c-bg)) 50%,
+    var(--qv-well) 70%
+  );
+  background-size: 300% 100%;
+  animation: gj-quick-wait 1.2s ease-in-out infinite;
+}
+
+@keyframes gj-quick-wait {
+  from { background-position: 150% 0; }
+  to   { background-position: -50% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .quick-view.is-loading .quick-view__loading {
+    animation: none;
+  }
+}
+
 /* ---- Overlays: cookie notice -------------------------------------- */
 
 .cookie-banner {
