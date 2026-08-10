@@ -1,0 +1,43 @@
+{%- comment -%}
+  The loading state, shared by anything that has to wait: the quick view while
+  the piece is fetched, the search overlay while a query is in flight, and
+  whatever comes next. One mark, so a wait always looks the same.
+
+  The mark is **the design's own diamond** — the brilliant cut it draws in its
+  image placeholders (`Glorious All Products.dc.html`), path for path: the kite
+  outline, the girdle rule across it, and the two crown facets. The design has
+  no loading state of its own anywhere in its 24 pages, so the animation is
+  ours; the shape is not, and should not be redrawn.
+
+  What it does is draw itself: the outline is struck in one stroke, the facets
+  catch the light once it closes, and the whole mark fades so it can be struck
+  again. `pathLength="100"` is what makes that possible without measuring
+  anything in JavaScript — it normalises every path to 100 units, so one
+  `stroke-dasharray` in the stylesheet serves all three.
+
+  Takes:
+    label  what a screen reader announces. Defaults to `general.loading`.
+    size   `sm`, `md` (default) or `lg`.
+
+  It carries `role="status"`, so the label is announced when it appears — and
+  it must therefore be *rendered into* the page at the moment of waiting rather
+  than sitting there hidden, or nothing is announced at all.
+{%- endcomment -%}
+
+{%- liquid
+  assign loader_label = label
+  if loader_label == blank
+    assign loader_label = 'general.loading' | t
+  endif
+
+  assign loader_size = size | default: 'md'
+-%}
+
+<span class="loader loader--{{ loader_size }}" role="status">
+  <svg class="loader__mark" viewBox="32 30 36 41" fill="none" aria-hidden="true" focusable="false">
+    <path class="loader__cut" pathLength="100" d="M50 32l16 13-16 24-16-24z"></path>
+    <path class="loader__facet" pathLength="100" d="M34 45h32"></path>
+    <path class="loader__facet" pathLength="100" d="M50 32l-7 13 7 24 7-24z"></path>
+  </svg>
+  <span class="visually-hidden">{{ loader_label }}</span>
+</span>

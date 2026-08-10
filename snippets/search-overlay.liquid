@@ -55,6 +55,16 @@
             spellcheck="false"
             data-search-input
           >
+
+          {%- comment -%}
+            The wait sits in the field rather than in the results, so nothing a
+            visitor is already reading moves while the next query flies. It is
+            hidden until there is a query in flight — see `initSearch`.
+          {%- endcomment -%}
+          {%- assign search_loading = 'general.search.loading' | t -%}
+          <span class="search-overlay__wait" data-search-loading hidden>
+            {% render 'loader', label: search_loading, size: 'sm' %}
+          </span>
         </form>
 
         <div class="search-overlay__meta">

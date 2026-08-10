@@ -1,8 +1,21 @@
 {
   "general": {
+    "carousel": {
+      "label": "Featured pieces",
+      "role": "carousel",
+      "previous": "Previous pieces",
+      "next": "Next pieces",
+      "go_to_page": "Show set {{ number }}"
+    },
+    "continue_shopping": "Continue shopping",
+    "loading": "Loading",
     "meta": {
       "tags": "Tagged \"{{ tags }}\"",
       "page": "Page {{ page }}"
+    },
+    "pagination": {
+      "previous": "Previous",
+      "next": "Next"
     },
     "search": {
       "search": "Search",
@@ -25,19 +38,8 @@
       "group_pages": "Pages",
       "kind_collection": "Collection",
       "kind_page": "Page",
-      "kind_article": "Journal"
-    },
-    "pagination": {
-      "previous": "Previous",
-      "next": "Next"
-    },
-    "continue_shopping": "Continue shopping",
-    "carousel": {
-      "label": "Featured pieces",
-      "role": "carousel",
-      "previous": "Previous pieces",
-      "next": "Next pieces",
-      "go_to_page": "Show set {{ number }}"
+      "kind_article": "Journal",
+      "loading": "Searching"
     }
   },
   "accessibility": {

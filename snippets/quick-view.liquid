@@ -47,10 +47,14 @@
 
     {%- comment -%}
       Shown while the panel is on its way. The overlay opens on the click rather
-      than on the response, so the piece is never a wait with nothing on screen.
+      than on the response, so the piece is never a wait with nothing on screen
+      — and what is on screen is the theme's one loading mark, the design's own
+      diamond drawing itself. The box keeps the gallery's own two clamps so the
+      panel is the size it will be when the piece lands.
     {%- endcomment -%}
-    <p class="quick-view__loading" data-quick-view-loading>
-      <span class="visually-hidden">{{ 'products.quick_view_loading' | t }}</span>
-    </p>
+    {%- assign quick_view_loading = 'products.quick_view_loading' | t -%}
+    <div class="quick-view__loading" data-quick-view-loading>
+      {% render 'loader', label: quick_view_loading, size: 'lg' %}
+    </div>
   </div>
 </div>

@@ -403,6 +403,9 @@
     var count = overlay.querySelector('[data-search-count]');
     var popular = overlay.querySelector('[data-search-popular]');
     var scroller = overlay.querySelector('[data-search-scroller]');
+    /* The one loading mark, sitting in the field. Rendered by Liquid and
+       hidden until a query is actually in flight. */
+    var waiting = overlay.querySelector('[data-search-loading]');
     if (!input || !live) return;
 
     input.setAttribute('data-overlay-autofocus', '');
@@ -442,7 +445,12 @@
       paintSelection();
     }
 
+    function wait(on) {
+      if (waiting) waiting.hidden = !on;
+    }
+
     function showResting() {
+      wait(false);
       live.hidden = true;
       live.innerHTML = '';
       if (resting) resting.hidden = false;
@@ -478,6 +486,7 @@
 
       if (controller && controller.abort) controller.abort();
       controller = window.AbortController ? new AbortController() : null;
+      wait(true);
 
       var url = root() + 'search/suggest' +
         '?q=' + encodeURIComponent(query) +
@@ -489,12 +498,16 @@
       fetch(url, controller ? { signal: controller.signal } : undefined)
         .then(function (res) { return res.ok ? res.text() : Promise.reject(res.status); })
         .then(function (text) {
+          wait(false);
           var doc = new DOMParser().parseFromString(text, 'text/html');
           var inner = doc.querySelector('[data-search-live-inner]');
           render(inner ? inner.outerHTML : '');
         })
         .catch(function (err) {
+          /* An abort means a newer query has already taken the mark on: it is
+             still waiting, just for something else. */
           if (err && err.name === 'AbortError') return;
+          wait(false);
           /* The form is still a real search form — let it do the work. */
           showResting();
         });

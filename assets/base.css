@@ -3729,11 +3729,27 @@ a.nav-menu__address:hover {
   animation: gj-row-in 0.55s var(--ease) 0.08s both;
 }
 
+/* The wait goes at the end of the field rather than in the results, so nothing
+   a visitor is already reading moves while the next query flies. Out of flow,
+   or the field would lose width the moment it appears and the caret would jump
+   — and the field keeps a constant end padding so a long query never runs
+   under the mark. */
+.search-overlay__form {
+  position: relative;
+}
+
+.search-overlay__wait {
+  position: absolute;
+  inset-inline-end: 0;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
 .search-overlay__field {
   box-sizing: border-box;
   display: block;
   width: 100%;
-  padding: 0 0 1rem;
+  padding: 0 2.25rem 1rem 0;
   border: 0;
   border-bottom: var(--border-width) solid color-mix(in srgb, var(--c-accent) 35%, transparent);
   border-radius: 0;
@@ -5591,27 +5607,15 @@ a.nav-menu__address:hover {
   }
 }
 
+/* The wait is the theme's one loading mark on the panel's own well, not a
+   shimmering block standing in for markup that has not arrived: nothing here
+   knows the shape of the piece it is fetching, and a skeleton that guesses
+   wrong is worse than a mark that admits it is waiting. The box keeps the
+   gallery's clamps above, so the panel is already the size it will be. */
 .quick-view.is-loading .quick-view__loading {
-  display: block;
-  background: linear-gradient(
-    100deg,
-    var(--qv-well) 30%,
-    color-mix(in srgb, var(--c-text) 8%, var(--c-bg)) 50%,
-    var(--qv-well) 70%
-  );
-  background-size: 300% 100%;
-  animation: gj-quick-wait 1.2s ease-in-out infinite;
-}
-
-@keyframes gj-quick-wait {
-  from { background-position: 150% 0; }
-  to   { background-position: -50% 0; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .quick-view.is-loading .quick-view__loading {
-    animation: none;
-  }
+  display: grid;
+  place-items: center;
+  background: var(--qv-well);
 }
 
 /* ---- Overlays: cookie notice -------------------------------------- */
@@ -5901,6 +5905,99 @@ a.nav-menu__address:hover {
   .tip--below,
   .tip.is-on {
     transform: none;
+  }
+}
+
+/* ---- Loading --------------------------------------------------------
+   One mark for every wait in the theme, from `snippets/loader.liquid`: the
+   quick view while the piece is fetched, the search overlay while a query is
+   in flight, and whatever waits next.
+
+   The diamond is the design's own — the brilliant cut it draws in its image
+   placeholders, path for path. The design states no loading state anywhere in
+   its 24 pages, so the movement is the theme's: the outline is struck in one
+   stroke, the facets catch the light once it closes, and the mark fades so it
+   can be struck again. It is gold on whatever scheme the panel carries, which
+   is what `--c-accent` already answers.
+
+   `pathLength="100"` on each path is what lets one `stroke-dasharray` in the
+   stylesheet drive three different lengths of line — the alternative is
+   measuring `getTotalLength()` in JavaScript, and a decoration should not need
+   a script to appear.                                                        */
+
+.loader {
+  --loader-size: 2.75rem;   /* 44px */
+  --loader-beat: 1.9s;
+
+  display: grid;
+  place-items: center;
+  color: var(--c-accent);
+}
+
+.loader--sm { --loader-size: 1.75rem; }
+.loader--lg { --loader-size: 4.25rem; }
+
+.loader__mark {
+  display: block;
+  height: var(--loader-size);
+  /* The viewBox's own ratio: the cut is taller than it is wide. */
+  aspect-ratio: 36 / 41;
+  overflow: visible;
+  stroke: currentColor;
+  /* The design's own weight for this mark, in its own units. */
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+
+/* Struck in one stroke, held while the facets light, then gone. The loop is
+   seamless because the fade ends at nothing: the jump back to a fully offset
+   dash happens while there is no ink on screen to jump. */
+.loader__cut {
+  stroke-dasharray: 100;
+  animation: gj-loader-cut var(--loader-beat) var(--ease) infinite;
+}
+
+.loader__facet {
+  stroke-dasharray: 100;
+  animation: gj-loader-facet var(--loader-beat) var(--ease) infinite;
+}
+
+/* The second facet follows the first, so the light crosses the stone rather
+   than arriving on all of it at once. */
+.loader__facet + .loader__facet {
+  animation-name: gj-loader-facet-late;
+}
+
+@keyframes gj-loader-cut {
+  0%   { stroke-dashoffset: 100; opacity: 1; }
+  45%  { stroke-dashoffset: 0; opacity: 1; }
+  80%  { stroke-dashoffset: 0; opacity: 1; }
+  100% { stroke-dashoffset: 0; opacity: 0; }
+}
+
+@keyframes gj-loader-facet {
+  0%, 45% { opacity: 0; }
+  62%     { opacity: 1; }
+  80%     { opacity: 1; }
+  100%    { opacity: 0; }
+}
+
+@keyframes gj-loader-facet-late {
+  0%, 55% { opacity: 0; }
+  72%     { opacity: 1; }
+  80%     { opacity: 1; }
+  100%    { opacity: 0; }
+}
+
+/* Nothing moves, but the mark still has to be *there* — a wait with no sign of
+   waiting is worse than a still one. So the stone is simply drawn, whole. */
+@media (prefers-reduced-motion: reduce) {
+  .loader__cut,
+  .loader__facet,
+  .loader__facet + .loader__facet {
+    animation: none;
+    stroke-dashoffset: 0;
+    opacity: 1;
   }
 }
 

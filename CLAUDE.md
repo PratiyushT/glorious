@@ -1018,10 +1018,10 @@ at detached markup by the second piece. Responses are cached per URL.
   — `gj-modal-in` is `gjModal` keyframe for keyframe at `.45s
   cubic-bezier(.22,1,.36,1) both`, the veil is `gjFadeIn .3s ease both`, and the
   geometry (1300px, 94vh, z-index 250, veil at 62% and `blur(8px)`) matches. The
-  defect was *when* it played: the panel animated against the loading skeleton
-  and then resized once the markup arrived — measured **473px → 885px, after the
-  450ms entrance had already finished**. No skeleton size fixes that, because
-  the height is set by the info column and varies by piece.
+  defect was *when* it played: the panel animated against the wait and then
+  resized once the markup arrived — measured **473px → 885px, after the 450ms
+  entrance had already finished**. No size for the waiting box fixes that,
+  because the height is set by the info column and varies by piece.
 
   So `.quick-view.is-loading` carries a plain `gj-fade-in` and nothing else.
   Dropping the class flips the computed `animation-name` to `gj-modal-in`, which
@@ -1157,6 +1157,48 @@ theme rather than a component's.
 - `templates/gift_card.liquid` (`{% layout none %}`) and `layout/password.liquid`
   do not load `base.css`, so they do not get this. The design links its file on
   every page; theirs is a gap to close if either is ever styled.
+
+### Loading
+
+**One mark for every wait in the theme**, from `snippets/loader.liquid`: the
+quick view while the piece is fetched, the search overlay while a query is in
+flight, and whatever waits next. `{% render 'loader', label: text, size: 'sm' %}`
+— `sm` / `md` / `lg`, 28 / 44 / 68px, and a label that defaults to
+`general.loading`.
+
+- **The diamond is the design's own.** It is the brilliant cut drawn in the
+  design's image placeholders (`Glorious All Products.dc.html`), path for path:
+  the kite outline, the girdle rule across it, and the two crown facets. The
+  design states **no loading state anywhere in its 24 pages** — every "loading"
+  in it is `loading="lazy"` on an image — so the movement is the theme's, but
+  the shape is not and must not be redrawn.
+- **What it does**: the outline is struck in one stroke, the facets catch the
+  light once it closes, and the mark fades so it can be struck again. The loop
+  is seamless because the fade ends at nothing — the jump back to a fully offset
+  dash happens while there is no ink on screen to see it jump.
+- **`pathLength="100"` is what keeps it out of JavaScript.** It normalises every
+  path to 100 units, so one `stroke-dasharray: 100` in the stylesheet drives
+  three different lengths of line. The alternative is `getTotalLength()` in a
+  script, and a decoration should not need one to appear.
+- It is gold on whatever scheme it lands in — `--c-accent`, which is already
+  `#9A7836` on a light panel and the champagne `#C7A15C` on the noir search
+  overlay. Under reduced motion the stone is simply drawn whole rather than
+  hidden: a wait with no sign of waiting is worse than a still one.
+- **In the quick view it replaces a shimmering skeleton.** Nothing in that panel
+  knows the shape of the piece it is fetching, so a skeleton was guessing, and a
+  skeleton that guesses wrong is worse than a mark that admits it is waiting.
+  The box keeps the gallery's own two clamps, which is what holds the panel at
+  the size it will be — see the entrance note above, which depends on it.
+- **In the search overlay it sits in the field, not in the results.** Nothing a
+  visitor is already reading moves while the next query flies. It is out of
+  flow, or the field would lose width the moment it appeared and the caret would
+  jump, and the field carries a constant `2.25rem` end padding so a long query
+  never runs under it. Measured: 25×28 at the field's right, centred on it, from
+  the moment the debounce fires until the rows land.
+
+  **An aborted request does not clear it.** Every keystroke aborts the last
+  query, and the mark is still waiting — for the newer one. Clearing on abort
+  makes it flicker on every letter typed.
 
 ### Tooltip
 
