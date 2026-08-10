@@ -365,10 +365,19 @@ the theme already owns:
   and each one replays `gj-card` (rise and fade, 0.5s) 80ms apart. Like the
   hero, the outgoing page is simply taken away; it is not a cross-fade.
 
-The arrows are `.hero-carousel__below`'s, ink at 60% turning `--c-accent`, and
-gone entirely when there is nothing to cycle through — `.hero-carousel.is-static`'s
-rule. The page marks beside them are **hairlines, not dots**: the brand marks a
-set with a rule.
+The arrows are **the design's own control for stepping a row of pieces** — the
+one "Find by shape" carries on its home page: a **46px ring at ink 16% round a
+17px glyph in full ink**, both turning gold on hover, `#9A7836` being exactly
+`--c-accent` on a light scheme, with 10px between the pair. They are gone
+entirely when there is nothing to cycle through, which is
+`.hero-carousel.is-static`'s rule. The page marks beside them are **hairlines,
+not dots**: the brand marks a set with a rule.
+
+They were the hero's arrow first — a bare 20px glyph at ink 60%, no ring — and
+that was the wrong borrowing, on request. The hero's sits on a dark full-bleed
+stage with nothing competing with it; at the foot of a porcelain row the width
+of the page it read as an afterthought, and it was no kind of target. The
+design has a control for exactly this job and it is the larger one.
 
 - **`carousel_arrows` puts the arrows under the track, over it, or either side
   of it**, and only that setting changes; the marks travel with them. Under is
@@ -376,27 +385,33 @@ set with a rule.
 
   Beside the track they take **columns of their own rather than lying over the
   cards** — a card here is clickable to its edges, and the hero, the design's
-  only row with arrows beside it, sets its own beside the cards too. Below
-  **38rem** a flanking pair would take about 80px off the only card on the row
-  (measured at 375px: a 240px card against the 339px it gets back), so they
-  come down and take their places either side of the marks. That is the width
-  this block has inside the page gutters at the 660px viewport where a product
-  grid drops to one column — the same threshold, arrived at through the
-  component's own width rather than the screen's, so a carousel in a narrow
-  column gets the same answer.
+  only row with arrows beside it, sets its own beside the cards too.
 
-  **`.fp-carousel__frame` exists to be laid out, because `.fp-carousel` exists
-  to be measured.** An element cannot be styled by a query against its own
-  size, which is why `.promises` and `.footer__cols` are shaped this way too.
-  Putting `container-type` and `grid-template-areas` on the one element looks
-  right, uploads clean, and simply never fires: it was written that way first
-  and the narrow tier was dead until the frame went in.
+  **Beside means beside at every width, phone included, on request.** What
+  gives below **38rem** is the arrow, not the arrangement: 36px with 6px of air
+  rather than 46px with 10px, so the pair takes 84px off the row instead of
+  112px. Measured at 375px — a card of 255px, against the 339px the grid gets
+  and the 227px a full-size pair would have left. 38rem is the width this block
+  has inside the page gutters at the 660px viewport where a product grid drops
+  to one column, asked of the carousel's own width rather than the screen's, so
+  a row in a narrow column gets the same answer.
 
-  **The gap between the track and the marks is a margin on the marks, never the
-  grid's `row-gap`.** Naming the areas declares the second row whether or not
-  anything is in it, so a row-gap leaves a band of dead space under a row that
-  has nothing to cycle through and has hidden its controls. Verified: 0px below
-  the track on a single-page row.
+  It was built the other way first, standing the arrows under the track on a
+  narrow screen. That answered a question nobody had asked — the setting
+  already says where the arrows go — and it needed a `.fp-carousel__frame`
+  wrapper, since **a container cannot be styled by a query against its own
+  size** and the arrangement lived on the container. Sizing lives on the
+  arrows, which are descendants, so the wrapper went. Keep that rule in mind
+  before reaching for another one: `.promises` and `.footer__cols` need theirs
+  because what changes *is* the container's own layout.
+
+  **Every gap here is a margin on the element, never the grid's own `gap`.**
+  The side columns are `auto`, so a hidden arrow collapses its column to
+  nothing — but a `column-gap` belongs to the grid and would stay, leaving the
+  track 20px short on a single-page row. Naming the areas likewise declares the
+  marks' row whether or not anything is in it, so a `row-gap` would leave a
+  band of dead space under a row with its controls hidden. Verified: 0px below
+  the track, and the track full width, on a single-page row.
 
   Beside the track the arrows and the marks are **three separate visibility
   units** — nothing wraps them — so `data-fp-controls` goes on each and the

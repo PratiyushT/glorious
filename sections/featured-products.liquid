@@ -12,12 +12,12 @@
       whole pages, `transform 0.6s var(--ease)`.
     - "Fade" is the hero carousel's — the window of cards is swapped in place
       and each one replays `gj-card` (rise and fade, 0.5s) 80ms apart.
-    - The arrows are the hero's `hero-carousel__below` controls: ink at 60%
-      turning `--c-accent`, and gone entirely when there is nothing to cycle
-      through (`.hero-carousel.is-static`'s rule). `carousel_arrows` places
-      them under the track, over it, or either side of it — the hero itself
-      does both of the last two, moving its arrows from beside the cards to
-      under them as the viewport narrows.
+    - The arrows are the design's own control for stepping a row of pieces —
+      "Find by shape" on its home page: a 46px ring round a 17px glyph, ink
+      turning gold. They are gone entirely when there is nothing to cycle
+      through, which is the hero's `.hero-carousel.is-static` rule.
+      `carousel_arrows` places them under the track, over it, or either side
+      of it; beside stays beside at every width and the arrow shrinks instead.
 
   The marks are a strip that travels rather than a block that wraps, so a
   sixteen-page row still states where you are in one line: the current mark is
@@ -251,18 +251,10 @@
         aria-label="{{ carousel_label | escape }}"
       >
         {%- if side_arrows -%}
-          {%- comment -%}
-            The frame exists to be laid out, because the carousel above it
-            exists to be measured: an element cannot query its own size, and
-            the arrangement here has to follow the row's width. Same shape as
-            `.promises` and `.footer__cols`.
-          {%- endcomment -%}
-          <div class="fp-carousel__frame">
-            {{ arrow_prev }}
-            {{ viewport }}
-            {{ arrow_next }}
-            {{ marks }}
-          </div>
+          {{ arrow_prev }}
+          {{ viewport }}
+          {{ arrow_next }}
+          {{ marks }}
         {%- elsif arrows_at == 'top' -%}
           <div class="fp-carousel__controls" data-fp-controls hidden>
             {{ arrow_prev }}{{ marks }}{{ arrow_next }}
