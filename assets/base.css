@@ -3515,6 +3515,13 @@ a.nav-menu__address:hover {
 /* ---- Bag drawer ---------------------------------------------------- */
 
 .drawer {
+  /* The design's line thumbnail is a 64px square. Portrait here, on request:
+     a pendant or a drop earring sat small in a square with white above and
+     below it, and the taller frame gives the piece the room it needs. Width is
+     still the design's, so the row's columns are unchanged. */
+  --drawer-thumb-w: 4rem;         /* 64px — the design's width */
+  --drawer-thumb-ratio: 3 / 4;    /* the product card's frame, not the design's square */
+
   position: fixed;
   inset: 0;
   z-index: 245;
@@ -3533,7 +3540,23 @@ a.nav-menu__address:hover {
   animation: gj-fade-out 0.35s ease both;
 }
 
+/* The design's panel is #F8F5EE and its footer #F4F0E8 — porcelain, lifted a
+   little, over plain porcelain. The theme had the panel on --c-surface, which
+   is #ffffff in scheme_1, so the two-tone read as white against porcelain
+   instead.
+
+   Expressed as a mix rather than the literal, for the reason the quick view's
+   background is a token: the drawer's scheme is merchant-selectable and a
+   hardcoded near-white panel would carry ivory text on scheme_2. At 26% the
+   mix lands on rgb(247,244,238) against the design's rgb(248,245,238) — inside
+   one step of 255 on every channel — and it stays right in every other scheme.
+
+   The three hairline weights below are the design's own (12% at the panel edge
+   and under the header, 10% between lines, 14% around a thumbnail), which is
+   why they are stated rather than all taking --c-hairline's 14%. */
 .drawer__panel {
+  --drawer-panel: color-mix(in srgb, var(--c-surface) 26%, var(--c-bg));
+
   position: absolute;
   top: 0;
   right: 0;
@@ -3541,8 +3564,9 @@ a.nav-menu__address:hover {
   width: min(92vw, 26.88rem);
   display: flex;
   flex-direction: column;
-  background: var(--c-surface);
-  border-inline-start: var(--border-width) solid var(--c-hairline);
+  background: var(--drawer-panel);
+  border-inline-start: var(--border-width) solid
+    color-mix(in srgb, var(--c-text) 12%, transparent);
   box-shadow: -24px 0 60px var(--c-shadow);
   animation: gj-drawer-in 0.55s var(--ease) both;
 }
@@ -3576,7 +3600,8 @@ a.nav-menu__address:hover {
   justify-content: space-between;
   gap: 0.88rem;
   padding: var(--space-sm) clamp(1.25rem, 5vw, 1.88rem);
-  border-bottom: var(--border-width) solid var(--c-hairline);
+  /* The design's 12%, not --c-hairline's 14%. */
+  border-bottom: var(--border-width) solid color-mix(in srgb, var(--c-text) 12%, transparent);
 }
 
 .drawer__title {
@@ -3592,7 +3617,8 @@ a.nav-menu__address:hover {
   font-family: var(--font-body);
   font-size: var(--micro-size);
   letter-spacing: calc(var(--micro-tracking) * 0.77);
-  color: var(--c-muted);
+  /* The design's rgba(25,21,16,.5) — ink at half, not --c-muted's #75716b. */
+  color: color-mix(in srgb, var(--c-text) 50%, transparent);
   vertical-align: 0.15em;
 }
 
@@ -3615,6 +3641,20 @@ a.nav-menu__address:hover {
   overflow-y: auto;
   overscroll-behavior: contain;
   padding-inline: clamp(1.25rem, 5vw, 1.88rem);
+}
+
+/* The empty bag is centred in the body rather than sitting at the top of it —
+   the panel is full height and the message is the only thing in it, so the
+   design's own 52px of padding left it stranded under the header with the rest
+   of the drawer blank.
+
+   Guarded by `:has()` so the lines list is untouched: that has to start at the
+   top and scroll. Grid `align-content` rather than a flex `margin: auto`,
+   because on a short viewport the centred block can outgrow the scroller and
+   grid is the layout that keeps the overflow reachable in both directions. */
+.drawer__body:has(> .drawer-empty) {
+  display: grid;
+  align-content: center;
 }
 
 .drawer-lines {
@@ -3645,7 +3685,8 @@ a.nav-menu__address:hover {
   align-items: center;
   gap: 1rem;
   padding-block: var(--space-xs);
-  border-bottom: var(--border-width) solid var(--c-hairline);
+  /* The design's 10% between lines — the lightest of its three hairlines. */
+  border-bottom: var(--border-width) solid color-mix(in srgb, var(--c-text) 10%, transparent);
   transition: opacity 0.2s ease,
               transform 0.3s cubic-bezier(0.33, 0, 0.15, 1),
               filter 0.24s ease;
@@ -3659,8 +3700,8 @@ a.nav-menu__address:hover {
 
 .drawer-row__thumb {
   flex: none;
-  width: 4rem;
-  height: 4rem;
+  width: var(--drawer-thumb-w);
+  aspect-ratio: var(--drawer-thumb-ratio);
   overflow: hidden;
   border: var(--border-width) solid var(--c-hairline);
   background: var(--c-surface);
@@ -3669,7 +3710,7 @@ a.nav-menu__address:hover {
 .drawer-row__thumb img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: var(--cart-thumb-fit, cover);
 }
 
 .drawer-row__info {
@@ -3680,12 +3721,15 @@ a.nav-menu__address:hover {
   gap: 0.25rem;
 }
 
+/* The card's caption type, not the design's Italiana line name — see
+   "Product text". The drawer panel resets line-height to normal, so every
+   one of these has to state its own. */
 .drawer-row__name {
-  font-family: var(--font-display);
-  font-size: var(--fs-md);
-  letter-spacing: 0.05em;
+  font-family: var(--font-body);
+  font-size: var(--product-title-size);
+  letter-spacing: var(--product-title-tracking);
   text-transform: uppercase;
-  line-height: 1.3;
+  line-height: var(--product-line);
   color: var(--c-heading);
   text-decoration: none;
 }
@@ -3696,9 +3740,24 @@ a.nav-menu__address:hover {
 
 .drawer-row__meta {
   font-size: var(--micro-size);
-  letter-spacing: calc(var(--micro-tracking) * 0.64);
+  letter-spacing: var(--product-meta-tracking);
   text-transform: uppercase;
-  color: var(--c-muted);
+  line-height: var(--product-line);
+  /* The design's rgba(25,21,16,.5), as the header's count is. */
+  color: color-mix(in srgb, var(--c-text) 50%, transparent);
+}
+
+/* A cart line's choices, one per row. The newlines come from Liquid and
+   `pre-line` is what renders them — the whole of design revision 13's change to
+   the bag drawer was adding it to this span, once the variant label became
+   multi-line.
+
+   1.55 is the design's own leading for it, and it is stated here rather than
+   left to --product-line so it applies only where the text actually wraps to
+   several rows: the card's single-line caption keeps the 1.5 it was given. */
+.line-options {
+  white-space: pre-line;
+  line-height: 1.55;
 }
 
 .drawer-qty {
@@ -3735,7 +3794,8 @@ a.nav-menu__address:hover {
 .drawer-qty__value {
   min-width: 0.88rem;
   text-align: center;
-  font-size: var(--fs-sm);
+  font-size: var(--product-price-size);
+  line-height: var(--product-line);
   color: var(--c-text);
   font-variant-numeric: tabular-nums;
 }
@@ -3748,8 +3808,9 @@ a.nav-menu__address:hover {
 }
 
 .drawer-row__price {
-  font-size: var(--fs-sm);
-  letter-spacing: 0.06em;
+  font-size: var(--product-price-size);
+  letter-spacing: var(--product-price-tracking);
+  line-height: var(--product-line);
   color: var(--c-text);
 }
 
@@ -3780,6 +3841,53 @@ a.nav-menu__address:hover {
   text-align: center;
 }
 
+/* Emptying the bag changes the list and the footer together, and the outgoing
+   markup cannot animate, because it is replaced rather than removed. So the
+   panel hands over: those two fade, the swap happens behind the fade, and what
+   arrives fades back in.
+
+   **The header is deliberately not part of it.** Fading `.drawer__inner` as a
+   whole took the title and the close control with it, and since a filled fade
+   ends at opacity 0 and the attribute is dropped on the swap, the entire panel
+   snapped back from invisible to visible in one frame — the flash. Holding the
+   header still also reads better: the bag is not blinking, its contents are
+   changing under a heading that stays where it is.
+
+   theme.js sets these attributes and reads the durations back off the element,
+   so the numbers live here and nowhere else. Only a change of state animates;
+   stepping between two non-zero quantities stays instant. */
+.drawer__inner[data-cart-swapping] .drawer__body,
+.drawer__inner[data-cart-swapping] .drawer__foot {
+  animation: gj-fade-out 0.18s ease both;
+}
+
+/* Arriving. The empty state is excluded because it has its own staggered
+   entrance below — fading its container as well would double the motion and
+   flatten the stagger. Ending on opacity 1 means dropping the attribute is a
+   no-op, which is exactly why the outgoing direction needed the care above. */
+.drawer__inner[data-cart-arriving] .drawer-lines,
+.drawer__inner[data-cart-arriving] .drawer__foot {
+  animation: gj-fade-in 0.3s var(--ease) both;
+}
+
+/* The design's empty bag is static — the panel slides in and the message is
+   simply there. This is the theme's own, in the motion language the rest of it
+   already speaks: the menu overlay's rows, 60ms apart, on the design's easing,
+   reusing the same `gj-row-in` the search overlay's results ride in on.
+
+   No script. It restarts on every open because the overlay root goes
+   `display: none` → `grid`, which resets descendant animations — the mechanism
+   the quick view's entrance relies on — and it plays again when the last line
+   is removed, that swap bringing in fresh elements. The global
+   prefers-reduced-motion rule at the top of this file already flattens it. */
+.drawer-empty > * {
+  animation: gj-row-in 0.55s var(--ease) both;
+}
+
+.drawer-empty > :nth-child(1) { animation-delay: 0.12s; }
+.drawer-empty > :nth-child(2) { animation-delay: 0.18s; }
+.drawer-empty > :nth-child(3) { animation-delay: 0.24s; }
+
 .drawer-empty__title {
   font-family: var(--font-display);
   font-size: var(--fs-2xl);
@@ -3794,10 +3902,14 @@ a.nav-menu__address:hover {
   color: var(--c-muted);
 }
 
+/* The design states this footer to the pixel — 20px above, 26px below, and a
+   20–30px gutter — so it takes its own literals rather than the spacing scale,
+   which lands at 18.7/30.08/28.1. Its rule is ink at 12%, a shade lighter than
+   --c-hairline's 14%. */
 .drawer__foot {
   flex: none;
-  padding: var(--space-sm) clamp(1.25rem, 5vw, 1.88rem) var(--space-md);
-  border-top: var(--border-width) solid var(--c-hairline);
+  padding: 1.25rem clamp(1.25rem, 5vw, 1.875rem) 1.625rem;
+  border-top: var(--border-width) solid color-mix(in srgb, var(--c-text) 12%, transparent);
   background: var(--c-bg);
 }
 
@@ -3805,20 +3917,75 @@ a.nav-menu__address:hover {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  gap: 0.88rem;
+  gap: 0.875rem; /* 14px */
 }
 
 .drawer__subtotal-label {
   font-size: var(--micro-size);
   letter-spacing: calc(var(--micro-tracking) * 0.82);
   text-transform: uppercase;
-  color: var(--c-muted);
+  /* The design's rgba(25,21,16,.55) — ink at 55%, not --c-muted's #75716b. */
+  color: color-mix(in srgb, var(--c-text) 55%, transparent);
+}
+
+/* Revision 14 moved the tax note off the figure and into the label, and gives
+   it its own treatment there: the label's own size — not `.price-tax`'s 0.75em,
+   which would drop it to 9px — untracked next to the label's 0.18em, lighter,
+   and not uppercased, so it reads as a qualifier rather than a second label.
+   The design separates it with a single space and nothing more, so the base
+   rule's 0.15em margin comes off; tax-note.liquid emits that space itself. */
+.drawer__subtotal-label .price-tax {
+  margin-inline-start: 0;
+  font-size: 1em;
+  letter-spacing: 0.13em;
+  color: color-mix(in srgb, var(--c-text) 45%, transparent);
 }
 
 .drawer__subtotal-value {
-  font-size: var(--fs-md);
+  /* 16px, the design's literal. --fs-md resolves to 19.18px here. */
+  /* Transformable. Being a flex item already blockifies it, so this only
+     matters if the class is ever used outside the subtotal row. */
+  display: inline-block;
+  font-size: 1rem;
   letter-spacing: 0.08em;
   color: var(--c-text);
+}
+
+/* The figure changing is the whole point of a quantity step, so it gets a beat
+   of its own rather than teleporting. Set only when the money actually differs
+   after the swap — stepping a line that leaves the subtotal alone stays still.
+   Nothing else in the footer moves. */
+.drawer__subtotal-value[data-cart-changed] {
+  animation: gj-value-in 0.32s var(--ease) both;
+}
+
+@keyframes gj-value-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Revision 14's reassurance: a gold micro-label over a sentence, in place of
+   the single paragraph revision 13 carried. It is a claim about the figure
+   above it, so it only stands where the tax note does — with the note off the
+   drawer shows `.drawer__note` instead. */
+.drawer__promise {
+  margin-top: 0.75rem;
+}
+
+.drawer__promise-label {
+  margin: 0;
+  font-size: 0.6875rem; /* 11px */
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--c-accent);
+}
+
+.drawer__promise-text {
+  margin: 0.25rem 0 1rem; /* 4px / 16px */
+  font-size: 0.8125rem; /* 13px */
+  line-height: 1.6;
+  color: color-mix(in srgb, var(--c-text) 68%, transparent);
+  text-wrap: pretty;
 }
 
 .drawer__note {
@@ -3832,15 +3999,53 @@ a.nav-menu__address:hover {
 .drawer__actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.63rem;
+  gap: 0.625rem; /* 10px */
+}
+
+/* The design's two buttons, stated to the pixel and to the colour, so they take
+   their own values rather than the global --button-* tokens (which land at
+   16px/28px padding, an ink Checkout and a gold-edged Salon).
+
+   Checkout is champagne on porcelain — the design's primary CTA colour, the
+   same one .quick-view__add carries as --qv-gold — with near-black ink on it,
+   and it turns ink on hover. Salon is an ink hairline at 35%, not the accent.
+   Both are literals for the reason the hero's are: the design fixes them, and
+   --c-accent is the light-background gold (#9A7836), a different colour. */
+.drawer__panel {
+  --drawer-gold: #C7A15C;
+}
+
+.drawer__checkout,
+.drawer__secondary {
+  padding: 0.9375rem 1.375rem; /* 15px 22px */
+  font-size: 0.75rem; /* 12px */
+  letter-spacing: 0.16em;
 }
 
 .drawer__checkout {
-  flex: 1 1 10rem;
+  flex: 1;
+  background-color: var(--drawer-gold);
+  border-color: var(--drawer-gold);
+  color: #14110D;
+  white-space: nowrap;
+}
+
+.drawer__checkout:hover {
+  background-color: var(--c-text);
+  border-color: var(--c-text);
+  color: var(--c-bg);
 }
 
 .drawer__secondary {
   flex: 0 0 auto;
+  color: var(--c-text);
+  border-color: color-mix(in srgb, var(--c-text) 35%, transparent);
+}
+
+.drawer__secondary:hover {
+  background-color: var(--c-text);
+  border-color: var(--c-text);
+  color: var(--c-bg);
 }
 
 /* ---- Announcement bar -------------------------------------------- */

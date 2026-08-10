@@ -15,6 +15,23 @@
   from whatever the section just rendered, rather than from a second request
   or arithmetic done in the browser.
 {%- endcomment -%}
+{%- liquid
+  comment
+    A line's photograph is framed the way a product card's is, from the same
+    kind of pair of settings — Theme settings → Cart. The design's thumbnail is
+    square; this theme shipped 3:4 on request, because a pendant or a drop
+    earring sat small in a square, and that stays the default.
+  endcomment
+  assign thumb_ratio = settings.cart_image_ratio | default: '3/4'
+  assign thumb_rw = 0
+  assign thumb_rh = 0
+  unless thumb_ratio == 'adapt'
+    assign ratio_parts = thumb_ratio | split: '/'
+    assign thumb_rw = ratio_parts[0] | strip | plus: 0
+    assign thumb_rh = ratio_parts[1] | strip | plus: 0
+  endunless
+-%}
+
 <div class="drawer__count-source" data-cart-count-value="{{ cart.item_count }}" hidden></div>
 
 <div class="drawer__head">
@@ -46,13 +63,46 @@
           <div class="drawer-row__collapse">
             <div class="drawer-row__clip">
               <div class="drawer-row__body">
-                <a class="drawer-row__thumb" href="{{ item.url }}" tabindex="-1" aria-hidden="true">
+                {%- liquid
+                  assign thumb_w = 64
+                  if thumb_rw > 0
+                    assign thumb_h = 64 | times: thumb_rh | divided_by: thumb_rw
+                    assign thumb_crop_h = 128 | times: thumb_rh | divided_by: thumb_rw
+                    assign thumb_ar = thumb_rw | append: ' / ' | append: thumb_rh
+                  else
+                    comment
+                      Adapt: the frame is this photograph's own shape, so there
+                      is nothing to crop to and nothing fixed to declare.
+                    endcomment
+                    assign thumb_crop_h = 0
+                    assign thumb_h = 64 | times: item.image.height | divided_by: item.image.width
+                    assign thumb_ar = item.image.width | append: ' / ' | append: item.image.height
+                  endif
+                -%}
+                <a
+                  class="drawer-row__thumb"
+                  href="{{ item.url }}"
+                  style="--drawer-thumb-ratio: {{ thumb_ar }};"
+                  tabindex="-1"
+                  aria-hidden="true"
+                >
                   {%- if item.image -%}
+                    {%- comment -%}
+                      Requested cropped to the frame's own shape rather than to
+                      a square, so Shopify centres the piece in the box instead
+                      of the browser cropping one down to fit. At twice the
+                      rendered size, for density. `adapt` asks for no crop at
+                      all — there is nothing to crop to.
+                    {%- endcomment -%}
                     <img
-                      src="{{ item.image | image_url: width: 128, height: 128, crop: 'center' }}"
+                      {%- if thumb_crop_h > 0 %}
+                        src="{{ item.image | image_url: width: 128, height: thumb_crop_h, crop: 'center' }}"
+                      {%- else %}
+                        src="{{ item.image | image_url: width: 128 }}"
+                      {%- endif %}
                       alt=""
-                      width="64"
-                      height="64"
+                      width="{{ thumb_w }}"
+                      height="{{ thumb_h }}"
                       loading="lazy"
                     >
                   {%- endif -%}
@@ -61,13 +111,14 @@
                 <div class="drawer-row__info">
                   <a class="drawer-row__name" href="{{ item.url }}">{{ item.product.title }}</a>
 
-                  {%- unless item.variant.title contains 'Default' -%}
-                    <span class="drawer-row__meta">{{ item.variant.title }}</span>
-                  {%- endunless -%}
-
-                  {%- if item.selling_plan_allocation -%}
-                    <span class="drawer-row__meta">{{ item.selling_plan_allocation.selling_plan.name }}</span>
-                  {%- endif -%}
+                  {%- comment -%}
+                    One row per choice, as revision 13 has it. The old
+                    `contains 'Default'` test was guessing at Shopify's
+                    "Default Title" from the string; has_only_default_variant
+                    answers the same question outright, and does not misfire on
+                    a real variant that happens to be called "Default".
+                  {%- endcomment -%}
+                  {% render 'line-options', item: item, class: 'drawer-row__meta' %}
 
                   <div class="drawer-qty">
                     <button
@@ -91,7 +142,27 @@
                 </div>
 
                 <div class="drawer-row__aside">
-                  <span class="drawer-row__price">{{ item.final_line_price | money }}</span>
+                  {%- comment -%}
+                    A line never carries the note. The design puts it once, on
+                    the subtotal, and repeating it down a bag of five pieces
+                    says the same thing five times in the smallest type on the
+                    panel. The line is the money and nothing else.
+                  {%- endcomment -%}
+                  {%- comment -%}
+                    The price of one piece, not price × quantity. The quantity
+                    is stated on its own directly beside this, so multiplying
+                    it into the figure says the same thing twice and makes a
+                    line of three read as a piece that costs three times what
+                    the card said. `settings.cart_unit_price` turns it back
+                    into the line total, here and on the cart page alike.
+                  {%- endcomment -%}
+                  <span class="drawer-row__price">
+                    {%- if settings.cart_unit_price -%}
+                      {{- item.final_price | money -}}
+                    {%- else -%}
+                      {{- item.final_line_price | money -}}
+                    {%- endif -%}
+                  </span>
                   <button
                     class="drawer-row__remove"
                     type="button"
@@ -111,14 +182,60 @@
 </div>
 
 {%- if cart.item_count > 0 -%}
+  {%- liquid
+    comment
+      The footer's copy follows the one tax-note switch, because revision 14's
+      reassurance is a claim about the figure above it — "every tax and fee
+      already included" is only true where the note is shown. With the note off
+      the shop is not pricing tax-inclusively, and the drawer says the other
+      thing instead.
+    endcomment
+    assign tax_note_on = settings.show_tax_note
+  -%}
+
   <div class="drawer__foot">
     <div class="drawer__subtotal">
-      <span class="drawer__subtotal-label">{{ 'cart.subtotal' | t }}</span>
-      <span class="drawer__subtotal-value">{{ cart.total_price | money }}</span>
+      {%- comment -%}
+        Revision 14 moved the note off the figure and into the label —
+        "Subtotal inc. all taxes and fees" — where it is lighter, untracked and
+        not uppercased, so it reads as a qualifier rather than a second label.
+        The figure beside it is left as nothing but the money.
+      {%- endcomment -%}
+      <span class="drawer__subtotal-label">
+        {{- 'cart.subtotal' | t -}}
+        {% render 'tax-note' %}
+      </span>
+      <span class="drawer__subtotal-value" data-drawer-subtotal>{{ cart.total_price | money }}</span>
     </div>
 
-    {%- if section.settings.note != blank -%}
-      <p class="drawer__note">{{ section.settings.note }}</p>
+    {%- comment -%}
+      Revision 14's own block: a gold micro-label over a sentence, in place of
+      the single paragraph revision 13 carried.
+
+      **Turning the tax note off changes the words and nothing else.** The
+      block, its label, its colours, its sizes and its spacing are the design's
+      in both states — only the sentence swaps, because "every tax and fee
+      already included" is a claim about the figure above it and is untrue
+      where the shop is not pricing tax-inclusively. Rendering the off state as
+      a differently-styled paragraph made the whole footer change appearance,
+      which is not what the switch is for.
+    {%- endcomment -%}
+    {%- liquid
+      assign promise_text = section.settings.promise_text
+      unless tax_note_on
+        assign promise_text = section.settings.note
+      endunless
+    -%}
+
+    {%- if section.settings.promise_label != blank or promise_text != blank -%}
+      <div class="drawer__promise">
+        {%- if section.settings.promise_label != blank -%}
+          <p class="drawer__promise-label">{{ section.settings.promise_label }}</p>
+        {%- endif -%}
+        {%- if promise_text != blank -%}
+          <p class="drawer__promise-text">{{ promise_text }}</p>
+        {%- endif -%}
+      </div>
     {%- endif -%}
 
     <form action="{{ routes.cart_url }}" method="post" class="drawer__actions">

@@ -582,15 +582,120 @@
     var current = drawer.querySelector('[data-drawer-contents]');
     if (!next || !current) return;
 
-    current.innerHTML = next.innerHTML;
+    function swap() {
+      /* The whole subtree is replaced, so the scrolled list would otherwise
+         jump back to the top on every step. */
+      var scroller = drawer.querySelector('[data-drawer-scroller]');
+      var scrolled = scroller ? scroller.scrollTop : 0;
 
-    var source = current.querySelector('[data-cart-count-value]');
-    if (source) cartCounts(parseInt(source.dataset.cartCountValue, 10) || 0);
+      var figure = current.querySelector('[data-drawer-subtotal]');
+      var was = figure ? figure.textContent : null;
+
+      current.innerHTML = next.innerHTML;
+
+      if (scroller) scroller.scrollTop = scrolled;
+
+      /* A step that moves the money gets a beat on the figure. Guarded on the
+         text actually differing, so nothing twitches when it has not. */
+      var now = current.querySelector('[data-drawer-subtotal]');
+      if (now && was !== null && now.textContent !== was && !reduceMotion.matches) {
+        now.setAttribute('data-cart-changed', '');
+        void now.offsetWidth;
+        afterAnimations(now, 320, function () {
+          now.removeAttribute('data-cart-changed');
+        });
+      }
+
+      var source = current.querySelector('[data-cart-count-value]');
+      if (source) cartCounts(parseInt(source.dataset.cartCountValue, 10) || 0);
+    }
+
+    /* Emptying the bag — or filling it from empty — changes the whole panel at
+       once: the count leaves the header, the list becomes a message, and the
+       whole footer goes. Swapping that in one frame reads as a jolt, and no
+       amount of animation on the arriving empty state fixes it, because the
+       outgoing markup never animates at all: it is simply replaced.
+
+       So the panel hands over instead. The contents fade out, the swap happens
+       while nothing is on screen, and the empty state's own staggered entrance
+       carries it back in. A step between two non-zero quantities is untouched
+       and stays instant — a number changing is not a state change, and fading
+       the panel on every press would be worse than the jolt. */
+    /* Removing the last line starts the hand-over at the press — see remove()
+       — so by the time the response lands the fade is already running. */
+    var handingOver = current.hasAttribute('data-cart-swapping');
+
+    if (!handingOver) {
+      var wasEmpty = !current.querySelector('[data-cart-line]');
+      var willBeEmpty = !next.querySelector('[data-cart-line]');
+      if (wasEmpty === willBeEmpty || reduceMotion.matches) { swap(); return; }
+
+      current.setAttribute('data-cart-swapping', '');
+
+      /* afterAnimations() asks for running animations the moment it is called,
+         and one matched by an attribute set in this same tick does not exist
+         until the style is recalculated. Reading a layout property forces
+         that, so the fade is running by the time it looks. */
+      void current.offsetWidth;
+    }
+
+    /* The fallback is the stylesheet's own 180ms, so both paths land together
+       whether or not getAnimations() reports the fade. */
+    afterAnimations(current, 180, function () {
+      swap();
+      current.removeAttribute('data-cart-swapping');
+
+      /* And the arriving markup fades in rather than appearing. Dropping this
+         attribute afterwards is a no-op — the entrance ends at opacity 1 —
+         which is what keeps the hand-over from flashing in either direction. */
+      current.setAttribute('data-cart-arriving', '');
+      void current.offsetWidth;
+
+      afterAnimations(current, 300, function () {
+        current.removeAttribute('data-cart-arriving');
+      });
+    });
+  }
+
+  /* ---- Changing a quantity ---------------------------------------------
+     Every change still posts and every figure still comes back from Liquid —
+     nothing here does arithmetic on a price. What this adds is that a second
+     press while the first is in flight is no longer *dropped*: it is held and
+     sent when the line is free, and presses inside the same beat coalesce into
+     one request. Pressing + three times quickly used to move the bag by one.
+
+     The number under the pointer is updated on the press, so the control
+     answers immediately; the re-render that follows is still the authority and
+     overwrites it. */
+
+  var cartPending = null;
+  var cartTimer = null;
+  var CART_COALESCE = 220;
+
+  function flushCartChange() {
+    cartTimer = null;
+    if (cartBusy || !cartPending) return;
+
+    var job = cartPending;
+    cartPending = null;
+    changeLine(job.line, job.quantity);
+  }
+
+  function queueLine(line, quantity, immediate) {
+    cartPending = { line: line, quantity: quantity };
+
+    if (cartTimer) { window.clearTimeout(cartTimer); cartTimer = null; }
+    if (immediate) { flushCartChange(); return; }
+
+    cartTimer = window.setTimeout(flushCartChange, CART_COALESCE);
   }
 
   function changeLine(line, quantity) {
     var drawer = cartDrawer();
-    if (!drawer || cartBusy) return;
+    if (!drawer) return;
+
+    /* Held rather than dropped — the lock used to lose the press entirely. */
+    if (cartBusy) { cartPending = { line: line, quantity: quantity }; return; }
     cartBusy = true;
 
     fetch(root() + 'cart/change.js', {
@@ -607,9 +712,13 @@
       .catch(function () {
         /* Rather than guess at what the cart now holds, go to the page that
            can always tell the truth. */
+        cartPending = null;
         window.location.href = root() + 'cart';
       })
-      .then(function () { cartBusy = false; });
+      .then(function () {
+        cartBusy = false;
+        if (cartPending) flushCartChange();
+      });
   }
 
   /* Every handler below is delegated from the document, so a section reload
@@ -697,8 +806,29 @@
       var index = parseInt(row.dataset.cartLine, 10);
 
       function remove() {
+        /* The last line takes the whole panel with it — the footer, the count,
+           the list. Collapsing it first would leave an empty list sitting
+           under a stale subtotal for as long as the request takes, and then
+           jolt. So the last one skips the collapse entirely and hands the
+           panel over instead: the contents fade while the request flies, and
+           the empty state rises in behind it.
+
+           Any other line still collapses on its own, which is what the design
+           does, and the rest of the panel never moves. */
+        var inner = cartDrawer() && cartDrawer().querySelector('[data-drawer-contents]');
+        var lines = document.querySelectorAll('[data-cart-line]').length;
+
+        if (lines === 1 && inner && !reduceMotion.matches) {
+          inner.setAttribute('data-cart-swapping', '');
+          void inner.offsetWidth;
+          queueLine(index, 0, true);
+          return;
+        }
+
         row.setAttribute('data-leaving', '');
-        afterAnimations(row, 700, function () { changeLine(index, 0); });
+        /* Sent the moment the row has finished collapsing, not coalesced — a
+           removal is the last thing this line will say. */
+        afterAnimations(row, 700, function () { queueLine(index, 0, true); });
       }
 
       var step = event.target.closest('[data-cart-step]');
@@ -708,7 +838,13 @@
         var next = current + parseInt(step.dataset.cartStep, 10);
 
         /* Stepping below one is a removal, and gets the removal's motion. */
-        if (next <= 0) remove(); else changeLine(index, next);
+        if (next <= 0) { remove(); return; }
+
+        /* Answer the press now. This is the count, not a price — every figure
+           still comes back from Liquid, and the re-render overwrites this. */
+        if (value) value.textContent = next;
+
+        queueLine(index, next);
         return;
       }
 

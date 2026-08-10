@@ -4,6 +4,42 @@
 
     {%- if cart.item_count == 0 -%}
       <p class="text-muted">{{ 'cart.empty' | t }}</p>
+      {%- liquid
+        assign pp = all_products['exquisite-round-diamond-chain-bracelet']
+        assign mo = blank
+        for o in pp.options_with_values
+          assign od = o.name | downcase
+          if od contains 'metal'
+            assign mo = o
+            break
+          endif
+        endfor
+        assign target = 'White Gold'
+        assign hit_plain = 'no'
+        assign hit_str = 'no'
+        for c in mo.values
+          if c == target
+            assign hit_plain = 'yes'
+          endif
+          assign cn = c | append: ''
+          if cn == target
+            assign hit_str = 'yes'
+            assign found = c
+          endif
+        endfor
+      -%}
+      <span id="cmp"
+        data-plain="{{ hit_plain }}"
+        data-stringified="{{ hit_str }}"
+        data-found-has-swatch="{% if found.swatch %}yes{% else %}no{% endif %}"
+        data-found-image="{{ found.swatch.image | image_url: width: 40 }}"
+      ></span>
+      {%- assign sw2 = found.swatch -%}
+      <span id="cmp2"
+        data-assigned-image-blank="{% if sw2.image != blank %}not-blank{% else %}blank{% endif %}"
+        data-assigned-color-blank="{% if sw2.color != blank %}not-blank{% else %}blank{% endif %}"
+      ></span>
+      <span id="direct">{% render 'metal-swatch', option_value: found, size: 80 %}</span>
       <div class="btn-row">
         <a class="btn btn--primary" href="{{ routes.all_products_collection_url }}">
           {{ 'general.continue_shopping' | t }}
@@ -22,10 +58,20 @@
                 </div>
                 <div class="stack stack--tight">
                   <a class="card__title" href="{{ item.url }}">{{ item.product.title }}</a>
-                  {%- unless item.variant.title contains 'Default' -%}
-                    <span class="text-sm text-muted">{{ item.variant.title }}</span>
-                  {%- endunless -%}
-                  <span class="card__price">{{ item.final_line_price | money }}</span>
+                  {% render 'line-options', item: item, class: 'card__meta' %}
+                  {%- comment -%}
+                    A line never carries the note — it is said once, on the
+                    subtotal below, exactly as the bag drawer says it. And the
+                    figure is the price of one piece rather than price ×
+                    quantity, for the reason given in the drawer.
+                  {%- endcomment -%}
+                  <span class="card__price">
+                    {%- if settings.cart_unit_price -%}
+                      {{- item.final_price | money -}}
+                    {%- else -%}
+                      {{- item.final_line_price | money -}}
+                    {%- endif -%}
+                  </span>
                 </div>
               </div>
 
@@ -49,7 +95,10 @@
 
         <div class="footer__bottom">
           <div class="stack stack--tight">
-            <span class="h5">{{ 'cart.subtotal' | t }}: {{ cart.total_price | money }}</span>
+            <span class="h5">
+              {{- 'cart.subtotal' | t }}: {{ cart.total_price | money -}}
+              {% render 'tax-note' %}
+            </span>
             <span class="text-xs text-muted">{{ 'cart.taxes_note' | t }}</span>
           </div>
           <div class="btn-row">
