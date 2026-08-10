@@ -5933,9 +5933,14 @@ a.nav-menu__address:hover {
      2.4 units paint the 1.25px hairline that is wanted. See below for why this
      is not `non-scaling-stroke`. */
   --loader-stroke: 2.4;
-  /* Long enough that the stone is held whole for most of a second once the
-     last line lands, which is what the 1.9s beat never left room for. */
-  --loader-beat: 2.6s;
+  /* The beat has to be long enough that the *drawing* is what the eye spends
+     the wait watching. At 2.6s with an 80ms stagger every line was down inside
+     the first second and the rest of the cycle was a still picture and a blink
+     — a flash rather than a loader. Now the strike runs to the middle of the
+     beat, the stone is held whole for two thirds of a second, and the fade is
+     long enough to read as a fade. */
+  --loader-beat: 3.2s;
+  --loader-stagger: 180ms;
 
   display: grid;
   place-items: center;
@@ -5988,21 +5993,26 @@ a.nav-menu__address:hover {
 .loader__line {
   stroke-dasharray: 100;
   animation: gj-loader-draw var(--loader-beat) ease-in-out infinite both;
-  animation-delay: calc(var(--n, 0) * 80ms);
+  /* The stagger is about as long as a line takes to draw, so lines visibly
+     follow one another instead of all moving together — at 80ms against an
+     830ms stroke they were near enough simultaneous. */
+  animation-delay: calc(var(--n, 0) * var(--loader-stagger));
 }
 
-/* Drawn over the first fifth, held whole for half the beat — the finished
-   stone is the point of the thing and has to be seen — then gone.
+/* A line is drawn over a quarter of the beat, holds while the rest of the
+   stone is struck, and fades over nearly a fifth — long enough to read as a
+   fade rather than as a blink. With the stagger, the last line lands halfway
+   through the beat and the whole stone stands for two thirds of a second.
 
    The loop is seamless because the fade ends at nothing: the jump back to a
    fully offset dash happens at opacity 0, with no ink on screen to see it
-   jump. And because the last line is still fading as the first is struck
-   again, the mark never goes blank between beats. */
+   jump. And because the later lines are still going as the first is struck
+   again, the mark is never blank and never still. */
 @keyframes gj-loader-draw {
   0%   { stroke-dashoffset: 100; opacity: 1; }
-  22%  { stroke-dashoffset: 0; opacity: 1; }
-  72%  { stroke-dashoffset: 0; opacity: 1; }
-  86%  { stroke-dashoffset: 0; opacity: 0; }
+  26%  { stroke-dashoffset: 0; opacity: 1; }
+  74%  { stroke-dashoffset: 0; opacity: 1; }
+  92%  { stroke-dashoffset: 0; opacity: 0; }
   100% { stroke-dashoffset: 0; opacity: 0; }
 }
 

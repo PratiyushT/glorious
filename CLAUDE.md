@@ -1179,16 +1179,26 @@ flight, and whatever waits next. `{% render 'loader', label: text, size: 'sm' %}
   in it is `loading="lazy"` on an image — so both the shape and the movement
   here are the theme's. What is kept is its language: hairline, gold, square-on.
 - **Every line is drawn, in turn**: the cut, the girdle, the crown from the
-  middle out, then the pavilion, 80ms apart on one keyframe set — the sequence
-  is `animation-delay: calc(var(--n) * 80ms)` and nothing else. Pairs share
-  their `--n`, so the mark is symmetric in every frame. Whole by ~950ms of the
-  2.6s beat, **held whole for a second**, then faded in the same order, the last
-  line still going as the first is struck again. Verified by scrubbing the
-  animation and reading the dash back: 6 / 25 / 54 / 81 / 97 / 100% on the
-  outline, each line 80ms behind the one before, pairs exactly in step.
+  middle out, then the pavilion, one keyframe set for all nine — the sequence is
+  `animation-delay: calc(var(--n) * var(--loader-stagger))` and nothing else.
+  Pairs share their `--n`, so the mark is symmetric in every frame.
+- **The beat is 3.2s and the stagger 180ms, and both are about feeling like a
+  wait rather than a flash.** A line takes about a quarter of the beat to draw,
+  and the stagger is nearly as long as the stroke, so lines visibly follow one
+  another and five to seven are moving at any moment. The strike runs to the
+  middle of the beat, the whole stone stands for two thirds of a second, and
+  the fade takes nearly a fifth — long enough to read as a fade rather than a
+  blink, and still going as the first line is struck again, so the mark is
+  never blank and never still.
 
-  It was not always drawn. The facets used to *fade in* over an already-drawn
-  outline, which reads as a picture appearing rather than a stone being cut.
+  It shipped at 2.6s with an 80ms stagger, which put every line down inside the
+  first second and left the rest of the cycle a still picture: measured
+  0 → 38 → 92 → 100% of the ink in 800ms flat. Now the ink climbs
+  0 → 7 → 19 → 38 → 58 → 78 → 92 → 100 across 1.8s.
+
+  It was not always drawn at all. The facets used to *fade in* over an
+  already-drawn outline, which reads as a picture appearing rather than a stone
+  being cut.
 - **One path per line, and that is load-bearing.** `pathLength` normalises a
   path's *total* length, so several lines sharing one path each get a share of
   the 100 in proportion to how long they are — the girdle would still be
