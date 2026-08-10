@@ -721,14 +721,12 @@
       "collection": {
         "label": "Collection"
       },
+      "limit_products": {
+        "label": "Limit how many products are shown",
+        "info": "Off shows the whole collection, up to the 50 Shopify returns in one page."
+      },
       "products_to_show": {
         "label": "Products to show"
-      },
-      "mobile_columns": {
-        "label": "Columns on a phone",
-        "info": "Two keeps the grid browsable on a narrow screen even though it takes each card below the minimum column width.",
-        "one": "One",
-        "two": "Two"
       },
       "show_view_all": {
         "label": "Show the view all link"

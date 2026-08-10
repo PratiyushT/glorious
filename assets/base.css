@@ -314,11 +314,40 @@ a {
   );
 }
 
-/* A product grid drops to one column on a small phone, whatever the two-column
-   setting says. The design states it as a hard override —
+/* The design's own floor for a product grid: `min(46%, 305px)`, so two cards
+   stay side by side below the 305px column minimum instead of the row folding
+   to one. It belongs on the class rather than on each caller — Most Loved used
+   to pass it and the collection and search grids did not, so at 560px Most
+   Loved showed two across and /collections/all showed one, from the same
+   design rule.
+
+   The merchant-facing "Columns on a phone" that used to drive this is gone. It
+   could only ever act between 441px and about 660px — every real phone width
+   was below the override underneath, and above ~660px the 305px minimum fits
+   two anyway — so it was a choice about small tablets wearing a phone's name.
+
+   Since the override now reaches 660px this floor is nearly inert: measured, it
+   changes the count only between about 661px and 675px, where 46% still fits
+   two and the 305px minimum does not quite. It is kept because that is the
+   design's own value and because without it those few pixels would show one
+   column and then jump to two.                                                */
+.grid-auto--products {
+  --min-pct: 46%;
+}
+
+/* A product grid drops to one column below 660px, whatever the floor above
+   says. The design states this as a hard override —
    `@media (max-width:440px){[data-grid]{grid-template-columns:1fr !important}}`
    — because its `min(46%, 305px)` otherwise still fits two columns at 360px,
    where 46% is 165px and a card is unreadably narrow.
+
+   **660px, not the design's 440px — a deliberate departure, on request.** It
+   carries the one-column treatment up through the whole 441–660px band the
+   removed "Columns on a phone" setting used to argue over, so a large phone in
+   landscape and a small tablet in portrait get one full-width card rather than
+   two narrow ones. Keep the two queries below in step: the grid's and the
+   carousel ruler's are the same threshold, and the carousel measures the ruler
+   to decide how many cards make a page.
 
    This is one of the few places a viewport query is right (see "Fluid for
    continuous values"): it is the design's own art direction, and a column
@@ -329,7 +358,7 @@ a {
 
    No `!important` needed: same specificity as `.grid-auto`, and it comes
    later in the file. */
-@media (max-width: 27.5rem) {
+@media (max-width: 41.25rem) {
   .grid-auto--products {
     grid-template-columns: 1fr;
   }
@@ -1652,7 +1681,7 @@ a.card__title::after {
   );
 }
 
-@media (max-width: 27.5rem) {
+@media (max-width: 41.25rem) {
   .fp-carousel__ruler {
     width: 100%;
   }

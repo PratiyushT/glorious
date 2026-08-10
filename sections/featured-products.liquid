@@ -24,7 +24,25 @@
 
 {%- liquid
   assign collection = collections[section.settings.collection]
+
+  comment
+    How many pieces the row shows. Off by default the section shows the whole
+    collection; `limit_products` is what brings the count setting into play,
+    and the editor only offers that setting while it is on.
+
+    Shopify caps an un-paginated `collection.products` loop at 50 whatever is
+    asked for, so "all" means "up to 50" — the same ceiling the collection
+    template lives with.
+
+    The placeholder branch below still needs a number when there is no
+    collection to count, so the setting's own value stands in there.
+  endcomment
   assign limit = section.settings.products_to_show
+  unless section.settings.limit_products
+    if collection != blank
+      assign limit = collection.all_products_count
+    endif
+  endunless
 
   assign is_carousel = false
   if section.settings.layout == 'carousel'
@@ -93,16 +111,13 @@
     {%- endif -%}
 
     {%- comment -%}
-      --min-pct lets the track floor fall below --grid-min on narrow screens.
-      At 46% two cards still fit on a phone, which is what the design does;
-      at 100% the grid drops to a single column instead.
-
-      The same three variables serve both layouts: the carousel works out how
-      many cards fit by measuring a hidden box carrying `.grid-auto`'s own
-      width expression, so the two never disagree about a column count.
+      The column floor is `.grid-auto--products`' own now, so both layouts and
+      every other product grid read one rule. The carousel works out how many
+      cards fit by measuring a hidden box carrying that same expression, so the
+      two can never disagree about a column count.
     {%- endcomment -%}
     {%- capture grid_vars -%}
-      --gap: var(--grid-gap); --min-pct: {% if section.settings.mobile_columns == '2' %}46%{% else %}100%{% endif %};
+      --gap: var(--grid-gap);
     {%- endcapture -%}
 
     {%- comment -%}
@@ -259,30 +274,21 @@
       "visible_if": "{{ section.settings.layout == 'carousel' }}"
     },
     {
+      "type": "checkbox",
+      "id": "limit_products",
+      "label": "t:sections.featured_products.limit_products.label",
+      "info": "t:sections.featured_products.limit_products.info",
+      "default": true
+    },
+    {
       "type": "range",
       "id": "products_to_show",
       "label": "t:sections.featured_products.products_to_show.label",
+      "visible_if": "{{ section.settings.limit_products }}",
       "min": 2,
       "max": 16,
       "step": 1,
       "default": 8
-    },
-    {
-      "type": "select",
-      "id": "mobile_columns",
-      "label": "t:sections.featured_products.mobile_columns.label",
-      "info": "t:sections.featured_products.mobile_columns.info",
-      "options": [
-        {
-          "value": "1",
-          "label": "t:sections.featured_products.mobile_columns.one"
-        },
-        {
-          "value": "2",
-          "label": "t:sections.featured_products.mobile_columns.two"
-        }
-      ],
-      "default": "2"
     },
     {
       "type": "checkbox",

@@ -195,8 +195,34 @@ see the search overlay below.
   narrow-screen state, and `clamp()` floors are the mobile values — it just
   reaches for intrinsic mechanisms before breakpoints.
 
-- **A product grid drops to one column below 440px**, whatever the two-column
-  setting says. The design states it as a hard override —
+- **`--min-pct: 46%` lives on `.grid-auto--products`, not on the caller.** It is
+  the design's own floor — `min(46%, 305px)` — so two cards stay side by side
+  below the 305px column minimum. Most Loved used to pass it inline while the
+  collection and search grids did not, so at 560px Most Loved showed two across
+  and `/collections/all` showed one, from the same design rule. One class, one
+  answer.
+
+  The **"Columns on a phone" setting that used to drive it is gone.** Measured,
+  it could only act between 441px and about 660px: every real phone width is
+  below the hard override underneath, and above ~660px the 305px minimum fits
+  two anyway. It was a choice about small tablets wearing a phone's name, and
+  the design offers no such option.
+
+  Now that the override reaches 660px the floor itself is nearly inert — it
+  changes the count only between about 661px and 675px. It is kept because it
+  is the design's own value and because without it those few pixels would show
+  one column and then jump to two.
+- **A product grid drops to one column below 660px**, whatever the floor above
+  says. **660px is a departure from the design's 440px, on request** — it
+  carries the one-column treatment through the whole band the removed "Columns
+  on a phone" setting used to argue over, so a large phone in landscape and a
+  small tablet in portrait get one full-width card rather than two narrow ones.
+  Measured: 640px gives one column, 720px gives two.
+
+  **Two queries carry this threshold and must move together**: the grid's own
+  and `.fp-carousel__ruler`'s, since the carousel measures that ruler to decide
+  how many cards make a page. Changing one alone is how the grid and the
+  carousel would quietly disagree about a column count. The design states it as a hard override —
   `@media (max-width:440px){[data-grid]{grid-template-columns:1fr !important}}`
   — because its `min(46%, 305px)` otherwise still fits two columns at 360px,
   where 46% is 165px. It is one of the few correct viewport queries here: a
