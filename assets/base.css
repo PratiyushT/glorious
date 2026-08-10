@@ -5913,20 +5913,22 @@ a.nav-menu__address:hover {
    quick view while the piece is fetched, the search overlay while a query is
    in flight, and whatever waits next.
 
-   The diamond is the design's own — the brilliant cut it draws in its image
-   placeholders, path for path. The design states no loading state anywhere in
-   its 24 pages, so the movement is the theme's: the outline is struck in one
-   stroke, the facets catch the light once it closes, and the mark fades so it
-   can be struck again. It is gold on whatever scheme the panel carries, which
-   is what `--c-accent` already answers.
+   The diamond is a round brilliant in elevation, drawn to a reference given on
+   request: table, five crown facets, girdle, and a pavilion converging on the
+   culet. The design states no loading state anywhere in its 24 pages, so both
+   the shape and the movement are the theme's — the outline is struck in one
+   stroke, the crown lights, the pavilion follows, and the mark fades so it can
+   be struck again. What is kept from the design is its language: hairline,
+   gold, square-on. It is `--c-accent`, so it is the light-background gold on a
+   panel and the champagne on the noir search overlay, with no rule of its own.
 
-   `pathLength="100"` on each path is what lets one `stroke-dasharray` in the
-   stylesheet drive three different lengths of line — the alternative is
-   measuring `getTotalLength()` in JavaScript, and a decoration should not need
-   a script to appear.                                                        */
+   `pathLength="100"` on the outline is what lets one `stroke-dasharray` drive
+   the draw — the alternative is measuring `getTotalLength()` in JavaScript, and
+   a decoration should not need a script to appear.                           */
 
 .loader {
   --loader-size: 2.75rem;   /* 44px */
+  --loader-stroke: 1.25px;
   --loader-beat: 1.9s;
 
   display: grid;
@@ -5934,19 +5936,25 @@ a.nav-menu__address:hover {
   color: var(--c-accent);
 }
 
-.loader--sm { --loader-size: 1.75rem; }
-.loader--lg { --loader-size: 4.25rem; }
+.loader--sm { --loader-size: 1.75rem; --loader-stroke: 1px; }
+.loader--lg { --loader-size: 4.25rem; --loader-stroke: 1.5px; }
 
 .loader__mark {
   display: block;
   height: var(--loader-size);
-  /* The viewBox's own ratio: the cut is taller than it is wide. */
-  aspect-ratio: 36 / 41;
+  /* The viewBox's own ratio: a brilliant is wider than it is deep. */
+  aspect-ratio: 96 / 84;
   overflow: visible;
   stroke: currentColor;
-  /* The design's own weight for this mark, in its own units. */
-  stroke-width: 2;
+  /* A hairline at every size, which the paths' own `non-scaling-stroke` is
+     what makes true: they are stated in a 100-unit space, so a scaled stroke
+     would be 0.33px in the search field and 1.2px in the quick view, and nine
+     facet lines at a third of a pixel read as a smudge rather than as a cut
+     stone. The attribute is on the paths and cannot move here — `vector-effect`
+     does not inherit, so declared on this element it reaches nothing. */
+  stroke-width: var(--loader-stroke);
   stroke-linejoin: round;
+  stroke-linecap: round;
 }
 
 /* Struck in one stroke, held while the facets light, then gone. The loop is
@@ -5958,13 +5966,12 @@ a.nav-menu__address:hover {
 }
 
 .loader__facet {
-  stroke-dasharray: 100;
   animation: gj-loader-facet var(--loader-beat) var(--ease) infinite;
 }
 
-/* The second facet follows the first, so the light crosses the stone rather
-   than arriving on all of it at once. */
-.loader__facet + .loader__facet {
+/* The pavilion follows the crown, so the light crosses the stone rather than
+   arriving on all of it at once. */
+.loader__facet--low {
   animation-name: gj-loader-facet-late;
 }
 
@@ -5994,7 +6001,7 @@ a.nav-menu__address:hover {
 @media (prefers-reduced-motion: reduce) {
   .loader__cut,
   .loader__facet,
-  .loader__facet + .loader__facet {
+  .loader__facet--low {
     animation: none;
     stroke-dashoffset: 0;
     opacity: 1;

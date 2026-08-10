@@ -1166,20 +1166,34 @@ flight, and whatever waits next. `{% render 'loader', label: text, size: 'sm' %}
 — `sm` / `md` / `lg`, 28 / 44 / 68px, and a label that defaults to
 `general.loading`.
 
-- **The diamond is the design's own.** It is the brilliant cut drawn in the
-  design's image placeholders (`Glorious All Products.dc.html`), path for path:
-  the kite outline, the girdle rule across it, and the two crown facets. The
+- **The diamond is a round brilliant in elevation**, drawn to a reference given
+  on request: the table across the top at 43% of the width, five crown facets,
+  the girdle at the widest points, and the pavilion converging on the culet.
+  Nine lines in three paths, grouped by depth.
+
+  It replaced the design's own three-path cut — the one drawn in its image
+  placeholders (`Glorious All Products.dc.html`). That mark is right where it
+  lives, at 100px behind a photograph that has not arrived, and too plain at
+  68px in the middle of an empty panel, which is what a wait actually shows. The
   design states **no loading state anywhere in its 24 pages** — every "loading"
-  in it is `loading="lazy"` on an image — so the movement is the theme's, but
-  the shape is not and must not be redrawn.
-- **What it does**: the outline is struck in one stroke, the facets catch the
-  light once it closes, and the mark fades so it can be struck again. The loop
-  is seamless because the fade ends at nothing — the jump back to a fully offset
-  dash happens while there is no ink on screen to see it jump.
-- **`pathLength="100"` is what keeps it out of JavaScript.** It normalises every
-  path to 100 units, so one `stroke-dasharray: 100` in the stylesheet drives
-  three different lengths of line. The alternative is `getTotalLength()` in a
-  script, and a decoration should not need one to appear.
+  in it is `loading="lazy"` on an image — so both the shape and the movement
+  here are the theme's. What is kept is its language: hairline, gold, square-on.
+- **What it does**: the outline is struck in one stroke, the crown lights, the
+  pavilion follows a beat later, and the mark fades so it can be struck again.
+  The loop is seamless because the fade ends at nothing — the jump back to a
+  fully offset dash happens while there is no ink on screen to see it jump.
+- **`pathLength="100"` is what keeps it out of JavaScript.** It normalises the
+  outline to 100 units, so one `stroke-dasharray: 100` in the stylesheet drives
+  the draw. The alternative is `getTotalLength()` in a script, and a decoration
+  should not need one to appear.
+- **`vector-effect="non-scaling-stroke"` is an attribute on each path, and has
+  to be.** The property **does not inherit**, so declared on the `<svg>` it
+  reaches nothing — it shipped that way and the strokes silently kept scaling.
+  And it is a presentation attribute before it is a CSS property, which not
+  every engine accepts. Without it the hairline is 0.33px in the search field
+  and 1.2px in the quick view, from the same 100-unit paths: nine facet lines at
+  a third of a pixel read as a smudge rather than as a cut stone. `--loader-
+  stroke` is therefore in real pixels — 1 / 1.25 / 1.5 by size.
 - It is gold on whatever scheme it lands in — `--c-accent`, which is already
   `#9A7836` on a light panel and the champagne `#C7A15C` on the noir search
   overlay. Under reduced motion the stone is simply drawn whole rather than

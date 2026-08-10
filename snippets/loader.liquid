@@ -3,17 +3,24 @@
   the piece is fetched, the search overlay while a query is in flight, and
   whatever comes next. One mark, so a wait always looks the same.
 
-  The mark is **the design's own diamond** — the brilliant cut it draws in its
-  image placeholders (`Glorious All Products.dc.html`), path for path: the kite
-  outline, the girdle rule across it, and the two crown facets. The design has
-  no loading state of its own anywhere in its 24 pages, so the animation is
-  ours; the shape is not, and should not be redrawn.
+  The mark is a **round brilliant in elevation**, drawn to a reference given on
+  request: the table across the top, the crown broken into five facets, the
+  girdle across the widest points, and the pavilion converging on the culet.
+  Every vertex is stated once and the lines are grouped by depth, which is what
+  lets the light cross the stone rather than arrive on all of it at once.
+
+  It replaced the design's own three-path cut — the one it draws in its image
+  placeholders. That mark is right where it lives, at 100px behind a photograph
+  that has not loaded, and too plain at 68px in the middle of an empty panel,
+  which is what a wait actually shows. The design states no loading state
+  anywhere in its 24 pages, so both the shape and the movement here are the
+  theme's; what is kept is its language — hairline, gold, square-on.
 
   What it does is draw itself: the outline is struck in one stroke, the facets
   catch the light once it closes, and the whole mark fades so it can be struck
-  again. `pathLength="100"` is what makes that possible without measuring
-  anything in JavaScript — it normalises every path to 100 units, so one
-  `stroke-dasharray` in the stylesheet serves all three.
+  again. `pathLength="100"` is what makes the draw possible without measuring
+  anything in JavaScript — it normalises the outline to 100 units, so one
+  `stroke-dasharray` in the stylesheet drives it.
 
   Takes:
     label  what a screen reader announces. Defaults to `general.loading`.
@@ -34,10 +41,41 @@
 -%}
 
 <span class="loader loader--{{ loader_size }}" role="status">
-  <svg class="loader__mark" viewBox="32 30 36 41" fill="none" aria-hidden="true" focusable="false">
-    <path class="loader__cut" pathLength="100" d="M50 32l16 13-16 24-16-24z"></path>
-    <path class="loader__facet" pathLength="100" d="M34 45h32"></path>
-    <path class="loader__facet" pathLength="100" d="M50 32l-7 13 7 24 7-24z"></path>
+  <svg class="loader__mark" viewBox="2 10 96 84" fill="none" aria-hidden="true" focusable="false">
+    {%- comment -%}
+      The cut: the table across the top, the shoulders out to the girdle's
+      widest points, and the two long pavilion edges down to the culet.
+    {%- endcomment -%}
+    {%- comment -%}
+      `vector-effect` is the one thing here that cannot be left to the
+      stylesheet: it does not inherit, so setting it on the <svg> reaches
+      nothing, and it is a presentation attribute before it is a CSS property —
+      engines that do not accept the latter still honour this.
+    {%- endcomment -%}
+    <path
+      class="loader__cut"
+      pathLength="100"
+      vector-effect="non-scaling-stroke"
+      d="M30 12h40l26 26-46 54-46-54z"
+    ></path>
+
+    {%- comment -%}
+      The girdle, and the crown above it — five facets, from each end of the
+      table down to the girdle's centre and to the point below the table's own
+      corner. Struck as one path because they light together.
+    {%- endcomment -%}
+    <path
+      class="loader__facet"
+      vector-effect="non-scaling-stroke"
+      d="M4 38h92M30 12L50 38M70 12L50 38M30 12L26 38M70 12L74 38"
+    ></path>
+
+    {%- comment -%} The pavilion, converging on the culet, a beat later. {%- endcomment -%}
+    <path
+      class="loader__facet loader__facet--low"
+      vector-effect="non-scaling-stroke"
+      d="M26 38L50 92M50 38L50 92M74 38L50 92"
+    ></path>
   </svg>
   <span class="visually-hidden">{{ loader_label }}</span>
 </span>
