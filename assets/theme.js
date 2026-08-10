@@ -110,6 +110,28 @@
     window.setTimeout(finish, fallbackMs);
   }
 
+  /* Handing one state over to another behind a fade: what is on screen leaves,
+     the change happens while nothing is showing, and what arrives plays its own
+     entrance. The bag drawer does this when its contents are replaced wholesale
+     — the count, the lines and the footer all change at once — and the row
+     carousel does it when one page of cards gives way to the next.
+
+     Both callers do the same two things first: set the attribute that plays the
+     leaving animation, then call this with the duration the stylesheet gives
+     that animation, so the fallback and the CSS land together.
+
+     The reflow is the part that is easy to lose. `afterAnimations()` asks the
+     element for its running animations the moment it is called, and one matched
+     by an attribute set in the same tick does not exist until the style has been
+     recalculated — so without reading a layout property first there is nothing
+     to wait for and the change lands in the very frame the fade was supposed to
+     cover. Reduced motion needs no branch here: `afterAnimations` calls back
+     immediately, so the state simply changes. */
+  function afterFade(el, fallbackMs, done) {
+    void el.offsetWidth;
+    afterAnimations(el, fallbackMs, done);
+  }
+
   /* ---- Overlays ------------------------------------------------------
      One controller for every layer that opens over the page: the menu,
      search, the bag drawer, the newsletter modal and the cookie notice.
@@ -646,17 +668,13 @@
       if (wasEmpty === willBeEmpty || reduceMotion.matches) { swap(); return; }
 
       current.setAttribute('data-cart-swapping', '');
-
-      /* afterAnimations() asks for running animations the moment it is called,
-         and one matched by an attribute set in this same tick does not exist
-         until the style is recalculated. Reading a layout property forces
-         that, so the fade is running by the time it looks. */
-      void current.offsetWidth;
     }
 
     /* The fallback is the stylesheet's own 180ms, so both paths land together
-       whether or not getAnimations() reports the fade. */
-    afterAnimations(current, 180, function () {
+       whether or not getAnimations() reports the fade. `afterFade` is what
+       forces the style recalculation that makes the fade findable — see it for
+       why that matters. */
+    afterFade(current, 180, function () {
       swap();
       current.removeAttribute('data-cart-swapping');
 
@@ -664,9 +682,8 @@
          attribute afterwards is a no-op — the entrance ends at opacity 1 —
          which is what keeps the hand-over from flashing in either direction. */
       current.setAttribute('data-cart-arriving', '');
-      void current.offsetWidth;
 
-      afterAnimations(current, 300, function () {
+      afterFade(current, 300, function () {
         current.removeAttribute('data-cart-arriving');
       });
     });
@@ -2106,7 +2123,14 @@
       var fade = root.dataset.rowMotion === 'fade';
       var per = 0;
       var pages = 1;
+      /* The page on show, and the page it is going to. They differ only while a
+         fade is handing one over to the other, which is exactly the window in
+         which a second press must not be measured against the old number. */
       var page = 0;
+      var target = 0;
+      var swapping = false;
+      /* The stylesheet's own, so the fallback and the animation land together. */
+      var FADE_OUT = 180;
 
       function measure() {
         var width = viewport.clientWidth;
@@ -2165,6 +2189,10 @@
         pages = Math.ceil(cells.length / per);
         if (page > pages - 1) page = pages - 1;
         if (page < 0) page = 0;
+        /* Fewer pages than there were: whatever a fade is on its way to no
+           longer exists, so the two agree again. Mid-hand-over the target is
+           the newer answer of the two and is left alone. */
+        if (!swapping) target = page;
         root.style.setProperty('--row-page', page);
 
         var first = page * per;
@@ -2232,17 +2260,48 @@
         }
       }
 
+      /* Slide moves the track and the change *is* the motion, so it happens at
+         once. Fade has nothing of its own to move, and taking the page away in
+         one frame and rising the next one in reads as a flicker rather than as
+         a fade — so it hands over: the cards on show leave behind a fade, the
+         swap happens while nothing is on screen, and the arriving page plays
+         `gj-card` as it always has. `afterFade` is the drawer's mechanic, doing
+         the same job here. */
       function go(to) {
         var clamped = Math.max(0, Math.min(to, pages - 1));
-        if (clamped === page) return;
-        page = clamped;
-        paint(true);
+        if (clamped === target) return;
+        target = clamped;
+
+        if (!fade || reduceMotion.matches) {
+          page = target;
+          paint(true);
+          return;
+        }
+
+        /* A press while one is in flight is held, not dropped: the hand-over
+           already running lands on whatever `target` says by the time it gets
+           there. The same answer the cart gives a quick second press. */
+        if (swapping) return;
+        swapping = true;
+
+        var leaving = cells.filter(function (cell) { return !cell.hidden; });
+        leaving.forEach(function (cell) { cell.setAttribute('data-row-leaving', ''); });
+
+        afterFade(viewport, FADE_OUT, function () {
+          leaving.forEach(function (cell) { cell.removeAttribute('data-row-leaving'); });
+          swapping = false;
+          page = target;
+          paint(true);
+        });
       }
 
       root.addEventListener('click', function (event) {
         var step = event.target.closest('[data-row-step]');
         if (step) {
-          go(page + parseInt(step.dataset.rowStep, 10));
+          /* Stepped from where it is going, not from where it still is, or a
+             second press during a fade would ask for the page already on its
+             way and be thrown away as a no-op. */
+          go(target + parseInt(step.dataset.rowStep, 10));
           return;
         }
 
@@ -2254,8 +2313,8 @@
          through the piece's own images. Anywhere else on the row moves the
          carousel. The same test the card itself makes, so the two agree
          rather than both answering the one gesture. */
-      function cardOwns(touch, target) {
-        var card = target && target.closest ? target.closest('[data-card]') : null;
+      function cardOwns(touch, node) {
+        var card = node && node.closest ? node.closest('[data-card]') : null;
         if (!card || card.querySelectorAll('[data-card-slide]').length < 2) return false;
 
         var media = card.querySelector('.card__media');
@@ -2286,7 +2345,7 @@
         /* Ignore anything that reads more like a scroll than a swipe. */
         if (Math.abs(dx) < 40 || Math.abs(dx) < Math.abs(dy) * 1.2) return;
 
-        go(page + (dx < 0 ? 1 : -1));
+        go(target + (dx < 0 ? 1 : -1));
       }, { passive: true });
 
       /* The count follows the component's own width, not the screen's, so a

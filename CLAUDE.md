@@ -398,8 +398,32 @@ the theme already owns:
 - **Slide** is the quick view gallery's — one track translated by whole pages,
   `transform 0.6s var(--ease)`.
 - **Fade** is the hero carousel's — the window of cards is swapped in place
-  and each one replays `gj-card` (rise and fade, 0.5s) 80ms apart. Like the
-  hero, the outgoing page is simply taken away; it is not a cross-fade.
+  and each one replays `gj-card` (rise and fade, 0.5s) 80ms apart. It is not a
+  cross-fade: the two pages are never on screen together.
+
+  **It hands the page over rather than cutting to it**, which is the bag
+  drawer's mechanic doing the same job. The cards on show leave behind
+  `gj-fade-out` (0.18s), the swap happens while nothing is showing, and the
+  arriving page plays `gj-card`. The hero simply takes its outgoing pair away,
+  and copying that here was wrong: the hero swaps two cards under a fixed
+  heading, where a row of eight cards vanishing in one frame and rising back in
+  reads as a flicker. Both card kinds fade — the rule reaches whatever the cell
+  holds, a product card or a category one.
+
+  `theme.js` waits through **`afterFade`**, the shared helper: set the attribute
+  that plays the leaving animation, then call it with the duration the
+  stylesheet gives that animation. It forces the style recalculation that makes
+  the animation findable and falls back to that same duration. The drawer and
+  the carousel are its two callers, and a third hand-over should use it rather
+  than repeating the two mechanics — see "Two mechanics make it work" under the
+  bag drawer, which is what it now holds.
+
+  **A press during a fade is held, not dropped**, as the cart holds a quick
+  second press: `target` is where the row is going and `page` is where it still
+  is, they differ only mid-hand-over, and an arrow steps from `target`.
+  Stepping from `page` would ask for the page already on its way and be thrown
+  away as a no-op. Verified: pressing next then prev twice inside one 180ms
+  fade lands on page 0 in a single hand-over.
 
 The arrows are **bare and large**: a **28px glyph in full ink** turning
 `--c-accent` on hover, centred in a **46px target that is never drawn**. They
@@ -1321,12 +1345,14 @@ The markup contract:
   still. The figure is a flex item and so already blockified; the
   `display: inline-block` on it only matters if the class is reused elsewhere.
 
-  Two mechanics make it work. `afterAnimations()` asks for running animations
-  the moment it is called, and one matched by an attribute set in the same tick
-  does not exist until the style is recalculated — hence the
-  `void inner.offsetWidth` before it. And its fallback is the stylesheet's own
-  200ms, so both paths land together whether or not `getAnimations()` reports
-  the fade. **Do not "tidy" either away.**
+  Two mechanics make it work, and they live in **`afterFade`** now — shared
+  with the row carousel's fade, which is the same hand-over. `afterAnimations()`
+  asks for running animations the moment it is called, and one matched by an
+  attribute set in the same tick does not exist until the style is recalculated
+  — hence the `void el.offsetWidth` the helper does first. And its fallback is
+  the stylesheet's own duration, passed in by the caller, so both paths land
+  together whether or not `getAnimations()` reports the fade. **Do not "tidy"
+  either away.**
 - **The empty state is centred in the body**, not sitting at the top of it: the
   panel is full height and the message is the only thing in it, so the design's
   52px of padding left it stranded under the header. `.drawer__body:has(>

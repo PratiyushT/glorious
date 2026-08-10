@@ -1778,6 +1778,26 @@ a.card__title::after {
   animation-play-state: running;
 }
 
+/* And the page that is leaving fades, in fade mode. Without this the outgoing
+   cards are simply taken away in the frame the swap happens — the hero's own
+   behaviour, which works there because the hero swaps two cards under a fixed
+   heading, and reads as a flicker on a row of eight before the new page rises
+   in. The card is either kind: the rule reaches whatever the cell holds, a
+   product card or a category one.
+
+   `gj-fade-out` and its 180ms are the bag drawer's, because this is the drawer's
+   hand-over doing the same job — what is on screen leaves, the change happens
+   while nothing is showing, and what arrives plays its own entrance. `theme.js`
+   waits on this animation through `afterFade` and carries the same 180 as its
+   fallback, so the two land together whether or not `getAnimations()` reports
+   it.
+
+   One more class than the entrance rule it has to beat, or the cards keep
+   rising while they leave. */
+.row-carousel[data-row-live] .row-carousel__cell[data-row-leaving] > * {
+  animation: gj-fade-out 0.18s ease both;
+}
+
 /* `.reveal` is on the carousel to *time* that entrance, not to play one of
    its own: the block itself must not fade, or every card fades twice — once
    with the row and once on its own curve. The cards are the entrance. */
@@ -2028,8 +2048,13 @@ a.card__title::after {
   }
 
   /* Removed outright rather than sped up, so the paused state above cannot
-     leave a card holding at opacity 0. */
-  .row-carousel[data-row-live] .row-carousel__cell > * {
+     leave a card holding at opacity 0. The leaving rule is stated too, and it
+     is not dead code: it carries one class more than the rule above, so
+     without it a fade-out would outrank this and play. The script does not set
+     that attribute under reduced motion — this is what keeps the stylesheet
+     true on its own. */
+  .row-carousel[data-row-live] .row-carousel__cell > *,
+  .row-carousel[data-row-live] .row-carousel__cell[data-row-leaving] > * {
     animation: none;
   }
 
