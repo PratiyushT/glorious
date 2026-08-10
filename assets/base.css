@@ -1165,15 +1165,79 @@ a {
   width: 100%;
 }
 
-/* ---- Product card ------------------------------------------------ */
+/* ---- Product text ----------------------------------------------------
+   One set of type for a piece wherever it is named, priced and counted: the
+   card's caption, the bag drawer's rows and the cart page. A piece should
+   read the same in the grid as it does in the bag.
+
+   These are the card's own numbers, and they are literals rather than clamps
+   off the fluid scale — the card sits in a grid whose column is capped near
+   305px, so growing the caption ~7% on a wide screen is not what the design
+   does. Keep them literal; that part has not changed.
+
+   They sit at :root rather than on .card for two reasons. The bag drawer is
+   not inside a card and needs them. And .card__title / .card__price /
+   .card__vendor were already being reused by the cart, blog, product, search
+   and collection-list templates, where a .card-scoped property is undefined —
+   so every one of those was silently falling back to the inherited size.
+
+   Departure from the source design, on request: it sets the drawer's line name
+   in Italiana at 16.5px against the card's Karla at 14.5px. Both are the card's
+   now.                                                                       */
+
+:root {
+  --product-title-size: 0.906rem;    /* 14.5px — between --fs-sm and --fs-base */
+  --product-price-size: 0.938rem;    /* 15px */
+  --product-title-tracking: 0.09em;
+  --product-price-tracking: 0.08em;
+  --product-meta-tracking: calc(var(--micro-tracking) * 0.64);
+  --product-line: 1.5;
+}
+
+/* ---- Product card ---------------------------------------------------
+   A 1:1 rebuild of the design's `Product Card.dc.html`.
+
+   As with the hero, the design's own numbers are held in --card-* properties
+   at the top of the block: the default is exact and every one of them is still
+   a single edit away. Do not "fix" them into tokens. The caption type is the
+   exception, and only because it is shared — see "Product text" above.
+
+   The design's card is a single <a> with buttons nested inside it. Here the
+   title carries the only link and its ::after covers the card, so the media and
+   the caption open the piece while the controls sit above that layer on their
+   own z-index. Anything inside the card that must stay clickable therefore
+   needs a z-index of its own — the add button included, since a static element
+   paints below a positioned one whatever the document order.               */
 
 .card {
+  --card-pad: 1rem;              /* 16px */
+  --card-pad-bottom: 1.188rem;   /* 19px */
+  --card-meta-gap: 0.375rem;     /* 6px above the metal line */
+  --card-price-gap: 0;           /* rev 13 moved this gap onto the price */
+  --card-price-top: 0.438rem;    /* 7px above the price */
+  --card-add-gap: 0.813rem;      /* 13px above the button */
+  --card-control: 2.125rem;      /* 34px — the quick-view disc */
+  --card-swatch-hit: 2.75rem;    /* 44px — the touch target's height */
+  --card-swatch-pitch: 2.25rem;  /* 36px — the horizontal step between dots */
+  --card-swatch-size: 1.25rem;   /* 20px — the dot inside it */
+  /* Derived, not typed: the bleed exists to cancel the first swatch's own side
+     padding so the leading dot lines up with the caption's edge. Retyping it
+     as a literal is how that alignment silently breaks the next time the pitch
+     is tuned. */
+  --card-swatch-bleed: calc((var(--card-swatch-pitch) - var(--card-swatch-size)) / 2);
+  --card-swatch-edge: color-mix(in srgb, var(--c-text) 22%, transparent);
+  --card-note-size: 0.719rem;    /* 11.5px — the karat note and the "+N" */
+  --card-note-gap: 0.188rem;     /* 3px */
+  --card-edge: color-mix(in srgb, var(--c-text) 8%, transparent);
+  --card-zoom: 1;
+
+  position: relative;
   display: flex;
   flex-direction: column;
   min-width: 0;
   height: 100%;
   background: var(--c-surface);
-  border: var(--border-width) solid var(--c-hairline);
+  border: var(--border-width) solid var(--card-edge);
   color: var(--c-text);
   text-align: var(--card-align);
 }
@@ -1185,58 +1249,327 @@ a {
   background: var(--c-surface);
 }
 
-.card__media img {
+/* One slide per source — the design's two photographs and the spin. They
+   cross-fade rather than sliding; the quick view is the one that slides. */
+.card__slide {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.55s ease;
+}
+
+.card__slide.is-on {
+  opacity: 1;
+}
+
+.card__img {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   object-fit: var(--card-fit);
-  transition: opacity var(--duration) var(--ease);
+  background: var(--c-surface);
+  /* The design's framing correction. Liquid works the factor out per piece. */
+  transform: scale(var(--card-zoom));
+  transition: filter 0.9s ease 0.1s;
 }
 
-.card__media .card__hover {
+/* Blur-up. The class is added by the script and only to media that has not
+   arrived yet, so nothing is left permanently blurred without scripting. */
+.card__img.is-blurred {
+  filter: blur(18px) saturate(0.7) brightness(1.14);
+}
+
+.card__video.is-blurred {
+  filter: blur(16px) saturate(0.8);
+}
+
+/* Without the script the first slide is simply the one on show. The design's
+   hover swap still works for the common two-photograph card; once the script
+   takes over it marks the card and drives every slide itself. Guarded to a
+   second slide that is actually a photograph — a spin has nothing to show
+   until its source is fetched. */
+.card[data-card-multi]:not([data-card-live]):hover .card__slide[data-card-slide="0"] {
   opacity: 0;
 }
 
-.card:hover .card__hover {
+.card[data-card-multi]:not([data-card-live]):hover
+  .card__slide[data-card-slide="1"]:not([data-card-spin]) {
   opacity: 1;
 }
 
-.card:hover .card__primary {
+.card__quick {
+  position: absolute;
+  top: 0.625rem;
+  inset-inline-end: 0.625rem;
+  z-index: 4;
+  width: var(--card-control);
+  height: var(--card-control);
+  display: grid;
+  place-items: center;
+  border: var(--border-width) solid color-mix(in srgb, var(--c-text) 12%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--c-surface) 92%, transparent);
+  color: var(--c-text);
+  cursor: pointer;
+  transition: background var(--duration) var(--ease),
+              border-color var(--duration) var(--ease),
+              color var(--duration) var(--ease);
+}
+
+.card__quick:hover {
+  background: var(--c-text);
+  border-color: var(--c-text);
+  color: var(--c-bg);
+}
+
+.card__spin {
+  position: absolute;
+  top: 0.625rem;
+  inset-inline-end: 3.25rem;
+  z-index: 4;
+  height: var(--card-control);
+  display: flex;
+  align-items: center;
+  font-size: 0.688rem;
+  letter-spacing: 0.14em;
+  color: var(--c-text);
+  pointer-events: none;
+  filter: drop-shadow(0 1px 2px color-mix(in srgb, var(--c-surface) 95%, transparent));
+}
+
+.card__spin[hidden] {
+  display: none;
+}
+
+/* The arrows only exist while the card is under the pointer, as the design
+   has them. Untargetable until then, so a tap on a phone — where there is no
+   hover and the swipe does this job — never lands on an invisible control. */
+.card__arrow {
+  position: absolute;
+  top: 50%;
+  z-index: 3;
+  transform: translateY(-50%);
+  padding: 0.625rem;
+  border: 0;
+  background: none;
+  color: var(--c-text);
+  cursor: pointer;
   opacity: 0;
+  pointer-events: none;
+  filter: drop-shadow(0 1px 2px var(--c-surface))
+          drop-shadow(0 0 8px color-mix(in srgb, var(--c-surface) 85%, transparent));
+  transition: opacity 0.4s ease, color var(--duration) var(--ease);
+}
+
+.card__arrow--prev { inset-inline-start: 0.25rem; }
+.card__arrow--next { inset-inline-end: 0.25rem; }
+
+.card:hover .card__arrow,
+.card:focus-within .card__arrow {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.card__arrow:hover {
+  color: var(--c-heading);
 }
 
 .card__body {
-  display: flex;
-  flex-direction: column;
-  gap: 0.4em;
-  padding: var(--space-xs);
+  padding: var(--card-pad) var(--card-pad) var(--card-pad-bottom);
+}
+
+.card__vendor {
+  display: block;
+  margin-bottom: var(--card-meta-gap);
+  font-size: var(--micro-size);
+  letter-spacing: var(--product-meta-tracking);
+  text-transform: uppercase;
+  line-height: var(--product-line);
+  color: color-mix(in srgb, var(--c-text) 72%, transparent);
 }
 
 .card__title {
+  display: block;
   font-family: var(--font-body);
-  font-size: var(--fs-sm);
-  letter-spacing: 0.09em;
+  font-size: var(--product-title-size);
+  letter-spacing: var(--product-title-tracking);
   text-transform: uppercase;
-  line-height: 1.5;
+  line-height: var(--product-line);
   color: var(--c-heading);
   text-decoration: none;
+}
+
+/* The card-wide link. Qualified to the anchor so the onboarding placeholder,
+   whose title is a span, does not get an invisible layer over it. */
+a.card__title::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
 }
 
 .card__title:hover {
   color: var(--c-accent);
 }
 
-.card__meta {
-  font-size: var(--micro-size);
-  letter-spacing: calc(var(--micro-tracking) * 0.64);
+/* Both lines keep their row whether or not there is a word in them, which is
+   what holds every card in a row to the same height. */
+.card__title-line {
+  display: block;
+  min-height: 1.5em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ---- Card metal swatches ---------------------------------------------
+   Design revision 13 puts the metal control on the card itself. Card-scoped
+   literals like the rest of the block: a 20px dot centred in a 44px hit
+   target, the row bled 12px each side so the first dot's padding does not
+   indent it past the caption, and clipped rather than wrapped — the script
+   marks how many fitted and the "+N" says what is left over.
+
+   The selected ring is two box-shadows, not a border. A border would consume
+   the dot's own width and shift every swatch beside it by a pixel. */
+
+.card__swatches {
+  display: flex;
+  align-items: center;
+  /* left | center | right are all valid justify-content values, so the row
+     follows the card's own alignment. An engine that rejects them drops the
+     declaration and the row stays start-packed, which is the design's case. */
+  justify-content: var(--card-align);
+  flex-wrap: nowrap;
+  overflow: hidden;
+  margin: 0 calc(var(--card-swatch-bleed) * -1);
+  min-height: var(--card-swatch-hit);
+}
+
+/* Narrower than it is tall, on request — the dots read as a set rather than as
+   separate controls. The full 44px is kept vertically, so the touch target only
+   loses width, and 36 × 44 still clears WCAG's 24px minimum comfortably. */
+.card__swatch {
+  position: relative;
+  z-index: 2;
+  flex: 0 0 auto;
+  width: var(--card-swatch-pitch);
+  height: var(--card-swatch-hit);
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.card__swatch .swatch-dot {
+  width: var(--card-swatch-size);
+  height: var(--card-swatch-size);
+}
+
+.card__swatch[hidden],
+.card__swatch-more[hidden] {
+  display: none;
+}
+
+/* The row clips (overflow: hidden) and the link fills its 44px exactly, so an
+   outline on the link is drawn outside the box and cut off on both edges. The
+   ring goes on the dot instead: 20px + 2px offset + 2px stroke is 28px, well
+   inside the 44px target, so it survives the clip. */
+.card__swatch:focus-visible {
+  outline: none;
+}
+
+.card__swatch:focus-visible .swatch-dot {
+  outline: 2px solid var(--c-heading);
+  outline-offset: 2px;
+}
+
+/* Fills its control by default, so the dot works wherever it is rendered — the
+   product page's 56px button as well as the card. The card's own 20px comes
+   from the rule below it, because --card-swatch-* is scoped to .card and would
+   be undefined here, making width and height invalid at computed-value time. */
+.swatch-dot {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  /* Unpainted when the metal was not recognised — the hairline still draws the
+     dot, so it reads as "no colour known" rather than as the wrong metal. */
+  background: var(--metal-swatch, transparent);
+  /* After the shorthand, which resets them. --metal-swatch may be a gradient, a
+     colour, or a url() — a merchant's native swatch image, or the metal-*.webp
+     the product page paints with. Those are 80px and would otherwise draw at
+     their own size inside a 20px dot, i.e. a crop of one corner. */
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  /* border-box, not the initial padding-box. `cover` sizes the image to the
+     *origin* box while the clip paints it across the *border* box, so with the
+     default the border ring is left unpainted. That is invisible while the
+     border carries a colour — and a white hairline around the dot the moment
+     the selected state sets border-color: transparent. */
+  background-origin: border-box;
+  /* Fallback for the same reason as the sizing: --card-swatch-edge is scoped
+     to .card, so outside one the declaration would be invalid and the hairline
+     would fall back to currentColor — a hard ink ring round every swatch. */
+  border: var(--border-width) solid
+    var(--card-swatch-edge, color-mix(in srgb, currentColor 22%, transparent));
+  transition: box-shadow var(--duration) var(--ease),
+              border-color var(--duration) var(--ease);
+}
+
+/* The design's ring is a 2px gap in the *card's* colour, then a 1px ink round.
+   It must be --c-surface, not --c-bg: the card sits on its own surface, and on
+   the page background the gap would read as a porcelain halo. */
+.card__swatch.is-selected .swatch-dot,
+.swatch-dot.is-selected {
+  border-color: transparent;
+  box-shadow: 0 0 0 2px var(--c-surface), 0 0 0 3px var(--c-heading);
+}
+
+.card__swatch-more {
+  flex: 0 0 auto;
+  margin-inline-start: 0.125rem;
+  font-size: var(--card-note-size);
+  letter-spacing: 0.1em;
+  line-height: var(--product-line);
+  color: color-mix(in srgb, var(--c-text) 50%, transparent);
+}
+
+/* The design's karat note — the axes the card states but does not control. */
+.card__note {
+  margin-top: var(--card-note-gap);
+  font-size: var(--card-note-size);
+  letter-spacing: 0.13em;
   text-transform: uppercase;
-  color: var(--c-muted);
+  line-height: var(--product-line);
+  color: color-mix(in srgb, var(--c-text) 50%, transparent);
+}
+
+/* The gaps stay card-scoped — outside a card the class is caption type only,
+   and the surrounding stack spaces it. */
+.card__meta {
+  display: block;
+  margin: var(--card-meta-gap, 0) 0 var(--card-price-gap, 0);
+  min-height: 1.5em;
+  font-size: var(--micro-size);
+  letter-spacing: var(--product-meta-tracking);
+  text-transform: uppercase;
+  line-height: var(--product-line);
+  color: color-mix(in srgb, var(--c-text) 72%, transparent);
 }
 
 .card__price {
-  font-size: var(--fs-sm);
-  letter-spacing: 0.08em;
+  display: block;
+  margin-top: var(--card-price-top, 0);
+  min-height: 1.5em;
+  font-size: var(--product-price-size);
+  letter-spacing: var(--product-price-tracking);
+  line-height: var(--product-line);
   color: var(--c-text);
 }
 
@@ -1245,8 +1578,24 @@ a {
   margin-inline-end: 0.5em;
 }
 
+/* The "inc. tax" note. Deliberately not sized off --micro-size: it sits inline
+   with a price and has to read as an aside beside it, so it is a fraction of
+   whatever price it follows rather than a fixed step on the scale. */
+.price-tax {
+  /* Small, because the snippet emits a real space too — see tax-note.liquid. */
+  margin-inline-start: 0.15em;
+  font-size: 0.75em;
+  letter-spacing: 0.06em;
+  text-transform: none;
+  white-space: nowrap;
+  color: color-mix(in srgb, currentColor 62%, transparent);
+}
+
 .card__add {
-  margin-top: var(--space-3xs);
+  position: relative;
+  z-index: 2;
+  margin-top: var(--card-add-gap);
+  padding-inline: 0.625rem;
 }
 
 .badge {

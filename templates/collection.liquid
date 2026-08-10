@@ -8,7 +8,7 @@
 
     {%- paginate collection.products by 24 -%}
       {%- if collection.products.size > 0 -%}
-        <div class="grid-auto" style="--cols: 4;">
+        <div class="grid-auto grid-auto--products" style="--cols: 4;">
           {%- for product in collection.products -%}
             {% render 'product-card', product: product %}
           {%- endfor -%}

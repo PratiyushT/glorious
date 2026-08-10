@@ -22,7 +22,7 @@
         </p>
 
         {%- paginate search.results by 24 -%}
-          <div class="grid-auto" style="--cols: 4;">
+          <div class="grid-auto grid-auto--products" style="--cols: 4;">
             {%- for item in search.results -%}
               {%- if item.object_type == 'product' -%}
                 {% render 'product-card', product: item %}

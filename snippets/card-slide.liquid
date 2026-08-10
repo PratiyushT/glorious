@@ -1,0 +1,58 @@
+{%- comment -%}
+  One photograph in a product card's media stack.
+
+  Only the first two carry a real `src`. Slide 0 is what the card shows and
+  slide 1 is what hover previews, so those two are the entire experience for a
+  visitor without scripting — the arrows do nothing without it. Every slide
+  after them is deferred behind `data-src`, and theme.js fetches it when the
+  card first steps to it.
+
+  That is what lets a piece carry a hundred photographs. A slide is `opacity: 0`,
+  not `display: none`, so the browser treats it as visible and fetches it with
+  the rest of the card however far down the stack it sits — a hundred slides
+  would be a hundred requests per card, times every card in the grid.
+
+  `blurUp()` binds its load listener before any of this is swapped in, so a
+  deferred slide still fades up from the design's blur when it arrives.
+
+  Accepts:
+    media   - product media object, of type image.
+    index   - position in the card's slide order, 0-based.
+    eager   - true when the browser should fetch it up front.
+    product - for the alt fallback.
+    sizes   - sizes attribute.
+    loading - loading attribute.
+{%- endcomment -%}
+
+{%- liquid
+  assign src = media | image_url: width: 800
+  assign w300 = media | image_url: width: 300
+  assign w600 = media | image_url: width: 600
+  assign w900 = media | image_url: width: 900
+  assign w1200 = media | image_url: width: 1200
+  assign alt_text = media.alt | default: product.title | escape
+-%}
+
+{%- capture srcset -%}
+  {{ w300 }} 300w, {{ w600 }} 600w, {{ w900 }} 900w, {{ w1200 }} 1200w
+{%- endcapture -%}
+
+<span class="card__slide{% if index == 0 %} is-on{% endif %}" data-card-slide="{{ index }}">
+  <img
+    class="card__img"
+    {% if eager %}
+      src="{{ src }}"
+      srcset="{{ srcset }}"
+    {% else %}
+      data-src="{{ src }}"
+      data-srcset="{{ srcset }}"
+    {% endif %}
+    sizes="{{ sizes }}"
+    alt="{{ alt_text }}"
+    width="{{ media.width }}"
+    height="{{ media.height }}"
+    loading="{{ loading }}"
+    decoding="async"
+    data-card-blur
+  >
+</span>

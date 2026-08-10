@@ -1,5 +1,22 @@
 {%- comment -%}
-  Product card.
+  Product card — a 1:1 port of the design's `Product Card.dc.html`.
+
+  The design's card is a single <a> with buttons nested inside it, which is
+  neither valid HTML nor navigable. The same behaviour is reached here with the
+  overlay-link pattern: the title carries the only link and its ::after covers
+  the whole card, so clicking anywhere on the media or the caption opens the
+  piece, while the controls sit above that layer and act on their own. One link
+  per card, in the tab order once, named by the product.
+
+  Media is a stack of cross-fading slides, not a single hover swap. Every
+  photograph the piece has is a slide — one or a hundred, there is no cap —
+  led by the media belonging to the variant the card stands for, with the 360°
+  spin last. Hovering previews the next photograph, the arrows and a swipe step
+  through every slide. Without scripting the first slide is simply the one on
+  show, hover still reveals the second, and every card is still a real link.
+
+  Only those first two slides are fetched up front, whatever the count; the
+  rest are deferred behind data-src and fetched as the card is stepped to them.
 
   Shape, fit, alignment and which lines appear all come from the global
   "Product cards" settings, so every grid in the theme stays consistent and a
@@ -8,78 +25,514 @@
   Accepts:
     product - product object. Renders a placeholder when blank.
     loading - 'lazy' (default) or 'eager'.
-    sizes   - sizes attribute. Defaults to a four-up grid.
+    sizes   - sizes attribute. Defaults to the design's own.
 {%- endcomment -%}
 
 {%- liquid
-  assign ratio = settings.card_image_ratio
   assign img_loading = loading | default: 'lazy'
-  assign img_sizes = sizes | default: '(min-width: 60rem) 25vw, 50vw'
-  assign hover_media = product.media[1]
+  assign img_sizes = sizes | default: '(max-width: 700px) 70vw, 460px'
 
+  comment
+    The frame.
+
+    The design's is 3/4 (`aspect-ratio:3/4` on its media div); the **shipped
+    default is Square**, on request — see the note in CLAUDE.md. 3/4 is still
+    the fallback here, for a card with no photograph to adapt to.
+
+    Every value of the setting has to do what it says, including **Adapt to
+    image**, which did not: it fell through to the same 3/4 box, so choosing it
+    changed nothing at all. Adapt now takes the shape from the first photograph
+    the card actually shows, which is the one the frame has to fit.
+
+    Worth knowing what that means on this catalogue: every photograph here is
+    3:2 landscape (2560x1707), the same shape the design's own are. In a 3/4
+    frame at `object-fit: contain` a 3:2 photograph fills 58-70% of the height,
+    so a band of the card's surface shows above and below the piece. That is the
+    design's own arrangement rather than a fault in the port — Adapt is the
+    setting that closes the band, by making the frame the photograph's shape.
+
+    A card with no photograph keeps 3/4, since there is nothing to adapt to.
+  endcomment
+  assign ratio_value = '3 / 4'
+  if settings.card_image_ratio == 'adapt'
+    assign ratio_media = product.media | where: 'media_type', 'image' | first
+    if ratio_media.width > 0 and ratio_media.height > 0
+      assign ratio_value = ratio_media.width | append: ' / ' | append: ratio_media.height
+    endif
+  else
+    assign ratio_value = settings.card_image_ratio | replace: '/', ' / '
+  endif
+
+  comment
+    The metal control the design puts on the card itself. Picking a metal moves
+    the caption, the price and what goes in the bag — and deliberately *not* the
+    photograph: "Colour is chosen on the card itself: the name, the price and
+    what goes in the bag all follow it. The photograph does not — we shoot one
+    metal." (Product Card.dc.html.)
+
+    This is the real option, matched on the name alone. The caption's own
+    fallback below is looser — it will take a "Gold Purity" option to have
+    something to say — but a looser match must never become a control: it would
+    put swatches on an option that is not a metal.
+
+    This has to resolve before the caption, the price and the media, all of
+    which now read it.
+  endcomment
+  comment
+    Resolved whatever the swatch setting says, because the caption and the price
+    both read it. Gating the lookup on the setting coupled them to it: turning
+    swatches off silently changed the caption's wording and the price's range.
+    The setting decides whether the *row* is rendered, nothing else.
+  endcomment
+  assign metal_option = blank
+  assign metal_index = 0
+  for option in product.options_with_values
+    assign option_down = option.name | downcase
+    if option_down contains 'metal'
+      assign metal_option = option
+      assign metal_index = forloop.index0
+      break
+    endif
+  endfor
+  comment
+    The design hides the row unless more than one metal is on show
+    (`hasSwatches: swatches.length > 1`, and again when only one fits). This
+    theme shows it at one, on request: a single swatch still says what the piece
+    is made of, which is worth a row even when there is nothing to choose.
+  endcomment
+  if metal_option.values.size < 1
+    assign metal_option = blank
+  endif
+
+  comment
+    The design's own metal table decides the order, not the order the option
+    happens to carry. It lives in snippets/metal-order.liquid because the quick
+    view orders its swatch row the same way — the table is the design's, not
+    this card's.
+  endcomment
+  capture ordered_metals_raw
+    render 'metal-order', option: metal_option
+  endcapture
+  assign ordered_metals = ordered_metals_raw | strip | split: '||'
+
+  assign card_variant = product.selected_or_first_available_variant
+
+  comment
+    Adding from the card picks the dearest variant, on request — the card
+    offers no karat or size control, so it has to choose one. Available first,
+    because a sold-out variant cannot be bought; the dearest overall stands in
+    when none is, and the button then says Sold out.
+
+    Kept apart from card_variant, whose only job is to say which metal the card
+    opens on. Where there is a metal control the swatch loop works this out per
+    metal instead; this is the answer for a piece without one.
+  endcomment
+  assign dearest_variant = blank
+  assign dearest_any_variant = blank
+  for variant in product.variants
+    if dearest_any_variant == blank or variant.price > dearest_any_variant.price
+      assign dearest_any_variant = variant
+    endif
+    if variant.available
+      if dearest_variant == blank or variant.price > dearest_variant.price
+        assign dearest_variant = variant
+      endif
+    endif
+  endfor
+  if dearest_variant == blank
+    assign dearest_variant = dearest_any_variant
+  endif
+
+  comment
+    The caption is the metal and the carat weight: "White Gold · 1.5 ct".
+
+    No karat prefix. It used to read "22K White Gold · 1.5 ct", which said the
+    karat twice — the note directly underneath already lists every karat the
+    piece comes in ("Available in 18K, 22K"), and the card cannot choose one
+    anyway. Nothing here should look up the purity option.
+  endcomment
+  assign carat_label = product.metafields.custom.total_carat_weight.value | append: ''
+  if carat_label != blank
+    unless carat_label contains 'ct'
+      assign carat_label = carat_label | append: ' ct'
+    endunless
+  endif
+
+  comment
+    The metal line.
+
+    Where the card carries a metal control the option wins, because the caption
+    has to follow the pick — the design's whole point — and a metafield holds
+    one fixed string that cannot. Every product in this catalogue sets
+    custom.metal, so letting it win would have frozen the caption on every card
+    in the shop: choose White Gold and it would still have read "18 Karat
+    Yellow Gold", which is not a preference but a wrong answer.
+
+    Without a control the metafield still wins, and then the caption is fixed
+    and says so, which is the single-metal piece it was written for.
+  endcomment
   assign metal = blank
   if settings.card_show_metal
-    assign metal = product.metafields.custom.metal.value
-    if metal == blank
+    if metal_option != blank
+      assign metal = card_variant.options[metal_index]
+      if carat_label != blank
+        assign metal = metal | append: ' · ' | append: carat_label
+      endif
+    else
       for option in product.options_with_values
         assign name_down = option.name | downcase
-        if name_down contains 'metal' or name_down contains 'gold'
+        if name_down == 'metal'
           assign metal = option.selected_value | default: option.values.first
           break
         endif
       endfor
     endif
   endif
+
+  comment
+    The design's own framing correction. Its photographs are shot on white with
+    generous margins, and each category needs a different amount of that margin
+    cropped away for the piece to fill the frame — a bracelet almost none, a
+    pair of earrings a great deal. Matched on type then title, earrings before
+    rings because "earrings" contains "ring". A custom.card_zoom metafield
+    overrides it per piece; the setting turns the whole correction off.
+  endcomment
+  assign card_zoom = blank
+  if settings.card_image_zoom
+    assign card_zoom = product.metafields.custom.card_zoom.value
+    if card_zoom == blank
+      assign zoom_match = product.type | append: ' ' | append: product.title | downcase
+      assign card_zoom = 1.15
+      if zoom_match contains 'bracelet'
+        assign card_zoom = 1.05
+      elsif zoom_match contains 'earring'
+        assign card_zoom = 1.39
+      elsif zoom_match contains 'ring'
+        assign card_zoom = 1.32
+      endif
+    endif
+  endif
+
+  comment
+    Two balanced lines, split where the halves come closest in length — the
+    design's own rule, so every caption in a row occupies exactly two lines and
+    the cards stay level. Ties fall to the later split, as the design's does.
+  endcomment
+  assign title_line_1 = product.title
+  assign title_line_2 = ''
+  assign words = product.title | strip | split: ' '
+  if words.size > 1
+    assign best_at = 1
+    assign best_gap = 99999
+    assign last_k = words.size | minus: 1
+
+    for k in (1..last_k)
+      assign left_len = 0
+      assign right_len = 0
+      for word in words
+        if forloop.index0 < k
+          assign left_len = left_len | plus: word.size | plus: 1
+        else
+          assign right_len = right_len | plus: word.size | plus: 1
+        endif
+      endfor
+      assign gap = left_len | minus: right_len
+      if gap < 0
+        assign gap = 0 | minus: gap
+      endif
+      if gap <= best_gap
+        assign best_gap = gap
+        assign best_at = k
+      endif
+    endfor
+
+    assign title_line_1 = ''
+    assign title_line_2 = ''
+    for word in words
+      if forloop.index0 < best_at
+        assign title_line_1 = title_line_1 | append: ' ' | append: word
+      else
+        assign title_line_2 = title_line_2 | append: ' ' | append: word
+      endif
+    endfor
+    assign title_line_1 = title_line_1 | strip
+    assign title_line_2 = title_line_2 | strip
+  endif
+
+  comment
+    The design's karat note. It is not "the other options" — it is three named
+    axes and no others:
+
+      karatNote = [labels('purity',' / '), labels('origin',' or '),
+                   labels('sold',' or ')].filter(Boolean).join(' · ')
+
+    so purity joins with a slash while origin and purchase join with the word
+    "or", and size, format, cut, backing and clasp are all deliberately absent.
+    Listing every option instead put the ring sizes on the card — "18K / Test
+    21K · Test Size 6.5 / Test Size 5.5" — which the design never shows.
+
+    The catalogue's "Test " prefixes read verbatim: a theme that rewrote
+    catalogue strings would only hide that they need fixing in admin.
+  endcomment
+  comment
+    The note is the karat sentence — "Available in 18K, 22K" — and nothing
+    else. Size stays out, as it always has.
+
+    Every value the option carries is listed, whatever the stock: an option
+    value exists because the piece can be made that way, and a sold-out karat
+    is still a karat the shop offers. Filtering by `available` would make the
+    sentence flicker as inventory moved.
+
+    Sorted smallest karat first, numerically. A plain string sort puts "22K"
+    before "9K", so the number is pulled out of each value and zero-padded into
+    a sortable key, then thrown away again. A value with no number in it sorts
+    to the front rather than being dropped.
+  endcomment
+  assign options_note = ''
+  if settings.card_show_options_note
+    assign karat_option = blank
+    for option in product.options_with_values
+      assign option_down = option.name | downcase
+      if option_down contains 'purity' or option_down contains 'karat'
+        assign karat_option = option
+        break
+      endif
+    endfor
+
+    if karat_option != blank
+      assign karat_keys = ''
+      for value in karat_option.values
+        assign digits = value | downcase | remove: 'karat' | remove: 'kt' | remove: 'k' | strip
+        assign number = digits | plus: 0
+        assign pad = ''
+        if number < 10
+          assign pad = '00'
+        elsif number < 100
+          assign pad = '0'
+        endif
+        assign karat_keys = karat_keys | append: pad | append: number | append: '~' | append: value | append: '||'
+      endfor
+
+      assign karat_keys = karat_keys | split: '||' | sort
+      assign karat_list = ''
+      for key in karat_keys
+        assign label = key | split: '~' | last
+        if karat_list == blank
+          assign karat_list = label
+        else
+          assign karat_list = karat_list | append: ', ' | append: label
+        endif
+      endfor
+
+      if karat_list != blank
+        assign options_note = 'products.available_in' | t: list: karat_list
+      endif
+    endif
+  endif
+
+  comment
+    Every photograph the piece has, however many that is. Nothing is capped:
+    a piece with one and a piece with a hundred both render their whole set,
+    and only the first two are fetched up front — see snippets/card-slide.
+
+    The order is the product's own, and the metal control above deliberately
+    does not touch it. The design is explicit: "Colour is chosen on the card
+    itself: the name, the price and what goes in the bag all follow it. The
+    photograph does not — we shoot one metal."
+
+    An earlier pass led the order with the selected variant's own media. It was
+    inert — no variant in the shop carries media — but it was aimed the wrong
+    way: assigning variant media in admin would have started the opening
+    photograph following the metal, which is the one thing the design rules out.
+    The metal in a filename is the only metal signal the media carries, and
+    nothing here parses filenames.
+  endcomment
+  assign card_images = product.media | where: 'media_type', 'image'
+  assign photo_count = card_images.size
+
+  comment
+    The spin counts only once it is known to be playable. Counting the video
+    itself put the arrows and the badge on a card whose video has no mp4
+    rendition — controls for a slide that is never rendered, because the slide
+    itself is guarded on the rendition and the count was not.
+  endcomment
+  assign card_video = blank
+  assign card_mp4 = blank
+  if settings.card_show_video
+    assign product_videos = product.media | where: 'media_type', 'video'
+    assign first_video = product_videos.first
+    if first_video != blank
+      assign mp4_sources = first_video.sources | where: 'format', 'mp4'
+      assign card_mp4 = mp4_sources.last
+      if card_mp4 != blank
+        assign card_video = first_video
+      endif
+    endif
+  endif
+
+  assign slide_count = photo_count
+  if card_video != blank
+    assign slide_count = slide_count | plus: 1
+  endif
+
+  comment
+    Slide 0 is what the card shows and slide 1 is what hover previews. Those
+    two are the whole of it without scripting, so those two are what the
+    browser fetches.
+  endcomment
+  assign eager_slides = 2
+
+  assign quick_view_label = 'products.quick_view_of' | t: title: product.title
 -%}
 
 {%- if product == blank -%}
   <div class="card">
-    <div class="card__media">
-      <div class="placeholder" style="--ratio: {% if ratio == 'adapt' %}3 / 4{% else %}{{ ratio | replace: '/', ' / ' }}{% endif %};">
-        {{ 'product-1' | placeholder_svg_tag: 'placeholder-svg' }}
-      </div>
+    <div class="card__media" style="aspect-ratio: {{ ratio_value }};">
+      {{ 'product-1' | placeholder_svg_tag: 'placeholder-svg' }}
     </div>
+
     <div class="card__body">
-      <span class="card__title">{{ 'onboarding.product_title' | t }}</span>
-      <span class="card__price">{{ 1999 | money }}</span>
+      <span class="card__title">
+        <span class="card__title-line">{{ 'onboarding.product_title' | t }}</span>
+        <span class="card__title-line"></span>
+      </span>
+      {%- if settings.card_show_metal -%}
+        <span class="card__meta"></span>
+      {%- endif -%}
+      <span class="card__price">
+        {{- 1999 | money -}}
+        {% render 'tax-note', short: true %}
+      </span>
+      {%- if settings.card_show_add -%}
+        <span class="btn btn--square card__add" aria-disabled="true">
+          {{ settings.card_add_label | default: 'Add to Bag' }}
+        </span>
+      {%- endif -%}
     </div>
   </div>
 {%- else -%}
-  <div class="card">
-    <a
+  {%- comment -%}
+    data-card-multi drives the no-JavaScript hover swap only, and that swap can
+    only reveal a photograph — the stylesheet excludes a spin from it, since a
+    spin has nothing to show until its source is fetched. So it is gated on the
+    photograph count, not the slide count: a piece with one photograph and a
+    spin used to fade its only photograph out on hover and reveal nothing.
+    The arrows are a separate question and stay on the slide count, because the
+    script can step to the spin perfectly well.
+  {%- endcomment -%}
+  {%- comment -%}
+    Both button labels ride on the card so the metal pick can swap between them
+    without a translation string in JavaScript — a metal can be sold out while
+    the one Liquid rendered was not.
+  {%- endcomment -%}
+  {%- assign add_label = settings.card_add_label | default: 'Add to Bag' -%}
+  {%- assign sold_out_label = 'products.sold_out' | t -%}
+  <div
+    class="card"
+    data-card
+    {% if photo_count > 1 %}data-card-multi{% endif %}
+    data-add-label="{{ add_label | escape }}"
+    data-sold-out-label="{{ sold_out_label | escape }}"
+  >
+    <div
       class="card__media"
-      href="{{ product.url }}"
-      tabindex="-1"
-      aria-hidden="true"
-      style="aspect-ratio: {% if ratio == 'adapt' %}3 / 4{% else %}{{ ratio | replace: '/', ' / ' }}{% endif %};"
+      style="aspect-ratio: {{ ratio_value }};{% if card_zoom != blank %} --card-zoom: {{ card_zoom }};{% endif %}"
     >
-      {%- if product.featured_media -%}
-        <img
-          class="card__primary"
-          src="{{ product.featured_media | image_url: width: 800 }}"
-          srcset="{{ product.featured_media | image_url: width: 300 }} 300w, {{ product.featured_media | image_url: width: 600 }} 600w, {{ product.featured_media | image_url: width: 900 }} 900w, {{ product.featured_media | image_url: width: 1200 }} 1200w"
-          sizes="{{ img_sizes }}"
-          alt="{{ product.featured_media.alt | escape }}"
-          width="{{ product.featured_media.width }}"
-          height="{{ product.featured_media.height }}"
-          loading="{{ img_loading }}"
-        >
+      {%- if slide_count > 0 -%}
+        {%- assign slide_i = 0 -%}
 
-        {%- if settings.card_hover_image and hover_media -%}
-          <img
-            class="card__hover"
-            src="{{ hover_media | image_url: width: 800 }}"
-            srcset="{{ hover_media | image_url: width: 300 }} 300w, {{ hover_media | image_url: width: 600 }} 600w, {{ hover_media | image_url: width: 900 }} 900w, {{ hover_media | image_url: width: 1200 }} 1200w"
-            sizes="{{ img_sizes }}"
-            alt=""
-            aria-hidden="true"
-            width="{{ hover_media.width }}"
-            height="{{ hover_media.height }}"
-            loading="lazy"
+        {%- for media in card_images -%}
+          {%- assign slide_eager = false -%}
+          {%- if slide_i < eager_slides -%}
+            {%- assign slide_eager = true -%}
+          {%- endif -%}
+          {% render 'card-slide',
+            media: media,
+            index: slide_i,
+            eager: slide_eager,
+            product: product,
+            sizes: img_sizes,
+            loading: img_loading
+          %}
+          {%- assign slide_i = slide_i | plus: 1 -%}
+        {%- endfor -%}
+
+        {%- if card_video != blank -%}
+          <span
+            class="card__slide{% if photo_count == 0 %} is-on{% endif %}"
+            data-card-slide="{{ photo_count }}"
+            data-card-spin
           >
+            <video
+              class="card__img card__video"
+              data-src="{{ card_mp4.url }}"
+              poster="{{ card_video.preview_image | image_url: width: 600 }}"
+              width="{{ card_video.preview_image.width | default: 1240 }}"
+              height="{{ card_video.preview_image.height | default: 827 }}"
+              muted
+              loop
+              playsinline
+              preload="none"
+              aria-label="{{ 'products.spin_view' | t }}"
+              data-card-blur
+            ></video>
+          </span>
         {%- endif -%}
       {%- else -%}
-        {{ 'product-1' | placeholder_svg_tag: 'placeholder-svg' }}
+        <span class="card__slide is-on">
+          {{ 'product-1' | placeholder_svg_tag: 'placeholder-svg' }}
+        </span>
+      {%- endif -%}
+
+      {%- if settings.quick_view_enabled -%}
+        {%- comment -%}
+          A real link to the piece, which theme.js upgrades into the overlay.
+          Without scripting it lands on the product page — the same information,
+          one navigation further away.
+        {%- endcomment -%}
+        <a
+          class="card__quick"
+          href="{{ product.url }}"
+          data-quick-view
+          data-tip="{{ 'products.quick_view' | t }}"
+          aria-label="{{ quick_view_label }}"
+        >
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true" focusable="false">
+            <path d="M2.5 12S6 6.5 12 6.5 21.5 12 21.5 12 18 17.5 12 17.5 2.5 12 2.5 12z" />
+            <circle cx="12" cy="12" r="2.6" />
+          </svg>
+        </a>
+      {%- endif -%}
+
+      {%- if card_video != blank -%}
+        <span class="card__spin" data-card-spin-label{% if photo_count > 0 %} hidden{% endif %}>
+          {{- 'products.spin_badge' | t -}}
+        </span>
+      {%- endif -%}
+
+      {%- if slide_count > 1 -%}
+        <button
+          class="card__arrow card__arrow--prev"
+          type="button"
+          data-card-step="-1"
+          data-tip="{{ 'products.previous_view' | t }}"
+          aria-label="{{ 'products.previous_view' | t }}"
+        >
+          <svg width="10" height="20" viewBox="0 0 12 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+            <path d="M10 2L2 12l8 10" />
+          </svg>
+        </button>
+        <button
+          class="card__arrow card__arrow--next"
+          type="button"
+          data-card-step="1"
+          data-tip="{{ 'products.next_view' | t }}"
+          aria-label="{{ 'products.next_view' | t }}"
+        >
+          <svg width="10" height="20" viewBox="0 0 12 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+            <path d="M2 2l8 10-8 10" />
+          </svg>
+        </button>
       {%- endif -%}
 
       {%- if product.available == false -%}
@@ -87,27 +540,241 @@
       {%- elsif product.compare_at_price > product.price -%}
         <span class="badge">{{ 'products.on_sale' | t }}</span>
       {%- endif -%}
-    </a>
+    </div>
 
     <div class="card__body">
       {%- if settings.card_show_vendor and product.vendor != blank -%}
-        <span class="card__meta">{{ product.vendor }}</span>
+        <span class="card__vendor">{{ product.vendor }}</span>
       {%- endif -%}
 
-      <a class="card__title" href="{{ product.url }}">{{ product.title }}</a>
+      {%- comment -%}
+        The only link on the card. Its ::after is what makes the whole card
+        clickable, so the media needs no link of its own.
+      {%- endcomment -%}
+      <a class="card__title" href="{{ product.url }}" aria-label="{{ product.title | escape }}">
+        <span class="card__title-line">{{ title_line_1 }}</span>
+        <span class="card__title-line">{{ title_line_2 }}</span>
+      </a>
 
-      {%- if metal != blank -%}
-        <span class="card__meta">{{ metal }}</span>
+      {%- if settings.card_show_metal -%}
+        {%- comment -%}
+          Without a metal control the caption is a fixed string — the metafield's,
+          or a single option's — so it says so and the script leaves it alone.
+          With one it has to follow the pick.
+        {%- endcomment -%}
+        <span
+          class="card__meta"
+          data-card-meta
+          {% if metal_option == blank %}data-card-meta-fixed{% endif %}
+        >{{ metal }}</span>
       {%- endif -%}
 
-      <span class="card__price">
-        {%- if product.compare_at_price > product.price -%}
-          <s>{{ product.compare_at_price | money }}</s>
+      {%- comment -%}
+        The row is built whenever there is a metal option and only *shown* when
+        the setting says so, because the loop below is also where the price
+        works out the selected metal's figure. Gating the loop on the setting
+        instead left `selected_price_html` unassigned while the price element
+        still read it, so turning swatches off emptied the price on every
+        product with a metal option — the setting was supposed to decide
+        whether the row renders and nothing else.
+      {%- endcomment -%}
+      {%- if metal_option != blank -%}
+        {%- assign selected_metal = card_variant.options[metal_index] -%}
+        {%- capture metal_row -%}
+
+        {%- comment -%}
+          Real links to the piece at that metal, so a pick works without
+          scripting — it simply navigates — and the script intercepts it.
+          They need a z-index of their own: the title's ::after covers the card,
+          and a static element paints below a positioned one whatever the
+          document order.
+
+          The whole row is rendered. How many fit is a question about this
+          card's width rather than the viewport's — in a two-column phone grid
+          the card is around 159px and only a couple will sit — so the script
+          measures and marks the overflow, and the row simply clips without it.
+        {%- endcomment -%}
+        <div class="card__swatches" data-card-swatches>
+          {%- for value in ordered_metals -%}
+            {%- liquid
+              comment
+                The card offers no karat control, so adding from it has to pick
+                a variant on the customer's behalf: the **dearest** one in this
+                metal, on request. Dearest *available* — a sold-out variant
+                cannot be bought, so preferring it would post something that
+                fails at checkout. Where the whole metal is sold out the dearest
+                overall stands in, and the button says Sold out.
+              endcomment
+              assign chosen = blank
+              assign dearest_any = blank
+              assign group_min = blank
+              assign group_max = blank
+              for variant in product.variants
+                if variant.options[metal_index] == value
+                  if dearest_any == blank or variant.price > dearest_any.price
+                    assign dearest_any = variant
+                  endif
+                  if variant.available
+                    if chosen == blank or variant.price > chosen.price
+                      assign chosen = variant
+                    endif
+                  endif
+                  if group_min == blank or variant.price < group_min
+                    assign group_min = variant.price
+                  endif
+                  if group_max == blank or variant.price > group_max
+                    assign group_max = variant.price
+                  endif
+                endif
+              endfor
+              if chosen == blank
+                assign chosen = dearest_any
+              endif
+
+              comment
+                The design's caption is `metalName(sel) + ' · ' + carat`. The
+                carat half needs a custom.total_carat_weight metafield, which
+                this shop has not created — where it is absent the caption is
+                simply the metal, as it was.
+              endcomment
+              assign metal_label = value
+              if carat_label != blank
+                assign metal_label = metal_label | append: ' · ' | append: carat_label
+              endif
+
+              assign is_selected = false
+              if value == selected_metal
+                assign is_selected = true
+              endif
+
+              comment
+                ordered_metals came back through split, so `value` is a plain
+                string and no longer the product_option_value drop. The drop is
+                what carries a merchant's native Shopify swatch, so it is looked
+                up again here — without this the swatch snippet's first and most
+                specific branch is silently unreachable.
+              endcomment
+              assign value_drop = blank
+              for candidate in metal_option.values
+                if candidate == value
+                  assign value_drop = candidate
+                  break
+                endif
+              endfor
+            -%}
+
+            {%- capture metal_price_html -%}
+              {%- if chosen.compare_at_price > chosen.price -%}
+                <s>{{ chosen.compare_at_price | money }}</s>
+              {%- endif -%}
+              {%- comment -%}
+                The card prices what it adds. It used to show "From <cheapest>"
+                whenever the metal's variants differed, but the add button now
+                posts the dearest — so the customer would have read one figure
+                and found another in the bag. The karats it is available in are
+                said in words underneath instead, which is what that note is
+                for.
+              {%- endcomment -%}
+              {{- chosen.price | money -}}
+              {%- comment -%}
+                Inside the capture, not after it: this markup is what the script
+                writes into [data-card-price] on a metal pick, so a note left
+                outside would be wiped by the first swatch click.
+              {%- endcomment -%}
+              {% render 'tax-note', short: true %}
+            {%- endcapture -%}
+
+            {%- if is_selected -%}
+              {%- assign selected_price_html = metal_price_html -%}
+              {%- comment -%}
+                The piece the button posts, which is this metal's dearest — not
+                card_variant, whose job is only to say which metal the card
+                opens on.
+              {%- endcomment -%}
+              {%- assign selected_add_id = chosen.id -%}
+            {%- endif -%}
+
+            <a
+              class="card__swatch{% if is_selected %} is-selected{% endif %}"
+              href="{{ product.url }}?variant={{ chosen.id }}"
+              data-card-metal
+              data-metal-value="{{ value | escape }}"
+              data-metal-id="{{ chosen.id }}"
+              data-metal-available="{{ chosen.available }}"
+              data-metal-meta="{{ metal_label | escape }}"
+              data-metal-price="{{ metal_price_html | escape }}"
+              data-tip="{{ value | escape }}"
+              aria-label="{{ value | escape }}"
+              aria-current="{% if is_selected %}true{% else %}false{% endif %}"
+              {% if forloop.index0 >= 3 %}hidden{% endif %}
+            >
+              {%- comment -%}
+                `selected` is deliberately not passed. The wrapping link carries
+                the state and `.card__swatch.is-selected .swatch-dot` draws the
+                ring from it, so there is one source of truth. Marking the dot
+                as well left two rings after a pick: the script moves the class
+                on the link and never on the dot, so the metal Liquid rendered
+                as selected kept its ring for ever. The parameter stays for the
+                product page, which uses the dot without a wrapper.
+              {%- endcomment -%}
+              {% render 'metal-swatch', option_value: value_drop, size: 80 %}
+            </a>
+          {%- endfor -%}
+
+          {%- comment -%}
+            The design's "+N". Before a width is known it shows three —
+            `else if (!avail) n = Math.min(keys.length, 3)` — so that is what
+            Liquid renders, and the script re-fits once it can measure.
+          {%- endcomment -%}
+          {%- assign metal_total = ordered_metals.size -%}
+          <span
+            class="card__swatch-more"
+            data-card-swatch-more
+            {% if metal_total <= 3 %}hidden{% endif %}
+          >{% if metal_total > 3 %}+{{ metal_total | minus: 3 }}{% endif %}</span>
+        </div>
+        {%- endcapture -%}
+
+        {%- comment -%}
+          The row is captured whatever happens, because the loop inside it is
+          also where the price and the add button work out the selected metal's
+          variant. Only what is *printed* changes here.
+
+          A metal whose value carries no swatch paints nothing and keeps its
+          hairline and its accessible name, which is metal-swatch.liquid's own
+          rule: a missing swatch beats an invented one, and the metal stays
+          pickable and announced either way.
+        {%- endcomment -%}
+        {%- if settings.card_show_swatches -%}
+          {{ metal_row }}
         {%- endif -%}
-        {%- if product.price_varies -%}
-          {{ 'products.from_price' | t: price: product.price_min | money }}
+      {%- endif -%}
+
+      {%- if options_note != blank -%}
+        <div class="card__note">{{ options_note }}</div>
+      {%- endif -%}
+
+      {%- comment -%}
+        `t` has to be handed an already-formatted price: written as
+        `t: price: x | money` the money filter takes the *translated string* as
+        its input, not the price, and renders nothing at all.
+      {%- endcomment -%}
+      {%- comment -%}
+        With a metal control on the card, `price_varies` is the wrong question:
+        it is true the moment any two variants differ, including two ring sizes,
+        so a piece that costs the same in both metals still collapsed to "From".
+        The range that belongs next to a metal swatch is the range *within that
+        metal*, which is what the swatch loop worked out.
+      {%- endcomment -%}
+      <span class="card__price" data-card-price>
+        {%- if metal_option != blank -%}
+          {{- selected_price_html -}}
         {%- else -%}
-          {{ product.price | money }}
+          {%- if dearest_variant.compare_at_price > dearest_variant.price -%}
+            <s>{{ dearest_variant.compare_at_price | money }}</s>
+          {%- endif -%}
+          {{- dearest_variant.price | money -}}
+          {% render 'tax-note', short: true %}
         {%- endif -%}
       </span>
 
@@ -118,9 +785,14 @@
             intercepts it when the bag drawer is on and posts it in the
             background instead, then slides the drawer out.
           {%- endcomment -%}
-          {%- form 'product', product, class: 'card__add', data-cart-add: '' -%}
-            <input type="hidden" name="id" value="{{ product.selected_or_first_available_variant.id }}">
-            <button type="submit" name="add" class="btn btn--square">
+          {%- form 'product', product, class: 'card__add-form', data-cart-add: '' -%}
+            <input
+              type="hidden"
+              name="id"
+              value="{{ selected_add_id | default: dearest_variant.id }}"
+              data-card-add-id
+            >
+            <button type="submit" name="add" class="btn btn--square card__add">
               {{ settings.card_add_label | default: 'Add to Bag' }}
             </button>
           {%- endform -%}

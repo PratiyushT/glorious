@@ -13,6 +13,18 @@
   elsif view_all == blank
     assign view_all = 'collections.view_all' | t
   endif
+
+  comment
+    Where "View all" goes. The collection this section is showing, by default —
+    it is the obvious destination and needs no setting to be right — with an
+    override for the case where it is not, say a curated landing page or a
+    filtered URL. All products stands in when no collection is chosen, so the
+    link always has a real destination and never becomes an `href="#"`.
+  endcomment
+  assign view_all_url = section.settings.view_all_link
+  if view_all_url == blank
+    assign view_all_url = collection.url | default: routes.all_products_collection_url
+  endif
 -%}
 
 <section
@@ -31,7 +43,7 @@
         {%- endif -%}
 
         {%- if section.settings.show_view_all -%}
-          <a class="link-rule" href="{{ collection.url | default: routes.all_products_collection_url }}">
+          <a class="link-rule" href="{{ view_all_url }}">
             {{ view_all }}&nbsp;&nbsp;&rarr;
           </a>
         {%- endif -%}
@@ -44,7 +56,7 @@
       at 100% the grid drops to a single column instead.
     {%- endcomment -%}
     <div
-      class="grid-auto"
+      class="grid-auto grid-auto--products"
       style="--cols: {{ section.settings.columns }}; --gap: var(--grid-gap); --min-pct: {% if section.settings.mobile_columns == '2' %}46%{% else %}100%{% endif %};"
     >
       {%- if collection.products.size > 0 -%}
@@ -133,6 +145,12 @@
       "id": "view_all_label",
       "label": "t:sections.featured_products.view_all_label.label",
       "info": "t:sections.featured_products.view_all_label.info"
+    },
+    {
+      "type": "url",
+      "id": "view_all_link",
+      "label": "t:sections.featured_products.view_all_link.label",
+      "info": "t:sections.featured_products.view_all_link.info"
     },
     {
       "type": "checkbox",
