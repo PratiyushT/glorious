@@ -1,0 +1,132 @@
+{%- comment -%}
+  A cart line's variant, written the way the design writes it: one choice per
+  row, rather than Shopify's " / "-joined `variant.title`.
+
+  `gj-variants.js` builds the label and then re-splits it —
+  `label(id, v).split(' · ').join('\n')` — so every part lands on its own line,
+  and revision 13's bag drawer renders the result in a **single span** with
+  `white-space: pre-line`. That whole revision was this one change: the span
+  gained `white-space:pre-line` and `line-height:1.55`.
+
+  So this is one span too, not one per value. The line breaks are data, and
+  `pre-line` is what turns them into rows — splitting them into separate
+  elements would look the same today and stop matching the moment the design
+  changes how it joins them.
+
+  The design lists only what the customer moved off the catalogue default
+  ("metal, weight and size always; the rest only when the customer moved it").
+  Shopify has no notion of a default option value, so every option is listed:
+  the same information, without the shop's own opinion of which parts are
+  ordinary.
+
+  Line item properties come after the options, quoted as the design quotes
+  engraving — `parts.push(v.text ? '“' + v.text + '”' : 'Engraved')`. Shopify's
+  underscore-prefixed properties are private by convention and stay hidden.
+
+  Accepts:
+    item  - a line_item.
+    class - the caption class for the surrounding context.
+{%- endcomment -%}
+
+{%- capture nl %}
+{% endcapture -%}
+
+{%- liquid
+  assign parts = ''
+
+  unless item.product.has_only_default_variant
+    comment
+      Karat and metal are one fact, not two: "18K Yellow Gold" reads as the
+      piece's material, where "18K" alone on a line above "Yellow Gold" reads as
+      two unrelated choices. So those two are joined and every other axis keeps
+      its own row. This matches the card's caption, which composes the same pair
+      the same way.
+    endcomment
+    assign purity_value = blank
+    assign metal_value = blank
+    for option in item.options_with_values
+      assign option_down = option.name | downcase
+      if option_down contains 'purity' or option_down contains 'karat'
+        assign purity_value = option.value
+      elsif option_down contains 'metal'
+        assign metal_value = option.value
+      endif
+    endfor
+
+    assign combined = blank
+    if purity_value != blank and metal_value != blank
+      assign combined = purity_value | append: ' ' | append: metal_value
+    endif
+
+    comment
+      The joined line takes the place of whichever of the pair the merchant put
+      first, so the row order stays theirs; the other is skipped.
+    endcomment
+    assign combined_done = false
+    for option in item.options_with_values
+      assign option_value = option.value
+      if option_value == blank
+        continue
+      endif
+
+      assign option_down = option.name | downcase
+      assign in_pair = false
+      if option_down contains 'purity'
+        assign in_pair = true
+      elsif option_down contains 'karat'
+        assign in_pair = true
+      elsif option_down contains 'metal'
+        assign in_pair = true
+      endif
+
+      assign line = option_value
+      if combined != blank and in_pair
+        if combined_done
+          continue
+        endif
+        assign line = combined
+        assign combined_done = true
+      endif
+
+      if parts == blank
+        assign parts = line
+      else
+        assign parts = parts | append: nl | append: line
+      endif
+    endfor
+  endunless
+
+  for property in item.properties
+    assign property_value = property.last
+    if property_value == blank
+      continue
+    endif
+
+    assign property_first = property.first | slice: 0
+    if property_first == '_'
+      continue
+    endif
+
+    assign quoted = '“' | append: property_value | append: '”'
+    if parts == blank
+      assign parts = quoted
+    else
+      assign parts = parts | append: nl | append: quoted
+    endif
+  endfor
+
+  if item.selling_plan_allocation
+    assign plan_name = item.selling_plan_allocation.selling_plan.name
+    if plan_name != blank
+      if parts == blank
+        assign parts = plan_name
+      else
+        assign parts = parts | append: nl | append: plan_name
+      endif
+    endif
+  endif
+-%}
+
+{%- if parts != blank -%}
+  <span class="line-options {{ class }}">{{ parts }}</span>
+{%- endif -%}

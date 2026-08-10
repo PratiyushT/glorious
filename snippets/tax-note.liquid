@@ -1,0 +1,43 @@
+{%- comment -%}
+  The "inc. tax" note that follows a price.
+
+  **One switch, and it is `settings.show_tax_note`** (Theme settings →
+  Pricing). Every surface that shows a price obeys it and none can override it,
+  so "is it on?" has exactly one answer.
+
+  Most Loved, the Lookbook and the bag drawer each carried a second toggle of
+  their own, ANDed with this one. They were removed on request: a note that
+  qualifies a price is a statement about how the shop prices, not a per-row
+  style choice, and three extra switches made the shop-wide one hard to trust.
+
+  The wording lives in `locales/en.default.json`, so it translates. It is not a
+  theme setting: changing "inc. all taxes and fees" to "inkl. MwSt." is a
+  localisation, not a per-shop style choice.
+
+  There are two wordings, on request. Everywhere a price has room to be
+  qualified in full it reads `products.tax_note` — "inc. all taxes and fees".
+  The **product card** takes `short: true` and reads `products.tax_note_short`
+  — "inc. all taxes" — because a card's price line is a single row beside the
+  figure at 15px, and the longer sentence wraps it onto two.
+
+  Accepts:
+    short - true for the card's shorter wording. Omit everywhere else.
+{%- endcomment -%}
+
+{%- liquid
+  assign show = settings.show_tax_note
+
+  assign note_key = 'products.tax_note'
+  if short
+    assign note_key = 'products.tax_note_short'
+  endif
+-%}
+
+{%- comment -%}
+  The leading space is real, not decoration. Callers trim around the render, so
+  without it the markup is `$19.99<small>inc. all taxes</small>` — spaced by the
+  margin on screen, but run together as one word when read aloud or copied.
+{%- endcomment -%}
+{%- if show -%}
+  {{- ' ' -}}<small class="price-tax">{{ note_key | t }}</small>
+{%- endif -%}
