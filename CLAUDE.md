@@ -1,5 +1,23 @@
 # CLAUDE.md
 
+## Committing
+
+**Every feature, bug fix or tweak is committed the moment it is finished and
+checked — not at the end of a session, and never batched with the next one.**
+"Finished" means the work is complete *and* its checks have passed:
+`shopify theme check --path . --output json` returning `[]`, plus whatever
+verification the change itself calls for (a measurement in the browser pane, a
+range audit after touching a `range`, a grep for a rule this file states).
+
+One commit per change, and the message says what changed and why in the same
+voice as this file — the reasoning is the part worth keeping. If a change turns
+out to need a follow-up fix, that is its own commit too.
+
+Documentation goes in the same commit as the change it describes. A section of
+this file that explains a feature and the code that implements it must never
+arrive separately: the note is how the next pass learns why a number is what it
+is.
+
 ## Shopify CLI
 
 - **Version: 4.6.1**, installed globally via npm (`@shopify/cli`), not a project dependency.
