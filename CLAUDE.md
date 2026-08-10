@@ -365,12 +365,69 @@ the theme already owns:
   and each one replays `gj-card` (rise and fade, 0.5s) 80ms apart. Like the
   hero, the outgoing page is simply taken away; it is not a cross-fade.
 
-The arrows are `.hero-carousel__below`'s, centred under the track, ink at 60%
-turning `--c-accent`, and gone entirely when there is nothing to cycle through
-— `.hero-carousel.is-static`'s rule, applied to the whole control row. The
-page marks beside them are **hairlines, not dots**: the brand marks a set with
-a rule. They wrap rather than pushing the arrows off the row, because a page
-is one card on a phone and sixteen pieces is sixteen marks.
+The arrows are `.hero-carousel__below`'s, ink at 60% turning `--c-accent`, and
+gone entirely when there is nothing to cycle through — `.hero-carousel.is-static`'s
+rule. The page marks beside them are **hairlines, not dots**: the brand marks a
+set with a rule.
+
+- **`carousel_arrows` puts the arrows under the track, over it, or either side
+  of it**, and only that setting changes; the marks travel with them. Under is
+  the default and is what the row shipped with.
+
+  Beside the track they take **columns of their own rather than lying over the
+  cards** — a card here is clickable to its edges, and the hero, the design's
+  only row with arrows beside it, sets its own beside the cards too. Below
+  **38rem** a flanking pair would take about 80px off the only card on the row
+  (measured at 375px: a 240px card against the 339px it gets back), so they
+  come down and take their places either side of the marks. That is the width
+  this block has inside the page gutters at the 660px viewport where a product
+  grid drops to one column — the same threshold, arrived at through the
+  component's own width rather than the screen's, so a carousel in a narrow
+  column gets the same answer.
+
+  **`.fp-carousel__frame` exists to be laid out, because `.fp-carousel` exists
+  to be measured.** An element cannot be styled by a query against its own
+  size, which is why `.promises` and `.footer__cols` are shaped this way too.
+  Putting `container-type` and `grid-template-areas` on the one element looks
+  right, uploads clean, and simply never fires: it was written that way first
+  and the narrow tier was dead until the frame went in.
+
+  **The gap between the track and the marks is a margin on the marks, never the
+  grid's `row-gap`.** Naming the areas declares the second row whether or not
+  anything is in it, so a row-gap leaves a band of dead space under a row that
+  has nothing to cycle through and has hidden its controls. Verified: 0px below
+  the track on a single-page row.
+
+  Beside the track the arrows and the marks are **three separate visibility
+  units** — nothing wraps them — so `data-fp-controls` goes on each and the
+  script hides every one it finds. Under or over the track that attribute is on
+  the one control row, as before.
+- **The marks are a carousel of their own: a strip that travels, not a row that
+  wraps.** A page is one card on a phone, so sixteen pieces is sixteen marks —
+  more than fits beside the arrows. Wrapping was the old answer and it turned
+  the control row into a paragraph of rules, pushing the arrows further from
+  the track with every extra page. Now `.fp-carousel__dots` is a window that
+  clips and the strip inside it shifts to keep the current mark near the
+  middle; what is off either end half-shows past the edge, which is how the row
+  says there are pages before or after the ones in view.
+
+  `width: fit-content` is what keeps a short set centred — the window shrinks
+  to the marks when they fit, so the group still hugs the middle of the row,
+  and only caps at the width it is given when they do not. `flex: 0 0 auto` on
+  the mark stops the strip solving its overflow by squeezing every mark
+  instead.
+
+  **The shift is arithmetic on the resting geometry, not a measurement.** The
+  current mark is 12px wider than the rest and is still growing into that when
+  the page changes, so a rect read at that moment is mid-transition and lands
+  the strip a few pixels out. `--fp-mark`, `--fp-mark-on` and `--fp-mark-gap`
+  are declared on `.fp-carousel__dots` and read back by `theme.js` — the ruler's
+  arrangement, where the stylesheet stays the one place a measurement is
+  stated. Verified against a 100px window over 7 pages: 0, 0, 27, 57, 87, 114,
+  114, with the current mark whole and centred throughout and flush at each end.
+
+  The travel borrows the mark's own `var(--duration)`, not the track's 0.6s, so
+  a mark widening and the strip sliding under it are one movement.
 
 - **The track is the same element in both layouts**, and without scripting
   that is all it is: the plain grid, every card in it, every link real. The

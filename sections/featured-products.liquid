@@ -12,9 +12,17 @@
       whole pages, `transform 0.6s var(--ease)`.
     - "Fade" is the hero carousel's — the window of cards is swapped in place
       and each one replays `gj-card` (rise and fade, 0.5s) 80ms apart.
-    - The arrows are the hero's `hero-carousel__below` controls: centred under
-      the track, ink at 60% turning `--c-accent`, and gone entirely when there
-      is nothing to cycle through (`.hero-carousel.is-static`'s rule).
+    - The arrows are the hero's `hero-carousel__below` controls: ink at 60%
+      turning `--c-accent`, and gone entirely when there is nothing to cycle
+      through (`.hero-carousel.is-static`'s rule). `carousel_arrows` places
+      them under the track, over it, or either side of it — the hero itself
+      does both of the last two, moving its arrows from beside the cards to
+      under them as the viewport narrows.
+
+  The marks are a strip that travels rather than a block that wraps, so a
+  sixteen-page row still states where you are in one line: the current mark is
+  held in the middle of its window and the ones either side half-show past the
+  edge. See `.fp-carousel__dots` in base.css.
 
   Nothing here is load-bearing without scripting. The track is the very same
   `.grid-auto grid-auto--products` element in both layouts, so a visitor with
@@ -148,14 +156,76 @@
     {%- endcapture -%}
 
     {%- if is_carousel -%}
-      <div
-        class="fp-carousel reveal"
-        data-fp-carousel
-        data-fp-motion="{{ section.settings.carousel_motion }}"
-        role="group"
-        aria-roledescription="{{ 'general.carousel.role' | t }}"
-        aria-label="{{ carousel_label | escape }}"
-      >
+      {%- comment -%}
+        Where the arrows go. Under the track by default, which is what the row
+        shipped with; over it; or either side of it, where they take columns of
+        their own rather than lying over a card — a card is clickable to its
+        edges here, and the hero sets its own arrows beside the cards rather
+        than on them.
+
+        Beside the track the two arrows and the marks are three separate
+        visibility units, since no one element wraps them; under or over it
+        they share the control row and it is the unit. `data-fp-controls` is
+        what the script hides when there is nothing to cycle through, so it
+        goes wherever that unit happens to be.
+      {%- endcomment -%}
+      {%- assign arrows_at = section.settings.carousel_arrows -%}
+      {%- assign side_arrows = false -%}
+      {%- if arrows_at == 'side' -%}
+        {%- assign side_arrows = true -%}
+      {%- endif -%}
+
+      {%- capture arrow_prev -%}
+        <button
+          class="fp-carousel__arrow fp-carousel__arrow--prev"
+          type="button"
+          data-fp-step="-1"
+          aria-label="{{ 'general.carousel.previous' | t }}"
+          {% if side_arrows %}data-fp-controls hidden{% endif %}
+        >
+          &larr;
+        </button>
+      {%- endcapture -%}
+
+      {%- capture arrow_next -%}
+        <button
+          class="fp-carousel__arrow fp-carousel__arrow--next"
+          type="button"
+          data-fp-step="1"
+          aria-label="{{ 'general.carousel.next' | t }}"
+          {% if side_arrows %}data-fp-controls hidden{% endif %}
+        >
+          &rarr;
+        </button>
+      {%- endcapture -%}
+
+      {%- comment -%}
+        The marks. The window clips and the track inside it is what moves, so
+        the set never wraps onto a second row however many pages there are —
+        the script shifts it by whole pixels through `--fp-mark-shift` and the
+        marks either side of the current one half-show past the edge.
+      {%- endcomment -%}
+      {%- capture marks -%}
+        <div
+          class="fp-carousel__dots"
+          data-fp-dots
+          {% if side_arrows %}data-fp-controls hidden{% endif %}
+        >
+          <div class="fp-carousel__dots-track" data-fp-dots-track>
+            {%- for i in (1..card_count) -%}
+              <button
+                class="fp-carousel__dot"
+                type="button"
+                data-fp-dot="{{ forloop.index0 }}"
+                aria-label="{{ 'general.carousel.go_to_page' | t: number: forloop.index }}"
+                hidden
+              ></button>
+            {%- endfor -%}
+          </div>
+        </div>
+      {%- endcapture -%}
+
+      {%- capture viewport -%}
         <div class="fp-carousel__viewport" data-fp-viewport>
           {%- comment -%}
             The ruler. It is never seen and never in the flow — it exists so
@@ -169,38 +239,41 @@
             {{ cards }}
           </div>
         </div>
+      {%- endcapture -%}
 
-        <div class="fp-carousel__controls" data-fp-controls hidden>
-          <button
-            class="fp-carousel__arrow"
-            type="button"
-            data-fp-step="-1"
-            aria-label="{{ 'general.carousel.previous' | t }}"
-          >
-            &larr;
-          </button>
-
-          <div class="fp-carousel__dots" data-fp-dots>
-            {%- for i in (1..card_count) -%}
-              <button
-                class="fp-carousel__dot"
-                type="button"
-                data-fp-dot="{{ forloop.index0 }}"
-                aria-label="{{ 'general.carousel.go_to_page' | t: number: forloop.index }}"
-                hidden
-              ></button>
-            {%- endfor -%}
+      <div
+        class="fp-carousel reveal"
+        data-fp-carousel
+        data-fp-motion="{{ section.settings.carousel_motion }}"
+        data-fp-arrows="{{ arrows_at }}"
+        role="group"
+        aria-roledescription="{{ 'general.carousel.role' | t }}"
+        aria-label="{{ carousel_label | escape }}"
+      >
+        {%- if side_arrows -%}
+          {%- comment -%}
+            The frame exists to be laid out, because the carousel above it
+            exists to be measured: an element cannot query its own size, and
+            the arrangement here has to follow the row's width. Same shape as
+            `.promises` and `.footer__cols`.
+          {%- endcomment -%}
+          <div class="fp-carousel__frame">
+            {{ arrow_prev }}
+            {{ viewport }}
+            {{ arrow_next }}
+            {{ marks }}
           </div>
-
-          <button
-            class="fp-carousel__arrow"
-            type="button"
-            data-fp-step="1"
-            aria-label="{{ 'general.carousel.next' | t }}"
-          >
-            &rarr;
-          </button>
-        </div>
+        {%- elsif arrows_at == 'top' -%}
+          <div class="fp-carousel__controls" data-fp-controls hidden>
+            {{ arrow_prev }}{{ marks }}{{ arrow_next }}
+          </div>
+          {{ viewport }}
+        {%- else -%}
+          {{ viewport }}
+          <div class="fp-carousel__controls" data-fp-controls hidden>
+            {{ arrow_prev }}{{ marks }}{{ arrow_next }}
+          </div>
+        {%- endif -%}
       </div>
     {%- else -%}
       <div class="grid-auto grid-auto--products" style="{{ grid_vars | strip }}">
@@ -271,6 +344,28 @@
         }
       ],
       "default": "slide",
+      "visible_if": "{{ section.settings.layout == 'carousel' }}"
+    },
+    {
+      "type": "select",
+      "id": "carousel_arrows",
+      "label": "t:sections.featured_products.carousel_arrows.label",
+      "info": "t:sections.featured_products.carousel_arrows.info",
+      "options": [
+        {
+          "value": "bottom",
+          "label": "t:sections.featured_products.carousel_arrows.bottom"
+        },
+        {
+          "value": "top",
+          "label": "t:sections.featured_products.carousel_arrows.top"
+        },
+        {
+          "value": "side",
+          "label": "t:sections.featured_products.carousel_arrows.side"
+        }
+      ],
+      "default": "bottom",
       "visible_if": "{{ section.settings.layout == 'carousel' }}"
     },
     {

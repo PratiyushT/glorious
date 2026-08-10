@@ -2091,7 +2091,12 @@
       var viewport = root.querySelector('[data-fp-viewport]');
       var track = root.querySelector('[data-fp-track]');
       var ruler = root.querySelector('[data-fp-ruler]');
-      var controls = root.querySelector('[data-fp-controls]');
+      /* Every element that has no business being there while there is nothing
+         to cycle through. Under or over the track that is the one control row;
+         beside it there is no row, so it is the two arrows and the marks. */
+      var controls = Array.prototype.slice.call(root.querySelectorAll('[data-fp-controls]'));
+      var marks = root.querySelector('[data-fp-dots]');
+      var marksTrack = root.querySelector('[data-fp-dots-track]');
       var dots = Array.prototype.slice.call(root.querySelectorAll('[data-fp-dot]'));
       var cells = Array.prototype.slice.call(root.querySelectorAll('[data-fp-cell]'));
       var arrows = Array.prototype.slice.call(root.querySelectorAll('[data-fp-step]'));
@@ -2113,6 +2118,40 @@
            an exact fit, where the division lands a hair under the integer. */
         var fits = Math.floor((width + gap + 0.5) / (column + gap));
         return Math.max(1, Math.min(fits, cells.length));
+      }
+
+      /* Where the marks stand. They are a carousel of their own — a strip in a
+         window that clips — so that sixteen pages stay one line instead of
+         wrapping into a block of rules: the strip travels to keep the current
+         mark near the middle, and what is off either end half-shows past the
+         edge, which is how the row says there is more before or after.
+
+         The shift is worked out from the mark's own geometry rather than
+         measured off the marks themselves. The current mark is 12px wider than
+         the rest and is still growing into that when the page changes, so a
+         measurement taken here reads a width in mid-transition and lands the
+         strip a few pixels out; the resting figures give the number the strip
+         is actually heading for. They are read from the stylesheet, where the
+         marks are drawn — the same arrangement as the ruler above. */
+      function shiftMarks() {
+        if (!marks || !marksTrack) return;
+
+        var style = window.getComputedStyle(marks);
+        var mark = parseFloat(style.getPropertyValue('--fp-mark')) || 0;
+        var wide = parseFloat(style.getPropertyValue('--fp-mark-on')) || mark;
+        var gap = parseFloat(style.getPropertyValue('--fp-mark-gap')) || 0;
+        if (!mark) return;
+
+        var win = marks.clientWidth;
+        var pitch = mark + gap;
+        /* Every mark at rest, plus the extra the current one carries. */
+        var strip = pages * pitch - gap + (wide - mark);
+        var centre = page * pitch + wide / 2;
+
+        /* Centred, then held inside the strip's own ends: at either end the
+           last mark sits flush and the peeking is all on the one side. */
+        var shift = Math.min(Math.max(centre - win / 2, 0), Math.max(strip - win, 0));
+        root.style.setProperty('--fp-mark-shift', shift + 'px');
       }
 
       function paint(replay) {
@@ -2147,7 +2186,9 @@
           else cell.setAttribute('inert', '');
         });
 
-        if (controls) controls.hidden = pages < 2;
+        controls.forEach(function (control) {
+          control.hidden = pages < 2;
+        });
 
         /* The row is bounded rather than looping: an end is an end, which is
            what the marks beside these already say.
@@ -2173,6 +2214,8 @@
           if (i === page) dot.setAttribute('aria-current', 'true');
           else dot.removeAttribute('aria-current');
         });
+
+        shiftMarks();
 
         /* Same nodes, new page: the entry animation only replays if it is
            taken away and given back across a reflow. Slide has a motion of its

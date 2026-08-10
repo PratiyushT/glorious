@@ -740,7 +740,7 @@
         "info": "Defaults to the collection above. Set this to send it somewhere else."
       },
       "layout": {
-        "info": "The grid reflows on the width it is given. The carousel shows one page of that same grid at a time, with arrows beneath it.",
+        "info": "The grid reflows on the width it is given. The carousel shows one page of that same grid at a time.",
         "grid": "Grid",
         "carousel": "Carousel"
       },
@@ -749,6 +749,13 @@
         "info": "How one page gives way to the next.",
         "slide": "Slide",
         "fade": "Fade"
+      },
+      "carousel_arrows": {
+        "label": "Arrow position",
+        "info": "Beside the row, the arrows take room from the cards, so on a narrow screen they move back under it.",
+        "bottom": "Under the row",
+        "top": "Above the row",
+        "side": "Either side of the row"
       }
     },
     "category_grid": {
