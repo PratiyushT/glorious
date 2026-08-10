@@ -41,41 +41,48 @@
 -%}
 
 <span class="loader loader--{{ loader_size }}" role="status">
+  {%- comment -%}
+    Every line is its own path, and that is not tidiness: `pathLength="100"`
+    normalises a path's *total* length, so several lines sharing one path would
+    each get a share of that 100 in proportion to how long they are — the
+    girdle would still be halfway drawn while a crown facet a third its length
+    had long finished. One path per line means one pen speed for all of them.
+
+    `--n` is the order they are struck in, and pairs share a number so the mark
+    is symmetric in every frame: the cut, the girdle, the crown from the middle
+    out, then the pavilion.
+
+    The stroke is deliberately **not** `non-scaling-stroke`, however much a
+    hairline that ignores scale sounds right here. It defeats the draw: the dash
+    is then measured in device space, so `pathLength`'s normalisation no longer
+    governs it and the same 100-unit dash paints an identical row of marching
+    dashes at every offset. Measured — 534 inked pixels at offset 0, 50 and 100
+    alike, against 1869 / 932 / 0 with an ordinary stroke. The width is scaled
+    per size in the stylesheet instead.
+  {%- endcomment -%}
   <svg class="loader__mark" viewBox="2 10 96 84" fill="none" aria-hidden="true" focusable="false">
     {%- comment -%}
       The cut: the table across the top, the shoulders out to the girdle's
       widest points, and the two long pavilion edges down to the culet.
     {%- endcomment -%}
-    {%- comment -%}
-      `vector-effect` is the one thing here that cannot be left to the
-      stylesheet: it does not inherit, so setting it on the <svg> reaches
-      nothing, and it is a presentation attribute before it is a CSS property —
-      engines that do not accept the latter still honour this.
-    {%- endcomment -%}
-    <path
-      class="loader__cut"
-      pathLength="100"
-      vector-effect="non-scaling-stroke"
-      d="M30 12h40l26 26-46 54-46-54z"
-    ></path>
+    <path class="loader__line" style="--n: 0;" pathLength="100" d="M30 12h40l26 26-46 54-46-54z"></path>
+
+    {%- comment -%} The girdle, across the widest points. {%- endcomment -%}
+    <path class="loader__line" style="--n: 1;" pathLength="100" d="M4 38h92"></path>
 
     {%- comment -%}
-      The girdle, and the crown above it — five facets, from each end of the
-      table down to the girdle's centre and to the point below the table's own
-      corner. Struck as one path because they light together.
+      The crown: from each end of the table down to the girdle's centre, and
+      down to the point below the table's own corner. Five facets between them.
     {%- endcomment -%}
-    <path
-      class="loader__facet"
-      vector-effect="non-scaling-stroke"
-      d="M4 38h92M30 12L50 38M70 12L50 38M30 12L26 38M70 12L74 38"
-    ></path>
+    <path class="loader__line" style="--n: 2;" pathLength="100" d="M30 12L50 38"></path>
+    <path class="loader__line" style="--n: 2;" pathLength="100" d="M70 12L50 38"></path>
+    <path class="loader__line" style="--n: 3;" pathLength="100" d="M30 12L26 38"></path>
+    <path class="loader__line" style="--n: 3;" pathLength="100" d="M70 12L74 38"></path>
 
-    {%- comment -%} The pavilion, converging on the culet, a beat later. {%- endcomment -%}
-    <path
-      class="loader__facet loader__facet--low"
-      vector-effect="non-scaling-stroke"
-      d="M26 38L50 92M50 38L50 92M74 38L50 92"
-    ></path>
+    {%- comment -%} The pavilion, converging on the culet. {%- endcomment -%}
+    <path class="loader__line" style="--n: 4;" pathLength="100" d="M50 38L50 92"></path>
+    <path class="loader__line" style="--n: 5;" pathLength="100" d="M26 38L50 92"></path>
+    <path class="loader__line" style="--n: 5;" pathLength="100" d="M74 38L50 92"></path>
   </svg>
   <span class="visually-hidden">{{ loader_label }}</span>
 </span>

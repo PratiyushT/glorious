@@ -1178,22 +1178,46 @@ flight, and whatever waits next. `{% render 'loader', label: text, size: 'sm' %}
   design states **no loading state anywhere in its 24 pages** — every "loading"
   in it is `loading="lazy"` on an image — so both the shape and the movement
   here are the theme's. What is kept is its language: hairline, gold, square-on.
-- **What it does**: the outline is struck in one stroke, the crown lights, the
-  pavilion follows a beat later, and the mark fades so it can be struck again.
-  The loop is seamless because the fade ends at nothing — the jump back to a
-  fully offset dash happens while there is no ink on screen to see it jump.
-- **`pathLength="100"` is what keeps it out of JavaScript.** It normalises the
-  outline to 100 units, so one `stroke-dasharray: 100` in the stylesheet drives
-  the draw. The alternative is `getTotalLength()` in a script, and a decoration
-  should not need one to appear.
-- **`vector-effect="non-scaling-stroke"` is an attribute on each path, and has
-  to be.** The property **does not inherit**, so declared on the `<svg>` it
-  reaches nothing — it shipped that way and the strokes silently kept scaling.
-  And it is a presentation attribute before it is a CSS property, which not
-  every engine accepts. Without it the hairline is 0.33px in the search field
-  and 1.2px in the quick view, from the same 100-unit paths: nine facet lines at
-  a third of a pixel read as a smudge rather than as a cut stone. `--loader-
-  stroke` is therefore in real pixels — 1 / 1.25 / 1.5 by size.
+- **Every line is drawn, in turn**: the cut, the girdle, the crown from the
+  middle out, then the pavilion, 80ms apart on one keyframe set — the sequence
+  is `animation-delay: calc(var(--n) * 80ms)` and nothing else. Pairs share
+  their `--n`, so the mark is symmetric in every frame. Whole by ~950ms of the
+  2.6s beat, **held whole for a second**, then faded in the same order, the last
+  line still going as the first is struck again. Verified by scrubbing the
+  animation and reading the dash back: 6 / 25 / 54 / 81 / 97 / 100% on the
+  outline, each line 80ms behind the one before, pairs exactly in step.
+
+  It was not always drawn. The facets used to *fade in* over an already-drawn
+  outline, which reads as a picture appearing rather than a stone being cut.
+- **One path per line, and that is load-bearing.** `pathLength` normalises a
+  path's *total* length, so several lines sharing one path each get a share of
+  the 100 in proportion to how long they are — the girdle would still be
+  halfway drawn while a crown facet a third its length had long finished. One
+  path per line means one pen speed for all of them.
+- **`pathLength="100"` is what keeps it out of JavaScript.** It normalises each
+  line to 100 units, so one `stroke-dasharray: 100` in the stylesheet drives
+  every draw. The alternative is `getTotalLength()` in a script, and a
+  decoration should not need one to appear.
+- **Never `vector-effect: non-scaling-stroke` on a path that is drawn by a
+  dash.** It looks made for this — a hairline that ignores scale — and it
+  silently destroys the draw: the stroke moves into device space and the dash
+  goes with it, so `pathLength` stops governing the dash and the same 100-unit
+  pattern paints an identical row of marching dashes at every offset. Measured
+  on this outline: **534 inked pixels at dash offset 0, 50 and 100 alike**,
+  against 1869 / 932 / 0 with an ordinary stroke. It shipped for one commit and
+  was exactly what was wrong with the animation.
+
+  So the hairline comes from scaling the width per size instead:
+  `--loader-stroke` is in the viewBox's own units — 3 / 2.4 / 1.85 — which at
+  the three render scales paints 1 / 1.25 / 1.5px.
+
+  (While it was in use it was an attribute on each path rather than a rule,
+  because `vector-effect` **does not inherit** — declared on the `<svg>` it
+  reaches nothing. Worth knowing if it is ever reached for elsewhere.)
+- **`ease-in-out`, not the theme's `--ease`.** That curve is built for entrances
+  — a thing arriving fast and settling — and on a line being struck it puts 78%
+  of the length down in the first 26% of the stroke and then creeps. A pen
+  accelerates and slows.
 - It is gold on whatever scheme it lands in — `--c-accent`, which is already
   `#9A7836` on a light panel and the champagne `#C7A15C` on the noir search
   overlay. Under reduced motion the stone is simply drawn whole rather than

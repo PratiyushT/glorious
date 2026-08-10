@@ -5928,16 +5928,24 @@ a.nav-menu__address:hover {
 
 .loader {
   --loader-size: 2.75rem;   /* 44px */
-  --loader-stroke: 1.25px;
-  --loader-beat: 1.9s;
+  /* In the viewBox's own units, and stated per size because the stroke scales
+     with the mark: 84 units of height rendered at 44px is a scale of 0.52, so
+     2.4 units paint the 1.25px hairline that is wanted. See below for why this
+     is not `non-scaling-stroke`. */
+  --loader-stroke: 2.4;
+  /* Long enough that the stone is held whole for most of a second once the
+     last line lands, which is what the 1.9s beat never left room for. */
+  --loader-beat: 2.6s;
 
   display: grid;
   place-items: center;
   color: var(--c-accent);
 }
 
-.loader--sm { --loader-size: 1.75rem; --loader-stroke: 1px; }
-.loader--lg { --loader-size: 4.25rem; --loader-stroke: 1.5px; }
+/* 3 units at a scale of 0.33 and 1.85 at 0.81: both land on the same hairline
+   the middle size paints, 1px and 1.5px. */
+.loader--sm { --loader-size: 1.75rem; --loader-stroke: 3; }
+.loader--lg { --loader-size: 4.25rem; --loader-stroke: 1.85; }
 
 .loader__mark {
   display: block;
@@ -5946,62 +5954,62 @@ a.nav-menu__address:hover {
   aspect-ratio: 96 / 84;
   overflow: visible;
   stroke: currentColor;
-  /* A hairline at every size, which the paths' own `non-scaling-stroke` is
-     what makes true: they are stated in a 100-unit space, so a scaled stroke
-     would be 0.33px in the search field and 1.2px in the quick view, and nine
-     facet lines at a third of a pixel read as a smudge rather than as a cut
-     stone. The attribute is on the paths and cannot move here — `vector-effect`
-     does not inherit, so declared on this element it reaches nothing. */
+  /* A hairline at every size, reached by scaling the width per size rather
+     than by `vector-effect: non-scaling-stroke`.
+
+     That property looks made for this and **must not be used here**: it moves
+     the stroke into device space, and the dash goes with it — so `pathLength`
+     stops governing the dash and the draw below turns into a row of marching
+     dashes that never resolves. Measured on this very outline: 534 inked
+     pixels at dash offset 0, 50 and 100 alike, against 1869 / 932 / 0 with an
+     ordinary stroke. It shipped that way for one commit and that is exactly
+     what was wrong with the animation. */
   stroke-width: var(--loader-stroke);
   stroke-linejoin: round;
   stroke-linecap: round;
 }
 
-/* Struck in one stroke, held while the facets light, then gone. The loop is
-   seamless because the fade ends at nothing: the jump back to a fully offset
-   dash happens while there is no ink on screen to jump. */
-.loader__cut {
+/* Every line is struck the same way and the sequence is the delay alone: the
+   cut, the girdle, the crown from the middle out, then the pavilion. One
+   keyframe set for all nine, so the stone is *drawn* rather than assembled —
+   the facets used to fade in on top of an already-drawn outline, which reads
+   as a picture appearing rather than a stone being cut.
+
+   Pairs share their `--n`, so the mark is symmetric in every frame.
+
+   The dash is what draws each line, and it works only because every line is
+   its own path: `pathLength` normalises a path's *total* length, so lines
+   sharing one path draw at speeds proportional to how long they are. */
+/* `ease-in-out`, not the theme's `--ease`. That curve is built for entrances —
+   a thing arriving fast and settling — and on a line being struck it puts three
+   quarters of the length down in the first quarter of the time and then creeps:
+   measured 78% drawn at 150ms of a 572ms stroke. A pen accelerates and slows,
+   which is what a symmetric curve gives. */
+.loader__line {
   stroke-dasharray: 100;
-  animation: gj-loader-cut var(--loader-beat) var(--ease) infinite;
+  animation: gj-loader-draw var(--loader-beat) ease-in-out infinite both;
+  animation-delay: calc(var(--n, 0) * 80ms);
 }
 
-.loader__facet {
-  animation: gj-loader-facet var(--loader-beat) var(--ease) infinite;
-}
+/* Drawn over the first fifth, held whole for half the beat — the finished
+   stone is the point of the thing and has to be seen — then gone.
 
-/* The pavilion follows the crown, so the light crosses the stone rather than
-   arriving on all of it at once. */
-.loader__facet--low {
-  animation-name: gj-loader-facet-late;
-}
-
-@keyframes gj-loader-cut {
+   The loop is seamless because the fade ends at nothing: the jump back to a
+   fully offset dash happens at opacity 0, with no ink on screen to see it
+   jump. And because the last line is still fading as the first is struck
+   again, the mark never goes blank between beats. */
+@keyframes gj-loader-draw {
   0%   { stroke-dashoffset: 100; opacity: 1; }
-  45%  { stroke-dashoffset: 0; opacity: 1; }
-  80%  { stroke-dashoffset: 0; opacity: 1; }
+  22%  { stroke-dashoffset: 0; opacity: 1; }
+  72%  { stroke-dashoffset: 0; opacity: 1; }
+  86%  { stroke-dashoffset: 0; opacity: 0; }
   100% { stroke-dashoffset: 0; opacity: 0; }
-}
-
-@keyframes gj-loader-facet {
-  0%, 45% { opacity: 0; }
-  62%     { opacity: 1; }
-  80%     { opacity: 1; }
-  100%    { opacity: 0; }
-}
-
-@keyframes gj-loader-facet-late {
-  0%, 55% { opacity: 0; }
-  72%     { opacity: 1; }
-  80%     { opacity: 1; }
-  100%    { opacity: 0; }
 }
 
 /* Nothing moves, but the mark still has to be *there* — a wait with no sign of
    waiting is worse than a still one. So the stone is simply drawn, whole. */
 @media (prefers-reduced-motion: reduce) {
-  .loader__cut,
-  .loader__facet,
-  .loader__facet--low {
+  .loader__line {
     animation: none;
     stroke-dashoffset: 0;
     opacity: 1;
