@@ -1926,12 +1926,19 @@ a.card__title::after {
    the only place in the design with arrows beside a row — sets its own beside
    the cards rather than on them.
 
-   Beside means beside at every width, phone included, on request: it is a
-   choice about this row and a phone should be given the row that was chosen.
-   What gives is the arrow, not the arrangement — see the query below. The row
-   was built the other way first, standing the arrows under the track on a
-   narrow screen, and that answered a question nobody had asked: the setting
-   already says where the arrows go.
+   The carousel is the query container and the frame inside it is what gets
+   arranged — a container cannot be styled by a query against its own size,
+   which is the same reason `.promises` and `.footer__cols` exist. Asking the
+   container rather than the viewport is what keeps a row in a narrow column
+   right too.
+
+   Below 38rem the pair comes down and takes its places either side of the
+   marks, which is what the hero does with its own arrows as the viewport
+   narrows. A card on a phone is the whole row, and a flanking pair takes 112px
+   off it — measured at 375px, a card of 227px against the 339px it keeps this
+   way. Shrinking the arrows instead was tried and cost 84px, which is still
+   most of the same bite. 38rem is the width this block has inside the page
+   gutters at the 660px viewport where a product grid drops to one column.
 
    The air between an arrow and the track is a margin on the arrow, never the
    grid's `column-gap`. The side columns are `auto`, so a hidden arrow collapses
@@ -1940,6 +1947,9 @@ a.card__title::after {
    is a margin for the same reason. */
 .fp-carousel[data-fp-arrows='side'] {
   container-type: inline-size;
+}
+
+.fp-carousel__frame {
   display: grid;
   align-items: center;
   grid-template-columns: auto minmax(0, 1fr) auto;
@@ -1948,16 +1958,16 @@ a.card__title::after {
     'dots dots dots';
 }
 
-.fp-carousel[data-fp-arrows='side'] > .fp-carousel__viewport {
+.fp-carousel__frame > .fp-carousel__viewport {
   grid-area: main;
 }
 
-.fp-carousel[data-fp-arrows='side'] > .fp-carousel__arrow--prev {
+.fp-carousel__frame > .fp-carousel__arrow--prev {
   grid-area: prev;
   margin-inline-end: var(--fp-arrow-gap);
 }
 
-.fp-carousel[data-fp-arrows='side'] > .fp-carousel__arrow--next {
+.fp-carousel__frame > .fp-carousel__arrow--next {
   grid-area: next;
   margin-inline-start: var(--fp-arrow-gap);
 }
@@ -1966,28 +1976,21 @@ a.card__title::after {
    so this gap is a margin too: a `row-gap` would leave a band of dead space
    under a row that has nothing to cycle through and has hidden its controls.
    Measured at 0px below the track on a single-page row. */
-.fp-carousel[data-fp-arrows='side'] > .fp-carousel__dots {
+.fp-carousel__frame > .fp-carousel__dots {
   grid-area: dots;
   justify-self: center;
   margin-top: var(--fp-controls-gap);
 }
 
-/* Below 38rem the pair gets smaller instead of moving: 36px with 6px of air,
-   so it takes 84px off the row rather than 112px. Measured at 375px — a card
-   of 255px, against the 339px the grid gets and the 227px the full-size pair
-   would have left. 38rem is the width this block has inside the page gutters
-   at the 660px viewport where a product grid drops to one column, asked of the
-   carousel's own width so a row in a narrow column gets the same answer.
-
-   The properties go on the arrows rather than on the carousel because a
-   container cannot be styled by a query against its own size — the rule that
-   `.promises` and `.footer__cols` grew a wrapper for. Setting them on the
-   element that reads them needs no wrapper at all. */
 @container (max-width: 38rem) {
-  .fp-carousel[data-fp-arrows='side'] > .fp-carousel__arrow {
-    --fp-arrow-size: 2.25rem;
-    --fp-arrow-glyph: 0.9375rem;
-    --fp-arrow-gap: 6px;
+  .fp-carousel__frame {
+    grid-template-areas:
+      'main main main'
+      'prev dots next';
+  }
+
+  .fp-carousel__frame > .fp-carousel__arrow {
+    margin-top: var(--fp-controls-gap);
   }
 }
 

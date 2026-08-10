@@ -387,23 +387,24 @@ design has a control for exactly this job and it is the larger one.
   cards** — a card here is clickable to its edges, and the hero, the design's
   only row with arrows beside it, sets its own beside the cards too.
 
-  **Beside means beside at every width, phone included, on request.** What
-  gives below **38rem** is the arrow, not the arrangement: 36px with 6px of air
-  rather than 46px with 10px, so the pair takes 84px off the row instead of
-  112px. Measured at 375px — a card of 255px, against the 339px the grid gets
-  and the 227px a full-size pair would have left. 38rem is the width this block
-  has inside the page gutters at the 660px viewport where a product grid drops
-  to one column, asked of the carousel's own width rather than the screen's, so
-  a row in a narrow column gets the same answer.
+  **Below 38rem they come down and take their places either side of the
+  marks**, which is what the hero does with its own arrows as the viewport
+  narrows. A card on a phone is the whole row, and a flanking pair takes 112px
+  off it: measured at 375px, a card of 227px against the 339px it keeps this
+  way. Keeping them beside and shrinking them to 36px instead was tried, on
+  request, and taken back out — 84px is still most of the same bite. 38rem is
+  the width this block has inside the page gutters at the 660px viewport where
+  a product grid drops to one column, asked of the carousel's own width rather
+  than the screen's, so a row in a narrow column gets the same answer.
 
-  It was built the other way first, standing the arrows under the track on a
-  narrow screen. That answered a question nobody had asked — the setting
-  already says where the arrows go — and it needed a `.fp-carousel__frame`
-  wrapper, since **a container cannot be styled by a query against its own
-  size** and the arrangement lived on the container. Sizing lives on the
-  arrows, which are descendants, so the wrapper went. Keep that rule in mind
-  before reaching for another one: `.promises` and `.footer__cols` need theirs
-  because what changes *is* the container's own layout.
+  **`.fp-carousel__frame` exists to be laid out, because `.fp-carousel` exists
+  to be measured.** A container cannot be styled by a query against its own
+  size, and what changes here is the arrangement, which lives on the container
+  — the same reason `.promises` and `.footer__cols` are shaped this way.
+  Putting `container-type` and `grid-template-areas` on the one element looks
+  right, uploads clean, and simply never fires: it was written that way first
+  and the narrow tier was dead until the frame went in. Only a rule that
+  applies to a *descendant* — an arrow's own size, say — can skip the wrapper.
 
   **Every gap here is a margin on the element, never the grid's own `gap`.**
   The side columns are `auto`, so a hidden arrow collapses its column to

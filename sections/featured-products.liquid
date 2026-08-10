@@ -17,7 +17,8 @@
       turning gold. They are gone entirely when there is nothing to cycle
       through, which is the hero's `.hero-carousel.is-static` rule.
       `carousel_arrows` places them under the track, over it, or either side
-      of it; beside stays beside at every width and the arrow shrinks instead.
+      of it — and beside the track becomes under it on a narrow row, as the
+      hero's own arrows do.
 
   The marks are a strip that travels rather than a block that wraps, so a
   sixteen-page row still states where you are in one line: the current mark is
@@ -251,10 +252,19 @@
         aria-label="{{ carousel_label | escape }}"
       >
         {%- if side_arrows -%}
-          {{ arrow_prev }}
-          {{ viewport }}
-          {{ arrow_next }}
-          {{ marks }}
+          {%- comment -%}
+            The frame exists to be laid out, because the carousel around it
+            exists to be measured: a container cannot be styled by a query
+            against its own size, and what changes on a narrow row here is the
+            arrangement — which lives on the container. Same shape, and the
+            same reason, as `.promises` and `.footer__cols`.
+          {%- endcomment -%}
+          <div class="fp-carousel__frame">
+            {{ arrow_prev }}
+            {{ viewport }}
+            {{ arrow_next }}
+            {{ marks }}
+          </div>
         {%- elsif arrows_at == 'top' -%}
           <div class="fp-carousel__controls" data-fp-controls hidden>
             {{ arrow_prev }}{{ marks }}{{ arrow_next }}
