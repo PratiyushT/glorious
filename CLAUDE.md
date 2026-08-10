@@ -365,19 +365,25 @@ the theme already owns:
   and each one replays `gj-card` (rise and fade, 0.5s) 80ms apart. Like the
   hero, the outgoing page is simply taken away; it is not a cross-fade.
 
-The arrows are **the design's own control for stepping a row of pieces** — the
-one "Find by shape" carries on its home page: a **46px ring at ink 16% round a
-17px glyph in full ink**, both turning gold on hover, `#9A7836` being exactly
-`--c-accent` on a light scheme, with 10px between the pair. They are gone
-entirely when there is nothing to cycle through, which is
+The arrows are **bare and large**: a **28px glyph in full ink** turning
+`--c-accent` on hover, centred in a **46px target that is never drawn**. They
+are gone entirely when there is nothing to cycle through, which is
 `.hero-carousel.is-static`'s rule. The page marks beside them are **hairlines,
 not dots**: the brand marks a set with a rule.
 
-They were the hero's arrow first — a bare 20px glyph at ink 60%, no ring — and
-that was the wrong borrowing, on request. The hero's sits on a dark full-bleed
-stage with nothing competing with it; at the foot of a porcelain row the width
-of the page it read as an afterthought, and it was no kind of target. The
-design has a control for exactly this job and it is the larger one.
+The 46px and the ink-to-gold come from the design's own control for stepping a
+row of pieces — "Find by shape" on its home page, a 1px ring at ink 16% round a
+17px glyph. **The ring is dropped and the glyph grown in exchange, on request.**
+With no ring the arrow *is* the control, so it has to carry the weight the ring
+was carrying; 17px bare would read as less than the ringed 17px it replaced.
+The box stays 46px square, so dropping the ring costs nothing in target size
+and moves nothing in the layout — the columns beside the track are the width
+they were.
+
+The row carried the hero's arrow before either of those — a bare 20px glyph at
+ink 60%. That is right on a dark full-bleed stage where nothing competes with
+it, and at the foot of a porcelain row the width of the page it read as an
+afterthought.
 
 - **`carousel_arrows` puts the arrows under the track, over it, or either side
   of it**, and only that setting changes; the marks travel with them. Under is

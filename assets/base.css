@@ -1659,10 +1659,11 @@ a.card__title::after {
      arrows sit either side of it. */
   --fp-controls-gap: clamp(1.25rem, 3vw, 1.75rem);
 
-  /* The arrow, and the air between it and the track when it is beside one.
-     46px / 17px / 10px are the design's own — see .fp-carousel__arrow. */
+  /* The arrow's target, the glyph inside it, and the air between it and the
+     track when it is beside one. 46px and 10px are the design's own; the glyph
+     is not — see .fp-carousel__arrow. */
   --fp-arrow-size: 2.875rem;
-  --fp-arrow-glyph: 1.0625rem;
+  --fp-arrow-glyph: 1.75rem;
   --fp-arrow-gap: 10px;
 }
 
@@ -1790,15 +1791,21 @@ a.card__title::after {
   display: none;
 }
 
-/* The design's own control for stepping a row of pieces — "Find by shape" on
-   the home page: a 46px ring at ink 16% round a 17px glyph in full ink, both
-   turning gold on hover, `#9A7836` being exactly `--c-accent` on a light
-   scheme. It is a 46px target as well as a larger mark.
+/* A bare arrow, and a big one: a 28px glyph in full ink turning `--c-accent`
+   on hover, centred in a 46px target that is never drawn.
 
-   Not the hero's arrow, which this row carried first and which reads as an
-   afterthought here. The hero's is a bare 20px glyph at ink 60% with no ring:
-   right on a dark full-bleed stage where nothing else competes with it, too
-   quiet at the foot of a porcelain row the width of the page. */
+   The 46px and the ink-to-gold are the design's own control for stepping a row
+   of pieces — "Find by shape" on its home page — but its 1px ring at ink 16%
+   is deliberately dropped, on request, and the 17px glyph it frames goes up to
+   28px in exchange. What is wanted here is a bigger mark rather than a button:
+   with no ring the arrow *is* the control, so it has to carry the weight the
+   ring was carrying. The hero's own arrow is 20px and bare, which is right on
+   a dark full-bleed stage and too quiet at the foot of a porcelain row the
+   width of the page.
+
+   The box stays 46px square with the glyph centred in it, so dropping the ring
+   costs nothing in target size and moves nothing in the layout either — the
+   grid columns beside the track are the same width as before. */
 .fp-carousel__arrow {
   display: flex;
   align-items: center;
@@ -1807,31 +1814,23 @@ a.card__title::after {
   width: var(--fp-arrow-size);
   height: var(--fp-arrow-size);
   padding: 0;
-  border: var(--border-width) solid color-mix(in srgb, var(--c-text) 16%, transparent);
-  /* Static, so the design's own 999px is safe here: the browser caps it at
-     half the side and paints the circle. An animated radius would need the
-     cap-aware treatment `.nav` documents. */
-  border-radius: 999px;
+  border: 0;
   background: none;
   color: var(--c-text);
   cursor: pointer;
   font-size: var(--fp-arrow-glyph);
   line-height: 1;
-  transition: color var(--duration) var(--ease), border-color var(--duration) var(--ease),
-    opacity var(--duration) var(--ease);
+  transition: color var(--duration) var(--ease), opacity var(--duration) var(--ease);
 }
 
 .fp-carousel__arrow:hover {
-  border-color: var(--c-accent);
   color: var(--c-accent);
 }
 
-/* The row is bounded rather than looping, so an end really is an end. The
-   whole control dims, ring and all — it is one mark, not a glyph in a frame. */
+/* The row is bounded rather than looping, so an end really is an end. */
 .fp-carousel__arrow[disabled] {
   opacity: 0.28;
   cursor: default;
-  border-color: color-mix(in srgb, var(--c-text) 16%, transparent);
   color: var(--c-text);
 }
 
