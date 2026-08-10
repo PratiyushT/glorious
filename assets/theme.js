@@ -260,37 +260,52 @@
 
   function initOverlays(scope) {
     scope.querySelectorAll('[data-overlay]').forEach(registerOverlay);
-
-    scope.querySelectorAll('[data-overlay-close]').forEach(function (btn) {
-      if (!bindOnce(btn, 'boundClose')) return;
-      btn.addEventListener('click', function () {
-        var target = overlays[btn.dataset.overlayClose];
-        if (target) target.close(true);
-      });
-    });
-
-    scope.querySelectorAll('[data-overlay-open]').forEach(function (btn) {
-      if (!bindOnce(btn, 'boundOpen')) return;
-      btn.addEventListener('click', function (event) {
-        var target = overlays[btn.dataset.overlayOpen];
-        if (!target) return;
-        event.preventDefault();
-        target.open();
-      });
-    });
   }
 
-  /* Following a link out of an overlay should not leave it mounted behind
-     the next page. */
-  function closeOverlaysOnNavigate(scope) {
-    scope.querySelectorAll('[data-overlay] a[href]').forEach(function (link) {
-      if (!bindOnce(link, 'boundNav')) return;
-      link.addEventListener('click', function () {
-        if (link.hasAttribute('data-drawer-open') || link.hasAttribute('data-search-open')) return;
-        var host = link.closest('[data-overlay]');
-        var target = host && overlays[host.dataset.overlay];
-        if (target) target.close(false);
-      });
+  /* The controls are delegated from the document and bound once, never bound
+     to the elements themselves.
+
+     An overlay's own markup does not stay put: theme.js re-renders the bag
+     drawer's contents after every cart change and swaps them in, and the
+     theme editor replaces a whole section on reload. A listener bound to a
+     close button therefore dies with the markup it was bound to — the drawer's
+     close button was live at boot and dead from the first add to bag onwards,
+     leaving only the veil to dismiss it. Delegation is what the cart handlers
+     already do, and for the same reason.
+
+     Following a link out of an overlay is handled here too, so a link that
+     arrives in re-rendered markup closes the overlay behind it like any
+     other. The two bag triggers are the exception: they open an overlay
+     rather than leaving for a page. */
+  function initOverlayTriggers() {
+    document.addEventListener('click', function (event) {
+      var target = event.target;
+      if (!target || !target.closest) return;
+
+      var close = target.closest('[data-overlay-close]');
+      if (close) {
+        var closing = overlays[close.dataset.overlayClose];
+        if (closing) closing.close(true);
+        return;
+      }
+
+      var open = target.closest('[data-overlay-open]');
+      if (open) {
+        var opening = overlays[open.dataset.overlayOpen];
+        if (opening) {
+          event.preventDefault();
+          opening.open();
+        }
+        return;
+      }
+
+      var link = target.closest('[data-overlay] a[href]');
+      if (!link) return;
+      if (link.hasAttribute('data-drawer-open') || link.hasAttribute('data-search-open')) return;
+
+      var host = link.closest('[data-overlay]');
+      var leaving = host && overlays[host.dataset.overlay];
+      if (leaving) leaving.close(false);
     });
   }
 
@@ -2055,6 +2070,197 @@
     });
   }
 
+  /* ---- Featured products carousel -------------------------------------
+     The Most Loved row's optional carousel. Every card is already in the
+     document — Liquid rendered the same `.grid-auto` the other layout ships
+     — so nothing here builds markup; it only decides which page is on show.
+     Without this script the section simply stays that grid, which is why the
+     controls are rendered hidden and are only unhidden once there is more
+     than one page to move between.
+
+     How many cards fit is not worked out here. `.fp-carousel__ruler` carries
+     `.grid-auto`'s own width expression and the browser resolves it, so the
+     column count is read rather than re-derived — including the 440px
+     single-column override, which is a media query on the ruler. The two
+     layouts therefore cannot drift apart about a column count. */
+
+  function initProductCarousels(scope) {
+    scope.querySelectorAll('[data-fp-carousel]').forEach(function (root) {
+      if (!bindOnce(root, 'boundProductCarousel')) return;
+
+      var viewport = root.querySelector('[data-fp-viewport]');
+      var track = root.querySelector('[data-fp-track]');
+      var ruler = root.querySelector('[data-fp-ruler]');
+      var controls = root.querySelector('[data-fp-controls]');
+      var dots = Array.prototype.slice.call(root.querySelectorAll('[data-fp-dot]'));
+      var cells = Array.prototype.slice.call(root.querySelectorAll('[data-fp-cell]'));
+      var arrows = Array.prototype.slice.call(root.querySelectorAll('[data-fp-step]'));
+      if (!viewport || !track || !ruler || !cells.length) return;
+
+      var fade = root.dataset.fpMotion === 'fade';
+      var per = 0;
+      var pages = 1;
+      var page = 0;
+
+      function measure() {
+        var width = viewport.clientWidth;
+        var column = ruler.getBoundingClientRect().width;
+        var gap = parseFloat(window.getComputedStyle(track).columnGap) || 0;
+        if (!width || !column) return per || 1;
+
+        /* The count `auto-fit` would reach: as many whole columns as fit, each
+           with the gap that follows it. The half pixel absorbs the rounding at
+           an exact fit, where the division lands a hair under the integer. */
+        var fits = Math.floor((width + gap + 0.5) / (column + gap));
+        return Math.max(1, Math.min(fits, cells.length));
+      }
+
+      function paint(replay) {
+        var next = measure();
+        if (next !== per) {
+          per = next;
+          root.style.setProperty('--fp-per', per);
+        }
+
+        pages = Math.ceil(cells.length / per);
+        if (page > pages - 1) page = pages - 1;
+        if (page < 0) page = 0;
+        root.style.setProperty('--fp-page', page);
+
+        var first = page * per;
+        var last = first + per;
+
+        cells.forEach(function (cell, i) {
+          var on = i >= first && i < last;
+          cell.style.setProperty('--fp-card', i % per);
+
+          if (fade) {
+            cell.hidden = !on;
+            return;
+          }
+
+          /* Slide keeps the whole row in the document, so the cards either
+             side of the page are still focusable — and focusing one scrolls
+             the clipped viewport, leaving the track translated away from what
+             is on screen. */
+          if (on) cell.removeAttribute('inert');
+          else cell.setAttribute('inert', '');
+        });
+
+        if (controls) controls.hidden = pages < 2;
+
+        /* The row is bounded rather than looping: an end is an end, which is
+           what the marks beside these already say.
+
+           Reaching an end disables the very control that was just pressed, and
+           a disabled button drops focus to <body> — so a keyboard visitor
+           stepping to the last page is thrown back to the top of the tab order.
+           Focus moves to the arrow that still works. */
+        var focused = document.activeElement;
+
+        arrows.forEach(function (arrow) {
+          var by = parseInt(arrow.dataset.fpStep, 10);
+          arrow.disabled = by < 0 ? page === 0 : page >= pages - 1;
+        });
+
+        if (focused && focused.disabled && arrows.indexOf(focused) !== -1) {
+          var live = arrows.filter(function (arrow) { return !arrow.disabled; })[0];
+          if (live) live.focus();
+        }
+
+        dots.forEach(function (dot, i) {
+          dot.hidden = i >= pages;
+          if (i === page) dot.setAttribute('aria-current', 'true');
+          else dot.removeAttribute('aria-current');
+        });
+
+        /* Same nodes, new page: the entry animation only replays if it is
+           taken away and given back across a reflow. Slide has a motion of its
+           own and must not have it cut across. */
+        if (fade && replay && !reduceMotion.matches) {
+          for (var n = first; n < Math.min(last, cells.length); n++) {
+            var child = cells[n].firstElementChild;
+            if (!child) continue;
+            child.style.animation = 'none';
+            void child.offsetWidth;
+            child.style.animation = '';
+          }
+        }
+      }
+
+      function go(to) {
+        var clamped = Math.max(0, Math.min(to, pages - 1));
+        if (clamped === page) return;
+        page = clamped;
+        paint(true);
+      }
+
+      root.addEventListener('click', function (event) {
+        var step = event.target.closest('[data-fp-step]');
+        if (step) {
+          go(page + parseInt(step.dataset.fpStep, 10));
+          return;
+        }
+
+        var dot = event.target.closest('[data-fp-dot]');
+        if (dot) go(parseInt(dot.dataset.fpDot, 10));
+      });
+
+      /* A swipe across a card's photographs belongs to the card — it steps
+         through the piece's own images. Anywhere else on the row moves the
+         carousel. The same test the card itself makes, so the two agree
+         rather than both answering the one gesture. */
+      function cardOwns(touch, target) {
+        var card = target && target.closest ? target.closest('[data-card]') : null;
+        if (!card || card.querySelectorAll('[data-card-slide]').length < 2) return false;
+
+        var media = card.querySelector('.card__media');
+        if (!media) return false;
+
+        var box = media.getBoundingClientRect();
+        return touch.clientX >= box.left && touch.clientX <= box.right &&
+               touch.clientY >= box.top && touch.clientY <= box.bottom;
+      }
+
+      var swipe = null;
+
+      viewport.addEventListener('touchstart', function (event) {
+        var touch = event.touches && event.touches[0];
+        swipe = touch && !cardOwns(touch, event.target)
+          ? { x: touch.clientX, y: touch.clientY }
+          : null;
+      }, { passive: true });
+
+      viewport.addEventListener('touchend', function (event) {
+        var start = swipe;
+        swipe = null;
+        var touch = event.changedTouches && event.changedTouches[0];
+        if (!start || !touch) return;
+
+        var dx = touch.clientX - start.x;
+        var dy = touch.clientY - start.y;
+        /* Ignore anything that reads more like a scroll than a swipe. */
+        if (Math.abs(dx) < 40 || Math.abs(dx) < Math.abs(dy) * 1.2) return;
+
+        go(page + (dx < 0 ? 1 : -1));
+      }, { passive: true });
+
+      /* The count follows the component's own width, not the screen's, so a
+         carousel in a narrow section is right too. */
+      if ('ResizeObserver' in window) {
+        new ResizeObserver(function () { paint(false); }).observe(viewport);
+      } else {
+        window.addEventListener('resize', function () { paint(false); }, { passive: true });
+      }
+
+      /* Measured while the track is still the plain grid, and only then handed
+         over: --fp-per has to hold a number before the live rules can size a
+         column, or `grid-auto-columns` is invalid and the row collapses. */
+      paint(false);
+      root.setAttribute('data-fp-live', '');
+    });
+  }
+
   /* ---- Lookbook -------------------------------------------------------
      Every scene, point, card and list row is already in the document —
      Liquid rendered them all. Nothing here builds markup; it only decides
@@ -2480,12 +2686,12 @@
     initLocalization(scope);
     initFooter(scope);
     initHero(scope);
+    initProductCarousels(scope);
     initLookbook(scope);
     initCards(scope);
     initCardMetals(scope);
     blurUp(scope);
     initOverlays(scope);
-    closeOverlaysOnNavigate(scope);
     initCookieChoice(scope);
   }
 
@@ -2495,6 +2701,7 @@
     initSearch();
 
     /* Bound once for the life of the page, unlike everything above. */
+    initOverlayTriggers();
     initSearchTriggers();
     initCartTriggers();
     initQuickView();

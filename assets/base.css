@@ -469,7 +469,8 @@ a {
    optional row that may not be there. Matches the margin the header would
    have contributed, so the rhythm is the same either way. */
 .display + .grid-auto,
-.display + .promises {
+.display + .promises,
+.display + .fp-carousel {
   margin-top: var(--space-lg);
 }
 
@@ -1609,6 +1610,225 @@ a.card__title::after {
   font-size: var(--micro-size);
   letter-spacing: calc(var(--micro-tracking) * 0.5);
   text-transform: uppercase;
+}
+
+/* ---- Featured products carousel -------------------------------------
+   The optional carousel layout of the Most Loved row. Not in the design —
+   its homepage lays that row out as a grid — but every part of how this one
+   moves is: "slide" is the quick view gallery's track (`transform 0.6s
+   var(--ease)`), "fade" is the hero carousel's swap (`gj-card`, 80ms apart),
+   and the arrows are `.hero-carousel__below`'s, centred under the track.
+
+   The track is the very same `.grid-auto grid-auto--products` element the
+   grid layout uses. Without scripting that is all it is — every card in it,
+   every link real — and the controls, which could not work, stay hidden. The
+   script adds `data-fp-live` and the rules below take over from there.      */
+
+.fp-carousel__viewport {
+  position: relative;
+}
+
+/* How many cards fit is `.grid-auto`'s question, not this component's, so it
+   is not answered twice. The ruler is a box carrying the grid's own width
+   expression; the script divides the track's width by whatever the browser
+   resolved it to. Every threshold — the 440px single-column override that
+   `.grid-auto--products` carries included — therefore stays in the stylesheet
+   beside the grid's own, and the two layouts can never disagree about a
+   column count.
+
+   Out of flow, so it is not a grid item and creates no track of its own; its
+   percentages resolve against `.fp-carousel__viewport`, which is exactly as
+   wide as the track. */
+.fp-carousel__ruler {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 0;
+  visibility: hidden;
+  pointer-events: none;
+  width: max(
+    min(var(--min), var(--min-pct)),
+    calc((100% - (var(--cols) - 1) * var(--gap)) / var(--cols))
+  );
+}
+
+@media (max-width: 27.5rem) {
+  .fp-carousel__ruler {
+    width: 100%;
+  }
+}
+
+.fp-carousel__cell {
+  min-width: 0;
+}
+
+.fp-carousel__cell[hidden] {
+  display: none;
+}
+
+/* Live. The track stops reflowing and becomes a row of exactly --fp-per
+   columns, which is the number the ruler above yielded. Both motions share
+   this sizing: "slide" lays the whole list out and translates it, "fade"
+   hides everything but the page on show, so the visible cards are the only
+   ones generating columns. */
+/* No `touch-action` here, deliberately. `.hero-carousel__window` carries
+   `pan-y` and copying it looked right, but it would buy nothing and cost the
+   visitor pinch and double-tap zoom across the whole row: both touch listeners
+   are passive and never call preventDefault, and `clip` means this is not a
+   scroll container, so there is no pan to suppress. */
+.fp-carousel[data-fp-live] .fp-carousel__viewport {
+  overflow-x: clip;
+  overflow-y: visible;
+}
+
+.fp-carousel[data-fp-live] .fp-carousel__track {
+  grid-template-columns: none;
+  grid-auto-flow: column;
+  grid-auto-columns: calc((100% - (var(--fp-per, 1) - 1) * var(--gap)) / var(--fp-per, 1));
+}
+
+/* A page is the track's own width plus one gap: --fp-per columns and the
+   --fp-per gaps that follow them. */
+.fp-carousel[data-fp-live][data-fp-motion='slide'] .fp-carousel__track {
+  transform: translateX(calc(var(--fp-page, 0) * (-100% - var(--gap))));
+  transition: transform 0.6s var(--ease);
+}
+
+/* The hero's entry, on the hero's timings: the cards that arrive rise and
+   fade, 80ms apart. It is what fade mode replays on every change; in slide
+   mode it plays once, which is the stagger the grid gets from `.reveal`.
+
+   It is held **paused** until the row is scrolled to. `data-fp-live` goes on
+   at DOMContentLoaded, so without this the whole entrance — 500ms plus the
+   stagger — is spent while `.reveal` still has the block at opacity 0, and
+   the row a visitor scrolls down to has already finished animating and fades
+   in flat. `both` fill holds the cards at the keyframe's start meanwhile, so
+   a paused animation is the waiting state as well as the entrance. */
+.fp-carousel[data-fp-live] .fp-carousel__cell > * {
+  animation: gj-card 0.5s ease both;
+  animation-delay: calc(var(--fp-card, 0) * 80ms);
+  animation-play-state: paused;
+}
+
+.fp-carousel[data-fp-live].is-visible .fp-carousel__cell > * {
+  animation-play-state: running;
+}
+
+/* `.reveal` is on the carousel to *time* that entrance, not to play one of
+   its own: the block itself must not fade, or every card fades twice — once
+   with the row and once on its own curve. The cards are the entrance. */
+.js .fp-carousel.reveal {
+  opacity: 1;
+  transform: none;
+  transition: none;
+}
+
+.fp-carousel__controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 22px;
+  margin-top: clamp(1.25rem, 3vw, 1.75rem);
+}
+
+/* Nothing to cycle through: the controls would be a lie. */
+.fp-carousel__controls[hidden] {
+  display: none;
+}
+
+.fp-carousel__arrow {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  border: 0;
+  background: none;
+  color: color-mix(in srgb, var(--c-text) 60%, transparent);
+  cursor: pointer;
+  font-size: 1.25rem;
+  line-height: 1;
+  transition: color var(--duration) var(--ease), opacity var(--duration) var(--ease);
+}
+
+.fp-carousel__arrow:hover {
+  color: var(--c-accent);
+}
+
+/* The row is bounded rather than looping, so an end really is an end. */
+.fp-carousel__arrow[disabled] {
+  opacity: 0.28;
+  cursor: default;
+  color: color-mix(in srgb, var(--c-text) 60%, transparent);
+}
+
+/* A page can be one card on a phone, so sixteen pieces is sixteen marks —
+   more than fits beside the arrows. They wrap rather than pushing the arrows
+   off the row. */
+.fp-carousel__dots {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+/* Hairlines rather than dots — the brand marks a set with a rule, not a
+   circle. The button is 18px tall so it is a real target; only the 2px
+   inside it is painted. */
+.fp-carousel__dot {
+  position: relative;
+  width: 22px;
+  height: 18px;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  transition: width var(--duration) var(--ease);
+}
+
+.fp-carousel__dot[hidden] {
+  display: none;
+}
+
+.fp-carousel__dot::before {
+  content: '';
+  position: absolute;
+  inset: 8px 0;
+  background: color-mix(in srgb, var(--c-text) 22%, transparent);
+  transition: background var(--duration) var(--ease);
+}
+
+.fp-carousel__dot:hover::before {
+  background: color-mix(in srgb, var(--c-text) 45%, transparent);
+}
+
+.fp-carousel__dot[aria-current='true'] {
+  width: 34px;
+}
+
+.fp-carousel__dot[aria-current='true']::before {
+  background: var(--c-accent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* The motion selector is repeated because the rule this has to beat carries
+     it: without it this is (0,3,0) against (0,4,0) and never applies. The
+     global reduced-motion block above would still collapse the duration, so
+     this is belt and braces — but dead code that looks live is worse. */
+  .fp-carousel[data-fp-live][data-fp-motion='slide'] .fp-carousel__track {
+    transition: none;
+  }
+
+  /* Removed outright rather than sped up, so the paused state above cannot
+     leave a card holding at opacity 0. */
+  .fp-carousel[data-fp-live] .fp-carousel__cell > * {
+    animation: none;
+  }
+
+  .fp-carousel__dot,
+  .fp-carousel__dot::before {
+    transition: none;
+  }
 }
 
 /* ---- Category card ----------------------------------------------- */

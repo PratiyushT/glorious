@@ -31,7 +31,14 @@
       "previous": "Previous",
       "next": "Next"
     },
-    "continue_shopping": "Continue shopping"
+    "continue_shopping": "Continue shopping",
+    "carousel": {
+      "label": "Featured pieces",
+      "role": "carousel",
+      "previous": "Previous pieces",
+      "next": "Next pieces",
+      "go_to_page": "Show set {{ number }}"
+    }
   },
   "accessibility": {
     "skip_to_content": "Skip to content",

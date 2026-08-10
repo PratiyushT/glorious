@@ -1,11 +1,53 @@
 {%- comment -%}
   Featured products — the "Most Loved" row. A display heading, a micro label
   and a link out, above a grid that reflows on available width.
+
+  The row is either that grid — unchanged, and the default — or a carousel of
+  the same cards. The carousel is **not in the design**: the design's own
+  homepage lays Most Loved out as a grid and has no slider anywhere. What is
+  the design's is every part of how this one moves, so it reads as the same
+  maison rather than as a plugin dropped in:
+
+    - "Slide" is the quick view gallery's motion — one track translated by
+      whole pages, `transform 0.6s var(--ease)`.
+    - "Fade" is the hero carousel's — the window of cards is swapped in place
+      and each one replays `gj-card` (rise and fade, 0.5s) 80ms apart.
+    - The arrows are the hero's `hero-carousel__below` controls: centred under
+      the track, ink at 60% turning `--c-accent`, and gone entirely when there
+      is nothing to cycle through (`.hero-carousel.is-static`'s rule).
+
+  Nothing here is load-bearing without scripting. The track is the very same
+  `.grid-auto grid-auto--products` element in both layouts, so a visitor with
+  no JavaScript gets the grid — every card in it, every link real — and the
+  controls, which would be a lie, never appear.
 {%- endcomment -%}
 
 {%- liquid
   assign collection = collections[section.settings.collection]
   assign limit = section.settings.products_to_show
+
+  assign is_carousel = false
+  if section.settings.layout == 'carousel'
+    assign is_carousel = true
+  endif
+
+  comment
+    How many cards are actually rendered — and so, at one card per page, the
+    most pages the carousel can ever have. The dots are rendered by Liquid
+    like everything else and the script only hides the surplus.
+  endcomment
+  assign card_count = limit
+  if collection.products.size > 0
+    assign card_count = collection.products.size
+    if card_count > limit
+      assign card_count = limit
+    endif
+  endif
+
+  assign carousel_label = section.settings.heading
+  if carousel_label == blank
+    assign carousel_label = 'general.carousel.label' | t
+  endif
 
   assign view_all = section.settings.view_all_label
   if view_all == blank and collection != blank
@@ -54,25 +96,102 @@
       --min-pct lets the track floor fall below --grid-min on narrow screens.
       At 46% two cards still fit on a phone, which is what the design does;
       at 100% the grid drops to a single column instead.
+
+      The same three variables serve both layouts: the carousel works out how
+      many cards fit by measuring a hidden box carrying `.grid-auto`'s own
+      width expression, so the two never disagree about a column count.
     {%- endcomment -%}
-    <div
-      class="grid-auto grid-auto--products"
-      style="--cols: {{ section.settings.columns }}; --gap: var(--grid-gap); --min-pct: {% if section.settings.mobile_columns == '2' %}46%{% else %}100%{% endif %};"
-    >
+    {%- capture grid_vars -%}
+      --gap: var(--grid-gap); --min-pct: {% if section.settings.mobile_columns == '2' %}46%{% else %}100%{% endif %};
+    {%- endcapture -%}
+
+    {%- comment -%}
+      The cards themselves are identical in both layouts. In the grid each one
+      carries its own `.reveal` and the design's 60ms stagger; in the carousel
+      the component reveals as a whole and the cards' entrance is `gj-card`,
+      staggered by their place in the visible page — the hero's own idiom, and
+      the one that has to be replayed on every change in fade mode.
+    {%- endcomment -%}
+    {%- capture cards -%}
       {%- if collection.products.size > 0 -%}
         {%- for product in collection.products limit: limit -%}
-          <div class="reveal" style="--reveal-delay: {{ forloop.index0 | times: 60 }}ms;">
+          <div
+            {% if is_carousel %}class="fp-carousel__cell" data-fp-cell{% else %}class="reveal" style="--reveal-delay: {{ forloop.index0 | times: 60 }}ms;"{% endif %}
+          >
             {% render 'product-card', product: product %}
           </div>
         {%- endfor -%}
       {%- else -%}
         {%- for i in (1..limit) -%}
-          <div class="reveal" style="--reveal-delay: {{ forloop.index0 | times: 60 }}ms;">
+          <div
+            {% if is_carousel %}class="fp-carousel__cell" data-fp-cell{% else %}class="reveal" style="--reveal-delay: {{ forloop.index0 | times: 60 }}ms;"{% endif %}
+          >
             {% render 'product-card' %}
           </div>
         {%- endfor -%}
       {%- endif -%}
-    </div>
+    {%- endcapture -%}
+
+    {%- if is_carousel -%}
+      <div
+        class="fp-carousel reveal"
+        data-fp-carousel
+        data-fp-motion="{{ section.settings.carousel_motion }}"
+        role="group"
+        aria-roledescription="{{ 'general.carousel.role' | t }}"
+        aria-label="{{ carousel_label | escape }}"
+      >
+        <div class="fp-carousel__viewport" data-fp-viewport>
+          {%- comment -%}
+            The ruler. It is never seen and never in the flow — it exists so
+            the script can ask the browser how wide a column would be under
+            `.grid-auto`'s rule instead of re-deriving that rule in JavaScript.
+            Every threshold, the 440px single-column override included, stays
+            in the stylesheet where the grid's own are.
+          {%- endcomment -%}
+          <div class="fp-carousel__track grid-auto grid-auto--products" data-fp-track style="{{ grid_vars | strip }}">
+            <div class="fp-carousel__ruler" data-fp-ruler aria-hidden="true"></div>
+            {{ cards }}
+          </div>
+        </div>
+
+        <div class="fp-carousel__controls" data-fp-controls hidden>
+          <button
+            class="fp-carousel__arrow"
+            type="button"
+            data-fp-step="-1"
+            aria-label="{{ 'general.carousel.previous' | t }}"
+          >
+            &larr;
+          </button>
+
+          <div class="fp-carousel__dots" data-fp-dots>
+            {%- for i in (1..card_count) -%}
+              <button
+                class="fp-carousel__dot"
+                type="button"
+                data-fp-dot="{{ forloop.index0 }}"
+                aria-label="{{ 'general.carousel.go_to_page' | t: number: forloop.index }}"
+                hidden
+              ></button>
+            {%- endfor -%}
+          </div>
+
+          <button
+            class="fp-carousel__arrow"
+            type="button"
+            data-fp-step="1"
+            aria-label="{{ 'general.carousel.next' | t }}"
+          >
+            &rarr;
+          </button>
+        </div>
+      </div>
+    {%- else -%}
+      <div class="grid-auto grid-auto--products" style="{{ grid_vars | strip }}">
+        {{ cards }}
+      </div>
+    {%- endif -%}
   </div>
 </section>
 
@@ -105,6 +224,41 @@
       "label": "t:sections.featured_products.collection.label"
     },
     {
+      "type": "select",
+      "id": "layout",
+      "label": "t:sections.all.layout.label",
+      "info": "t:sections.featured_products.layout.info",
+      "options": [
+        {
+          "value": "grid",
+          "label": "t:sections.featured_products.layout.grid"
+        },
+        {
+          "value": "carousel",
+          "label": "t:sections.featured_products.layout.carousel"
+        }
+      ],
+      "default": "grid"
+    },
+    {
+      "type": "select",
+      "id": "carousel_motion",
+      "label": "t:sections.featured_products.carousel_motion.label",
+      "info": "t:sections.featured_products.carousel_motion.info",
+      "options": [
+        {
+          "value": "slide",
+          "label": "t:sections.featured_products.carousel_motion.slide"
+        },
+        {
+          "value": "fade",
+          "label": "t:sections.featured_products.carousel_motion.fade"
+        }
+      ],
+      "default": "slide",
+      "visible_if": "{{ section.settings.layout == 'carousel' }}"
+    },
+    {
       "type": "range",
       "id": "products_to_show",
       "label": "t:sections.featured_products.products_to_show.label",
@@ -114,23 +268,19 @@
       "default": 8
     },
     {
-      "type": "range",
-      "id": "columns",
-      "label": "t:sections.featured_products.columns.label",
-      "info": "t:sections.featured_products.columns.info",
-      "min": 2,
-      "max": 6,
-      "step": 1,
-      "default": 4
-    },
-    {
       "type": "select",
       "id": "mobile_columns",
       "label": "t:sections.featured_products.mobile_columns.label",
       "info": "t:sections.featured_products.mobile_columns.info",
       "options": [
-        { "value": "1", "label": "t:sections.featured_products.mobile_columns.one" },
-        { "value": "2", "label": "t:sections.featured_products.mobile_columns.two" }
+        {
+          "value": "1",
+          "label": "t:sections.featured_products.mobile_columns.one"
+        },
+        {
+          "value": "2",
+          "label": "t:sections.featured_products.mobile_columns.two"
+        }
       ],
       "default": "2"
     },
@@ -183,6 +333,10 @@
       "default": 72
     }
   ],
-  "presets": [{ "name": "t:sections.featured_products.name" }]
+  "presets": [
+    {
+      "name": "t:sections.featured_products.name"
+    }
+  ]
 }
 {% endschema %}

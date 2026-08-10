@@ -303,6 +303,99 @@ no collection is chosen, so the link always has a real destination and never
 becomes the `href="#"` this theme refuses to ship. Its label works the same
 way: `view_all_label`, falling back to the collection's product count.
 
+### Most Loved: grid or carousel
+
+`layout` picks one of two arrangements. **Grid is the default and is
+untouched** — the same `.grid-auto grid-auto--products`, the same per-card
+`.reveal` at the design's 60ms stagger.
+
+The carousel is **not in the design**: its homepage lays Most Loved out as a
+grid, and there is no slider anywhere in the 24 pages. Everything about *how*
+this one moves is the design's, though, so it reads as the same maison rather
+than as a plugin dropped in — `carousel_motion` picks which of the two motions
+the theme already owns:
+
+- **Slide** is the quick view gallery's — one track translated by whole pages,
+  `transform 0.6s var(--ease)`.
+- **Fade** is the hero carousel's — the window of cards is swapped in place
+  and each one replays `gj-card` (rise and fade, 0.5s) 80ms apart. Like the
+  hero, the outgoing page is simply taken away; it is not a cross-fade.
+
+The arrows are `.hero-carousel__below`'s, centred under the track, ink at 60%
+turning `--c-accent`, and gone entirely when there is nothing to cycle through
+— `.hero-carousel.is-static`'s rule, applied to the whole control row. The
+page marks beside them are **hairlines, not dots**: the brand marks a set with
+a rule. They wrap rather than pushing the arrows off the row, because a page
+is one card on a phone and sixteen pieces is sixteen marks.
+
+- **The track is the same element in both layouts**, and without scripting
+  that is all it is: the plain grid, every card in it, every link real. The
+  controls are rendered `hidden` and the script unhides them only once there
+  is more than one page. `data-fp-live` is what hands the track over.
+- **How many cards fit is `.grid-auto`'s question and is not answered twice.**
+  `.fp-carousel__ruler` is one hidden, out-of-flow box carrying the grid's own
+  width expression; `theme.js` divides the track's width by whatever the
+  browser resolved it to. Every threshold therefore stays in the stylesheet
+  beside the grid's own — **including the 440px single-column override**,
+  which is a media query on the ruler. Re-deriving `auto-fit`'s rule in
+  JavaScript is how the two layouts would quietly stop agreeing about a column
+  count. Verified against the grid at 1190px (3 columns each) and at 375px
+  (1 column each).
+- **The row is bounded, not looping.** The hero wraps, but the hero has a
+  window of two and no position indicator; here the marks state where you are,
+  so an end is an end and the arrow disables. Wrapping would also mean sliding
+  the whole row back in 0.6s — fifteen page-widths at one card per page.
+- **A swipe over a card's photographs belongs to the card.** It steps through
+  the piece's own images, so the carousel makes the same geometric test the
+  card makes (`.card__media`'s box, and only where the piece has more than one
+  slide) and leaves that gesture alone. Both listening is one gesture answered
+  twice.
+- **Slide keeps the whole row in the document, so off-page cards are marked
+  `inert`.** Not tidiness: focusing a card that is translated off screen makes
+  the browser scroll the clipped viewport, which leaves the track showing
+  something other than the page it is on. The viewport is `overflow-x: clip`
+  (not `hidden`) for the reason given under "Things that cost time once" — it
+  refuses the overflow without becoming a scroll container.
+- `--fp-per` must hold a number **before** `data-fp-live` goes on, or
+  `grid-auto-columns` is invalid at computed-value time and the row collapses
+  to one column. The measurement is therefore taken while the track is still
+  the plain grid, and only then is it handed over.
+- The carousel reveals as a **whole** (`.reveal` on the component) rather than
+  card by card, and the cards' entrance is `gj-card`. Two entrances on the one
+  element — a `.reveal` transition and a `gj-card` animation both driving
+  opacity and transform — is what that avoids, which is why
+  `.js .fp-carousel.reveal` puts the block back to opacity 1 with no
+  transition: `.reveal` is there to *time* the entrance, not to play one.
+- **`gj-card` is held `animation-play-state: paused` until `is-visible`.**
+  `data-fp-live` goes on at `DOMContentLoaded`, so without this the whole
+  entrance — 500ms plus `(--fp-per - 1) × 80ms` of stagger — is spent while the
+  block is still at opacity 0 below the fold, and the row a visitor scrolls
+  down to has already finished animating. It shipped that way and the carousel
+  simply appeared, where the grid staggers on scroll-in.
+
+  `both` fill is what makes a paused animation double as the waiting state:
+  the cards hold at the keyframe's start rather than needing a second rule to
+  hide them. Reduced motion drops the animation outright rather than shortening
+  it, so a paused card can never be left at opacity 0.
+- **`.display + .fp-carousel` must be in the heading-gap rule beside
+  `.display + .grid-auto`.** The carousel wraps the row, which breaks that
+  adjacency — so a Most Loved with its subheading cleared and "view all" off
+  had its cards flush against the title, in carousel mode *and* on the no-JS
+  path where the output is a plain grid anyway. Any future wrapper around a
+  section's grid needs the same line. See "A `.display` heading has no bottom
+  gap of its own" below.
+- **The viewport carries no `touch-action`, deliberately.**
+  `.hero-carousel__window` has `pan-y` and copying it looked right; it would
+  cost the visitor pinch *and* double-tap zoom across the whole row and buy
+  nothing, since both touch listeners are passive and `clip` means the element
+  is not a scroll container. Any non-`auto` value withdraws zoom — `pan-y
+  pinch-zoom` is not the fix, `auto` is.
+- **An arrow that disables itself takes focus with it.** Reaching the last page
+  disables the control that was just pressed, and a disabled button drops focus
+  to `<body>` — so a keyboard visitor is thrown back to the top of the tab
+  order. `paint()` notes what had focus and moves it to the arrow that still
+  works. Six cards at three across is enough to hit it on the first press.
+
 ### Hero
 
 A 1:1 rebuild. Three art-directed arrangements at 990px and 1100px (see
@@ -908,6 +1001,22 @@ The markup contract:
 | `data-storage-key` | opt in to showing itself once per visitor |
 | `data-delay` | milliseconds before it does |
 
+- **Every overlay control is delegated from the document and bound once.**
+  `data-overlay-open`, `data-overlay-close` and the close-on-navigate rule all
+  live in one `initOverlayTriggers()`, called from `boot()` and never from
+  `init(scope)`.
+
+  This is not a tidy-up. An overlay's markup does not stay put: `theme.js`
+  re-renders the bag drawer's contents after **every** cart change and swaps
+  them in, and the theme editor replaces a whole section on reload. Binding a
+  listener to the close button itself meant it died with the markup it was
+  bound to — the drawer's close button worked at boot and was **dead from the
+  first add to bag onwards**, leaving only the veil to dismiss it, which reads
+  as "the close button does nothing". `bindOnce` cannot save this: the
+  replacement element is a different node and has never been seen.
+
+  The cart handlers were already delegated, for exactly this reason. Anything
+  that can appear inside re-rendered markup has to be.
 - **A full-viewport overlay root must never carry a colour scheme class.** A
   scheme class sets `background-color`, so on a `position: fixed; inset: 0`
   root it paints the whole screen opaque and the veil has nothing left to

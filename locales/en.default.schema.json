@@ -724,10 +724,6 @@
       "products_to_show": {
         "label": "Products to show"
       },
-      "columns": {
-        "label": "Maximum columns",
-        "info": "Fewer columns are used automatically when there isn't room."
-      },
       "mobile_columns": {
         "label": "Columns on a phone",
         "info": "Two keeps the grid browsable on a narrow screen even though it takes each card below the minimum column width.",
@@ -744,6 +740,17 @@
       "view_all_link": {
         "label": "View all link",
         "info": "Defaults to the collection above. Set this to send it somewhere else."
+      },
+      "layout": {
+        "info": "The grid reflows on the width it is given. The carousel shows one page of that same grid at a time, with arrows beneath it.",
+        "grid": "Grid",
+        "carousel": "Carousel"
+      },
+      "carousel_motion": {
+        "label": "Carousel animation",
+        "info": "How one page gives way to the next.",
+        "slide": "Slide",
+        "fade": "Fade"
       }
     },
     "category_grid": {
