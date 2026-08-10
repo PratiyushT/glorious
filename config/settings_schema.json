@@ -35,6 +35,40 @@
     ]
   },
   {
+    "name": "t:settings_schema.shop.name",
+    "settings": [
+      {
+        "type": "paragraph",
+        "content": "t:settings_schema.shop.paragraph"
+      },
+      {
+        "type": "text",
+        "id": "shop_address",
+        "label": "t:settings_schema.shop.shop_address.label",
+        "default": "8140 N MacArthur Blvd #120, Irving, TX"
+      },
+      {
+        "type": "url",
+        "id": "shop_address_link",
+        "label": "t:settings_schema.shop.shop_address_link.label",
+        "info": "t:settings_schema.shop.shop_address_link.info"
+      },
+      {
+        "type": "text",
+        "id": "shop_phone",
+        "label": "t:settings_schema.shop.shop_phone.label",
+        "info": "t:settings_schema.shop.shop_phone.info",
+        "default": "+1 469-740-2119"
+      },
+      {
+        "type": "text",
+        "id": "shop_email",
+        "label": "t:settings_schema.shop.shop_email.label",
+        "default": "care@gloriousjewelers.com"
+      }
+    ]
+  },
+  {
     "name": "t:settings_schema.layout.name",
     "settings": [
       {
@@ -158,10 +192,22 @@
         "id": "type_ratio_min",
         "label": "t:settings_schema.typography.type_ratio_min.label",
         "options": [
-          { "value": "1.125", "label": "t:settings_schema.options.subtle" },
-          { "value": "1.2", "label": "t:settings_schema.options.moderate" },
-          { "value": "1.25", "label": "t:settings_schema.options.balanced" },
-          { "value": "1.333", "label": "t:settings_schema.options.strong" }
+          {
+            "value": "1.125",
+            "label": "t:settings_schema.options.subtle"
+          },
+          {
+            "value": "1.2",
+            "label": "t:settings_schema.options.moderate"
+          },
+          {
+            "value": "1.25",
+            "label": "t:settings_schema.options.balanced"
+          },
+          {
+            "value": "1.333",
+            "label": "t:settings_schema.options.strong"
+          }
         ],
         "default": "1.2"
       },
@@ -170,10 +216,22 @@
         "id": "type_ratio_max",
         "label": "t:settings_schema.typography.type_ratio_max.label",
         "options": [
-          { "value": "1.2", "label": "t:settings_schema.options.moderate" },
-          { "value": "1.25", "label": "t:settings_schema.options.balanced" },
-          { "value": "1.333", "label": "t:settings_schema.options.strong" },
-          { "value": "1.414", "label": "t:settings_schema.options.dramatic" }
+          {
+            "value": "1.2",
+            "label": "t:settings_schema.options.moderate"
+          },
+          {
+            "value": "1.25",
+            "label": "t:settings_schema.options.balanced"
+          },
+          {
+            "value": "1.333",
+            "label": "t:settings_schema.options.strong"
+          },
+          {
+            "value": "1.414",
+            "label": "t:settings_schema.options.dramatic"
+          }
         ],
         "default": "1.25"
       },
@@ -631,13 +689,28 @@
         "id": "card_image_ratio",
         "label": "t:settings_schema.product_cards.card_image_ratio.label",
         "options": [
-          { "value": "adapt", "label": "t:settings_schema.options.adapt" },
-          { "value": "1/1", "label": "t:settings_schema.options.square" },
-          { "value": "4/5", "label": "t:settings_schema.options.portrait" },
-          { "value": "3/4", "label": "t:settings_schema.options.tall_portrait" },
-          { "value": "4/3", "label": "t:settings_schema.options.landscape" }
+          {
+            "value": "adapt",
+            "label": "t:settings_schema.options.adapt"
+          },
+          {
+            "value": "1/1",
+            "label": "t:settings_schema.options.square"
+          },
+          {
+            "value": "4/5",
+            "label": "t:settings_schema.options.portrait"
+          },
+          {
+            "value": "3/4",
+            "label": "t:settings_schema.options.tall_portrait"
+          },
+          {
+            "value": "4/3",
+            "label": "t:settings_schema.options.landscape"
+          }
         ],
-        "default": "3/4"
+        "default": "1/1"
       },
       {
         "type": "select",
@@ -645,8 +718,14 @@
         "label": "t:settings_schema.product_cards.card_image_fit.label",
         "info": "t:settings_schema.product_cards.card_image_fit.info",
         "options": [
-          { "value": "contain", "label": "t:settings_schema.options.contain" },
-          { "value": "cover", "label": "t:settings_schema.options.cover" }
+          {
+            "value": "contain",
+            "label": "t:settings_schema.options.contain"
+          },
+          {
+            "value": "cover",
+            "label": "t:settings_schema.options.cover"
+          }
         ],
         "default": "contain"
       },
@@ -655,8 +734,14 @@
         "id": "card_text_align",
         "label": "t:settings_schema.product_cards.card_text_align.label",
         "options": [
-          { "value": "left", "label": "t:settings_schema.options.left" },
-          { "value": "center", "label": "t:settings_schema.options.center" }
+          {
+            "value": "left",
+            "label": "t:settings_schema.options.left"
+          },
+          {
+            "value": "center",
+            "label": "t:settings_schema.options.center"
+          }
         ],
         "default": "left"
       },
@@ -675,8 +760,30 @@
       },
       {
         "type": "checkbox",
-        "id": "card_hover_image",
-        "label": "t:settings_schema.product_cards.card_hover_image.label",
+        "id": "card_show_swatches",
+        "label": "t:settings_schema.product_cards.card_show_swatches.label",
+        "info": "t:settings_schema.product_cards.card_show_swatches.info",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "card_show_options_note",
+        "label": "t:settings_schema.product_cards.card_show_options_note.label",
+        "info": "t:settings_schema.product_cards.card_show_options_note.info",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "card_show_video",
+        "label": "t:settings_schema.product_cards.card_show_video.label",
+        "info": "t:settings_schema.product_cards.card_show_video.info",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "card_image_zoom",
+        "label": "t:settings_schema.product_cards.card_image_zoom.label",
+        "info": "t:settings_schema.product_cards.card_image_zoom.info",
         "default": true
       },
       {
@@ -694,6 +801,74 @@
     ]
   },
   {
+    "name": "t:settings_schema.quick_view.name",
+    "settings": [
+      {
+        "type": "paragraph",
+        "content": "t:settings_schema.quick_view.paragraph"
+      },
+      {
+        "type": "checkbox",
+        "id": "quick_view_enabled",
+        "label": "t:settings_schema.quick_view.quick_view_enabled.label",
+        "default": true
+      },
+      {
+        "type": "color_scheme",
+        "id": "quick_view_color_scheme",
+        "label": "t:sections.all.color_scheme.label",
+        "default": "scheme_1"
+      },
+      {
+        "type": "text",
+        "id": "quick_view_add_label",
+        "label": "t:settings_schema.quick_view.quick_view_add_label.label",
+        "default": "Add to Bag"
+      },
+      {
+        "type": "text",
+        "id": "quick_view_reassurance",
+        "label": "t:settings_schema.quick_view.quick_view_reassurance.label",
+        "default": "Free insured shipping"
+      },
+      {
+        "type": "header",
+        "content": "t:settings_schema.quick_view.specs_header",
+        "info": "t:settings_schema.quick_view.specs_info"
+      },
+      {
+        "type": "text",
+        "id": "quick_view_clarity",
+        "label": "t:settings_schema.quick_view.quick_view_clarity.label",
+        "default": "VVS and above"
+      },
+      {
+        "type": "text",
+        "id": "quick_view_colour",
+        "label": "t:settings_schema.quick_view.quick_view_colour.label",
+        "default": "F and above"
+      },
+      {
+        "type": "text",
+        "id": "quick_view_certification",
+        "label": "t:settings_schema.quick_view.quick_view_certification.label",
+        "default": "IGI"
+      }
+    ]
+  },
+  {
+    "name": "t:settings_schema.pricing.name",
+    "settings": [
+      {
+        "type": "checkbox",
+        "id": "show_tax_note",
+        "label": "t:settings_schema.pricing.show_tax_note.label",
+        "info": "t:settings_schema.pricing.show_tax_note.info",
+        "default": true
+      }
+    ]
+  },
+  {
     "name": "t:settings_schema.cart.name",
     "settings": [
       {
@@ -706,8 +881,14 @@
         "label": "t:settings_schema.cart.cart_type.label",
         "info": "t:settings_schema.cart.cart_type.info",
         "options": [
-          { "value": "drawer", "label": "t:settings_schema.cart.cart_type.drawer" },
-          { "value": "page", "label": "t:settings_schema.cart.cart_type.page" }
+          {
+            "value": "drawer",
+            "label": "t:settings_schema.cart.cart_type.drawer"
+          },
+          {
+            "value": "page",
+            "label": "t:settings_schema.cart.cart_type.page"
+          }
         ],
         "default": "drawer"
       },
@@ -717,6 +898,59 @@
         "label": "t:settings_schema.cart.cart_drawer_on_add.label",
         "info": "t:settings_schema.cart.cart_drawer_on_add.info",
         "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "cart_unit_price",
+        "label": "t:settings_schema.cart.cart_unit_price.label",
+        "info": "t:settings_schema.cart.cart_unit_price.info",
+        "default": true
+      },
+      {
+        "type": "select",
+        "id": "cart_image_ratio",
+        "label": "t:settings_schema.cart.cart_image_ratio.label",
+        "info": "t:settings_schema.cart.cart_image_ratio.info",
+        "options": [
+          {
+            "value": "adapt",
+            "label": "t:settings_schema.options.adapt"
+          },
+          {
+            "value": "1/1",
+            "label": "t:settings_schema.options.square"
+          },
+          {
+            "value": "4/5",
+            "label": "t:settings_schema.options.portrait"
+          },
+          {
+            "value": "3/4",
+            "label": "t:settings_schema.options.tall_portrait"
+          },
+          {
+            "value": "4/3",
+            "label": "t:settings_schema.options.landscape"
+          }
+        ],
+        "default": "3/4"
+      },
+      {
+        "type": "select",
+        "id": "cart_image_fit",
+        "label": "t:settings_schema.cart.cart_image_fit.label",
+        "info": "t:settings_schema.cart.cart_image_fit.info",
+        "options": [
+          {
+            "value": "contain",
+            "label": "t:settings_schema.options.contain"
+          },
+          {
+            "value": "cover",
+            "label": "t:settings_schema.options.cover"
+          }
+        ],
+        "default": "cover"
       }
     ]
   },

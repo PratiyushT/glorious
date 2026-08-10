@@ -1,53 +1,95 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
 {
   "current": {
+    "shop_address": "8140 N MacArthur Blvd #120, Irving, TX",
+    "shop_address_link": "https://www.google.com/maps/place/Glorious+By+Pramukham+Jewelers+-Gold+and+Diamond+Store/@32.9196733,-96.9570255,15z",
+    "shop_phone": "+1 469-740-2119",
+    "shop_email": "care@gloriousjewelers.com",
+    "content_for_index": [],
+    "blocks": {
+      "15069410091156550825": {
+        "type": "shopify://apps/keyideas-ringbuilder-jewelry/blocks/diamond-ring-builder/aa1f04d9-134c-4595-84f5-3ef5b35d5851",
+        "disabled": false,
+        "settings": {
+          "headingfontSize": 30,
+          "descfontSize": 14,
+          "normalPrimary": "#575757",
+          "normalSecondary": "#FFFFFF",
+          "hoverPrimary": "#575757",
+          "backgroundColor": "#EEEEEE",
+          "hoverSecondary": "#EEEEEE",
+          "primaryBackground": "#EEEEEE",
+          "secondaryBackground": "#EEEEEE",
+          "primaryText": "#000000",
+          "secondaryText": "#000000",
+          "custom_css": "",
+          "review_page_hide": "",
+          "hide_on_byor_ring": "",
+          "jquery_cdn": true
+        }
+      },
+      "562504454226930115": {
+        "type": "shopify://apps/keyideas-ringbuilder-jewelry/blocks/keybuilderBlock/aa1f04d9-134c-4595-84f5-3ef5b35d5851",
+        "disabled": false,
+        "settings": {}
+      }
+    },
     "color_schemes": {
       "scheme_1": {
         "settings": {
-          "background": "#F4F0E8",
+          "background": "#f4f0e8",
           "background_gradient": "",
           "text": "#191510",
           "heading": "#191510",
-          "muted": "#75716B",
-          "accent": "#9A7836",
-          "border": "#D5D1CA",
-          "surface": "#FFFFFF",
+          "muted": "#75716b",
+          "accent": "#9a7836",
+          "border": "#d5d1ca",
+          "surface": "#ffffff",
           "button": "#191510",
-          "button_label": "#F4F0E8",
-          "button_hover": "#9A7836",
+          "button_label": "#f4f0e8",
+          "button_hover": "#9a7836",
           "secondary_button_label": "#191510",
           "link": "#191510"
         }
       },
       "scheme_2": {
         "settings": {
-          "background": "#0D0C0A",
+          "background": "#0d0c0a",
           "background_gradient": "",
-          "text": "#EFE9DC",
-          "heading": "#F4EFE4",
-          "muted": "#A6A299",
-          "accent": "#C7A15C",
-          "border": "#362D1C",
-          "surface": "#14110D",
-          "button": "#C7A15C",
-          "button_label": "#14110D",
-          "button_hover": "#F4EFE4",
-          "secondary_button_label": "#EFE9DC",
-          "link": "#EFE9DC"
+          "text": "#efe9dc",
+          "heading": "#f4efe4",
+          "muted": "#a6a299",
+          "accent": "#c7a15c",
+          "border": "#362d1c",
+          "surface": "#14110d",
+          "button": "#c7a15c",
+          "button_label": "#14110d",
+          "button_hover": "#f4efe4",
+          "secondary_button_label": "#efe9dc",
+          "link": "#efe9dc"
         }
       },
       "scheme_3": {
         "settings": {
-          "background": "#FFFFFF",
+          "background": "#ffffff",
           "background_gradient": "",
           "text": "#191510",
           "heading": "#191510",
-          "muted": "#75716B",
-          "accent": "#9A7836",
-          "border": "#ECECEB",
-          "surface": "#FBF8F2",
+          "muted": "#75716b",
+          "accent": "#9a7836",
+          "border": "#ececeb",
+          "surface": "#fbf8f2",
           "button": "#191510",
-          "button_label": "#F4F0E8",
-          "button_hover": "#9A7836",
+          "button_label": "#f4f0e8",
+          "button_hover": "#9a7836",
           "secondary_button_label": "#191510",
           "link": "#191510"
         }
@@ -56,17 +98,17 @@
         "settings": {
           "background": "#191510",
           "background_gradient": "",
-          "text": "#EFE9DC",
-          "heading": "#F4EFE4",
-          "muted": "#A6A299",
-          "accent": "#C7A15C",
-          "border": "#362D1C",
-          "surface": "#1A1712",
-          "button": "#C7A15C",
-          "button_label": "#14110D",
-          "button_hover": "#F4EFE4",
-          "secondary_button_label": "#EFE9DC",
-          "link": "#EFE9DC"
+          "text": "#efe9dc",
+          "heading": "#f4efe4",
+          "muted": "#a6a299",
+          "accent": "#c7a15c",
+          "border": "#362d1c",
+          "surface": "#1a1712",
+          "button": "#c7a15c",
+          "button_label": "#14110d",
+          "button_hover": "#f4efe4",
+          "secondary_button_label": "#efe9dc",
+          "link": "#efe9dc"
         }
       }
     }

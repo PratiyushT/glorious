@@ -616,6 +616,51 @@
      in the theme editor cannot leave a listener pointing at detached markup
      or stack a second copy on top. */
 
+  /* ---- Claiming a click before an app can steal it --------------------
+     The ring-builder app extension turns every internal link into its own
+     "page transition": `key-common-global.js` registers
+
+         document.addEventListener("click", handlePageTransitionClick, true)
+
+     — in the **capture** phase — and on any `a[href]` it calls preventDefault
+     and then `setTimeout(() => window.location.href = …)`.
+
+     Every trigger in this theme is deliberately a real link, so all of them
+     match. Capture runs before the delegated handlers below, so the sequence
+     was: the app schedules a navigation, this theme opens the overlay, the
+     timer fires. That is the drawer flashing open and the page going to /cart
+     anyway — and the same for search, quick view and the metal swatches.
+
+     The app does check `if (event.defaultPrevented) return`, so claiming the
+     click first is enough; we do not have to fight it. Hence a capture listener
+     of our own, registered **here at module scope rather than inside init()**:
+     both scripts are `defer`, deferred scripts run in document order, and
+     theme.js is script #2 against the app's #44 — so this registers first and,
+     being on the same node in the same phase, runs first.
+
+     It only claims a click the theme is actually going to handle, tested with
+     the same conditions as the handlers themselves. A trigger whose overlay is
+     absent stays an ordinary link and still navigates. */
+
+  document.addEventListener('click', function (event) {
+    if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    if (typeof event.button === 'number' && event.button !== 0) return;
+
+    var el = event.target.closest && event.target.closest(
+      '[data-drawer-open],[data-search-open],[data-quick-view],[data-card-metal],[data-overlay-open]'
+    );
+    if (!el) return;
+
+    var ours =
+      (el.hasAttribute('data-drawer-open') && cartDrawer() && overlays.cart) ||
+      (el.hasAttribute('data-search-open') && overlays.search) ||
+      (el.hasAttribute('data-quick-view') && quickOverlay()) ||
+      el.hasAttribute('data-card-metal') ||
+      (el.hasAttribute('data-overlay-open') && overlays[el.dataset.overlayOpen]);
+
+    if (ours) event.preventDefault();
+  }, true);
+
   function initCartTriggers() {
     /* The bag link opens the drawer when there is one; otherwise it stays a
        link to the cart page. The two are exclusive by the theme setting. */
@@ -697,6 +742,976 @@
         })
         .catch(function () { form.submit(); });
     });
+  }
+
+  /* ---- Media blur-up ---------------------------------------------------
+     The design fades a photograph in from a blur as it arrives. The blur is
+     added here rather than in the stylesheet, and only to media that has not
+     loaded yet — so a visitor without scripting is never left looking at one
+     that never clears, and a cached image never blurs at all. */
+
+  function blurUp(scope) {
+    scope.querySelectorAll('[data-card-blur]').forEach(function (media) {
+      if (!bindOnce(media, 'boundBlur')) return;
+
+      var isVideo = media.tagName === 'VIDEO';
+      var ready = isVideo ? media.readyState >= 2 : media.complete && media.naturalWidth > 0;
+      if (ready) return;
+
+      media.classList.add('is-blurred');
+
+      function clear() { media.classList.remove('is-blurred'); }
+      media.addEventListener(isVideo ? 'loadeddata' : 'load', clear, { once: true });
+      media.addEventListener('error', clear, { once: true });
+    });
+  }
+
+  /* ---- Product card ----------------------------------------------------
+     Every slide is already in the document — Liquid rendered every photograph
+     the piece has and the spin. Nothing here builds markup; it only decides
+     which one is on show, and fetches the ones that arrived without a source.
+
+     Hovering previews the next photograph, which is the design's rule and not
+     simply "swap to the second image": once the arrows have been used the card
+     is off automatic until the pointer leaves and comes back.
+
+     Marking the card live is what takes the CSS fallback out of the way. Until
+     then the stylesheet is running the two-photograph hover on its own, so a
+     card whose script never arrives still behaves. */
+
+  /* ---- Card metal swatches ---------------------------------------------
+     Design revision 13's metal control. Picking a metal moves the caption, the
+     price and what goes in the bag — and deliberately not the photograph, which
+     is the design's own rule: "we shoot one metal".
+
+     Every swatch is a real link to the piece at that metal, so without this the
+     pick still works; it simply navigates. Liquid has already rendered each
+     metal's caption and price markup onto the link, so a pick costs no request
+     and no arithmetic in the browser.
+
+     How many swatches fit is a question about the card's own width, not the
+     viewport's — in a two-column phone grid the card is around 159px and only a
+     couple will sit — so it is measured. One observer serves every row on the
+     page rather than one apiece. */
+
+  var swatchFit = null;
+
+  function fitSwatches(row) {
+    var swatches = Array.prototype.slice.call(row.querySelectorAll('[data-card-metal]'));
+    var more = row.querySelector('[data-card-swatch-more]');
+    if (!swatches.length) return;
+
+    row.hidden = false;
+    swatches.forEach(function (swatch) { swatch.hidden = false; });
+    if (more) more.hidden = true;
+
+    var avail = row.clientWidth;
+    if (!avail) return;
+
+    var hit = swatches[0].getBoundingClientRect().width || 44;
+    var moreWidth = more ? 28 : 0;
+
+    var fits = swatches.length;
+    if (swatches.length * hit > avail) {
+      fits = Math.max(1, Math.floor((avail - moreWidth) / hit));
+    }
+
+    /* The design drops the row when fewer than two metals show. This theme
+       keeps it — a lone swatch still states the metal, which is worth the row.
+       So the only floor is the one above: at least one always shows. */
+    if (fits >= swatches.length) return;
+
+    swatches.forEach(function (swatch, i) { swatch.hidden = i >= fits; });
+
+    if (more) {
+      more.textContent = '+' + (swatches.length - fits);
+      more.hidden = false;
+    }
+  }
+
+  function initCardMetals(scope) {
+    scope.querySelectorAll('[data-card-swatches]').forEach(function (row) {
+      if (!bindOnce(row, 'boundSwatches')) return;
+
+      if (!swatchFit && typeof ResizeObserver !== 'undefined') {
+        swatchFit = new ResizeObserver(function (entries) {
+          entries.forEach(function (entry) { fitSwatches(entry.target); });
+        });
+      }
+
+      if (swatchFit) swatchFit.observe(row);
+      fitSwatches(row);
+    });
+  }
+
+  document.addEventListener('click', function (event) {
+    var swatch = event.target.closest && event.target.closest('[data-card-metal]');
+    if (!swatch) return;
+
+    var card = swatch.closest('[data-card]');
+    if (!card) return;
+
+    /* A swatch is a real link to the piece at that metal, so the browser's own
+       gestures have to keep working: ctrl/cmd-click opens it in a tab, shift a
+       window, alt downloads, and a middle click is a tab too. Calling
+       preventDefault on those swallowed a navigation the visitor asked for. */
+    if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    if (typeof event.button === 'number' && event.button !== 0) return;
+
+    event.preventDefault();
+
+    card.querySelectorAll('[data-card-metal]').forEach(function (other) {
+      var on = other === swatch;
+      other.classList.toggle('is-selected', on);
+      other.setAttribute('aria-current', on ? 'true' : 'false');
+    });
+
+    var meta = card.querySelector('[data-card-meta]');
+    if (meta && !meta.hasAttribute('data-card-meta-fixed')) {
+      meta.textContent = swatch.dataset.metalMeta || '';
+    }
+
+    var price = card.querySelector('[data-card-price]');
+    if (price) price.innerHTML = swatch.dataset.metalPrice || '';
+
+    /* The piece the caption now describes is the piece the button must add. */
+    var addId = card.querySelector('[data-card-add-id]');
+    if (addId) addId.value = swatch.dataset.metalId || addId.value;
+
+    /* A metal can be sold out while the one Liquid rendered was not, and the
+       button is only a button — nothing else would stop it posting a variant
+       that cannot be bought. Liquid hands over both labels so the swap needs no
+       string here. */
+    var add = card.querySelector('.card__add');
+    if (add && add.tagName === 'BUTTON') {
+      var sold = swatch.dataset.metalAvailable === 'false';
+      add.disabled = sold;
+      add.setAttribute('aria-disabled', sold ? 'true' : 'false');
+
+      var label = sold ? card.dataset.soldOutLabel : card.dataset.addLabel;
+      if (label) add.textContent = label;
+    }
+
+    /* The quick view opens whatever its href points at, so it follows too. */
+    var quick = card.querySelector('[data-quick-view]');
+    if (quick && swatch.dataset.metalId) {
+      var quickHref = quick.getAttribute('href') || '';
+      quick.setAttribute('href', quickHref.split('?')[0] + '?variant=' + swatch.dataset.metalId);
+    }
+
+    /* And the piece the card opens. Only the query is replaced, so a card
+       whose link already carried one is not doubled. */
+    var title = card.querySelector('a.card__title');
+    if (title && swatch.dataset.metalId) {
+      /* The attribute, not the property: reading .href resolves it against the
+         document and would rewrite every card's link as an absolute URL. */
+      var href = title.getAttribute('href') || '';
+      title.setAttribute('href', href.split('?')[0] + '?variant=' + swatch.dataset.metalId);
+    }
+  });
+
+  function initCards(scope) {
+    scope.querySelectorAll('[data-card]').forEach(function (card) {
+      if (!bindOnce(card, 'boundCard')) return;
+
+      var media = card.querySelector('.card__media');
+      var slides = Array.prototype.slice.call(card.querySelectorAll('[data-card-slide]'));
+      card.setAttribute('data-card-live', '');
+      if (!media || slides.length < 2) return;
+
+      var spinLabel = card.querySelector('[data-card-spin-label]');
+      var count = slides.length;
+      var photos = slides.filter(function (slide) {
+        return !slide.hasAttribute('data-card-spin');
+      }).length;
+
+      var index = 0;
+      var hovering = false;
+      var manual = false;
+
+      function shown() {
+        if (hovering && !manual && photos > 1 && index < photos) return (index + 1) % photos;
+        return index;
+      }
+
+      /* Slides past the first two arrive with no src at all — see
+         snippets/card-slide.liquid. The one about to be shown is given its
+         source now, and so are its two neighbours, so stepping never waits on
+         a request. A card is only ever three photographs' worth of traffic,
+         however many the piece has. */
+      function load(i) {
+        var slide = slides[(i % count + count) % count];
+        if (!slide) return;
+
+        var img = slide.querySelector('img[data-src]');
+        if (!img) return;
+
+        if (img.dataset.srcset) img.srcset = img.dataset.srcset;
+        img.src = img.dataset.src;
+        delete img.dataset.src;
+        delete img.dataset.srcset;
+      }
+
+      function paint() {
+        var at = shown();
+
+        load(at);
+        load(at + 1);
+        load(at - 1);
+
+        slides.forEach(function (slide, i) {
+          var on = i === at;
+          slide.classList.toggle('is-on', on);
+
+          var video = slide.querySelector('video');
+          if (!video) return;
+
+          if (on && !reduceMotion.matches) {
+            if (!video.src && video.dataset.src) video.src = video.dataset.src;
+            video.muted = true;
+            var playing = video.play();
+            if (playing && playing.catch) playing.catch(function () {});
+          } else if (!video.paused) {
+            video.pause();
+          }
+        });
+
+        if (spinLabel) spinLabel.hidden = !slides[at].hasAttribute('data-card-spin');
+      }
+
+      function step(by) {
+        index = ((shown() + by) % count + count) % count;
+        manual = true;
+        paint();
+      }
+
+      card.addEventListener('mouseenter', function () { hovering = true; paint(); });
+      card.addEventListener('mouseleave', function () {
+        hovering = false;
+        manual = false;
+        paint();
+      });
+
+      card.addEventListener('click', function (event) {
+        var arrow = event.target.closest && event.target.closest('[data-card-step]');
+        if (!arrow) return;
+        event.preventDefault();
+        step(parseInt(arrow.dataset.cardStep, 10));
+      });
+
+      /* Bound on the card, not on the media: the card-wide link covers the
+         photographs, so a touch over them targets that link and never reaches
+         the media element. Where the touch landed is checked instead, so a
+         swipe across the caption still scrolls the page. */
+      var swipe = null;
+
+      function inMedia(touch) {
+        var box = media.getBoundingClientRect();
+        return touch.clientX >= box.left && touch.clientX <= box.right &&
+               touch.clientY >= box.top && touch.clientY <= box.bottom;
+      }
+
+      card.addEventListener('touchstart', function (event) {
+        var touch = event.touches && event.touches[0];
+        swipe = touch && inMedia(touch) ? { x: touch.clientX, y: touch.clientY } : null;
+      }, { passive: true });
+
+      card.addEventListener('touchend', function (event) {
+        var start = swipe;
+        swipe = null;
+        var touch = event.changedTouches && event.changedTouches[0];
+        if (!start || !touch) return;
+
+        var dx = touch.clientX - start.x;
+        var dy = touch.clientY - start.y;
+        /* Ignore anything that reads more like a scroll than a swipe. */
+        if (Math.abs(dx) < 42 || Math.abs(dx) < Math.abs(dy) * 1.4) return;
+
+        step(dx < 0 ? 1 : -1);
+      }, { passive: true });
+
+      paint();
+    });
+  }
+
+  /* ---- Quick view ------------------------------------------------------
+     The panel is Liquid's rendering of the product, fetched on demand:
+     `<product url>?section_id=quick-view` returns sections/quick-view.liquid
+     rendered in that product's own context, exactly as the search overlay
+     fetches sections/predictive-search.liquid. Money, translation and image
+     sizing therefore never leave Liquid.
+
+     The overlay opens on the click rather than on the response, so the piece
+     is never a wait with nothing on screen; the panel wears a loading state
+     until the markup lands. The trigger was a real link to the product before
+     any of this, and goes back to being one if the request fails.
+
+     Every handler is delegated from the document. The panel's contents are
+     replaced wholesale on each open, so a listener bound to anything inside it
+     would be pointing at detached markup by the second piece. */
+
+  var quickCache = Object.create(null);
+  var quickIndex = 0;
+
+  function quickOverlay() {
+    return overlays['quick-view'];
+  }
+
+  function quickPanel() {
+    var overlay = quickOverlay();
+    return overlay ? overlay.el.querySelector('[data-quick-view-panel]') : null;
+  }
+
+  function quickFill(html) {
+    var panel = quickPanel();
+    var host = panel && panel.querySelector('[data-quick-view-contents]');
+    if (!panel || !host) return;
+
+    panel.classList.remove('is-loading');
+    host.innerHTML = html;
+    panel.scrollTop = 0;
+    quickIndex = 0;
+    resetQuickZoom();
+    paintQuick(0);
+    blurUp(host);
+  }
+
+  function openQuickView(url) {
+    var overlay = quickOverlay();
+    var panel = quickPanel();
+    var host = panel && panel.querySelector('[data-quick-view-contents]');
+    if (!overlay || !panel || !host || !url) return;
+
+    overlay.open();
+
+    if (quickCache[url]) { quickFill(quickCache[url]); return; }
+
+    host.innerHTML = '';
+    panel.classList.add('is-loading');
+
+    fetch(url + (url.indexOf('?') === -1 ? '?' : '&') + 'section_id=quick-view')
+      .then(function (res) { return res.ok ? res.text() : Promise.reject(res.status); })
+      .then(function (text) {
+        var doc = new DOMParser().parseFromString(text, 'text/html');
+        var inner = doc.querySelector('[data-quick-view-inner]');
+        var html = inner ? inner.innerHTML.trim() : '';
+        if (!html) return Promise.reject('empty');
+        quickCache[url] = html;
+        quickFill(html);
+      })
+      .catch(function () {
+        /* It was a link to the piece before the script touched it. */
+        overlay.close(false);
+        window.location.href = url;
+      });
+  }
+
+  function paintQuick(index) {
+    var panel = quickPanel();
+    var track = panel && panel.querySelector('[data-quick-track]');
+    if (!track) return;
+
+    var slots = Array.prototype.slice.call(track.querySelectorAll('[data-quick-slot]'));
+    if (!slots.length) return;
+
+    quickIndex = ((index % slots.length) + slots.length) % slots.length;
+    track.style.setProperty('--qv-index', quickIndex);
+
+    panel.querySelectorAll('[data-quick-go]').forEach(function (dot) {
+      dot.classList.toggle('is-on', parseInt(dot.dataset.quickGo, 10) === quickIndex);
+    });
+
+    slots.forEach(function (slot, i) {
+      var video = slot.querySelector('video');
+      if (!video) return;
+
+      if (i === quickIndex && !reduceMotion.matches) {
+        if (!video.src && video.dataset.src) video.src = video.dataset.src;
+        video.muted = true;
+        var playing = video.play();
+        if (playing && playing.catch) playing.catch(function () {});
+      } else if (!video.paused) {
+        video.pause();
+      }
+    });
+
+    resetQuickZoom();
+  }
+
+  /* ---- Quick view: zoom ----
+     Double-click to magnify at the point clicked, drag to pan, pinch on a
+     touch screen, ctrl-wheel on a trackpad — and a minimap showing which part
+     of the photograph is actually on screen. */
+
+  var zoom = { el: null, scale: 1, x: 0, y: 0, w: 0, h: 0 };
+  var zoomPoints = Object.create(null);
+  var zoomDrag = null;
+  var zoomPinch = null;
+  var zoomFrame = 0;
+
+  function bound(value, limit) {
+    return Math.max(-limit, Math.min(limit, value));
+  }
+
+  function paintMinimap() {
+    var panel = quickPanel();
+    var map = panel && panel.querySelector('[data-quick-minimap]');
+    var view = panel && panel.querySelector('[data-quick-minimap-view]');
+    if (!map || !view) return;
+
+    if (!zoom.el || zoom.scale <= 1.01 || !zoom.w || !zoom.h) { map.hidden = true; return; }
+
+    map.hidden = false;
+    map.style.backgroundImage = 'url("' + (zoom.el.currentSrc || zoom.el.src) + '")';
+    map.style.height = Math.round(96 * Math.min(2.2, Math.max(0.4, zoom.h / zoom.w))) + 'px';
+
+    var size = 100 / zoom.scale;
+    view.style.width = size + '%';
+    view.style.height = size + '%';
+    view.style.left = (0.5 - zoom.x / (zoom.w * zoom.scale) - 0.5 / zoom.scale) * 100 + '%';
+    view.style.top = (0.5 - zoom.y / (zoom.h * zoom.scale) - 0.5 / zoom.scale) * 100 + '%';
+  }
+
+  function applyZoom() {
+    if (!zoom.el) return;
+    zoom.el.style.setProperty('--qv-zoom', zoom.scale);
+    zoom.el.style.setProperty('--qv-tx', zoom.x + 'px');
+    zoom.el.style.setProperty('--qv-ty', zoom.y + 'px');
+    if (zoom.scale > 1.01) zoom.el.setAttribute('data-quick-zoomed', '');
+    else zoom.el.removeAttribute('data-quick-zoomed');
+    paintMinimap();
+  }
+
+  function resetQuickZoom() {
+    if (zoom.el) {
+      zoom.el.style.removeProperty('--qv-zoom');
+      zoom.el.style.removeProperty('--qv-tx');
+      zoom.el.style.removeProperty('--qv-ty');
+      zoom.el.removeAttribute('data-quick-zoomed');
+      zoom.el.removeAttribute('data-quick-dragging');
+    }
+    zoom = { el: null, scale: 1, x: 0, y: 0, w: 0, h: 0 };
+    zoomPoints = Object.create(null);
+    zoomDrag = null;
+    zoomPinch = null;
+
+    var panel = quickPanel();
+    var map = panel && panel.querySelector('[data-quick-minimap]');
+    if (map) map.hidden = true;
+  }
+
+  function zoomTo(img, scale, clientX, clientY) {
+    var box = img.getBoundingClientRect();
+    var px = clientX - box.left - box.width / 2;
+    var py = clientY - box.top - box.height / 2;
+
+    if (zoom.el && zoom.el !== img) resetQuickZoom();
+
+    zoom.el = img;
+    zoom.w = box.width;
+    zoom.h = box.height;
+    zoom.scale = scale;
+    zoom.x = bound(px * (1 - scale), box.width * (scale - 1) / 2);
+    zoom.y = bound(py * (1 - scale), box.height * (scale - 1) / 2);
+    applyZoom();
+  }
+
+  function runZoomFrame() {
+    var ids = Object.keys(zoomPoints);
+
+    if (zoomPinch && ids.length >= 2) {
+      var a = zoomPoints[ids[0]];
+      var b = zoomPoints[ids[1]];
+      var box = zoomPinch.box;
+      var spread = Math.sqrt(Math.pow(a.x - b.x, 2) + Math.pow(a.y - b.y, 2));
+      var scale = Math.max(1, Math.min(4, zoomPinch.scale * (spread / zoomPinch.spread)));
+      var mx = (a.x + b.x) / 2 - box.left - box.width / 2;
+      var my = (a.y + b.y) / 2 - box.top - box.height / 2;
+
+      zoom.scale = scale;
+      zoom.x = bound(mx - zoomPinch.cx * scale, box.width * (scale - 1) / 2);
+      zoom.y = bound(my - zoomPinch.cy * scale, box.height * (scale - 1) / 2);
+      applyZoom();
+      return;
+    }
+
+    if (zoomDrag && ids.length === 1 && zoom.scale > 1) {
+      var point = zoomPoints[ids[0]];
+      zoom.x = bound(zoomDrag.ox + (point.x - zoomDrag.sx), zoom.w * (zoom.scale - 1) / 2);
+      zoom.y = bound(zoomDrag.oy + (point.y - zoomDrag.sy), zoom.h * (zoom.scale - 1) / 2);
+      applyZoom();
+    }
+  }
+
+  /* ---- Quick view: the axes --------------------------------------------
+     The panel's option rows are Liquid's — one per product option, with the
+     design's swatches, pills or select on each. This is what makes a pick mean
+     something: it resolves the chosen values against the variant list Liquid
+     embedded beside them and moves the price, each row's caption, the hidden
+     variant id and the button.
+
+     Every figure in that list is Liquid's `money`, so nothing here formats a
+     price. The "inc. tax" note is a sibling of the figure rather than part of
+     it, which is what lets a price change write over the figure alone and
+     leave the note standing — the card has to fold the note into its captured
+     markup for want of that.
+
+     Delegated from the document like the rest of the quick view: the panel's
+     contents are replaced wholesale on every open, so a listener bound inside
+     it would be pointing at detached markup by the second piece. */
+
+  function quickVariants() {
+    var panel = quickPanel();
+    var node = panel && panel.querySelector('[data-qv-variants]');
+    if (!node) return null;
+
+    if (node.gjVariants === undefined) {
+      try {
+        node.gjVariants = JSON.parse(node.textContent);
+      } catch (error) {
+        node.gjVariants = null;
+      }
+    }
+    return node.gjVariants;
+  }
+
+  /* What is chosen on every axis, by the option's own position — which is the
+     order `variant.options` comes in, and so the order to compare against. */
+  function quickChoice(panel) {
+    var choice = [];
+
+    panel.querySelectorAll('[data-qv-group]').forEach(function (group) {
+      var index = parseInt(group.dataset.qvGroup, 10);
+      var select = group.querySelector('[data-qv-select]');
+
+      if (select) {
+        choice[index] = select.value;
+        return;
+      }
+
+      var on = group.querySelector('[data-qv-pick][aria-pressed="true"]');
+      choice[index] = on ? on.dataset.qvValue : '';
+    });
+
+    return choice;
+  }
+
+  function paintQuickVariant() {
+    var panel = quickPanel();
+    var variants = quickVariants();
+    if (!panel || !variants) return;
+
+    var choice = quickChoice(panel);
+
+    /* Each row says what is chosen on it. The metal row composes the karat into
+       its caption — "18K Yellow Gold" is one fact about the piece, which is how
+       the design's own metalName() writes it and how a bag line reads. */
+    panel.querySelectorAll('[data-qv-group]').forEach(function (group) {
+      var caption = group.querySelector('[data-qv-selected]');
+      if (!caption) return;
+
+      var text = choice[parseInt(group.dataset.qvGroup, 10)] || '';
+      var prefix = caption.dataset.qvPrefix;
+      if (prefix !== undefined && choice[parseInt(prefix, 10)]) {
+        text = choice[parseInt(prefix, 10)] + ' ' + text;
+      }
+
+      caption.textContent = text;
+    });
+
+    var add = panel.querySelector('[data-qv-add]');
+    var variant = null;
+
+    for (var i = 0; i < variants.length; i++) {
+      var options = variants[i].options || [];
+      var hit = true;
+
+      for (var j = 0; j < options.length; j++) {
+        if (options[j] !== choice[j]) { hit = false; break; }
+      }
+
+      if (hit) { variant = variants[i]; break; }
+    }
+
+    /* A combination the shop does not make. The price is left as it was rather
+       than blanked — it is still the last real figure — and the button is what
+       says so, as it does for a sold-out one. */
+    if (!variant) {
+      if (add) {
+        add.disabled = true;
+        add.setAttribute('aria-disabled', 'true');
+        add.textContent = add.dataset.unavailableLabel;
+      }
+      return;
+    }
+
+    var id = panel.querySelector('[data-qv-variant-id]');
+    if (id) id.value = variant.id;
+
+    var price = panel.querySelector('[data-qv-price]');
+    if (price) price.textContent = variant.price;
+
+    var compare = panel.querySelector('[data-qv-compare]');
+    if (compare) {
+      compare.textContent = variant.compareAtPrice || '';
+      compare.hidden = !variant.compareAtPrice;
+    }
+
+    if (add) {
+      add.disabled = !variant.available;
+      add.setAttribute('aria-disabled', variant.available ? 'false' : 'true');
+      add.textContent = variant.available ? add.dataset.addLabel : add.dataset.soldOutLabel;
+    }
+
+    /* And the page the panel offers, which is now this piece. Only the query is
+       replaced, so a link that already carried one is not doubled. */
+    var full = panel.querySelector('.quick-view__full');
+    if (full) {
+      var href = full.getAttribute('href') || '';
+      full.setAttribute('href', href.split('?')[0] + '?variant=' + variant.id);
+    }
+  }
+
+  function initQuickView() {
+    /* Any card's quick-view link opens the overlay instead of navigating. */
+    document.addEventListener('click', function (event) {
+      var trigger = event.target.closest && event.target.closest('[data-quick-view]');
+      if (!trigger || !quickOverlay()) return;
+      if (event.metaKey || event.ctrlKey || event.shiftKey || event.button !== 0) return;
+
+      event.preventDefault();
+      openQuickView(trigger.getAttribute('href'));
+    });
+
+    document.addEventListener('click', function (event) {
+      if (!event.target.closest) return;
+
+      var step = event.target.closest('[data-quick-step]');
+      if (step) {
+        paintQuick(quickIndex + parseInt(step.dataset.quickStep, 10));
+        return;
+      }
+
+      var go = event.target.closest('[data-quick-go]');
+      if (go) paintQuick(parseInt(go.dataset.quickGo, 10));
+    });
+
+    /* Picking a value on any axis — a swatch or a pill. The select's own change
+       event covers the third. */
+    document.addEventListener('click', function (event) {
+      var pick = event.target.closest && event.target.closest('[data-qv-pick]');
+      if (!pick) return;
+
+      var group = pick.closest('[data-qv-group]');
+      if (!group) return;
+
+      group.querySelectorAll('[data-qv-pick]').forEach(function (other) {
+        var on = other === pick;
+        other.classList.toggle('is-selected', on);
+        other.setAttribute('aria-pressed', on ? 'true' : 'false');
+      });
+
+      paintQuickVariant();
+    });
+
+    document.addEventListener('change', function (event) {
+      if (!event.target.matches || !event.target.matches('[data-qv-select]')) return;
+      paintQuickVariant();
+    });
+
+    /* Engraving looks like an axis and is a line item property, so it moves its
+       own field and leaves the variant alone. */
+    document.addEventListener('click', function (event) {
+      var pick = event.target.closest && event.target.closest('[data-qv-engrave-pick]');
+      if (!pick) return;
+
+      var row = pick.closest('[data-qv-engrave]');
+      if (!row) return;
+
+      row.querySelectorAll('[data-qv-engrave-pick]').forEach(function (other) {
+        var on = other === pick;
+        other.classList.toggle('is-selected', on);
+        other.setAttribute('aria-pressed', on ? 'true' : 'false');
+      });
+
+      var caption = row.querySelector('[data-qv-engrave-value]');
+      if (caption) caption.textContent = pick.textContent;
+
+      /* Disabled as well as hidden: a disabled control is not submitted, so an
+         engraving nobody asked for never reaches the bag. */
+      var field = row.querySelector('[data-qv-engrave-field]');
+      if (!field) return;
+
+      var wanted = pick.dataset.qvEngravePick === 'on';
+      field.hidden = !wanted;
+      field.disabled = !wanted;
+      if (wanted) field.focus();
+    });
+
+    document.addEventListener('dblclick', function (event) {
+      var img = event.target.closest && event.target.closest('[data-quick-zoomable]');
+      if (!img) return;
+      event.preventDefault();
+
+      if (zoom.el === img && zoom.scale > 1) { resetQuickZoom(); return; }
+      zoomTo(img, 2.2, event.clientX, event.clientY);
+    });
+
+    /* Ctrl-wheel is the trackpad pinch. Passive would forbid the
+       preventDefault that stops the browser zooming the whole page. */
+    window.addEventListener('wheel', function (event) {
+      if (!event.ctrlKey) return;
+      var img = event.target.closest && event.target.closest('[data-quick-zoomable]');
+      if (!img) return;
+
+      event.preventDefault();
+
+      var box = img.getBoundingClientRect();
+      var from = zoom.el === img ? zoom.scale : 1;
+      var to = Math.max(1, Math.min(4, from * Math.exp(-event.deltaY * 0.012)));
+      if (to === from) return;
+
+      if (to === 1) { resetQuickZoom(); return; }
+      if (zoom.el !== img) resetQuickZoom();
+
+      var qx = event.clientX - box.left - box.width / 2;
+      var qy = event.clientY - box.top - box.height / 2;
+      var ox = zoom.el === img ? zoom.x : 0;
+      var oy = zoom.el === img ? zoom.y : 0;
+
+      zoom.el = img;
+      zoom.w = box.width;
+      zoom.h = box.height;
+      zoom.scale = to;
+      zoom.x = bound(qx - (qx - ox) * (to / from), box.width * (to - 1) / 2);
+      zoom.y = bound(qy - (qy - oy) * (to / from), box.height * (to - 1) / 2);
+      applyZoom();
+    }, { passive: false });
+
+    document.addEventListener('pointerdown', function (event) {
+      var img = event.target.closest && event.target.closest('[data-quick-zoomable]');
+      if (!img) return;
+
+      zoomPoints[event.pointerId] = { x: event.clientX, y: event.clientY };
+      var ids = Object.keys(zoomPoints);
+
+      if (ids.length === 2) {
+        var a = zoomPoints[ids[0]];
+        var b = zoomPoints[ids[1]];
+        var box = img.getBoundingClientRect();
+
+        if (zoom.el !== img) { resetQuickZoom(); zoomPoints[event.pointerId] = { x: event.clientX, y: event.clientY }; }
+        zoom.el = img;
+        zoom.w = box.width;
+        zoom.h = box.height;
+
+        var mx = (a.x + b.x) / 2 - box.left - box.width / 2;
+        var my = (a.y + b.y) / 2 - box.top - box.height / 2;
+
+        zoomPinch = {
+          box: box,
+          spread: Math.sqrt(Math.pow(a.x - b.x, 2) + Math.pow(a.y - b.y, 2)) || 1,
+          scale: zoom.scale,
+          cx: (mx - zoom.x) / zoom.scale,
+          cy: (my - zoom.y) / zoom.scale
+        };
+
+        event.preventDefault();
+        img.setAttribute('data-quick-dragging', '');
+        return;
+      }
+
+      if (ids.length === 1 && zoom.el === img && zoom.scale > 1) {
+        event.preventDefault();
+        zoomDrag = { sx: event.clientX, sy: event.clientY, ox: zoom.x, oy: zoom.y };
+        img.setAttribute('data-quick-dragging', '');
+      }
+    });
+
+    document.addEventListener('pointermove', function (event) {
+      if (!zoomPoints[event.pointerId]) return;
+      zoomPoints[event.pointerId] = { x: event.clientX, y: event.clientY };
+
+      if (zoomFrame) return;
+      zoomFrame = window.requestAnimationFrame(function () {
+        zoomFrame = 0;
+        runZoomFrame();
+      });
+    });
+
+    function releasePointer(event) {
+      if (!zoomPoints[event.pointerId]) return;
+      delete zoomPoints[event.pointerId];
+
+      var ids = Object.keys(zoomPoints);
+      if (ids.length < 2) zoomPinch = null;
+
+      /* Lifting one finger out of a pinch leaves the other one panning. */
+      if (ids.length === 1 && zoom.scale > 1) {
+        zoomDrag = { sx: zoomPoints[ids[0]].x, sy: zoomPoints[ids[0]].y, ox: zoom.x, oy: zoom.y };
+        return;
+      }
+
+      if (ids.length) return;
+
+      zoomDrag = null;
+      if (zoom.el) zoom.el.removeAttribute('data-quick-dragging');
+      /* Pinched back to about life size — settle at exactly life size. */
+      if (zoom.scale <= 1.06) resetQuickZoom();
+    }
+
+    document.addEventListener('pointerup', releasePointer);
+    document.addEventListener('pointercancel', releasePointer);
+
+    /* Swiping the gallery steps it, unless a zoomed photograph is being
+       dragged instead. */
+    var swipe = null;
+
+    document.addEventListener('touchstart', function (event) {
+      var gallery = event.target.closest && event.target.closest('[data-quick-gallery]');
+      if (!gallery || zoom.scale > 1) { swipe = null; return; }
+      var touch = event.touches && event.touches[0];
+      swipe = touch ? { x: touch.clientX, y: touch.clientY } : null;
+    }, { passive: true });
+
+    document.addEventListener('touchend', function (event) {
+      var start = swipe;
+      swipe = null;
+      if (!start || zoom.scale > 1) return;
+      if (!event.target.closest || !event.target.closest('[data-quick-gallery]')) return;
+
+      var touch = event.changedTouches && event.changedTouches[0];
+      if (!touch) return;
+
+      var dx = touch.clientX - start.x;
+      var dy = touch.clientY - start.y;
+      if (Math.abs(dx) < 42 || Math.abs(dx) < Math.abs(dy) * 1.4) return;
+
+      paintQuick(quickIndex + (dx < 0 ? 1 : -1));
+    }, { passive: true });
+
+    document.addEventListener('overlay:close', function (event) {
+      var el = event.target;
+      if (!el.matches || !el.matches('[data-overlay="quick-view"]')) return;
+      resetQuickZoom();
+      el.querySelectorAll('video').forEach(function (video) {
+        if (!video.paused) video.pause();
+      });
+    });
+  }
+
+  /* ---- Tooltip ---------------------------------------------------------
+     One chip for the whole document, delegated: anything carrying data-tip
+     gets it on hover or keyboard focus. A touch pointer is ignored, because a
+     tap would raise a chip nobody asked for. Purely decorative — every
+     control that has one also has its own accessible name. */
+
+  function initTooltips() {
+    var DELAY = 130;
+    var GAP = 9;
+
+    var chip = null;
+    var label = null;
+    var arrow = null;
+    var current = null;
+    var showTimer = 0;
+    var hideTimer = 0;
+
+    function build() {
+      chip = document.createElement('div');
+      chip.className = 'tip';
+      chip.setAttribute('role', 'tooltip');
+
+      arrow = document.createElement('span');
+      arrow.className = 'tip__arrow';
+
+      label = document.createElement('span');
+      label.className = 'tip__label';
+
+      chip.appendChild(arrow);
+      chip.appendChild(label);
+      document.body.appendChild(chip);
+    }
+
+    function place(target) {
+      var anchor = target.getBoundingClientRect();
+      var box = chip.getBoundingClientRect();
+      var below = anchor.top - box.height - GAP < 6;
+
+      var left = anchor.left + anchor.width / 2 - box.width / 2;
+      left = Math.max(8, Math.min(left, window.innerWidth - box.width - 8));
+
+      chip.style.left = Math.round(left) + 'px';
+      chip.style.top = Math.round(below ? anchor.bottom + GAP : anchor.top - box.height - GAP) + 'px';
+      chip.style.transformOrigin = '50% ' + (below ? '0%' : '100%');
+      chip.classList.toggle('tip--below', below);
+
+      /* The arrow keeps pointing at the thing it describes even when the chip
+         has been pushed back inside the viewport. */
+      var point = anchor.left + anchor.width / 2 - left;
+      arrow.style.left = Math.round(Math.max(11, Math.min(point, box.width - 11)) - 4) + 'px';
+
+      return below;
+    }
+
+    function show(target) {
+      var text = target.getAttribute('data-tip');
+      if (!text) return;
+
+      current = target;
+      if (!chip) build();
+
+      label.textContent = text;
+      chip.classList.remove('is-on');
+      place(target);
+      /* Re-place once the chip has been measured at its real width. */
+      place(target);
+      chip.classList.add('is-on');
+    }
+
+    function hide() {
+      current = null;
+      window.clearTimeout(showTimer);
+      if (!chip) return;
+
+      chip.classList.remove('is-on');
+      window.clearTimeout(hideTimer);
+      hideTimer = window.setTimeout(function () {
+        if (!current && chip) chip.style.left = '-9999px';
+      }, 220);
+    }
+
+    function trigger(node) {
+      return node && node.closest ? node.closest('[data-tip]') : null;
+    }
+
+    document.addEventListener('pointerover', function (event) {
+      if (event.pointerType === 'touch') return;
+      var target = trigger(event.target);
+      if (!target || target === current) return;
+      window.clearTimeout(showTimer);
+      showTimer = window.setTimeout(function () { show(target); }, DELAY);
+    }, true);
+
+    document.addEventListener('pointerout', function (event) {
+      var target = trigger(event.target);
+      if (!target) return;
+      if (event.relatedTarget && trigger(event.relatedTarget) === target) return;
+      hide();
+    }, true);
+
+    document.addEventListener('focusin', function (event) {
+      var target = trigger(event.target);
+      if (target && event.target.matches(':focus-visible')) show(target);
+    }, true);
+
+    document.addEventListener('focusout', hide, true);
+    document.addEventListener('pointerdown', hide, true);
+    window.addEventListener('scroll', hide, true);
+    window.addEventListener('resize', hide);
+    document.addEventListener('keydown', function (event) {
+      if (event.key === 'Escape') hide();
+    }, true);
   }
 
   /* ---- Hero carousel --------------------------------------------------
@@ -1330,6 +2345,9 @@
     initFooter(scope);
     initHero(scope);
     initLookbook(scope);
+    initCards(scope);
+    initCardMetals(scope);
+    blurUp(scope);
     initOverlays(scope);
     closeOverlaysOnNavigate(scope);
     initCookieChoice(scope);
@@ -1343,6 +2361,8 @@
     /* Bound once for the life of the page, unlike everything above. */
     initSearchTriggers();
     initCartTriggers();
+    initQuickView();
+    initTooltips();
 
     /* Shopify bounces back with this after a customer form posts, so the
        newsletter modal can reopen on its success state. */

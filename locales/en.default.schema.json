@@ -15,6 +15,24 @@
         "info": "Optional emblem substituted for the first O."
       }
     },
+    "shop": {
+      "name": "Shop details",
+      "paragraph": "Stated once and used everywhere the shop states them: the menu overlay, the footer, and the Visit section.",
+      "shop_address": {
+        "label": "Location"
+      },
+      "shop_address_link": {
+        "label": "Map link",
+        "info": "Opens in a new tab wherever the address is shown."
+      },
+      "shop_phone": {
+        "label": "Telephone",
+        "info": "Shown as written; the tel: link strips spaces and punctuation."
+      },
+      "shop_email": {
+        "label": "Email"
+      }
+    },
     "layout": {
       "name": "Layout",
       "page_width": {
@@ -241,14 +259,58 @@
         "label": "Show metal line",
         "info": "Reads the product's Metal option or metafield when present."
       },
-      "card_hover_image": {
-        "label": "Reveal second image on hover"
+      "card_show_swatches": {
+        "label": "Show metal swatches",
+        "info": "A row of metals on the card. Choosing one moves the caption, the price and what goes in the bag — never the photograph, which is shot in one metal."
+      },
+      "card_show_options_note": {
+        "label": "Show the options note",
+        "info": "The line under the swatches listing the piece's other choices, such as gold purity."
+      },
+      "card_show_video": {
+        "label": "Include the 360° spin",
+        "info": "Adds a product video to the card as a final view."
+      },
+      "card_image_zoom": {
+        "label": "Crop the photographer’s margin",
+        "info": "Scales each photograph so the piece fills the frame, by category. A custom.card_zoom metafield overrides it per piece."
       },
       "card_show_add": {
         "label": "Show add to bag button"
       },
       "card_add_label": {
         "label": "Add button label"
+      }
+    },
+    "quick_view": {
+      "name": "Quick view",
+      "paragraph": "Opens over the grid from the eye on a product card, and is rendered from the product itself.",
+      "quick_view_enabled": {
+        "label": "Enable quick view"
+      },
+      "quick_view_add_label": {
+        "label": "Add button label"
+      },
+      "quick_view_reassurance": {
+        "label": "Reassurance line"
+      },
+      "specs_header": "Specification",
+      "specs_info": "House-wide values. A custom.diamond_clarity_grade, custom.diamond_color_grade or custom.certification_lab metafield overrides one per piece.",
+      "quick_view_clarity": {
+        "label": "Clarity"
+      },
+      "quick_view_colour": {
+        "label": "Colour"
+      },
+      "quick_view_certification": {
+        "label": "Certification"
+      }
+    },
+    "pricing": {
+      "name": "Pricing",
+      "show_tax_note": {
+        "label": "Show the tax note after prices",
+        "info": "The one switch for it. Every price in the theme obeys this — cards, the product page, the bag, the cart, quick view and search — and nothing can override it."
       }
     },
     "cart": {
@@ -263,6 +325,17 @@
       "cart_drawer_on_add": {
         "label": "Open the drawer after adding",
         "info": "Only applies while the drawer is chosen above."
+      },
+      "cart_unit_price": {
+        "label": "Show the price of one",
+        "info": "A line reads the price of a single piece rather than price × quantity. Applies to the bag drawer and the cart page."
+      },
+      "cart_image_ratio": {
+        "label": "Image shape",
+        "info": "The frame a line’s photograph sits in, as on a product card."
+      },
+      "cart_image_fit": {
+        "label": "Image fit"
       }
     },
     "localization": {
@@ -328,6 +401,10 @@
     "all": {
       "color_scheme": {
         "label": "Color scheme"
+      },
+      "anchor": {
+        "label": "Anchor",
+        "info": "Lets other links jump here, e.g. /#visit. Leave empty for none."
       },
       "spacing_header": "Spacing",
       "padding_top": {
@@ -442,12 +519,6 @@
       },
       "menu_header": "Menu overlay",
       "menu_paragraph": "Menu rows are numbered automatically in the order they appear here. Bag and Search are added last when they are switched on above.",
-      "menu_address": {
-        "label": "Address"
-      },
-      "menu_address_link": {
-        "label": "Map link"
-      },
       "blocks": {
         "link": {
           "name": "Menu row"
@@ -455,7 +526,8 @@
         "category": {
           "name": "Category shortcut"
         }
-      }
+      },
+      "menu_address_paragraph": "The address under the menu comes from Theme settings → Shop details."
     },
     "footer": {
       "name": "Footer",
@@ -512,23 +584,12 @@
         },
         "contact": {
           "name": "Salon details",
+          "paragraph": "The address, telephone and email come from Theme settings → Shop details.",
           "heading": {
             "label": "Column heading"
           },
-          "address": {
-            "label": "Address"
-          },
-          "address_link": {
-            "label": "Map link"
-          },
           "hours": {
             "label": "Opening hours"
-          },
-          "phone": {
-            "label": "Telephone"
-          },
-          "email": {
-            "label": "Email"
           }
         },
         "social": {
@@ -679,6 +740,10 @@
       "view_all_label": {
         "label": "View all label",
         "info": "Leave blank to show the collection's product count."
+      },
+      "view_all_link": {
+        "label": "View all link",
+        "info": "Defaults to the collection above. Set this to send it somewhere else."
       }
     },
     "category_grid": {
@@ -825,8 +890,17 @@
           "label": {
             "label": "Label"
           },
+          "source": {
+            "label": "Value from",
+            "info": "Anything but Custom takes the value, and its link, from Theme settings → Shop details.",
+            "custom": "Custom",
+            "address": "Shop location",
+            "phone": "Shop telephone",
+            "email": "Shop email"
+          },
           "value": {
-            "label": "Value"
+            "label": "Value",
+            "info": "Used only when Value from is Custom."
           },
           "link": {
             "label": "Link"
@@ -886,8 +960,16 @@
     "cart_drawer": {
       "name": "Bag drawer",
       "paragraph": "Shown only while the cart is set to a drawer in Theme settings → Cart.",
+      "promise_label": {
+        "label": "Reassurance label",
+        "info": "Shown with the reassurance sentence when the tax note is on. Both are the design’s own copy."
+      },
+      "promise_text": {
+        "label": "Reassurance sentence"
+      },
       "note": {
-        "label": "Note above the buttons"
+        "label": "Note when the tax note is off",
+        "info": "Replaces the reassurance above when Theme settings → Pricing → tax note is off, because prices are then not tax-inclusive."
       },
       "secondary_label": {
         "label": "Secondary button"

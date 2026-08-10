@@ -3,7 +3,13 @@
   rows, and directions.
 {%- endcomment -%}
 
+{%- comment -%}
+  The anchor the design gives this section. The bag drawer's "Salon" link and
+  the Craft section's buttons both point at /#visit, so without an id on the
+  element those links scroll nowhere.
+{%- endcomment -%}
 <section
+  {% if section.settings.anchor != blank %}id="{{ section.settings.anchor | handle }}"{% endif %}
   class="section scheme-{{ section.settings.color_scheme }}"
   style="{% render 'section-style', padding_top: section.settings.padding_top, padding_bottom: section.settings.padding_bottom %}"
 >
@@ -58,34 +64,79 @@
         {%- if detail_blocks.size > 0 -%}
           <div>
             {%- for block in detail_blocks -%}
-              <div class="spec-row" {{ block.shopify_attributes }}>
-                <span class="spec-row__label">{{ block.settings.label }}</span>
-                <span class="spec-row__value">
-                  {%- if block.settings.link != blank -%}
-                    <a href="{{ block.settings.link }}"{% if block.settings.link contains '://' %} target="_blank" rel="noopener"{% endif %}>{{ block.settings.value }}</a>
-                  {%- else -%}
-                    {{ block.settings.value }}
-                  {%- endif -%}
-                </span>
-              </div>
+              {%- comment -%}
+                A row either states one of the shop's three facts — in which
+                case it takes it from the theme settings and builds its own
+                tel:/mailto: — or it is the merchant's own label and value.
+                Only the label is theirs in the first case, so "Address" can
+                still read "Find us".
+              {%- endcomment -%}
+              {%- liquid
+                assign row_value = block.settings.value
+                assign row_link = block.settings.link
+
+                if block.settings.source == 'address'
+                  assign row_value = settings.shop_address
+                  assign row_link = settings.shop_address_link
+                elsif block.settings.source == 'phone'
+                  assign row_value = settings.shop_phone
+                  assign row_link = ''
+                  if settings.shop_phone != blank
+                    assign row_link = settings.shop_phone | remove: ' ' | remove: '-' | remove: '(' | remove: ')' | prepend: 'tel:'
+                  endif
+                elsif block.settings.source == 'email'
+                  assign row_value = settings.shop_email
+                  assign row_link = ''
+                  if settings.shop_email != blank
+                    assign row_link = settings.shop_email | prepend: 'mailto:'
+                  endif
+                endif
+              -%}
+
+              {%- if row_value != blank -%}
+                <div class="spec-row" {{ block.shopify_attributes }}>
+                  <span class="spec-row__label">{{ block.settings.label }}</span>
+                  <span class="spec-row__value">
+                    {%- if row_link != blank -%}
+                      <a href="{{ row_link }}"{% if row_link contains '://' %} target="_blank" rel="noopener"{% endif %}>{{ row_value }}</a>
+                    {%- else -%}
+                      {{ row_value }}
+                    {%- endif -%}
+                  </span>
+                </div>
+              {%- endif -%}
             {%- endfor -%}
           </div>
         {%- endif -%}
 
         {%- for block in section.blocks -%}
           {%- if block.type == 'buttons' -%}
+            {%- comment -%}
+              Both buttons fall back to the shop's own details, so the address
+              and the email are each still stated in exactly one place — and
+              neither button can end up pointing at nothing. A label with no
+              destination left renders nothing, as everywhere else.
+            {%- endcomment -%}
+            {%- liquid
+              assign directions_link = block.settings.button_link | default: settings.shop_address_link
+
+              assign contact_link = block.settings.button_link_2
+              if contact_link == blank and settings.shop_email != blank
+                assign contact_link = settings.shop_email | prepend: 'mailto:'
+              endif
+            -%}
             <div class="btn-row" {{ block.shopify_attributes }}>
-              {%- if block.settings.button_label != blank -%}
+              {%- if block.settings.button_label != blank and directions_link != blank -%}
                 <a
-                  href="{{ block.settings.button_link | default: '#' }}"
+                  href="{{ directions_link }}"
                   class="btn btn--primary"
-                  {% if block.settings.button_link contains '://' %}target="_blank" rel="noopener"{% endif %}
+                  {% if directions_link contains '://' %}target="_blank" rel="noopener"{% endif %}
                 >
                   {{ block.settings.button_label }}&nbsp;&nbsp;&rarr;
                 </a>
               {%- endif -%}
-              {%- if block.settings.button_label_2 != blank -%}
-                <a href="{{ block.settings.button_link_2 | default: '#' }}" class="btn btn--link">
+              {%- if block.settings.button_label_2 != blank and contact_link != blank -%}
+                <a href="{{ contact_link }}" class="btn btn--link">
                   {{ block.settings.button_label_2 }}
                 </a>
               {%- endif -%}
@@ -141,6 +192,13 @@
       "id": "show_rule",
       "label": "t:sections.visit.show_rule.label",
       "default": true
+    },
+    {
+      "type": "text",
+      "id": "anchor",
+      "label": "t:sections.all.anchor.label",
+      "info": "t:sections.all.anchor.info",
+      "default": "visit"
     },
     {
       "type": "header",
@@ -217,10 +275,23 @@
           "default": "Address"
         },
         {
+          "type": "select",
+          "id": "source",
+          "label": "t:sections.visit.blocks.detail.source.label",
+          "info": "t:sections.visit.blocks.detail.source.info",
+          "options": [
+            { "value": "custom", "label": "t:sections.visit.blocks.detail.source.custom" },
+            { "value": "address", "label": "t:sections.visit.blocks.detail.source.address" },
+            { "value": "phone", "label": "t:sections.visit.blocks.detail.source.phone" },
+            { "value": "email", "label": "t:sections.visit.blocks.detail.source.email" }
+          ],
+          "default": "custom"
+        },
+        {
           "type": "text",
           "id": "value",
           "label": "t:sections.visit.blocks.detail.value.label",
-          "default": "8140 N MacArthur Blvd #120, Irving, TX"
+          "info": "t:sections.visit.blocks.detail.value.info"
         },
         {
           "type": "url",
@@ -263,7 +334,7 @@
     {
       "name": "t:sections.visit.name",
       "blocks": [
-        { "type": "detail" },
+        { "type": "detail", "settings": { "label": "Address", "source": "address" } },
         { "type": "detail", "settings": { "label": "Hours", "value": "Tue–Sat 11–7 · Sun 11–4 · Mon closed" } },
         { "type": "buttons" }
       ]

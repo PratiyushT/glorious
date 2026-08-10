@@ -1,3 +1,12 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
 {
   "sections": {
     "hero": {
@@ -11,27 +20,46 @@
         },
         "gemstone": {
           "type": "detail",
-          "settings": { "label": "Gemstone:", "value": "Diamond" }
+          "settings": {
+            "label": "Gemstone:",
+            "value": "Diamond"
+          }
         },
         "metal-white": {
           "type": "metal",
-          "settings": { "label": "White Gold", "collection": "" }
+          "settings": {
+            "label": "White Gold",
+            "collection": ""
+          }
         },
         "metal-yellow": {
           "type": "metal",
-          "settings": { "label": "Yellow Gold", "collection": "" }
+          "settings": {
+            "label": "Yellow Gold",
+            "collection": ""
+          }
         },
         "buttons": {
           "type": "buttons",
-          "settings": { "button_label": "Collections", "button_link": "/collections/all" }
+          "settings": {
+            "button_label": "Collections",
+            "button_link": "/collections/all"
+          }
         }
       },
-      "block_order": ["text", "gemstone", "metal-white", "metal-yellow", "buttons"],
+      "block_order": [
+        "text",
+        "gemstone",
+        "metal-white",
+        "metal-yellow",
+        "buttons"
+      ],
       "settings": {
         "color_scheme": "scheme_2",
         "show_wordmark": true,
-        "show_arcs": true,
         "show_sparkles": true,
+        "show_arcs": true,
+        "image": "shopify://shop_images/hero.webp",
         "metal_label": "Metal:"
       }
     },
@@ -41,39 +69,57 @@
         "color_scheme": "scheme_1",
         "heading": "Most Loved",
         "subheading": "Our most loved creations",
+        "collection": "featured-products-homepage",
         "products_to_show": 8,
         "columns": 4,
-        "show_view_all": true
+        "mobile_columns": "2",
+        "show_view_all": true,
+        "view_all_label": "View All",
+        "full_height": true,
+        "padding_top": 72,
+        "padding_bottom": 72
       }
     },
     "lookbook": {
       "type": "lookbook",
       "blocks": {
-        "evening": {
-          "type": "scene",
-          "settings": { "label": "Evening", "tag": "Look 01 · Evening" }
-        },
-        "bridal": {
-          "type": "scene",
-          "settings": { "label": "Bridal", "tag": "Look 02 · Bridal" }
-        },
         "gold": {
           "type": "scene",
-          "settings": { "label": "Gold Hour", "tag": "Look 03 · Gold hour" }
+          "settings": {
+            "label": "Gold Hour",
+            "tag": "The Bridal Look",
+            "image": "shopify://shop_images/Bridal_-_Lookbook.jpg",
+            "product_1": "cluster-drop-diamond-necklace",
+            "x_1": 33,
+            "y_1": 46,
+            "product_2": "cluster-diamond-hoop-earrings",
+            "x_2": 62,
+            "y_2": 24,
+            "product_3": "",
+            "x_3": 50,
+            "y_3": 70,
+            "product_4": "",
+            "x_4": 50,
+            "y_4": 85
+          }
         }
       },
-      "block_order": ["evening", "bridal", "gold"],
+      "block_order": [
+        "gold"
+      ],
       "settings": {
         "color_scheme": "scheme_2",
         "subheading": "Shop the look",
         "heading": "The Lookbook",
         "text": "Tap a point to see the piece it marks. In the film, points appear as each piece comes on screen.",
-        "hint": "Tap a point to see the piece",
+        "hint": "",
         "pin_style": "dot",
         "pulse": true,
         "show_list": true,
         "link_label": "Shop all pieces",
-        "link": "/collections/all"
+        "link": "/collections/all",
+        "padding_top": 96,
+        "padding_bottom": 110
       }
     },
     "our-products": {
@@ -81,28 +127,52 @@
       "blocks": {
         "rings": {
           "type": "category",
-          "settings": { "title": "Rings", "link_label": "View pieces" }
+          "settings": {
+            "collection": "rings",
+            "title": "Rings",
+            "link_label": "View pieces"
+          }
         },
         "earrings": {
           "type": "category",
-          "settings": { "title": "Earrings", "link_label": "View pieces" }
-        },
-        "necklaces": {
-          "type": "category",
-          "settings": { "title": "Necklaces & Pendants", "link_label": "View pieces" }
+          "settings": {
+            "collection": "earrings",
+            "title": "Earrings",
+            "link_label": "View pieces"
+          }
         },
         "bracelets": {
           "type": "category",
-          "settings": { "title": "Bracelets", "link_label": "View pieces" }
+          "settings": {
+            "collection": "bracelets",
+            "title": "Bracelets",
+            "link_label": "View pieces"
+          }
+        },
+        "necklaces": {
+          "type": "category",
+          "settings": {
+            "collection": "necklaces-pendants",
+            "title": "Necklaces & Pendants",
+            "link_label": "View pieces"
+          }
         }
       },
-      "block_order": ["rings", "earrings", "necklaces", "bracelets"],
+      "block_order": [
+        "rings",
+        "earrings",
+        "bracelets",
+        "necklaces"
+      ],
       "settings": {
         "color_scheme": "scheme_3",
         "heading": "Our Products",
+        "subheading": "",
         "columns": 4,
         "image_ratio": "4 / 5",
-        "show_counts": true
+        "show_counts": true,
+        "padding_top": 76,
+        "padding_bottom": 96
       }
     },
     "promises": {
@@ -149,12 +219,19 @@
           }
         }
       },
-      "block_order": ["shipping", "support", "secure", "handcraft", "certified"],
+      "block_order": [
+        "shipping",
+        "support",
+        "secure",
+        "handcraft",
+        "certified"
+      ],
       "settings": {
         "color_scheme": "scheme_1",
         "heading": "Our Promises",
         "subheading": "Promises of Excellence",
-        "columns": 5
+        "padding_top": 76,
+        "padding_bottom": 96
       }
     },
     "craft": {
@@ -162,37 +239,62 @@
       "blocks": {
         "metal": {
           "type": "spec",
-          "settings": { "label": "Metal", "value": "18-karat gold" }
+          "settings": {
+            "label": "Metal",
+            "value": "18-karat gold"
+          }
         },
         "clarity": {
           "type": "spec",
-          "settings": { "label": "Clarity", "value": "VVS and above" }
+          "settings": {
+            "label": "Clarity",
+            "value": "VVS and above"
+          }
         },
         "colour": {
           "type": "spec",
-          "settings": { "label": "Colour", "value": "F and above" }
+          "settings": {
+            "label": "Colour",
+            "value": "F and above"
+          }
         },
         "certification": {
           "type": "spec",
-          "settings": { "label": "Certification", "value": "IGI" }
+          "settings": {
+            "label": "Certification",
+            "value": "IGI"
+          }
         },
         "buttons": {
           "type": "buttons",
           "settings": {
             "button_label": "Bespoke Commissions",
-            "button_label_2": "Old Gold, Renewed"
+            "button_link": "/#visit",
+            "button_label_2": "Old Gold, Renewed",
+            "button_link_2": "/#visit"
           }
         }
       },
-      "block_order": ["metal", "clarity", "colour", "certification", "buttons"],
+      "block_order": [
+        "metal",
+        "clarity",
+        "colour",
+        "certification",
+        "buttons"
+      ],
       "settings": {
         "color_scheme": "scheme_2",
         "subheading": "The Craft",
         "heading": "Cut, set, and finished by hand.",
         "text": "<p>Heritage techniques from Indian goldsmithing, held to modern standards. Stones are chosen for brilliance and certified independently, so what you wear is exactly what was promised.</p>",
         "layout": "image_first",
+        "full_height": false,
+        "anchor": "craft",
+        "video": "shopify://files/videos/video.mp4",
         "image_ratio": "4 / 5",
-        "show_frame": true
+        "show_frame": true,
+        "padding_top": 88,
+        "padding_bottom": 88
       }
     },
     "about": {
@@ -220,19 +322,29 @@
           "type": "buttons",
           "settings": {
             "button_label": "Our Full Story",
-            "button_label_2": "The Craft"
+            "button_link": "/pages/about",
+            "button_label_2": "The Craft",
+            "button_link_2": "/#craft"
           }
         }
       },
-      "block_order": ["p1", "p2", "p3", "buttons"],
+      "block_order": [
+        "p1",
+        "p2",
+        "p3",
+        "buttons"
+      ],
       "settings": {
         "color_scheme": "scheme_1",
         "heading": "About Us",
         "layout": "text_first",
+        "image": "shopify://shop_images/about.webp",
         "image_ratio": "4 / 5",
         "arch": true,
         "caption_left": "The Glorious woman",
-        "caption_right": "Est. Irving, TX"
+        "caption_right": "Est. Irving, TX",
+        "padding_top": 76,
+        "padding_bottom": 96
       }
     },
     "testimonials": {
@@ -267,12 +379,19 @@
           }
         }
       },
-      "block_order": ["q1", "q2", "q3", "q4"],
+      "block_order": [
+        "q1",
+        "q2",
+        "q3",
+        "q4"
+      ],
       "settings": {
         "color_scheme": "scheme_1",
         "subheading": "Word of Mouth",
         "autorotate": true,
-        "interval": 7
+        "interval": 7,
+        "padding_top": 104,
+        "padding_bottom": 56
       }
     },
     "visit": {
@@ -282,38 +401,50 @@
           "type": "detail",
           "settings": {
             "label": "Address",
-            "value": "8140 N MacArthur Blvd #120, Irving, TX",
-            "link": "https://www.google.com/maps/place/Glorious+By+Pramukham+Jewelers+-Gold+and+Diamond+Store/@32.9196733,-96.9570255,15z"
+            "source": "address",
+            "value": "",
+            "link": ""
           }
         },
         "hours": {
           "type": "detail",
           "settings": {
             "label": "Hours",
-            "value": "Tue–Sat 11–7 · Sun 11–4 · Mon closed"
+            "source": "custom",
+            "value": "Tue–Sat 11–7 · Sun 11–4 · Mon closed",
+            "link": ""
           }
         },
         "buttons": {
           "type": "buttons",
           "settings": {
             "button_label": "Get Directions",
-            "button_link": "https://www.google.com/maps/place/Glorious+By+Pramukham+Jewelers+-Gold+and+Diamond+Store/@32.9196733,-96.9570255,15z",
-            "button_label_2": "Contact Us"
+            "button_link": "",
+            "button_label_2": "Contact Us",
+            "button_link_2": ""
           }
         }
       },
-      "block_order": ["address", "hours", "buttons"],
+      "block_order": [
+        "address",
+        "hours",
+        "buttons"
+      ],
       "settings": {
         "color_scheme": "scheme_1",
         "subheading": "Visit",
         "heading": "The salon in Irving.",
         "text": "<p>Come in for a private viewing — sizing, bespoke consultations, and old-gold appraisals happen at the counter, unhurried.</p>",
         "layout": "image_first",
+        "show_rule": true,
+        "anchor": "visit",
+        "image": "shopify://shop_images/salon.webp",
         "image_ratio": "4 / 5",
         "arch": true,
-        "show_rule": true,
         "caption_left": "The salon",
-        "caption_right": "By appointment or walk-in"
+        "caption_right": "By appointment or walk-in",
+        "padding_top": 64,
+        "padding_bottom": 96
       }
     }
   },

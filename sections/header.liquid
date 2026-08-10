@@ -164,6 +164,15 @@
   {% render 'search-overlay', section: section %}
 {%- endif -%}
 
+{%- comment -%}
+  The quick view belongs to the header group for the same reason every other
+  overlay does: the cards that open it live on every template, and this is the
+  one group they all share.
+{%- endcomment -%}
+{%- if settings.quick_view_enabled -%}
+  {% render 'quick-view' %}
+{%- endif -%}
+
 {% schema %}
 {
   "name": "t:sections.header.name",
@@ -295,15 +304,8 @@
       "content": "t:sections.header.menu_paragraph"
     },
     {
-      "type": "text",
-      "id": "menu_address",
-      "label": "t:sections.header.menu_address.label",
-      "default": "8140 N MacArthur Blvd #120, Irving, TX"
-    },
-    {
-      "type": "url",
-      "id": "menu_address_link",
-      "label": "t:sections.header.menu_address_link.label"
+      "type": "paragraph",
+      "content": "t:sections.header.menu_address_paragraph"
     }
   ],
   "blocks": [

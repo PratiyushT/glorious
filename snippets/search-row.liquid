@@ -10,6 +10,7 @@
     title      - may already carry <strong> from the highlight filter, so it is
                  emitted unescaped. Escape plain text at the call site.
     meta       - trailing label, optional.
+    tax_note   - true when `meta` is a price, so the tax note may follow it.
     image      - image object. Falls back to the design's diamond glyph.
 {%- endcomment -%}
 
@@ -30,6 +31,14 @@
   <span class="search-row__title">{{ title }}</span>
 
   {%- if meta != blank -%}
-    <span class="search-row__meta">{{ meta }}</span>
+    <span class="search-row__meta">
+      {{- meta -}}
+      {%- comment -%}
+        Only a product row's meta is a price — a collection, page or article row
+        carries a kind label instead, and "Page inc. tax" would be nonsense. So
+        the caller says which it is rather than this snippet guessing.
+      {%- endcomment -%}
+      {%- if tax_note %}{% render 'tax-note' %}{% endif -%}
+    </span>
   {%- endif -%}
 </a>

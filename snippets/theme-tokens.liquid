@@ -223,6 +223,12 @@
     --card-fit: {{ settings.card_image_fit }};
     --card-align: {{ settings.card_text_align }};
 
+    /* ---- Cart ---------------------------------------------------------
+       A cart line's photograph is framed like a card's, from the same kind
+       of pair. The shape is per line (it can adapt), so it is emitted on
+       the thumbnail itself; only the fit is global.                     */
+    --cart-thumb-fit: {{ settings.cart_image_fit | default: 'cover' }};
+
     /* ---- Status ------------------------------------------------------
        One colour, not per-scheme: an error reads the same everywhere.   */
     --c-error: {{ settings.color_error | default: '#A2422C' }};

@@ -175,17 +175,20 @@
                   {%- liquid
                     assign kind = pin_product.type | default: pin_product.vendor
                     if pin_product.price_varies
-                      assign price_label = 'products.from_price' | t: price: pin_product.price_min | money
+                      assign price_from = pin_product.price_min | money
+                      assign price_label = 'products.from_price' | t: price: price_from
                     else
                       assign price_label = pin_product.price | money
                     endif
                     assign variant = pin_product.selected_or_first_available_variant
-                    assign metal = pin_product.metafields.custom.metal.value
-                    if metal == blank
-                      unless variant.title contains 'Default'
-                        assign metal = variant.title
-                      endunless
-                    endif
+                    assign metal = blank
+                    for option in pin_product.options_with_values
+                      assign option_name = option.name | downcase
+                      if option_name == 'metal'
+                        assign metal = variant.options[forloop.index0]
+                        break
+                      endif
+                    endfor
                   -%}
                   <div
                     class="lookbook-card"
@@ -225,7 +228,10 @@
                     </div>
 
                     <div class="lookbook-card__foot">
-                      <span class="lookbook-card__price">{{ price_label }}</span>
+                      <span class="lookbook-card__price">
+                        {{- price_label -}}
+                        {% render 'tax-note' %}
+                      </span>
                       <span class="lookbook-card__actions">
                         <a class="lookbook-card__details" href="{{ pin_product.url }}">
                           {{ 'lookbook.details' | t }}
@@ -315,7 +321,8 @@
                       {%- liquid
                         assign kind = pin_product.type | default: pin_product.vendor
                         if pin_product.price_varies
-                          assign row_price = 'products.from_price' | t: price: pin_product.price_min | money
+                          assign row_price_from = pin_product.price_min | money
+                          assign row_price = 'products.from_price' | t: price: row_price_from
                         else
                           assign row_price = pin_product.price | money
                         endif
@@ -344,7 +351,10 @@
                               <span class="lookbook-row__num">{{ i | prepend: '0' | slice: -2, 2 }}</span>
                               <span class="lookbook-row__name">{{ pin_product.title }}</span>
                             </span>
-                            <span class="lookbook-row__meta">{{ row_meta }}</span>
+                            <span class="lookbook-row__meta">
+                              {{- row_meta -}}
+                              {% render 'tax-note' %}
+                            </span>
                           </span>
                         </button>
 

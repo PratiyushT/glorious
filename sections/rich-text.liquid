@@ -20,9 +20,12 @@
             <div class="rte" {{ block.shopify_attributes }}>{{ block.settings.text }}</div>
 
           {%- when 'button' -%}
-            {%- if block.settings.label != blank -%}
+            {%- comment -%}
+              A label without a link renders nothing — see about.liquid.
+            {%- endcomment -%}
+            {%- if block.settings.label != blank and block.settings.link != blank -%}
               <div class="btn-row" {{ block.shopify_attributes }}>
-                <a href="{{ block.settings.link | default: '#' }}" class="btn btn--{{ block.settings.style }}">
+                <a href="{{ block.settings.link }}" class="btn btn--{{ block.settings.style }}">
                   {{ block.settings.label }}
                 </a>
               </div>

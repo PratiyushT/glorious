@@ -50,14 +50,19 @@
               <div class="rte measure" {{ block.shopify_attributes }}>{{ block.settings.text }}</div>
 
             {%- when 'buttons' -%}
+              {%- comment -%}
+                A button needs a destination to exist. `href="#"` is a control
+                that looks live and goes nowhere, so a label without a link
+                renders nothing at all.
+              {%- endcomment -%}
               <div class="btn-row" {{ block.shopify_attributes }}>
-                {%- if block.settings.button_label != blank -%}
-                  <a href="{{ block.settings.button_link | default: '#' }}" class="btn btn--primary">
+                {%- if block.settings.button_label != blank and block.settings.button_link != blank -%}
+                  <a href="{{ block.settings.button_link }}" class="btn btn--primary">
                     {{ block.settings.button_label }}&nbsp;&nbsp;&rarr;
                   </a>
                 {%- endif -%}
-                {%- if block.settings.button_label_2 != blank -%}
-                  <a href="{{ block.settings.button_link_2 | default: '#' }}" class="btn btn--link">
+                {%- if block.settings.button_label_2 != blank and block.settings.button_link_2 != blank -%}
+                  <a href="{{ block.settings.button_link_2 }}" class="btn btn--link">
                     {{ block.settings.button_label_2 }}
                   </a>
                 {%- endif -%}

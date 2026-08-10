@@ -144,18 +144,22 @@
       </div>
     {%- endif -%}
 
-    {%- if section.settings.menu_address != blank -%}
-      {%- if section.settings.menu_address_link != blank -%}
+    {%- comment -%}
+      The shop's address, from the theme settings rather than the header's —
+      the footer and the Visit section state the same one.
+    {%- endcomment -%}
+    {%- if settings.shop_address != blank -%}
+      {%- if settings.shop_address_link != blank -%}
         <a
           class="nav-menu__address"
-          href="{{ section.settings.menu_address_link }}"
+          href="{{ settings.shop_address_link }}"
           target="_blank"
           rel="noopener"
         >
-          {{ section.settings.menu_address }}
+          {{ settings.shop_address }}
         </a>
       {%- else -%}
-        <span class="nav-menu__address">{{ section.settings.menu_address }}</span>
+        <span class="nav-menu__address">{{ settings.shop_address }}</span>
       {%- endif -%}
     {%- endif -%}
   </div>

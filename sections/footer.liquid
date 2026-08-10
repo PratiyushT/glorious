@@ -128,14 +128,20 @@
             {%- endcomment -%}
             <div class="footer__col-panel" id="{{ panel_id }}">
               <div class="footer__col-clip">
+              {%- comment -%}
+                The address, telephone and email are theme settings, not block
+                settings — they are the same three facts the menu overlay and
+                the Visit section state, and a shop that moves should say so
+                once. Only the hours are the footer's own.
+              {%- endcomment -%}
               <div class="footer__col-links">
-                {%- if block.settings.address != blank -%}
-                  {%- if block.settings.address_link != blank -%}
-                    <a class="footer__link" href="{{ block.settings.address_link }}" target="_blank" rel="noopener">
-                      {{ block.settings.address }}
+                {%- if settings.shop_address != blank -%}
+                  {%- if settings.shop_address_link != blank -%}
+                    <a class="footer__link" href="{{ settings.shop_address_link }}" target="_blank" rel="noopener">
+                      {{ settings.shop_address }}
                     </a>
                   {%- else -%}
-                    <span class="footer__text">{{ block.settings.address }}</span>
+                    <span class="footer__text">{{ settings.shop_address }}</span>
                   {%- endif -%}
                 {%- endif -%}
 
@@ -143,14 +149,15 @@
                   <span class="footer__text">{{ block.settings.hours }}</span>
                 {%- endif -%}
 
-                {%- if block.settings.phone != blank -%}
-                  <a class="footer__link" href="tel:{{ block.settings.phone | remove: ' ' | remove: '-' | remove: '(' | remove: ')' }}">
-                    {{ block.settings.phone }}
+                {%- if settings.shop_phone != blank -%}
+                  {%- assign tel_href = settings.shop_phone | remove: ' ' | remove: '-' | remove: '(' | remove: ')' -%}
+                  <a class="footer__link" href="tel:{{ tel_href }}">
+                    {{ settings.shop_phone }}
                   </a>
                 {%- endif -%}
 
-                {%- if block.settings.email != blank -%}
-                  <a class="footer__link" href="mailto:{{ block.settings.email }}">{{ block.settings.email }}</a>
+                {%- if settings.shop_email != blank -%}
+                  <a class="footer__link" href="mailto:{{ settings.shop_email }}">{{ settings.shop_email }}</a>
                 {%- endif -%}
               </div>
               </div>
@@ -285,33 +292,14 @@
           "default": "The Salon"
         },
         {
-          "type": "text",
-          "id": "address",
-          "label": "t:sections.footer.blocks.contact.address.label",
-          "default": "8140 N MacArthur Blvd #120, Irving, TX"
-        },
-        {
-          "type": "url",
-          "id": "address_link",
-          "label": "t:sections.footer.blocks.contact.address_link.label"
+          "type": "paragraph",
+          "content": "t:sections.footer.blocks.contact.paragraph"
         },
         {
           "type": "text",
           "id": "hours",
           "label": "t:sections.footer.blocks.contact.hours.label",
           "default": "Tue–Sat 11–7 · Sun 11–4 · Mon closed"
-        },
-        {
-          "type": "text",
-          "id": "phone",
-          "label": "t:sections.footer.blocks.contact.phone.label",
-          "default": "+1 469-740-2119"
-        },
-        {
-          "type": "text",
-          "id": "email",
-          "label": "t:sections.footer.blocks.contact.email.label",
-          "default": "care@gloriousjewelers.com"
         }
       ]
     }

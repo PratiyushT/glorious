@@ -44,7 +44,8 @@
           {%- liquid
             assign kind = product.type | default: product.vendor
             if product.price_varies
-              assign price_label = 'products.from_price' | t: price: product.price_min | money
+              assign price_from = product.price_min | money
+              assign price_label = 'products.from_price' | t: price: price_from
             else
               assign price_label = product.price | money
             endif
@@ -59,6 +60,7 @@
             url: product.url,
             title: row_title,
             meta: row_meta,
+            tax_note: true,
             image: product.featured_media
           %}
         {%- endfor -%}
