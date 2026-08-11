@@ -577,6 +577,46 @@ Six rungs is six.
   block instead (`{%- schema -%}(.*?){%- endschema -%}` → `json.loads` →
   recursive walk); that form finds all of them. 51 ranges remain.
 
+### Fluid scales
+
+**A fluid scale is one decision, not two or three settings.** `--fs-display` is
+a `clamp()` of a floor, a growth rate and a ceiling, and the theme exposed all
+three as separate sliders — so a merchant wanting larger display headings had to
+move `display_min`, `display_grow` and `display_max` together and keep them in
+proportion, with nothing telling them the three were one choice. Two of them out
+of proportion is how a heading ends up clamped to a constant, which
+`theme-tokens.liquid` already had a guard for.
+
+Five scales, thirteen endpoints, now five steps, from
+`snippets/scale-step.liquid`:
+
+| setting | was | resolves to |
+| --- | --- | --- |
+| `type_base` | `type_base_min`, `type_base_max` | `min,max` |
+| `display_size` | `display_min`, `display_grow`, `display_max` | `min,grow,max` |
+| `section_heading_size` | `section_heading_min`, `_grow`, `_max` | `min,grow,max` |
+| `gutter` | `gutter_min`, `gutter_max` | `min,max` |
+| `space_base` | `space_base_min`, `space_base_max` | `min,max` |
+
+- **`md` is the reference design's own value in every one of them**, and it is
+  the default — so the conversion emitted byte-identical CSS. The other four
+  rungs are proportional departures, which is the rule the theme is built to:
+  a setting exists so a merchant can *depart* from the design, never so the
+  theme starts near it. The design states one size; only `md` is quoted from it.
+- **The snippet prints numbers and the caller splits on the comma.** All five
+  land in Liquid arithmetic — slopes, intercepts, ratio powers — and then inside
+  a `clamp()`. `grow` stays in per-mille and `theme-tokens.liquid` divides by 10
+  as it always did.
+- Each capture falls back to `md` when the stored step is unknown, so a value
+  from an older version of the theme degrades to the design rather than to an
+  empty `clamp()`.
+
+Between this, the spacing steps and the motion step, **72 ranges are now 38** —
+and 14 of the remaining are legitimately continuous: the lookbook's eight point
+coordinates, two popup delays, a carousel interval, a column count, a product
+count and the nav's scroll threshold. Two more are the footer's, waiting on the
+chrome pass.
+
 ### Motion
 
 `motion_duration` is a `select` of five named steps, resolved by

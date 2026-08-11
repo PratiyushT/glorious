@@ -45,15 +45,18 @@
       "content_width": {
         "label": "Maximum reading width"
       },
-      "gutter_min": {
-        "label": "Page gutter (narrow screens)"
-      },
-      "gutter_max": {
-        "label": "Page gutter (wide screens)"
-      },
       "grid_min_column": {
         "label": "Minimum product column width",
         "info": "Product grids reflow when columns would get narrower than this."
+      },
+      "gutter": {
+        "label": "Page gutter",
+        "info": "Space between page content and the screen edge.",
+        "options__xs": "Extra small",
+        "options__sm": "Small",
+        "options__md": "Medium",
+        "options__lg": "Large",
+        "options__xl": "Extra large"
       }
     },
     "typography": {
@@ -72,12 +75,6 @@
         "info": "Only used when the bundled fonts are turned off."
       },
       "body_header": "Body text",
-      "type_base_min": {
-        "label": "Base size (narrow screens)"
-      },
-      "type_base_max": {
-        "label": "Base size (wide screens)"
-      },
       "type_ratio_min": {
         "label": "Type scale (narrow screens)"
       },
@@ -89,16 +86,6 @@
       },
       "display_header": "Display headings",
       "display_paragraph": "The oversized section titles that run edge to edge. These scale with the viewport rather than stepping at breakpoints.",
-      "display_min": {
-        "label": "Display size floor"
-      },
-      "display_grow": {
-        "label": "Display growth rate",
-        "info": "How fast display headings grow with screen width."
-      },
-      "display_max": {
-        "label": "Display size ceiling"
-      },
       "display_leading": {
         "label": "Display line height"
       },
@@ -109,15 +96,6 @@
         "label": "Uppercase display headings"
       },
       "section_header": "Section headings",
-      "section_heading_min": {
-        "label": "Section heading floor"
-      },
-      "section_heading_grow": {
-        "label": "Section heading growth rate"
-      },
-      "section_heading_max": {
-        "label": "Section heading ceiling"
-      },
       "headings_header": "Headings",
       "heading_leading": {
         "label": "Heading line height"
@@ -132,16 +110,37 @@
       },
       "micro_tracking": {
         "label": "Micro label letter spacing"
+      },
+      "type_base": {
+        "label": "Body text size",
+        "info": "Sets the whole type scale — every other size is derived from it.",
+        "options__xs": "Extra small",
+        "options__sm": "Small",
+        "options__md": "Medium",
+        "options__lg": "Large",
+        "options__xl": "Extra large"
+      },
+      "display_size": {
+        "label": "Display heading size",
+        "info": "The large edge-to-edge titles. One step moves its floor, growth and ceiling together.",
+        "options__xs": "Extra small",
+        "options__sm": "Small",
+        "options__md": "Medium",
+        "options__lg": "Large",
+        "options__xl": "Extra large"
+      },
+      "section_heading_size": {
+        "label": "Section heading size",
+        "info": "The sentence-case titles inside sections.",
+        "options__xs": "Extra small",
+        "options__sm": "Small",
+        "options__md": "Medium",
+        "options__lg": "Large",
+        "options__xl": "Extra large"
       }
     },
     "spacing": {
       "name": "Spacing",
-      "space_base_min": {
-        "label": "Base spacing (narrow screens)"
-      },
-      "space_base_max": {
-        "label": "Base spacing (wide screens)"
-      },
       "section_padding_default": {
         "label": "Default section padding",
         "info": "Used by any section that does not set its own. Steps are the reference design’s own vertical rhythm.",
@@ -152,6 +151,15 @@
         "options__lg": "Large",
         "options__xl": "Extra large",
         "options__max": "Maximum"
+      },
+      "space_base": {
+        "label": "Base spacing",
+        "info": "Sets the whole spacing scale — every gap is a multiple of it.",
+        "options__xs": "Extra small",
+        "options__sm": "Small",
+        "options__md": "Medium",
+        "options__lg": "Large",
+        "options__xl": "Extra large"
       }
     },
     "colors": {

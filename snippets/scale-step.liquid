@@ -1,0 +1,86 @@
+{%- comment -%}
+  Resolves a named step of a *fluid scale* to its endpoints, and prints them
+  comma-separated for the caller to split.
+
+  A fluid scale is not one number. `--fs-display` is a clamp of three — a floor,
+  a growth rate and a ceiling — and the theme exposed all three as separate
+  sliders, so a merchant wanting larger display headings had to move `display_min`,
+  `display_grow` and `display_max` in step and keep them consistent. Nothing
+  told them the three were one decision, and two of them out of proportion is
+  how a heading ends up clamped to a constant. Thirteen sliders across five
+  scales are five steps here.
+
+  Every number below is a proportional departure from the reference design's
+  own, which is always `md` — the default, and the only rung the design states.
+  That is the rule the whole theme is built to: settings exist so a merchant can
+  depart from the design, never so the theme starts somewhere near it.
+
+  **Prints numbers, never keywords or units.** Each of these lands in Liquid
+  arithmetic in theme-tokens.liquid — slopes, intercepts and ratio powers — and
+  then inside a `clamp()`. A keyword would survive Liquid and produce an invalid
+  declaration, which CSS drops entirely rather than falling back.
+
+  Accepts:
+    scale - one of: type_base, gutter, space_base, display, section_heading
+    step  - xs | sm | md | lg | xl
+
+  Prints:
+    type_base, gutter, space_base   "<min>,<max>"
+    display, section_heading        "<min>,<grow>,<max>"   grow is per-mille of
+                                    viewport width; the caller divides by 10.
+
+  An unrecognised pair prints nothing so the caller's fallback stands.
+
+  Usage:
+    {%- capture v -%}{%- render 'scale-step', scale: 'type_base', step: settings.type_base -%}{%- endcapture -%}
+    {%- assign v = v | split: ',' -%}
+{%- endcomment -%}
+
+{%- case scale -%}
+
+  {%- when 'type_base' -%}
+    {%- case step -%}
+      {%- when 'xs' -%}12,13
+      {%- when 'sm' -%}13,14
+      {%- when 'md' -%}15,16
+      {%- when 'lg' -%}17,18
+      {%- when 'xl' -%}19,21
+    {%- endcase -%}
+
+  {%- when 'gutter' -%}
+    {%- case step -%}
+      {%- when 'xs' -%}10,24
+      {%- when 'sm' -%}14,34
+      {%- when 'md' -%}18,44
+      {%- when 'lg' -%}24,58
+      {%- when 'xl' -%}30,74
+    {%- endcase -%}
+
+  {%- when 'space_base' -%}
+    {%- case step -%}
+      {%- when 'xs' -%}8,13
+      {%- when 'sm' -%}11,17
+      {%- when 'md' -%}14,22
+      {%- when 'lg' -%}18,28
+      {%- when 'xl' -%}22,35
+    {%- endcase -%}
+
+  {%- when 'display' -%}
+    {%- case step -%}
+      {%- when 'xs' -%}24,54,78
+      {%- when 'sm' -%}32,72,104
+      {%- when 'md' -%}42,95,138
+      {%- when 'lg' -%}54,122,178
+      {%- when 'xl' -%}68,154,224
+    {%- endcase -%}
+
+  {%- when 'section_heading' -%}
+    {%- case step -%}
+      {%- when 'xs' -%}20,24,32
+      {%- when 'sm' -%}26,31,42
+      {%- when 'md' -%}34,40,54
+      {%- when 'lg' -%}44,52,70
+      {%- when 'xl' -%}56,66,90
+    {%- endcase -%}
+
+{%- endcase -%}

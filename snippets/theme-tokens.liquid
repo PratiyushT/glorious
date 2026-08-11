@@ -11,14 +11,35 @@
     value     = clamp(min, intercept + slope*100vw, max)
 {%- endcomment -%}
 
+{%- comment -%}
+  Five fluid scales, each a named step rather than its two or three raw
+  endpoints — see scale-step.liquid. The snippet prints numbers and these
+  capture-and-split them, because a snippet cannot hand a value back and
+  because every one of these lands in arithmetic below.
+
+  Each falls back to `md`, the reference design's own value, if the stored
+  step is not one the snippet knows.
+{%- endcomment -%}
+{%- capture s_type -%}{%- render 'scale-step', scale: 'type_base', step: settings.type_base -%}{%- endcapture -%}
+{%- if s_type == blank -%}{%- capture s_type -%}{%- render 'scale-step', scale: 'type_base', step: 'md' -%}{%- endcapture -%}{%- endif -%}
+{%- capture s_gut -%}{%- render 'scale-step', scale: 'gutter', step: settings.gutter -%}{%- endcapture -%}
+{%- if s_gut == blank -%}{%- capture s_gut -%}{%- render 'scale-step', scale: 'gutter', step: 'md' -%}{%- endcapture -%}{%- endif -%}
+{%- capture s_space -%}{%- render 'scale-step', scale: 'space_base', step: settings.space_base -%}{%- endcapture -%}
+{%- if s_space == blank -%}{%- capture s_space -%}{%- render 'scale-step', scale: 'space_base', step: 'md' -%}{%- endcapture -%}{%- endif -%}
+{%- capture s_disp -%}{%- render 'scale-step', scale: 'display', step: settings.display_size -%}{%- endcapture -%}
+{%- if s_disp == blank -%}{%- capture s_disp -%}{%- render 'scale-step', scale: 'display', step: 'md' -%}{%- endcapture -%}{%- endif -%}
+{%- capture s_head -%}{%- render 'scale-step', scale: 'section_heading', step: settings.section_heading_size -%}{%- endcapture -%}
+{%- if s_head == blank -%}{%- capture s_head -%}{%- render 'scale-step', scale: 'section_heading', step: 'md' -%}{%- endcapture -%}{%- endif -%}
+
 {%- liquid
   assign vw_min = 360.0
   assign vw_max = 1440.0
   assign root_px = 16.0
   assign vw_span = vw_max | minus: vw_min
 
-  assign fs_min = settings.type_base_min | times: 1.0
-  assign fs_max = settings.type_base_max | times: 1.0
+  assign t = s_type | split: ','
+  assign fs_min = t[0] | times: 1.0
+  assign fs_max = t[1] | times: 1.0
   if fs_max < fs_min
     assign fs_max = fs_min
   endif
@@ -26,17 +47,29 @@
   assign ratio_min = settings.type_ratio_min | times: 1.0
   assign ratio_max = settings.type_ratio_max | times: 1.0
 
-  assign sp_min = settings.space_base_min | times: 1.0
-  assign sp_max = settings.space_base_max | times: 1.0
+  assign sp = s_space | split: ','
+  assign sp_min = sp[0] | times: 1.0
+  assign sp_max = sp[1] | times: 1.0
   if sp_max < sp_min
     assign sp_max = sp_min
   endif
 
-  assign gut_min = settings.gutter_min | times: 1.0
-  assign gut_max = settings.gutter_max | times: 1.0
+  assign g = s_gut | split: ','
+  assign gut_min = g[0] | times: 1.0
+  assign gut_max = g[1] | times: 1.0
   if gut_max < gut_min
     assign gut_max = gut_min
   endif
+
+  assign dsp = s_disp | split: ','
+  assign disp_min = dsp[0] | times: 1.0
+  assign disp_grow = dsp[1] | times: 1.0
+  assign disp_max = dsp[2] | times: 1.0
+
+  assign shd = s_head | split: ','
+  assign head_min = shd[0] | times: 1.0
+  assign head_grow = shd[1] | times: 1.0
+  assign head_max = shd[2] | times: 1.0
 
   assign fs_names = 'xs,sm,base,md,lg,xl,2xl,3xl,4xl' | split: ','
   assign sp_names = '3xs,2xs,xs,sm,md,lg,xl,2xl,3xl' | split: ','
@@ -147,13 +180,13 @@
     /* ---- Display headings -------------------------------------------
        Sized directly against the viewport so the wordmark-style titles
        hold their edge-to-edge proportion at every width.                */
-    --fs-display: clamp({{ settings.display_min | divided_by: root_px | round: 4 }}rem, {{ settings.display_grow | divided_by: 10.0 }}vw, {{ settings.display_max | divided_by: root_px | round: 4 }}rem);
+    --fs-display: clamp({{ disp_min | divided_by: root_px | round: 4 }}rem, {{ disp_grow | divided_by: 10.0 }}vw, {{ disp_max | divided_by: root_px | round: 4 }}rem);
     --display-leading: {{ settings.display_leading | divided_by: 100.0 }};
     --display-tracking: {{ settings.display_tracking | divided_by: 1000.0 }}em;
     --display-transform: {% if settings.display_uppercase %}uppercase{% else %}none{% endif %};
 
     /* Section headings — the sentence-case titles inside sections. */
-    --fs-section: clamp({{ settings.section_heading_min | divided_by: root_px | round: 4 }}rem, {{ settings.section_heading_grow | divided_by: 10.0 }}vw, {{ settings.section_heading_max | divided_by: root_px | round: 4 }}rem);
+    --fs-section: clamp({{ head_min | divided_by: root_px | round: 4 }}rem, {{ head_grow | divided_by: 10.0 }}vw, {{ head_max | divided_by: root_px | round: 4 }}rem);
 
     /* ---- Layout ------------------------------------------------------ */
     {%- liquid
