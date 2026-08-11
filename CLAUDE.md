@@ -1888,6 +1888,21 @@ the quick-view disc, `--card-zoom`, the edge colour).
   ```bash
   python3 -c "import json,re,glob;R=[];[R.extend([(p,r) for r in re.findall(r'\{[^{}]*\"type\":\s*\"range\"[^{}]*\}',open(p,encoding='utf-8').read())]) for p in glob.glob('sections/*.liquid')+['config/settings_schema.json']];[print(p,r) for p,r in R if (lambda d:(d.get('default',d.get('min',0))-d.get('min',0))%d.get('step',1) or (d.get('max',0)-d.get('min',0))/d.get('step',1)>101)(json.loads(r))]"
   ```
+- **Audit every schema `t:` path too, and know that `theme check` only covers
+  half of them.** `TranslationKeyExists` reads the section schemas but **not
+  `config/settings_schema.json`**, so a theme setting can point at a key that
+  was never written and the file still returns `[]` — the theme editor then
+  shows the raw `t:` path where the help text should be. That is exactly how
+  `settings_schema.cart.cart_image_fit.info` shipped missing.
+
+  Note these resolve against `locales/en.default.schema.json`, a different file
+  from the storefront's `| t`. This walks every reference in the settings
+  schema and in every section schema and prints the ones that do not land on a
+  string:
+
+  ```bash
+  python3 -c "import json,re,glob;L=json.load(open('locales/en.default.schema.json',encoding='utf-8'));R=lambda p:(lambda n:all([(n.__setitem__(0,n[0].get(k)) if isinstance(n[0],dict) else n.__setitem__(0,None)) or isinstance(n[0],(dict,str)) for k in p.split('.')]) and isinstance(n[0],str))([L]);T=lambda o:[o[2:]] if isinstance(o,str) and o.startswith('t:') else (sum([T(v) for v in o.values()],[]) if isinstance(o,dict) else (sum([T(v) for v in o],[]) if isinstance(o,list) else []));K=T(json.load(open('config/settings_schema.json',encoding='utf-8')));[K.extend(T(json.loads(b))) for p in glob.glob('sections/*.liquid') for b in re.findall(r'{%-?\s*schema\s*-?%}(.*?){%-?\s*endschema\s*-?%}',open(p,encoding='utf-8').read(),re.S)];[print('MISSING',k) for k in sorted(set(K)) if not R(k)]"
+  ```
 - **A `.display` heading has no bottom gap of its own.** Its line-height is
   below 1 (`--display-leading`, 0.95), so the box ends level with the letters.
   Every section that has a subheading gets its breathing room from

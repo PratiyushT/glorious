@@ -342,7 +342,8 @@
         "info": "The frame a line’s photograph sits in, as on a product card."
       },
       "cart_image_fit": {
-        "label": "Image fit"
+        "label": "Image fit",
+        "info": "How the piece sits in that frame. Filled by default, where a card fits the whole piece — a 64px thumbnail has little room to give away."
       }
     },
     "localization": {
