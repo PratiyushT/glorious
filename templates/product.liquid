@@ -27,9 +27,24 @@
                   data-image-lqip: media_lqip
               }}
             {%- when 'video' -%}
-              {{ media | video_tag: controls: true, preload: 'metadata', image_size: '1600x' }}
+              {%- assign video_lqip = media.preview_image | image_url: width: 40 -%}
+              {{
+                media
+                | video_tag:
+                  controls: true,
+                  preload: 'metadata',
+                  image_size: '1600x',
+                  data-video-lqip: video_lqip
+              }}
             {%- when 'external_video' -%}
-              {{ media | external_video_tag }}
+              {%- assign video_lqip = media.preview_image | image_url: width: 40 -%}
+              {%- assign video_poster = media.preview_image | image_url: width: 1600 -%}
+              {{
+                media
+                | external_video_tag:
+                  data-video-lqip: video_lqip,
+                  data-video-poster: video_poster
+              }}
             {%- when 'model' -%}
               {{ media | model_viewer_tag }}
           {%- endcase -%}

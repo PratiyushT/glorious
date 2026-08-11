@@ -20,6 +20,7 @@
         <div class="{% if section.settings.show_frame %}media-frame{% endif %}">
           <div class="media" style="aspect-ratio: {{ section.settings.image_ratio }};">
             {%- if section.settings.video != blank -%}
+              {%- assign video_lqip = section.settings.video.preview_image | image_url: width: 40 -%}
               {{
                 section.settings.video
                 | video_tag:
@@ -27,7 +28,8 @@
                   autoplay: true,
                   loop: true,
                   muted: true,
-                  controls: false
+                  controls: false,
+                  data-video-lqip: video_lqip
               }}
             {%- elsif section.settings.image != blank -%}
               <img

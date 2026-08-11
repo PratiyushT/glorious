@@ -661,6 +661,61 @@ a {
   to { filter: blur(0) saturate(1) brightness(1); }
 }
 
+/* Videos use their own exact Shopify preview frame. It sits above the full
+   poster/video, so partially loaded full media is never exposed, then fades
+   only after either the poster has decoded or the first video frame exists. */
+.video-lqip-frame {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: block;
+  pointer-events: none;
+  background-color: var(--c-surface);
+  background-image: var(--video-lqip-source);
+  background-position: var(--video-lqip-position, 50% 50%);
+  background-repeat: no-repeat;
+  background-size: var(--video-lqip-fit, cover);
+  filter: blur(18px) saturate(0.72) brightness(1.12);
+  will-change: filter, opacity;
+}
+
+.video-lqip-frame.is-lqip-revealing {
+  animation: gj-video-lqip-reveal 0.8s ease-out both;
+}
+
+/* External-video iframes do not have a poster layer of their own. Their exact
+   full preview sharpens inside the facade, which stays until the embed loads. */
+.video-lqip-frame.is-poster-ready {
+  filter: blur(0) saturate(1) brightness(1);
+  transition: filter 0.8s ease-out;
+}
+
+.video-lqip-frame.is-poster-ready.is-lqip-revealing {
+  animation-name: gj-video-lqip-fade;
+}
+
+@keyframes gj-video-lqip-reveal {
+  from {
+    opacity: 1;
+    filter: blur(18px) saturate(0.72) brightness(1.12);
+  }
+  to {
+    opacity: 0;
+    filter: blur(0) saturate(1) brightness(1);
+  }
+}
+
+@keyframes gj-video-lqip-fade {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .video-lqip-frame.is-poster-ready {
+    transition: none;
+  }
+}
+
 /* A hairline frame offset outside the media. */
 .media-frame {
   position: relative;
@@ -1329,16 +1384,6 @@ a {
   /* The design's framing correction. Liquid works the factor out per piece. */
   transform: scale(var(--card-zoom));
   transition: filter 0.9s ease 0.1s;
-}
-
-/* Blur-up. The class is added by the script and only to media that has not
-   arrived yet, so nothing is left permanently blurred without scripting. */
-.card__img.is-blurred {
-  filter: blur(18px) saturate(0.7) brightness(1.14);
-}
-
-.card__video.is-blurred {
-  filter: blur(16px) saturate(0.8);
 }
 
 /* Without the script the first slide is simply the one on show. The design's
@@ -5124,14 +5169,6 @@ a.nav-menu__address:hover {
    frame — an easing curve here would lag behind the finger. */
 .quick-view__img[data-quick-dragging] {
   transition: filter 0.9s ease 0.1s;
-}
-
-.quick-view__img.is-blurred {
-  filter: blur(18px) saturate(0.7) brightness(1.14);
-}
-
-.quick-view__video.is-blurred {
-  filter: blur(16px) saturate(0.8);
 }
 
 [data-quick-zoomable] {

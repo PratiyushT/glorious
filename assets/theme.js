@@ -935,13 +935,15 @@
     });
   }
 
-  /* ---- Same-image low-quality previews -------------------------------
+  /* ---- Same-media low-quality previews -------------------------------
      Every raster image carries a tiny rendition of that same image in
      `data-image-lqip`. It is painted as the image element's own background,
      using the same fit and position as the full source, so there is no generic
-     placeholder and no extra layer to jump at handoff. The real src/srcset is
-     left alone and loads in parallel. Once it has loaded, decode() is awaited
-     before the blur sharpens away.
+     placeholder and no extra layer to jump at handoff. Every video carries a
+     tiny rendition of its own Shopify preview frame in `data-video-lqip`; that
+     frame sits over the untouched full poster/video until the poster decodes
+     or the first real frame arrives. External-video iframes use the same
+     preview-frame facade. Full sources always load in parallel.
 
      Loading state remains progressive enhancement: classes and backgrounds
      are added only here. Cached images never flash a preview, lazy images are
@@ -951,7 +953,10 @@
   var imageLqipStates = new WeakMap();
   var imageLqipBound = new WeakSet();
   var imageLqipViewport = null;
-  var imageLqipMutations = null;
+  var videoLqipStates = new WeakMap();
+  var videoLqipViewport = null;
+  var videoLqipHosts = new WeakMap();
+  var mediaLqipMutations = null;
 
   function mediaWithin(scope, selector) {
     var media = [];
@@ -962,8 +967,7 @@
     return media;
   }
 
-  function derivedImageLqip(image) {
-    var raw = image.currentSrc || image.getAttribute('src') || image.dataset.src || '';
+  function derivedMediaLqip(raw) {
     if (!raw || /^(?:data|blob):/i.test(raw)) return '';
 
     try {
@@ -987,6 +991,11 @@
     } catch (error) {
       return '';
     }
+  }
+
+  function derivedImageLqip(image) {
+    var raw = image.currentSrc || image.getAttribute('src') || image.dataset.src || '';
+    return derivedMediaLqip(raw);
   }
 
   function imageLqipUrl(image) {
@@ -1185,50 +1194,424 @@
     queueImageLqip(image, state, immediate);
   }
 
-  function bindVideoBlur(video) {
-    if (!bindOnce(video, 'boundBlur')) return;
-    if (video.readyState >= 2) return;
+  function videoLqipUrl(media) {
+    var supplied = media.getAttribute('data-video-lqip');
+    if (supplied === 'off') return '';
+    if (supplied) {
+      try {
+        return new window.URL(supplied, document.baseURI).href;
+      } catch (error) {
+        return supplied;
+      }
+    }
 
-    video.classList.add('is-blurred');
-    function clear() { video.classList.remove('is-blurred'); }
-    video.addEventListener('loadeddata', clear, { once: true });
-    video.addEventListener('error', clear, { once: true });
+    if (media.tagName !== 'VIDEO') return '';
+    return derivedMediaLqip(media.getAttribute('poster') || '');
+  }
+
+  function videoPosterUrl(media) {
+    var raw = media.getAttribute('data-video-poster');
+    if (!raw && media.tagName === 'VIDEO') raw = media.getAttribute('poster');
+    if (!raw) return '';
+
+    try {
+      return new window.URL(raw, document.baseURI).href;
+    } catch (error) {
+      return raw;
+    }
+  }
+
+  function videoSourceKey(media) {
+    var sources = media.tagName === 'VIDEO'
+      ? Array.prototype.map.call(media.querySelectorAll('source'), function (source) {
+        return source.getAttribute('src') || source.dataset.src || '';
+      }).join(',')
+      : '';
+
+    return [
+      media.tagName,
+      media.getAttribute('src') || '',
+      media.dataset.src || '',
+      sources
+    ].join('|');
+  }
+
+  function videoLqipKey(media, lqip, poster) {
+    return [videoSourceKey(media), poster, lqip].join('|');
+  }
+
+  function videoHasSource(media) {
+    if (media.getAttribute('src')) return true;
+    return media.tagName === 'VIDEO' && Boolean(media.querySelector('source[src]'));
+  }
+
+  function unobserveVideoLqip(media) {
+    if (videoLqipViewport) videoLqipViewport.unobserve(media);
+  }
+
+  function acquireVideoLqipHost(host, state) {
+    var lease = videoLqipHosts.get(host);
+    if (!lease) {
+      var hostStyle = window.getComputedStyle(host);
+      lease = {
+        count: 0,
+        ownsPosition: hostStyle.position === 'static',
+        positionPriority: host.style.getPropertyPriority('position'),
+        positionValue: host.style.getPropertyValue('position')
+      };
+      if (lease.ownsPosition) host.style.setProperty('position', 'relative');
+      videoLqipHosts.set(host, lease);
+    }
+
+    lease.count += 1;
+    state.host = host;
+    state.hostLease = lease;
+  }
+
+  function releaseVideoLqipHost(state) {
+    var host = state && state.host;
+    var lease = state && state.hostLease;
+    if (!host || !lease || videoLqipHosts.get(host) !== lease) return;
+
+    lease.count = Math.max(0, lease.count - 1);
+    if (lease.count === 0) {
+      if (lease.ownsPosition && host.style.getPropertyValue('position') === 'relative') {
+        if (lease.positionValue) {
+          host.style.setProperty('position', lease.positionValue, lease.positionPriority);
+        } else {
+          host.style.removeProperty('position');
+        }
+      }
+      videoLqipHosts.delete(host);
+    }
+
+    state.host = null;
+    state.hostLease = null;
+  }
+
+  function unbindVideoLqip(media, state) {
+    if (!state || !state.readyEvent) return;
+    media.removeEventListener(state.readyEvent, state.readyListener);
+    media.removeEventListener('error', state.errorListener);
+    state.readyEvent = '';
+    state.readyListener = null;
+    state.errorListener = null;
+  }
+
+  function clearVideoLqipVisual(media, state) {
+    if (state && state.timer) {
+      window.clearTimeout(state.timer);
+      state.timer = null;
+    }
+    if (state && state.fallbackTimer) {
+      window.clearTimeout(state.fallbackTimer);
+      state.fallbackTimer = null;
+    }
+    if (state && state.overlay && state.animationEnd) {
+      state.overlay.removeEventListener('animationend', state.animationEnd);
+      state.animationEnd = null;
+    }
+    if (state && state.posterImage) {
+      state.posterImage.onload = null;
+      state.posterImage.onerror = null;
+      state.posterImage = null;
+    }
+
+    unobserveVideoLqip(media);
+    unbindVideoLqip(media, state);
+    if (state && state.overlay && state.overlay.parentNode) state.overlay.parentNode.removeChild(state.overlay);
+    if (state) state.overlay = null;
+    media.classList.remove('video-lqip', 'is-lqip-loading', 'is-lqip-revealing');
+    releaseVideoLqipHost(state);
+  }
+
+  function finishVideoLqip(media, state) {
+    if (videoLqipStates.get(media) !== state) return;
+    clearVideoLqipVisual(media, state);
+  }
+
+  function revealVideoLqip(media, state) {
+    if (videoLqipStates.get(media) !== state || state.done) return;
+    state.done = true;
+    unobserveVideoLqip(media);
+
+    if (!state.active || !state.overlay || reduceMotion.matches) {
+      finishVideoLqip(media, state);
+      return;
+    }
+
+    media.classList.add('is-lqip-revealing');
+    media.classList.remove('is-lqip-loading');
+    state.overlay.classList.add('is-lqip-revealing');
+
+    state.animationEnd = function (event) {
+      if (event.animationName !== 'gj-video-lqip-reveal') return;
+      finishVideoLqip(media, state);
+    };
+    state.overlay.addEventListener('animationend', state.animationEnd);
+    state.timer = window.setTimeout(function () {
+      finishVideoLqip(media, state);
+    }, 1000);
+  }
+
+  function videoPosterFailed(media, state) {
+    if (videoLqipStates.get(media) !== state || state.done || state.posterFailed) return;
+    state.posterFailed = true;
+
+    /* A controlled native video must never have its controls stranded behind
+       a preview whose sharp poster failed. External embeds can still finish
+       through their own load event, with a bounded escape hatch. */
+    if (media.tagName === 'VIDEO' || state.mediaFailed) {
+      state.done = true;
+      finishVideoLqip(media, state);
+    } else if (!state.fallbackTimer) {
+      state.fallbackTimer = window.setTimeout(function () {
+        revealVideoLqip(media, state);
+      }, 5000);
+    }
+  }
+
+  function videoPosterReady(media, state) {
+    if (videoLqipStates.get(media) !== state || state.done || state.posterDecoding || state.posterReady) return;
+    state.posterDecoding = true;
+    var posterImage = state.posterImage;
+    var decoded = posterImage && typeof posterImage.decode === 'function'
+      ? posterImage.decode().catch(function () {})
+      : Promise.resolve();
+
+    decoded.then(function () {
+      if (videoLqipStates.get(media) !== state || state.done) return;
+      state.posterDecoding = false;
+      if (posterImage && posterImage.naturalWidth > 0) {
+        state.posterReady = true;
+
+        /* An iframe has no native poster underneath the facade. Once its full
+           preview decodes, sharpen that same frame in place and keep it over
+           the embed until the iframe's own load event arrives. */
+        if (media.tagName === 'IFRAME' && state.overlay) {
+          state.overlay.style.setProperty('--video-lqip-source', 'url(' + JSON.stringify(state.poster) + ')');
+          state.overlay.classList.add('is-poster-ready');
+          if (state.mediaReady) revealVideoLqip(media, state);
+        } else {
+          revealVideoLqip(media, state);
+        }
+      } else {
+        videoPosterFailed(media, state);
+      }
+    });
+  }
+
+  function activateVideoLqip(media, state) {
+    if (videoLqipStates.get(media) !== state || state.active || state.done) return;
+    if (media.tagName === 'VIDEO' && media.readyState >= 2 && !state.resourceChanged) {
+      state.done = true;
+      unobserveVideoLqip(media);
+      return;
+    }
+
+    var host = media.parentElement;
+    if (!host) {
+      state.done = true;
+      return;
+    }
+
+    acquireVideoLqipHost(host, state);
+
+    var style = window.getComputedStyle(media);
+    var fit = style.objectFit || 'cover';
+    var backgroundFit = 'auto';
+    if (fit === 'cover' || fit === 'contain') backgroundFit = fit;
+    else if (fit === 'fill') backgroundFit = '100% 100%';
+    else if (fit === 'scale-down') backgroundFit = 'contain';
+
+    var overlay = document.createElement('span');
+    overlay.className = 'video-lqip-frame is-lqip-loading';
+    overlay.setAttribute('aria-hidden', 'true');
+    overlay.style.setProperty('--video-lqip-source', 'url(' + JSON.stringify(state.lqip) + ')');
+    overlay.style.setProperty('--video-lqip-fit', backgroundFit);
+    overlay.style.setProperty('--video-lqip-position', style.objectPosition || '50% 50%');
+    overlay.style.borderRadius = style.borderRadius;
+    if (style.transform && style.transform !== 'none') overlay.style.transform = style.transform;
+    if (style.transformOrigin) overlay.style.transformOrigin = style.transformOrigin;
+    host.insertBefore(overlay, media.nextSibling);
+
+    state.overlay = overlay;
+    state.active = true;
+    media.classList.add('video-lqip', 'is-lqip-loading');
+
+    if (state.poster) {
+      var posterImage = new window.Image();
+      state.posterImage = posterImage;
+      posterImage.onload = function () { videoPosterReady(media, state); };
+      posterImage.onerror = function () { videoPosterFailed(media, state); };
+      posterImage.src = state.poster;
+      if (posterImage.complete) {
+        if (posterImage.naturalWidth > 0) videoPosterReady(media, state);
+        else posterImage.onerror();
+      }
+    }
+  }
+
+  function queueVideoLqip(media, state, immediate) {
+    if (immediate || media.getAttribute('loading') !== 'lazy' || !('IntersectionObserver' in window)) {
+      activateVideoLqip(media, state);
+      return;
+    }
+
+    if (!videoLqipViewport) {
+      videoLqipViewport = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (!entry.isIntersecting) return;
+          videoLqipViewport.unobserve(entry.target);
+          var current = videoLqipStates.get(entry.target);
+          if (current) activateVideoLqip(entry.target, current);
+        });
+      }, { rootMargin: '1200px 0px', threshold: 0.01 });
+    }
+
+    videoLqipViewport.observe(media);
+  }
+
+  function videoLqipLoaded(media, state) {
+    if (videoLqipStates.get(media) !== state || state.done) return;
+    state.mediaReady = true;
+    revealVideoLqip(media, state);
+  }
+
+  function videoLqipFailed(media, state) {
+    if (videoLqipStates.get(media) !== state || state.done) return;
+    state.mediaFailed = true;
+    if (media.tagName === 'IFRAME' && state.posterReady) {
+      if (state.fallbackTimer) {
+        window.clearTimeout(state.fallbackTimer);
+        state.fallbackTimer = null;
+      }
+      return;
+    }
+    if (!state.poster || state.posterFailed) {
+      state.done = true;
+      finishVideoLqip(media, state);
+    }
+  }
+
+  function watchVideoLqip(media, immediate) {
+    var lqip = videoLqipUrl(media);
+    var poster = videoPosterUrl(media);
+    var previous = videoLqipStates.get(media);
+    var key = videoLqipKey(media, lqip, poster);
+
+    if (previous && previous.key === key) {
+      if (immediate && !previous.active && !previous.done) activateVideoLqip(media, previous);
+      return;
+    }
+
+    if (previous) clearVideoLqipVisual(media, previous);
+
+    var state = {
+      active: false,
+      animationEnd: null,
+      done: false,
+      errorListener: null,
+      fallbackTimer: null,
+      host: null,
+      hostLease: null,
+      key: key,
+      lqip: lqip,
+      mediaFailed: false,
+      mediaReady: false,
+      overlay: null,
+      poster: poster,
+      posterDecoding: false,
+      posterFailed: false,
+      posterImage: null,
+      posterReady: false,
+      readyEvent: '',
+      readyListener: null,
+      resourceChanged: Boolean(previous && previous.key !== key),
+      timer: null
+    };
+    videoLqipStates.set(media, state);
+
+    if (!lqip) {
+      state.done = true;
+      return;
+    }
+
+    if (media.tagName === 'VIDEO' && media.readyState >= 2 && !state.resourceChanged) {
+      state.done = true;
+      return;
+    }
+
+    state.readyEvent = media.tagName === 'VIDEO' ? 'loadeddata' : 'load';
+    state.readyListener = function () { videoLqipLoaded(media, state); };
+    state.errorListener = function () { videoLqipFailed(media, state); };
+    media.addEventListener(state.readyEvent, state.readyListener);
+    media.addEventListener('error', state.errorListener);
+
+    if (!videoHasSource(media) && !immediate) return;
+    queueVideoLqip(media, state, immediate);
   }
 
   function blurUp(scope, immediate) {
     mediaWithin(scope, 'img').forEach(function (image) {
       watchImageLqip(image, Boolean(immediate));
     });
-    mediaWithin(scope, 'video[data-card-blur]').forEach(bindVideoBlur);
+    mediaWithin(scope, 'video, iframe[data-video-lqip]').forEach(function (media) {
+      watchVideoLqip(media, Boolean(immediate));
+    });
   }
 
-  function initImageLqipObserver() {
-    if (imageLqipMutations || !('MutationObserver' in window) || !document.body) return;
+  function initMediaLqipObserver() {
+    if (mediaLqipMutations || !('MutationObserver' in window) || !document.body) return;
 
-    imageLqipMutations = new MutationObserver(function (records) {
-      var changed = [];
+    mediaLqipMutations = new MutationObserver(function (records) {
+      var changedImages = [];
+      var changedVideos = [];
 
       records.forEach(function (record) {
         if (record.type === 'childList') {
           Array.prototype.forEach.call(record.addedNodes, function (node) {
             if (node.nodeType === 1) blurUp(node, false);
           });
+          if ((record.target.tagName === 'VIDEO' || record.target.tagName === 'IFRAME') &&
+              changedVideos.indexOf(record.target) === -1) {
+            changedVideos.push(record.target);
+          }
           return;
         }
 
-        if (record.target.tagName === 'IMG' && changed.indexOf(record.target) === -1) {
-          changed.push(record.target);
+        if (record.target.tagName === 'IMG' && changedImages.indexOf(record.target) === -1) {
+          changedImages.push(record.target);
+        }
+        if ((record.target.tagName === 'VIDEO' || record.target.tagName === 'IFRAME') &&
+            changedVideos.indexOf(record.target) === -1) {
+          changedVideos.push(record.target);
+        }
+        if (record.target.tagName === 'SOURCE' && record.target.parentElement &&
+            record.target.parentElement.tagName === 'VIDEO' &&
+            changedVideos.indexOf(record.target.parentElement) === -1) {
+          changedVideos.push(record.target.parentElement);
         }
       });
 
-      changed.forEach(function (image) { watchImageLqip(image, true); });
+      changedImages.forEach(function (image) { watchImageLqip(image, true); });
+      changedVideos.forEach(function (media) { watchVideoLqip(media, true); });
     });
 
-    imageLqipMutations.observe(document.body, {
+    mediaLqipMutations.observe(document.body, {
       childList: true,
       subtree: true,
       attributes: true,
-      attributeFilter: ['src', 'srcset', 'data-src', 'data-srcset', 'data-image-lqip']
+      attributeFilter: [
+        'src',
+        'srcset',
+        'data-src',
+        'data-srcset',
+        'poster',
+        'data-image-lqip',
+        'data-video-lqip',
+        'data-video-poster'
+      ]
     });
   }
 
@@ -1383,7 +1766,7 @@
       var media = card.querySelector('.card__media');
       var slides = Array.prototype.slice.call(card.querySelectorAll('[data-card-slide]'));
       card.setAttribute('data-card-live', '');
-      if (!media || slides.length < 2) return;
+      if (!media || !slides.length) return;
 
       var spinLabel = card.querySelector('[data-card-spin-label]');
       var count = slides.length;
@@ -1434,9 +1817,14 @@
 
           if (on && !reduceMotion.matches) {
             if (!video.src && video.dataset.src) video.src = video.dataset.src;
+            watchVideoLqip(video, true);
             video.muted = true;
             var playing = video.play();
             if (playing && playing.catch) playing.catch(function () {});
+          } else if (on) {
+            /* Reduced motion keeps the film paused, but its decoded full poster
+               must still replace the tiny preview frame. */
+            watchVideoLqip(video, true);
           } else if (!video.paused) {
             video.pause();
           }
@@ -1593,9 +1981,12 @@
 
       if (i === quickIndex && !reduceMotion.matches) {
         if (!video.src && video.dataset.src) video.src = video.dataset.src;
+        watchVideoLqip(video, true);
         video.muted = true;
         var playing = video.play();
         if (playing && playing.catch) playing.catch(function () {});
+      } else if (i === quickIndex) {
+        watchVideoLqip(video, true);
       } else if (!video.paused) {
         video.pause();
       }
@@ -3101,7 +3492,7 @@
   }
 
   function boot() {
-    initImageLqipObserver();
+    initMediaLqipObserver();
     initNav();
     init(document);
     initSearch();

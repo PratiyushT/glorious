@@ -96,9 +96,16 @@
                 {% unless forloop.first %}hidden{% endunless %}
               >
                 {%- if block.settings.video != blank -%}
+                  {%- assign video_lqip = block.settings.video.preview_image | image_url: width: 40 -%}
                   {{
                     block.settings.video
-                    | video_tag: controls: false, muted: true, loop: true, preload: 'metadata'
+                    | video_tag:
+                      controls: false,
+                      muted: true,
+                      loop: true,
+                      preload: 'metadata',
+                      image_size: '1200x',
+                      data-video-lqip: video_lqip
                   }}
                 {%- elsif block.settings.image != blank -%}
                   <img

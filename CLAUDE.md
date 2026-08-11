@@ -110,6 +110,26 @@ observer covers Quick View, predictive search, cart re-renders, theme-editor
 reloads and Shopify-CDN images inserted in rich text or by an app. The classes
 remain script-owned so a visitor without JavaScript is never left blurred.
 
+**Every hosted or external video uses a same-video low-quality preview frame.**
+Every theme-controlled `video_tag`, manual `<video>` and `external_video_tag`
+must carry `data-video-lqip` from that media object's own `preview_image` at
+roughly 40px wide. Keep the normal full poster and video sources untouched; do
+not make the tiny rendition the actual `poster`, do not use a generic image,
+and do not merely blur the full poster or partially loaded video.
+
+`theme.js` places the tiny preview frame above the media with matching
+`object-fit`, `object-position` and transform. The full poster and video load
+behind it in parallel. The facade reveals only after the full poster decodes,
+the first native video frame is ready, or an external-video iframe is ready.
+This decoded-poster fallback is required for controlled, deferred and
+reduced-motion videos so none can remain permanently blurred; reduced motion
+snaps sharp instead of animating. The same mutation observer covers videos
+inserted or re-sourced after initial render. Without JavaScript, the full poster
+and normal video remain unchanged because the preview facade is script-owned.
+For an external iframe, sharpen the full preview inside the facade and keep it
+there until the embed loads; if the embed fails, that sharp preview remains
+rather than revealing an empty frame.
+
 `templates/gift_card.liquid` is `layout none`, so it keeps a small standalone
 copy of the same handoff. Its stock Shopify card uses the CDN's tested
 `width=40` rendition; if that global image is replaced, prefer a theme asset and
