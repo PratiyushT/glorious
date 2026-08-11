@@ -63,7 +63,13 @@
     {{ content_for_header }}
   </head>
 
-  <body class="scheme-scheme_1 template-{{ template.name | handle }}">
+  {%- comment -%}
+    The page's own scheme is a setting. It was hardcoded to `scheme_1`, so a
+    merchant could define four schemes and never choose which one the page
+    itself used — every section could be restyled and the ground under them
+    could not.
+  {%- endcomment -%}
+  <body class="scheme-{{ settings.page_scheme.id | default: 'scheme_1' }} template-{{ template.name | handle }}">
     <a class="skip-link" href="#main">{{ 'accessibility.skip_to_content' | t }}</a>
 
     {% sections 'header-group' %}

@@ -296,9 +296,56 @@
        the thumbnail itself; only the fit is global.                     */
     --cart-thumb-fit: {{ settings.cart_image_fit | default: 'cover' }};
 
+    /* ---- Brand palette ------------------------------------------------
+       The seven constants the design names — porcelain, ink, noir, ivory,
+       champagne, deep gold — as tokens rather than as literals in base.css.
+
+       They are NOT a seventh colour picker. Each is read out of a scheme the
+       merchant already controls: the light three from the page scheme, the
+       dark four from whichever scheme is nominated as the dark one. So a
+       merchant who restyles a scheme restyles every surface built from it,
+       and the theme still has one place each colour is defined.
+
+       This exists because the components that most define the theme's look —
+       the lookbook stage, the collection card's hover band, the menu and
+       search overlays, the bag drawer's checkout button — were painted with
+       hex literals, so no colour setting reached them at all. `--c-ivory` was
+       already being declared twice as a component-scoped literal, which is
+       the same idea arrived at by hand.
+
+       A dark surface cannot simply use `var(--c-bg)`: it sits inside a
+       section whose scheme may be light, and it is dark regardless. That is
+       why these are named for the colour rather than for the role.          */
+    {%- liquid
+      assign light = settings.color_schemes[settings.page_scheme.id] | default: settings.color_schemes.scheme_1
+      assign dark = settings.color_schemes[settings.dark_scheme.id] | default: settings.color_schemes.scheme_2
+    -%}
+    --c-porcelain: {{ light.settings.background | default: '#F4F0E8' }};
+    --c-ink: {{ light.settings.text | default: '#191510' }};
+    --c-gold: {{ light.settings.accent | default: '#9A7836' }};
+    --c-noir: {{ dark.settings.background | default: '#0D0C0A' }};
+    --c-noir-surface: {{ dark.settings.surface | default: '#14110D' }};
+    --c-ivory: {{ dark.settings.text | default: '#EFE9DC' }};
+    --c-champagne: {{ dark.settings.accent | default: '#C7A15C' }};
+    {%- comment -%}
+      A shade under the noir, for the veils that sit behind a dark panel. The
+      design states #0B0A08 against its #0D0C0A; derived rather than stored so
+      it follows the merchant's noir instead of drifting away from it.
+    {%- endcomment -%}
+    --c-noir-deep: color-mix(in srgb, var(--c-noir) 88%, #000);
+
     /* ---- Status ------------------------------------------------------
        One colour, not per-scheme: an error reads the same everywhere.   */
     --c-error: {{ settings.color_error | default: '#A2422C' }};
+
+    /* ---- Scrollbars ---------------------------------------------------
+       Settings, but deliberately NOT per-scheme. The design serves its noir
+       home page and its porcelain inner pages from one file and paints the
+       identical thumb on both — a warm mid grey chosen to read against
+       either end. Splitting it per scheme would also split one design colour
+       in two on the panels that carry a scheme class and also scroll.      */
+    --scrollbar-thumb: {{ settings.scrollbar_thumb | default: '#8A8072' }};
+    --scrollbar-thumb-hover: {{ settings.scrollbar_thumb_hover | default: '#6E6558' }};
 
     /* ---- Motion ------------------------------------------------------
        The merchant picks a named step; motion-step.liquid resolves it to a

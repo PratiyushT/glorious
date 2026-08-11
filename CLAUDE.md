@@ -18,6 +18,72 @@ this file that explains a feature and the code that implements it must never
 arrive separately: the note is how the next pass learns why a number is what it
 is.
 
+### Colour
+
+**Every colour a merchant sees is reachable from a setting.** It was not:
+`base.css` carried **79 literal hex colours** against this file's own claim that
+it "hardcodes no literal size, colour or breakpoint", and they were not in
+out-of-the-way places — they were the lookbook stage, the collection card's
+hover band, the hero's portrait frame, the menu and search overlays, the bag
+drawer's checkout button. The components that most define the theme's look were
+the ones no colour setting could reach.
+
+- **The brand palette is emitted at `:root` from two schemes**, not from seven
+  new colour pickers. `--c-porcelain`, `--c-ink` and `--c-gold` come from the
+  **page scheme**; `--c-noir`, `--c-noir-surface`, `--c-ivory` and
+  `--c-champagne` from whichever scheme is nominated the **dark** one. So there
+  is still one place each colour is defined, and restyling a scheme restyles
+  every surface built from it.
+
+  The mapping was already exact — `scheme_2` *is* the design's noir palette
+  (`#0d0c0a` background, `#14110d` surface, `#efe9dc` text, `#c7a15c` accent),
+  so the literals were re-typing a scheme that existed. `--c-ivory` was already
+  being declared twice as a component-scoped literal, which is this idea
+  arrived at by hand.
+
+- **Two routes, and which one a component takes is a real distinction.** A
+  component inside a section follows that section's scheme — the lookbook is
+  inside `.scheme-scheme_2` and its background is that scheme's `--c-bg`. A
+  component that is dark *regardless* of the page cannot use `--c-bg` at all,
+  because it may sit in a light section; those use the brand tokens. Verified
+  on the page: recolouring the lookbook's scheme moves the lookbook and not the
+  nav overlay, and recolouring `--c-noir` moves the nav overlay and not the
+  lookbook. Both are correct.
+
+- **`--c-noir-deep` is derived, not stored.** The design states `#0B0A08`
+  against its `#0D0C0A` for the veil behind a dark panel;
+  `color-mix(in srgb, var(--c-noir) 88%, #000)` follows the merchant's noir
+  instead of drifting away from it.
+
+- **The page's own scheme is a setting.** `layout/theme.liquid` hardcoded
+  `class="scheme-scheme_1"`, so a merchant could define four schemes and never
+  choose which the page itself used — every section restyleable and the ground
+  under them not.
+
+- **The scrollbar colours are settings but deliberately still not per-scheme.**
+  The reasoning under "Scrollbars" stands: one design file serves the noir home
+  page and the porcelain inner pages and paints the identical thumb on both.
+  Being a literal and being un-styleable are different problems; this fixes the
+  second without giving up the first.
+
+- **`#FFFFFF` behind a product thumbnail is `--c-surface` now.** The
+  photography is shot on white and the backdrop should match the merchant's
+  surface rather than assume it.
+
+Two traps, both hit here:
+
+- **Replacing `#EFE9DC` with `var(--c-ivory)` across the file turned
+  `--c-ivory: #EFE9DC` into `--c-ivory: var(--c-ivory)`** — a self-reference,
+  which CSS treats as invalid at computed-value time and drops entirely. A
+  blanket literal-to-token sweep has to skip the declarations *of* those
+  tokens.
+- **A `str.replace` whose anchor does not match fails silently.** Four settings
+  were "added" to `config/settings_schema.json` by a script that printed
+  success and changed nothing, because the anchor assumed an indentation the
+  file does not use. `veylin-lint`'s R06 caught it — `settings.page_scheme` was
+  referenced in Liquid and defined nowhere — where `theme check` returned `[]`,
+  since it does not read that file.
+
 ### Buttons
 
 **The design's four variants, chosen per button.** `snippets/button.liquid`

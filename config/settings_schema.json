@@ -407,6 +407,33 @@
         "content": "t:settings_schema.colors.paragraph"
       },
       {
+        "type": "color_scheme",
+        "id": "page_scheme",
+        "label": "t:settings_schema.colors.page_scheme.label",
+        "info": "t:settings_schema.colors.page_scheme.info",
+        "default": "scheme_1"
+      },
+      {
+        "type": "color_scheme",
+        "id": "dark_scheme",
+        "label": "t:settings_schema.colors.dark_scheme.label",
+        "info": "t:settings_schema.colors.dark_scheme.info",
+        "default": "scheme_2"
+      },
+      {
+        "type": "color",
+        "id": "scrollbar_thumb",
+        "label": "t:settings_schema.colors.scrollbar_thumb.label",
+        "info": "t:settings_schema.colors.scrollbar_thumb.info",
+        "default": "#8A8072"
+      },
+      {
+        "type": "color",
+        "id": "scrollbar_thumb_hover",
+        "label": "t:settings_schema.colors.scrollbar_thumb_hover.label",
+        "default": "#6E6558"
+      },
+      {
         "type": "color",
         "id": "color_error",
         "label": "t:settings_schema.colors.error.label",

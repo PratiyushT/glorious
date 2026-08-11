@@ -131,6 +131,26 @@
     </p>
   </header>
 
+  {%- comment -%} ---- Brand palette ------------------------------------- {%- endcomment -%}
+  <section class="ds__block">
+    <h2 class="h2">Brand palette</h2>
+    <p class="rte measure">
+      The seven constants the design names. None of them is a colour picker of
+      its own — the light three are read from the page scheme and the dark four
+      from whichever scheme is nominated as the dark one, so changing a scheme
+      changes every surface built from it.
+    </p>
+    <div class="ds__swatches">
+      {%- assign brand = 'porcelain,ink,gold,noir,noir-surface,ivory,champagne,noir-deep,error' | split: ',' -%}
+      {%- for b in brand -%}
+        <div class="ds__swatch">
+          <span class="ds__chip" style="background: var(--c-{{ b }})"></span>
+          <span class="ds__swatch-name" data-ds-var="--c-{{ b }}">--c-{{ b }}</span>
+        </div>
+      {%- endfor -%}
+    </div>
+  </section>
+
   {%- comment -%} ---- Colour schemes ------------------------------------ {%- endcomment -%}
   <section class="ds__block">
     <h2 class="h2">Colour schemes</h2>

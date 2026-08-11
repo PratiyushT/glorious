@@ -144,8 +144,7 @@ a {
    every overlay open. `thin` alone is safe: the measurement is live.       */
 
 :root {
-  --scrollbar-thumb: #8A8072;
-  --scrollbar-thumb-hover: #6E6558;
+  /* Emitted by theme-tokens.liquid from two settings — see "Scrollbars". */
   --scrollbar-size: 11px;
   --scrollbar-inset: 3px;
 }
@@ -859,7 +858,7 @@ a {
   cursor: pointer;
   pointer-events: auto;
   transform: translate(-50%, -50%);
-  box-shadow: 0 8px 30px color-mix(in srgb, #0D0C0A 28%, transparent);
+  box-shadow: 0 8px 30px color-mix(in srgb, var(--c-noir) 28%, transparent);
   transition: background-color var(--duration) var(--ease-ui),
               transform var(--duration) var(--ease);
 }
@@ -1202,7 +1201,7 @@ a {
   position: relative;
   aspect-ratio: 3 / 4;
   overflow: hidden;
-  background: radial-gradient(70% 55% at 50% 42%, #1C1812 0%, #0D0C0A 100%);
+  background: radial-gradient(70% 55% at 50% 42%, color-mix(in srgb, var(--c-noir) 70%, var(--c-ink)) 0%, var(--c-noir) 100%);
 }
 
 .hero__portrait-frame > img,
@@ -1348,7 +1347,7 @@ a {
   height: 84%;
   object-fit: contain;
   border-radius: 18px;
-  background: #FFFFFF;
+  background: var(--c-surface);
 }
 
 .hero-card__name {
@@ -2463,8 +2462,8 @@ a.card__title::after {
   /* The design's noir, not black: rgba(13,12,10,0) → rgba(13,12,10,.62). */
   background: linear-gradient(
     180deg,
-    color-mix(in srgb, #0D0C0A 0%, transparent) 35%,
-    color-mix(in srgb, #0D0C0A 62%, transparent) 100%
+    color-mix(in srgb, var(--c-noir) 0%, transparent) 35%,
+    color-mix(in srgb, var(--c-noir) 62%, transparent) 100%
   );
   opacity: 0;
   transform: translateY(10px);
@@ -2492,19 +2491,19 @@ a.card__title::after {
   gap: 10px;
   margin-inline: var(--cat-pad-x);
   padding: 14px 0 16px;
-  border-top: var(--border-width) solid color-mix(in srgb, #FBF8F2 55%, transparent);
+  border-top: var(--border-width) solid color-mix(in srgb, color-mix(in srgb, var(--c-porcelain) 45%, #fff) 55%, transparent);
 }
 
 .cat-card__reveal-label {
   font-size: 0.75rem;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: #F4EFE4;
+  color: color-mix(in srgb, var(--c-porcelain) 80%, #fff);
 }
 
 .cat-card__reveal-arrow {
   font-size: 1rem;
-  color: #F4EFE4;
+  color: color-mix(in srgb, var(--c-porcelain) 80%, #fff);
 }
 
 /* ---- Lookbook -------------------------------------------------------
@@ -2516,7 +2515,6 @@ a.card__title::after {
    own gold for the same reason the overlays do.                          */
 
 .lookbook {
-  --c-ivory: #EFE9DC;
   --lookbook-max: 1180px;
 
   padding-inline: var(--gutter);
@@ -2663,10 +2661,10 @@ a.card__title::after {
   pointer-events: none;
   background: linear-gradient(
     180deg,
-    color-mix(in srgb, #0D0C0A 34%, transparent) 0%,
+    color-mix(in srgb, var(--c-noir) 34%, transparent) 0%,
     transparent 26%,
     transparent 58%,
-    color-mix(in srgb, #0D0C0A 50%, transparent) 100%
+    color-mix(in srgb, var(--c-noir) 50%, transparent) 100%
   );
 }
 
@@ -2679,7 +2677,7 @@ a.card__title::after {
   letter-spacing: 0.2em;
   text-transform: uppercase;
   color: color-mix(in srgb, var(--c-heading) 82%, transparent);
-  text-shadow: 0 1px 6px color-mix(in srgb, #0D0C0A 80%, transparent);
+  text-shadow: 0 1px 6px color-mix(in srgb, var(--c-noir) 80%, transparent);
   pointer-events: none;
 }
 
@@ -2746,7 +2744,7 @@ a.card__title::after {
   height: 11px;
   border-radius: 50%;
   background: color-mix(in srgb, var(--c-heading) 96%, transparent);
-  box-shadow: 0 2px 12px color-mix(in srgb, #0D0C0A 60%, transparent);
+  box-shadow: 0 2px 12px color-mix(in srgb, var(--c-noir) 60%, transparent);
   /* The number only shows in the numbered and plus treatments. */
   font-size: 0;
   color: transparent;
@@ -2768,7 +2766,7 @@ a.card__title::after {
   height: 28px;
   box-sizing: border-box;
   border: var(--border-width) solid color-mix(in srgb, var(--c-heading) 72%, transparent);
-  background: color-mix(in srgb, #0D0C0A 50%, transparent);
+  background: color-mix(in srgb, var(--c-noir) 50%, transparent);
   color: var(--c-heading);
   font-family: var(--font-body);
   font-size: 0.69rem;
@@ -2807,8 +2805,8 @@ a.card__title::after {
   flex-direction: column;
   gap: 12px;
   padding: 14px;
-  background: color-mix(in srgb, #F4F0E8 97%, transparent);
-  color: #191510;
+  background: color-mix(in srgb, var(--c-porcelain) 97%, transparent);
+  color: var(--c-ink);
   box-shadow: 0 22px 50px -24px color-mix(in srgb, #000 80%, transparent);
   animation: gj-look-card 0.42s var(--ease) both;
 }
@@ -2841,7 +2839,7 @@ a.card__title::after {
   width: 64px;
   height: 64px;
   overflow: hidden;
-  background: #FFFFFF;
+  background: var(--c-surface);
 }
 
 .lookbook-card__thumb img {
@@ -2860,7 +2858,7 @@ a.card__title::after {
   font-size: 0.66rem;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: #9A7836;
+  color: var(--c-gold);
 }
 
 .lookbook-card__name {
@@ -2876,7 +2874,7 @@ a.card__title::after {
   margin-top: 5px;
   font-size: 0.78rem;
   letter-spacing: 0.05em;
-  color: color-mix(in srgb, #191510 60%, transparent);
+  color: color-mix(in srgb, var(--c-ink) 60%, transparent);
 }
 
 .lookbook-card__close {
@@ -2886,7 +2884,7 @@ a.card__title::after {
   margin: -4px -4px 0 0;
   border: 0;
   background: none;
-  color: color-mix(in srgb, #191510 55%, transparent);
+  color: color-mix(in srgb, var(--c-ink) 55%, transparent);
   cursor: pointer;
   font-size: 0.88rem;
   line-height: 1;
@@ -2894,7 +2892,7 @@ a.card__title::after {
 }
 
 .lookbook-card__close:hover {
-  color: #191510;
+  color: var(--c-ink);
 }
 
 .lookbook-card__foot {
@@ -2904,7 +2902,7 @@ a.card__title::after {
   flex-wrap: wrap;
   gap: 12px;
   padding-top: 12px;
-  border-top: var(--border-width) solid color-mix(in srgb, #191510 14%, transparent);
+  border-top: var(--border-width) solid color-mix(in srgb, var(--c-ink) 14%, transparent);
 }
 
 .lookbook-card__price {
@@ -2920,8 +2918,8 @@ a.card__title::after {
 
 .lookbook-card__details {
   padding-bottom: 3px;
-  border-bottom: var(--border-width) solid color-mix(in srgb, #191510 30%, transparent);
-  color: color-mix(in srgb, #191510 72%, transparent);
+  border-bottom: var(--border-width) solid color-mix(in srgb, var(--c-ink) 30%, transparent);
+  color: color-mix(in srgb, var(--c-ink) 72%, transparent);
   font-size: 0.72rem;
   letter-spacing: 0.16em;
   text-transform: uppercase;
@@ -2930,8 +2928,8 @@ a.card__title::after {
 }
 
 .lookbook-card__details:hover {
-  color: #9A7836;
-  border-color: #9A7836;
+  color: var(--c-gold);
+  border-color: var(--c-gold);
 }
 
 .lookbook-card__add-form {
@@ -2944,10 +2942,10 @@ a.card__title::after {
   width: 44px;
   height: 44px;
   padding: 0;
-  border: var(--border-width) solid #C7A15C;
+  border: var(--border-width) solid var(--c-champagne);
   border-radius: 999px;
-  background: #C7A15C;
-  color: #14110D;
+  background: var(--c-champagne);
+  color: var(--c-noir-surface);
   cursor: pointer;
   transition: background var(--duration) var(--ease-ui),
               border-color var(--duration) var(--ease-ui),
@@ -2955,9 +2953,9 @@ a.card__title::after {
 }
 
 .lookbook-card__add:hover {
-  background: #191510;
-  border-color: #191510;
-  color: #F4F0E8;
+  background: var(--c-ink);
+  border-color: var(--c-ink);
+  color: var(--c-porcelain);
 }
 
 /* ---- Lookbook film controls ----------------------------------------- */
@@ -3067,7 +3065,7 @@ a.card__title::after {
   font-size: 0.72rem;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: #9A7836;
+  color: var(--c-gold);
 }
 
 .lookbook__list-count {
@@ -3116,7 +3114,7 @@ a.card__title::after {
   width: 56px;
   height: 56px;
   overflow: hidden;
-  background: #FFFFFF;
+  background: var(--c-surface);
 }
 
 .lookbook-row__thumb img {
@@ -3800,15 +3798,15 @@ a.card__title::after {
   display: flex;
   align-items: center;
   text-decoration: none;
-  color: #EFE9DC;
+  color: var(--c-ivory);
 }
 
 .overlay-head__close {
   flex: none;
-  border: var(--border-width) solid color-mix(in srgb, #EFE9DC 28%, transparent);
+  border: var(--border-width) solid color-mix(in srgb, var(--c-ivory) 28%, transparent);
   border-radius: 999px;
   background: none;
-  color: #EFE9DC;
+  color: var(--c-ivory);
   cursor: pointer;
   padding: 0.56rem 1.13rem;
   font-family: var(--font-body);
@@ -3827,8 +3825,7 @@ a.card__title::after {
    light-background gold onto a near-black surface, which is the wrong cut. */
 .nav-menu,
 .search-overlay {
-  --c-ivory: #EFE9DC;
-  --c-accent: #C7A15C;
+  --c-accent: var(--c-champagne);
 }
 
 @keyframes gj-row-in {
@@ -3861,9 +3858,9 @@ a.card__title::after {
   z-index: 250;
   display: grid;
   grid-template-rows: auto 1fr auto;
-  background: color-mix(in srgb, #0B0A08 97%, transparent);
+  background: color-mix(in srgb, var(--c-noir-deep) 97%, transparent);
   backdrop-filter: blur(18px);
-  color: #EFE9DC;
+  color: var(--c-ivory);
   overflow-y: auto;
   overscroll-behavior: contain;
   animation: gj-fade-in 0.35s ease both;
@@ -3920,7 +3917,7 @@ a.card__title::after {
   font-family: var(--font-display);
   font-size: clamp(2.4rem, min(7.2vw, 7.4vh), 4.9rem);
   line-height: 1.14;
-  color: #EFE9DC;
+  color: var(--c-ivory);
   text-decoration: none;
   transition: color var(--duration) var(--ease-ui);
 }
@@ -3961,7 +3958,7 @@ a.card__title::after {
   font-size: var(--micro-size);
   letter-spacing: calc(var(--micro-tracking) * 0.82);
   text-transform: uppercase;
-  color: color-mix(in srgb, #EFE9DC 60%, transparent);
+  color: color-mix(in srgb, var(--c-ivory) 60%, transparent);
   text-decoration: none;
   transition: color var(--duration) var(--ease-ui);
 }
@@ -3991,7 +3988,7 @@ a.card__title::after {
   font-size: var(--micro-size);
   letter-spacing: calc(var(--micro-tracking) * 0.73);
   text-transform: uppercase;
-  color: color-mix(in srgb, #EFE9DC 55%, transparent);
+  color: color-mix(in srgb, var(--c-ivory) 55%, transparent);
   text-decoration: none;
 }
 
@@ -4014,7 +4011,7 @@ a.nav-menu__address:hover {
   z-index: 252;
   display: flex;
   flex-direction: column;
-  background: color-mix(in srgb, #0B0A08 97%, transparent);
+  background: color-mix(in srgb, var(--c-noir-deep) 97%, transparent);
   backdrop-filter: blur(18px);
   color: var(--c-ivory);
   overscroll-behavior: contain;
@@ -4332,7 +4329,7 @@ a.nav-menu__address:hover {
 }
 
 .drawer .overlay__veil {
-  background: color-mix(in srgb, #0B0A08 45%, transparent);
+  background: color-mix(in srgb, var(--c-noir-deep) 45%, transparent);
   animation: gj-fade-in 0.45s ease both;
 }
 
@@ -4340,7 +4337,7 @@ a.nav-menu__address:hover {
   animation: gj-fade-out 0.35s ease both;
 }
 
-/* The design's panel is #F8F5EE and its footer #F4F0E8 — porcelain, lifted a
+/* The design's panel is color-mix(in srgb, var(--c-porcelain) 45%, #fff) and its footer #F4F0E8 — porcelain, lifted a
    little, over plain porcelain. The theme had the panel on --c-surface, which
    is #ffffff in scheme_1, so the two-tone read as white against porcelain
    instead.
@@ -4812,7 +4809,7 @@ a.nav-menu__address:hover {
    Both are literals for the reason the hero's are: the design fixes them, and
    --c-accent is the light-background gold (#9A7836), a different colour. */
 .drawer__panel {
-  --drawer-gold: #C7A15C;
+  --drawer-gold: var(--c-champagne);
 }
 
 .drawer__checkout,
@@ -4826,7 +4823,7 @@ a.nav-menu__address:hover {
   flex: 1;
   background-color: var(--drawer-gold);
   border-color: var(--drawer-gold);
-  color: #14110D;
+  color: var(--c-noir-surface);
   white-space: nowrap;
 }
 
@@ -5129,7 +5126,7 @@ a.nav-menu__address:hover {
   inset: 0;
   border: 0;
   padding: 0;
-  background: color-mix(in srgb, #0D0C0A 55%, transparent);
+  background: color-mix(in srgb, var(--c-noir) 55%, transparent);
   backdrop-filter: blur(6px);
   cursor: pointer;
   animation: gj-fade-in 0.3s ease both;
@@ -5317,12 +5314,12 @@ a.nav-menu__address:hover {
 }
 
 .overlay--quick .overlay__veil {
-  background: color-mix(in srgb, #0D0C0A 62%, transparent);
+  background: color-mix(in srgb, var(--c-noir) 62%, transparent);
   backdrop-filter: blur(8px);
 }
 
 .quick-view {
-  --qv-gold: #C7A15C;
+  --qv-gold: var(--c-champagne);
   --qv-well: color-mix(in srgb, var(--c-text) 4%, var(--c-bg));
   --qv-rule: color-mix(in srgb, var(--c-text) 12%, transparent);
   /* The design's rgba(25,21,16,.22) — the edge of a control, a shade stronger
@@ -5751,7 +5748,7 @@ a.nav-menu__address:hover {
   width: 6rem;
   background: var(--c-surface) center / contain no-repeat;
   border: var(--border-width) solid color-mix(in srgb, var(--c-text) 30%, transparent);
-  box-shadow: 0 6px 18px color-mix(in srgb, #0D0C0A 22%, transparent);
+  box-shadow: 0 6px 18px color-mix(in srgb, var(--c-noir) 22%, transparent);
   pointer-events: none;
 }
 
@@ -5765,7 +5762,7 @@ a.nav-menu__address:hover {
   border: 1.4px solid var(--qv-gold);
   background: color-mix(in srgb, var(--qv-gold) 16%, transparent);
   /* Darkens everything outside the frame without a second element. */
-  box-shadow: 0 0 0 200px color-mix(in srgb, #0D0C0A 16%, transparent);
+  box-shadow: 0 0 0 200px color-mix(in srgb, var(--c-noir) 16%, transparent);
 }
 
 .quick-view__info {
@@ -6011,7 +6008,7 @@ a.nav-menu__address:hover {
   border: var(--border-width) solid var(--qv-gold);
   border-radius: 999px;
   background: var(--qv-gold);
-  color: #14110D;
+  color: var(--c-noir-surface);
   font-family: var(--font-body);
   font-size: 0.781rem;
   letter-spacing: 0.17em;
@@ -6187,7 +6184,7 @@ a.nav-menu__address:hover {
   padding: clamp(1.15rem, 3vw, 1.5rem) clamp(1.15rem, 3.5vw, 1.9rem);
   background: var(--c-surface);
   border: var(--border-width) solid color-mix(in srgb, var(--c-text) 12%, transparent);
-  box-shadow: 0 12px 34px color-mix(in srgb, #0D0C0A 14%, transparent);
+  box-shadow: 0 12px 34px color-mix(in srgb, var(--c-noir) 14%, transparent);
   animation: gj-cookie-in 0.45s var(--ease) both;
 }
 
@@ -6385,8 +6382,8 @@ a.nav-menu__address:hover {
   transform: translateY(5px) scale(0.97);
   transform-origin: 50% 100%;
   transition: opacity 0.2s ease, transform 0.28s var(--ease);
-  filter: drop-shadow(0 10px 26px color-mix(in srgb, #0D0C0A 34%, transparent))
-          drop-shadow(0 1px 2px color-mix(in srgb, #0D0C0A 30%, transparent));
+  filter: drop-shadow(0 10px 26px color-mix(in srgb, var(--c-noir) 34%, transparent))
+          drop-shadow(0 1px 2px color-mix(in srgb, var(--c-noir) 30%, transparent));
 }
 
 .tip--below {
@@ -6402,9 +6399,9 @@ a.nav-menu__address:hover {
   position: relative;
   display: block;
   padding: 0.5rem 0.75rem 0.438rem;
-  border: var(--border-width) solid color-mix(in srgb, #C7A15C 38%, transparent);
+  border: var(--border-width) solid color-mix(in srgb, var(--c-champagne) 38%, transparent);
   border-radius: 2px;
-  background: color-mix(in srgb, #14110D 94%, transparent);
+  background: color-mix(in srgb, var(--c-noir-surface) 94%, transparent);
   backdrop-filter: blur(8px);
   font-family: var(--font-body);
   font-size: 0.656rem;
@@ -6413,7 +6410,7 @@ a.nav-menu__address:hover {
   text-transform: uppercase;
   line-height: 1;
   white-space: nowrap;
-  color: #F0EADC;
+  color: color-mix(in srgb, var(--c-porcelain) 70%, #fff);
   /* Letterspacing pads the right of the last letter but not the left of the
      first, so the label reads off-centre without this. */
   text-indent: 0.17em;
@@ -6424,9 +6421,9 @@ a.nav-menu__address:hover {
   bottom: -4px;
   width: 8px;
   height: 8px;
-  background: color-mix(in srgb, #14110D 94%, transparent);
-  border-right: var(--border-width) solid color-mix(in srgb, #C7A15C 38%, transparent);
-  border-bottom: var(--border-width) solid color-mix(in srgb, #C7A15C 38%, transparent);
+  background: color-mix(in srgb, var(--c-noir-surface) 94%, transparent);
+  border-right: var(--border-width) solid color-mix(in srgb, var(--c-champagne) 38%, transparent);
+  border-bottom: var(--border-width) solid color-mix(in srgb, var(--c-champagne) 38%, transparent);
   transform: rotate(45deg);
 }
 

@@ -238,6 +238,21 @@
       "error": {
         "label": "Error",
         "info": "Used by form errors and the remove control in the bag."
+      },
+      "page_scheme": {
+        "label": "Page colour scheme",
+        "info": "The scheme the page itself uses, behind every section."
+      },
+      "dark_scheme": {
+        "label": "Dark surface scheme",
+        "info": "Used by the surfaces that stay dark whatever the page is — the menu and search overlays, the lookbook stage, image scrims."
+      },
+      "scrollbar_thumb": {
+        "label": "Scrollbar",
+        "info": "One colour for light and dark alike, as the reference design has it."
+      },
+      "scrollbar_thumb_hover": {
+        "label": "Scrollbar on hover"
       }
     },
     "shape": {
