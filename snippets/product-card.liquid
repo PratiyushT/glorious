@@ -458,6 +458,7 @@
         {%- endfor -%}
 
         {%- if card_video != blank -%}
+          {%- assign card_video_lqip = card_video.preview_image | image_url: width: 40 -%}
           <span
             class="card__slide{% if photo_count == 0 %} is-on{% endif %}"
             data-card-slide="{{ photo_count }}"
@@ -474,8 +475,9 @@
               playsinline
               preload="none"
               aria-label="{{ 'products.spin_view' | t }}"
-              data-video-lqip="{{ card_video.preview_image | image_url: width: 40 }}"
+              data-video-lqip="{{ card_video_lqip }}"
             ></video>
+            {% render 'video-lqip-frame', lqip: card_video_lqip %}
           </span>
         {%- endif -%}
       {%- else -%}

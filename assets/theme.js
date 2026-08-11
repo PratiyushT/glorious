@@ -942,8 +942,8 @@
      browser never has to replace preview pixels in the visible image layer.
      Every video carries a tiny rendition of its own Shopify preview frame in
      `data-video-lqip`; that frame sits over the untouched full poster/video
-     until the poster decodes or the first real frame arrives. External-video
-     iframes use the same preview-frame facade. Full sources always load in
+     until playback has presented an advancing frame. YouTube and Vimeo embeds
+     use their player APIs as playback authority. Full sources always load in
      parallel.
 
      Loading state remains progressive enhancement: classes and backgrounds
@@ -958,6 +958,10 @@
   var imageLqipSyncFrame = 0;
   var videoLqipStates = new WeakMap();
   var videoLqipViewport = null;
+  var videoAutoplayBound = new WeakSet();
+  var videoAutoplayViewport = null;
+  var youtubeApiPromise = null;
+  var vimeoApiPromise = null;
   var mediaLqipHosts = new WeakMap();
   var mediaLqipMutations = null;
 
@@ -1367,18 +1371,6 @@
     return derivedMediaLqip(media.getAttribute('poster') || '');
   }
 
-  function videoPosterUrl(media) {
-    var raw = media.getAttribute('data-video-poster');
-    if (!raw && media.tagName === 'VIDEO') raw = media.getAttribute('poster');
-    if (!raw) return '';
-
-    try {
-      return new window.URL(raw, document.baseURI).href;
-    } catch (error) {
-      return raw;
-    }
-  }
-
   function videoSourceKey(media) {
     var sources = media.tagName === 'VIDEO'
       ? Array.prototype.map.call(media.querySelectorAll('source'), function (source) {
@@ -1394,8 +1386,8 @@
     ].join('|');
   }
 
-  function videoLqipKey(media, lqip, poster) {
-    return [videoSourceKey(media), poster, lqip].join('|');
+  function videoLqipKey(media, lqip) {
+    return [videoSourceKey(media), media.getAttribute('poster') || '', lqip].join('|');
   }
 
   function videoHasSource(media) {
@@ -1405,6 +1397,11 @@
 
   function unobserveVideoLqip(media) {
     if (videoLqipViewport) videoLqipViewport.unobserve(media);
+  }
+
+  function adjacentVideoLqipFrame(media) {
+    var sibling = media.nextElementSibling;
+    return sibling && sibling.matches('.video-lqip-frame[data-video-lqip-frame]') ? sibling : null;
   }
 
   function acquireMediaLqipHost(host, state) {
@@ -1447,13 +1444,35 @@
     state.hostLease = null;
   }
 
+  function cancelVideoFrameWait(media, state) {
+    if (!state) return;
+    if (state.videoFrameId && typeof media.cancelVideoFrameCallback === 'function') {
+      media.cancelVideoFrameCallback(state.videoFrameId);
+    }
+    if (state.paintFrame) window.cancelAnimationFrame(state.paintFrame);
+    state.videoFrameId = 0;
+    state.paintFrame = 0;
+  }
+
   function unbindVideoLqip(media, state) {
-    if (!state || !state.readyEvent) return;
-    media.removeEventListener(state.readyEvent, state.readyListener);
-    media.removeEventListener('error', state.errorListener);
+    if (!state) return;
+    if (state.readyEvent && state.readyListener) {
+      media.removeEventListener(state.readyEvent, state.readyListener);
+    }
+    if (state.pauseListener) media.removeEventListener('pause', state.pauseListener);
+    if (state.errorListener) media.removeEventListener('error', state.errorListener);
+    if (state.actionButton && state.actionListener) {
+      state.actionButton.removeEventListener('click', state.actionListener);
+    }
+    if (state.externalOff) state.externalOff();
+    cancelVideoFrameWait(media, state);
     state.readyEvent = '';
     state.readyListener = null;
+    state.pauseListener = null;
     state.errorListener = null;
+    state.actionButton = null;
+    state.actionListener = null;
+    state.externalOff = null;
   }
 
   function clearVideoLqipVisual(media, state) {
@@ -1461,24 +1480,18 @@
       window.clearTimeout(state.timer);
       state.timer = null;
     }
-    if (state && state.fallbackTimer) {
-      window.clearTimeout(state.fallbackTimer);
-      state.fallbackTimer = null;
-    }
     if (state && state.overlay && state.animationEnd) {
       state.overlay.removeEventListener('animationend', state.animationEnd);
       state.animationEnd = null;
-    }
-    if (state && state.posterImage) {
-      state.posterImage.onload = null;
-      state.posterImage.onerror = null;
-      state.posterImage = null;
     }
 
     unobserveVideoLqip(media);
     unbindVideoLqip(media, state);
     if (state && state.overlay && state.overlay.parentNode) state.overlay.parentNode.removeChild(state.overlay);
-    if (state) state.overlay = null;
+    if (state) {
+      state.active = false;
+      state.overlay = null;
+    }
     media.classList.remove('video-lqip', 'is-lqip-loading', 'is-lqip-revealing');
     releaseMediaLqipHost(state);
   }
@@ -1488,12 +1501,57 @@
     clearVideoLqipVisual(media, state);
   }
 
+  function setVideoLqipAction(media, state, mode) {
+    if (!state || !state.overlay) return;
+    var button = state.overlay.querySelector('[data-video-lqip-play]');
+    if (!button && !mode) return;
+    if (!button) {
+      button = document.createElement('button');
+      button.className = 'video-lqip-frame__play';
+      button.type = 'button';
+      button.setAttribute('data-video-lqip-play', '');
+      var glyph = document.createElement('span');
+      glyph.setAttribute('aria-hidden', 'true');
+      button.appendChild(glyph);
+      state.overlay.appendChild(button);
+    }
+
+    if (state.actionButton !== button) {
+      if (state.actionButton && state.actionListener) {
+        state.actionButton.removeEventListener('click', state.actionListener);
+      }
+      state.actionButton = button;
+      state.actionListener = function () { requestVideoLqipPlayback(media, true); };
+      button.addEventListener('click', state.actionListener);
+    }
+
+    if (!mode) {
+      button.hidden = true;
+      state.overlay.classList.remove('has-video-action');
+      state.overlay.setAttribute('aria-hidden', 'true');
+      return;
+    }
+
+    var retry = mode === 'retry';
+    button.hidden = false;
+    button.setAttribute('aria-label', retry ? 'Retry video' : 'Play video');
+    button.firstElementChild.textContent = retry ? '\u21bb' : '\u25b6';
+    state.overlay.classList.add('has-video-action');
+    state.overlay.removeAttribute('aria-hidden');
+  }
+
   function revealVideoLqip(media, state) {
     if (videoLqipStates.get(media) !== state || state.done) return;
     state.done = true;
     unobserveVideoLqip(media);
 
-    if (!state.active || !state.overlay || reduceMotion.matches) {
+    if (!state.active || !state.overlay) {
+      finishVideoLqip(media, state);
+      return;
+    }
+
+    setVideoLqipAction(media, state, '');
+    if (reduceMotion.matches) {
       finishVideoLqip(media, state);
       return;
     }
@@ -1503,69 +1561,83 @@
     state.overlay.classList.add('is-lqip-revealing');
 
     state.animationEnd = function (event) {
-      if (event.animationName !== 'gj-video-lqip-reveal') return;
+      if (event.animationName !== 'gj-video-lqip-fade') return;
       finishVideoLqip(media, state);
     };
     state.overlay.addEventListener('animationend', state.animationEnd);
     state.timer = window.setTimeout(function () {
       finishVideoLqip(media, state);
-    }, 1000);
+    }, 700);
   }
 
-  function videoPosterFailed(media, state) {
-    if (videoLqipStates.get(media) !== state || state.done || state.posterFailed) return;
-    state.posterFailed = true;
-
-    /* A controlled native video must never have its controls stranded behind
-       a preview whose sharp poster failed. External embeds can still finish
-       through their own load event, with a bounded escape hatch. */
-    if (media.tagName === 'VIDEO' || state.mediaFailed) {
-      state.done = true;
-      finishVideoLqip(media, state);
-    } else if (!state.fallbackTimer) {
-      state.fallbackTimer = window.setTimeout(function () {
-        revealVideoLqip(media, state);
-      }, 5000);
-    }
+  function videoLqipFailed(media, state) {
+    if (videoLqipStates.get(media) !== state || state.done) return;
+    state.mediaFailed = true;
+    cancelVideoFrameWait(media, state);
+    setVideoLqipAction(media, state, 'retry');
   }
 
-  function videoPosterReady(media, state) {
-    if (videoLqipStates.get(media) !== state || state.done || state.posterDecoding || state.posterReady) return;
-    state.posterDecoding = true;
-    var posterImage = state.posterImage;
-    var decoded = posterImage && typeof posterImage.decode === 'function'
-      ? posterImage.decode().catch(function () {})
-      : Promise.resolve();
-
-    decoded.then(function () {
-      if (videoLqipStates.get(media) !== state || state.done) return;
-      state.posterDecoding = false;
-      if (posterImage && posterImage.naturalWidth > 0) {
-        state.posterReady = true;
-
-        /* An iframe has no native poster underneath the facade. Once its full
-           preview decodes, sharpen that same frame in place and keep it over
-           the embed until the iframe's own load event arrives. */
-        if (media.tagName === 'IFRAME' && state.overlay) {
-          state.overlay.style.setProperty('--video-lqip-source', 'url(' + JSON.stringify(state.poster) + ')');
-          state.overlay.classList.add('is-poster-ready');
-          if (state.mediaReady) revealVideoLqip(media, state);
-        } else {
-          revealVideoLqip(media, state);
-        }
-      } else {
-        videoPosterFailed(media, state);
+  function revealVideoAfterFallbackPaint(media, state, startTime) {
+    function checkFrame() {
+      state.paintFrame = 0;
+      if (videoLqipStates.get(media) !== state || state.done || media.paused) return;
+      if (Math.abs(media.currentTime - startTime) < 0.001) {
+        state.paintFrame = window.requestAnimationFrame(checkFrame);
+        return;
       }
-    });
+      state.paintFrame = window.requestAnimationFrame(function () {
+        state.paintFrame = window.requestAnimationFrame(function () {
+          state.paintFrame = 0;
+          if (videoLqipStates.get(media) === state && !state.done && !media.paused) {
+            revealVideoLqip(media, state);
+          }
+        });
+      });
+    }
+    state.paintFrame = window.requestAnimationFrame(checkFrame);
+  }
+
+  function waitForPresentedVideoFrame(media, state) {
+    cancelVideoFrameWait(media, state);
+    var startTime = media.currentTime;
+
+    if (typeof media.requestVideoFrameCallback !== 'function') {
+      revealVideoAfterFallbackPaint(media, state, startTime);
+      return;
+    }
+
+    function checkFrame(now, metadata) {
+      state.videoFrameId = 0;
+      if (videoLqipStates.get(media) !== state || state.done || media.paused) return;
+      var mediaTime = metadata && typeof metadata.mediaTime === 'number'
+        ? metadata.mediaTime
+        : media.currentTime;
+      if (Math.abs(mediaTime - startTime) >= 0.001) {
+        revealVideoLqip(media, state);
+        return;
+      }
+      state.videoFrameId = media.requestVideoFrameCallback(checkFrame);
+    }
+
+    state.videoFrameId = media.requestVideoFrameCallback(checkFrame);
+  }
+
+  function videoLqipPlaying(media, state) {
+    if (videoLqipStates.get(media) !== state || state.done) return;
+    state.mediaReady = true;
+    state.mediaFailed = false;
+    setVideoLqipAction(media, state, '');
+    waitForPresentedVideoFrame(media, state);
+  }
+
+  function videoLqipPaused(media, state) {
+    if (videoLqipStates.get(media) !== state || state.done || !state.active) return;
+    cancelVideoFrameWait(media, state);
+    setVideoLqipAction(media, state, 'play');
   }
 
   function activateVideoLqip(media, state) {
     if (videoLqipStates.get(media) !== state || state.active || state.done) return;
-    if (media.tagName === 'VIDEO' && media.readyState >= 2 && !state.resourceChanged) {
-      state.done = true;
-      unobserveVideoLqip(media);
-      return;
-    }
 
     var host = media.parentElement;
     if (!host) {
@@ -1582,8 +1654,14 @@
     else if (fit === 'fill') backgroundFit = '100% 100%';
     else if (fit === 'scale-down') backgroundFit = 'contain';
 
-    var overlay = document.createElement('span');
-    overlay.className = 'video-lqip-frame is-lqip-loading';
+    var overlay = adjacentVideoLqipFrame(media);
+    if (!overlay) {
+      overlay = document.createElement('span');
+      overlay.setAttribute('data-video-lqip-frame', '');
+      host.insertBefore(overlay, media.nextSibling);
+    }
+    overlay.classList.add('video-lqip-frame', 'is-lqip-loading');
+    overlay.classList.remove('is-lqip-revealing');
     overlay.setAttribute('aria-hidden', 'true');
     overlay.style.setProperty('--video-lqip-source', 'url(' + JSON.stringify(state.lqip) + ')');
     overlay.style.setProperty('--video-lqip-fit', backgroundFit);
@@ -1591,22 +1669,16 @@
     overlay.style.borderRadius = style.borderRadius;
     if (style.transform && style.transform !== 'none') overlay.style.transform = style.transform;
     if (style.transformOrigin) overlay.style.transformOrigin = style.transformOrigin;
-    host.insertBefore(overlay, media.nextSibling);
 
     state.overlay = overlay;
     state.active = true;
     media.classList.add('video-lqip', 'is-lqip-loading');
 
-    if (state.poster) {
-      var posterImage = new window.Image();
-      state.posterImage = posterImage;
-      posterImage.onload = function () { videoPosterReady(media, state); };
-      posterImage.onerror = function () { videoPosterFailed(media, state); };
-      posterImage.src = state.poster;
-      if (posterImage.complete) {
-        if (posterImage.naturalWidth > 0) videoPosterReady(media, state);
-        else posterImage.onerror();
-      }
+    if (media.tagName === 'IFRAME') {
+      initExternalVideoLqip(media, state);
+    } else {
+      if (media.controls || reduceMotion.matches) setVideoLqipAction(media, state, 'play');
+      if (!media.paused && media.readyState >= 2) videoLqipPlaying(media, state);
     }
   }
 
@@ -1630,36 +1702,417 @@
     videoLqipViewport.observe(media);
   }
 
-  function videoLqipLoaded(media, state) {
-    if (videoLqipStates.get(media) !== state || state.done) return;
-    state.mediaReady = true;
-    revealVideoLqip(media, state);
+  function prepareExternalVideo(media) {
+    if (media.tagName !== 'IFRAME') return '';
+    var raw = media.getAttribute('src') || '';
+    if (!raw) return '';
+
+    try {
+      var url = new window.URL(raw, document.baseURI);
+      var host = url.hostname.toLowerCase();
+      var provider = '';
+
+      if (host === 'youtube.com' || host === 'www.youtube.com' ||
+          host === 'youtube-nocookie.com' || host === 'www.youtube-nocookie.com') {
+        provider = 'youtube';
+        url.searchParams.set('enablejsapi', '1');
+        url.searchParams.set('playsinline', '1');
+        if (window.location.origin && window.location.origin !== 'null') {
+          url.searchParams.set('origin', window.location.origin);
+        }
+      } else if (host === 'player.vimeo.com' || host === 'vimeo.com' || host === 'www.vimeo.com') {
+        provider = 'vimeo';
+        url.searchParams.set('api', '1');
+      }
+
+      if (provider) {
+        media.dataset.videoProvider = provider;
+        if (url.href !== media.src) media.src = url.href;
+      }
+      return provider;
+    } catch (error) {
+      return '';
+    }
   }
 
-  function videoLqipFailed(media, state) {
+  function loadYouTubeApi() {
+    if (window.YT && typeof window.YT.Player === 'function') return Promise.resolve(window.YT);
+    if (youtubeApiPromise) return youtubeApiPromise;
+
+    youtubeApiPromise = new Promise(function (resolve, reject) {
+      var settled = false;
+      var timeout = 0;
+      var script = null;
+
+      function succeed() {
+        if (settled || !window.YT || typeof window.YT.Player !== 'function') return;
+        settled = true;
+        window.clearTimeout(timeout);
+        resolve(window.YT);
+      }
+
+      function fail(reason) {
+        if (settled) return;
+        settled = true;
+        window.clearTimeout(timeout);
+        if (script) {
+          script.dataset.gjPlayerApiFailed = 'true';
+          if (script.dataset.gjPlayerApi === 'youtube' && script.parentNode) script.remove();
+        }
+        reject(reason instanceof Error ? reason : new Error('YouTube player API unavailable'));
+      }
+
+      var previousReady = window.onYouTubeIframeAPIReady;
+      window.onYouTubeIframeAPIReady = function () {
+        if (typeof previousReady === 'function') {
+          try { previousReady(); } catch (error) {}
+        }
+        succeed();
+      };
+
+      script = document.querySelector(
+        'script[src="https://www.youtube.com/iframe_api"]:not([data-gj-player-api-failed])'
+      );
+      if (!script) {
+        script = document.createElement('script');
+        script.src = 'https://www.youtube.com/iframe_api';
+        script.async = true;
+        script.dataset.gjPlayerApi = 'youtube';
+        document.head.appendChild(script);
+      }
+      script.addEventListener('load', function () {
+        if (window.YT && typeof window.YT.Player === 'function') succeed();
+        else fail(new Error('YouTube player API unavailable'));
+      }, { once: true });
+      script.addEventListener('error', fail, { once: true });
+      timeout = window.setTimeout(function () {
+        fail(new Error('YouTube player API timed out'));
+      }, 12000);
+    });
+
+    youtubeApiPromise.catch(function () { youtubeApiPromise = null; });
+    return youtubeApiPromise;
+  }
+
+  function loadVimeoApi() {
+    if (window.Vimeo && typeof window.Vimeo.Player === 'function') return Promise.resolve(window.Vimeo);
+    if (vimeoApiPromise) return vimeoApiPromise;
+
+    vimeoApiPromise = new Promise(function (resolve, reject) {
+      var settled = false;
+      var timeout = 0;
+      var script = document.querySelector(
+        'script[src="https://player.vimeo.com/api/player.js"]:not([data-gj-player-api-failed])'
+      );
+
+      function succeed() {
+        if (settled || !window.Vimeo || typeof window.Vimeo.Player !== 'function') return;
+        settled = true;
+        window.clearTimeout(timeout);
+        resolve(window.Vimeo);
+      }
+
+      function fail(reason) {
+        if (settled) return;
+        settled = true;
+        window.clearTimeout(timeout);
+        if (script) {
+          script.dataset.gjPlayerApiFailed = 'true';
+          if (script.dataset.gjPlayerApi === 'vimeo' && script.parentNode) script.remove();
+        }
+        reject(reason instanceof Error ? reason : new Error('Vimeo player API unavailable'));
+      }
+
+      if (!script) {
+        script = document.createElement('script');
+        script.src = 'https://player.vimeo.com/api/player.js';
+        script.async = true;
+        script.dataset.gjPlayerApi = 'vimeo';
+        document.head.appendChild(script);
+      }
+      script.addEventListener('load', function () {
+        if (window.Vimeo && typeof window.Vimeo.Player === 'function') succeed();
+        else fail(new Error('Vimeo player API unavailable'));
+      }, { once: true });
+      script.addEventListener('error', fail, { once: true });
+      timeout = window.setTimeout(function () {
+        fail(new Error('Vimeo player API timed out'));
+      }, 12000);
+    });
+
+    vimeoApiPromise.catch(function () { vimeoApiPromise = null; });
+    return vimeoApiPromise;
+  }
+
+  function externalAttemptCurrent(media, state, attempt) {
+    return videoLqipStates.get(media) === state && !state.done && state.externalAttempt === attempt;
+  }
+
+  function externalVideoFailed(media, state, attempt) {
     if (videoLqipStates.get(media) !== state || state.done) return;
-    state.mediaFailed = true;
-    if (media.tagName === 'IFRAME' && state.posterReady) {
-      if (state.fallbackTimer) {
-        window.clearTimeout(state.fallbackTimer);
-        state.fallbackTimer = null;
+    if (typeof attempt === 'number' && state.externalAttempt !== attempt) return;
+    state.externalWantsPlay = false;
+    videoLqipFailed(media, state);
+  }
+
+  function youtubeVideoPlaying(media, state, attempt) {
+    if (!externalAttemptCurrent(media, state, attempt) || !state.externalPlayer) return;
+    if (state.externalFrame) window.cancelAnimationFrame(state.externalFrame);
+    var startTime = Number(state.externalPlayer.getCurrentTime()) || 0;
+
+    function checkTime() {
+      state.externalFrame = 0;
+      if (!externalAttemptCurrent(media, state, attempt) || !state.externalPlayer) return;
+      var time = Number(state.externalPlayer.getCurrentTime()) || 0;
+      if (Math.abs(time - startTime) >= 0.001) {
+        state.externalFrame = window.requestAnimationFrame(function () {
+          state.externalFrame = window.requestAnimationFrame(function () {
+            state.externalFrame = 0;
+            if (externalAttemptCurrent(media, state, attempt)) revealVideoLqip(media, state);
+          });
+        });
+        return;
+      }
+      state.externalFrame = window.requestAnimationFrame(checkTime);
+    }
+    state.externalFrame = window.requestAnimationFrame(checkTime);
+  }
+
+  function initYouTubeVideoLqip(media, state, attempt) {
+    loadYouTubeApi().then(function (YT) {
+      if (!externalAttemptCurrent(media, state, attempt)) return;
+
+      var onReady = function () {
+        if (!externalAttemptCurrent(media, state, attempt)) return;
+        state.externalReady = true;
+        if (state.externalWantsPlay) requestExternalVideoPlayback(media, state);
+      };
+      var onStateChange = function (event) {
+        if (!externalAttemptCurrent(media, state, attempt)) return;
+        if (event.data === YT.PlayerState.PLAYING) {
+          youtubeVideoPlaying(media, state, attempt);
+          return;
+        }
+        if (state.externalFrame) window.cancelAnimationFrame(state.externalFrame);
+        state.externalFrame = 0;
+        if (event.data === YT.PlayerState.PAUSED || event.data === YT.PlayerState.ENDED) {
+          setVideoLqipAction(media, state, 'play');
+        }
+      };
+      var onError = function () { externalVideoFailed(media, state, attempt); };
+      var onAutoplayBlocked = function () {
+        if (!externalAttemptCurrent(media, state, attempt)) return;
+        state.externalWantsPlay = false;
+        setVideoLqipAction(media, state, 'play');
+      };
+
+      state.externalPlayer = new YT.Player(media, {
+        events: {
+          onReady: onReady,
+          onStateChange: onStateChange,
+          onError: onError,
+          onAutoplayBlocked: onAutoplayBlocked
+        }
+      });
+      state.externalOff = function () {
+        if (state.externalFrame) window.cancelAnimationFrame(state.externalFrame);
+        state.externalFrame = 0;
+      };
+    }).catch(function () { externalVideoFailed(media, state, attempt); });
+  }
+
+  function initVimeoVideoLqip(media, state, attempt) {
+    loadVimeoApi().then(function (Vimeo) {
+      if (!externalAttemptCurrent(media, state, attempt)) return;
+
+      var player = new Vimeo.Player(media);
+      var onPlaying = function () {
+        if (!externalAttemptCurrent(media, state, attempt)) return;
+        state.externalIsPlaying = true;
+        state.externalMediaTime = null;
+      };
+      var onTime = function (data) {
+        if (!externalAttemptCurrent(media, state, attempt) || !state.externalIsPlaying || !data) return;
+        var time = Number(data.seconds) || 0;
+        if (state.externalMediaTime === null) {
+          state.externalMediaTime = time;
+          return;
+        }
+        if (Math.abs(time - state.externalMediaTime) >= 0.001) revealVideoLqip(media, state);
+      };
+      var onPause = function () {
+        if (!externalAttemptCurrent(media, state, attempt)) return;
+        state.externalIsPlaying = false;
+        state.externalMediaTime = null;
+        setVideoLqipAction(media, state, 'play');
+      };
+      var onSeeking = function () {
+        if (!externalAttemptCurrent(media, state, attempt)) return;
+        state.externalIsPlaying = false;
+        state.externalMediaTime = null;
+      };
+      var onError = function () { externalVideoFailed(media, state, attempt); };
+
+      state.externalPlayer = player;
+      player.on('playing', onPlaying);
+      player.on('timeupdate', onTime);
+      player.on('pause', onPause);
+      player.on('ended', onPause);
+      player.on('seeking', onSeeking);
+      player.on('error', onError);
+      state.externalOff = function () {
+        player.off('playing', onPlaying);
+        player.off('timeupdate', onTime);
+        player.off('pause', onPause);
+        player.off('ended', onPause);
+        player.off('seeking', onSeeking);
+        player.off('error', onError);
+      };
+
+      return player.ready();
+    }).then(function () {
+      if (!externalAttemptCurrent(media, state, attempt)) return;
+      state.externalReady = true;
+      if (state.externalWantsPlay) requestExternalVideoPlayback(media, state);
+    }).catch(function () { externalVideoFailed(media, state, attempt); });
+  }
+
+  function initExternalVideoLqip(media, state) {
+    state.externalAttempt += 1;
+    var attempt = state.externalAttempt;
+    state.externalProvider = media.dataset.videoProvider || prepareExternalVideo(media);
+    setVideoLqipAction(media, state, 'play');
+    if (state.externalProvider === 'youtube') initYouTubeVideoLqip(media, state, attempt);
+    else if (state.externalProvider === 'vimeo') initVimeoVideoLqip(media, state, attempt);
+    else externalVideoFailed(media, state, attempt);
+  }
+
+  function requestExternalVideoPlayback(media, state) {
+    if (videoLqipStates.get(media) !== state || state.done) return;
+    state.externalWantsPlay = true;
+    state.mediaFailed = false;
+    setVideoLqipAction(media, state, '');
+    if (!state.externalReady || !state.externalPlayer) return;
+
+    state.externalWantsPlay = false;
+    try {
+      if (state.externalProvider === 'youtube') {
+        state.externalPlayer.playVideo();
+      } else if (state.externalProvider === 'vimeo') {
+        var playing = state.externalPlayer.play();
+        if (playing && playing.catch) playing.catch(function () {
+          if (videoLqipStates.get(media) === state && !state.done) {
+            setVideoLqipAction(media, state, 'play');
+          }
+        });
+      } else {
+        setVideoLqipAction(media, state, 'play');
+      }
+    } catch (error) {
+      setVideoLqipAction(media, state, state.mediaFailed ? 'retry' : 'play');
+    }
+  }
+
+  function requestVideoLqipPlayback(media, retry) {
+    if (media.tagName === 'VIDEO' && !videoHasSource(media) && media.dataset.src) {
+      media.src = media.dataset.src;
+      watchVideoLqip(media, true);
+    }
+    var state = videoLqipStates.get(media);
+    if (!state || state.done) {
+      watchVideoLqip(media, true);
+      state = videoLqipStates.get(media);
+    }
+    if (!state || state.done) {
+      if (media.tagName === 'VIDEO') {
+        var directPlay = media.play();
+        if (directPlay && directPlay.catch) directPlay.catch(function () {});
       }
       return;
     }
-    if (!state.poster || state.posterFailed) {
-      state.done = true;
-      finishVideoLqip(media, state);
+
+    if (!state.active) activateVideoLqip(media, state);
+    if (media.tagName === 'IFRAME') {
+      if (retry && state.mediaFailed) {
+        if (!state.externalPlayer || !state.externalReady) {
+          if (state.externalOff) state.externalOff();
+          state.externalOff = null;
+          state.externalPlayer = null;
+          state.externalReady = false;
+          state.externalWantsPlay = false;
+          initExternalVideoLqip(media, state);
+        }
+        state.mediaFailed = false;
+      }
+      requestExternalVideoPlayback(media, state);
+      return;
+    }
+
+    state.mediaFailed = false;
+    setVideoLqipAction(media, state, '');
+    if (retry && media.error) media.load();
+    var playing;
+    try {
+      playing = media.play();
+    } catch (error) {
+      setVideoLqipAction(media, state, retry && media.error ? 'retry' : 'play');
+      return;
+    }
+    if (playing && playing.catch) {
+      playing.catch(function () {
+        if (videoLqipStates.get(media) === state && !state.done) {
+          setVideoLqipAction(media, state, media.error ? 'retry' : 'play');
+        }
+      });
     }
   }
 
+  function watchVideoAutoplay(media) {
+    if (media.tagName !== 'VIDEO' || videoAutoplayBound.has(media)) return;
+    videoAutoplayBound.add(media);
+
+    if (!('IntersectionObserver' in window)) {
+      if (!reduceMotion.matches) requestVideoLqipPlayback(media, false);
+      return;
+    }
+
+    if (!videoAutoplayViewport) {
+      videoAutoplayViewport = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          var video = entry.target;
+          if (!video.hasAttribute('data-video-autoplay')) {
+            if (videoAutoplayViewport) videoAutoplayViewport.unobserve(video);
+            videoAutoplayBound.delete(video);
+            if (!video.paused) video.pause();
+            return;
+          }
+          if (entry.isIntersecting) {
+            if (!reduceMotion.matches) requestVideoLqipPlayback(video, false);
+          } else if (!video.paused) {
+            video.pause();
+          }
+        });
+      }, { rootMargin: '300px 0px', threshold: 0.25 });
+    }
+
+    videoAutoplayViewport.observe(media);
+  }
+
+  function unwatchVideoAutoplay(media, pause) {
+    var wasBound = videoAutoplayBound.has(media);
+    if (videoAutoplayViewport) videoAutoplayViewport.unobserve(media);
+    videoAutoplayBound.delete(media);
+    if (pause && wasBound && media.tagName === 'VIDEO' && !media.paused) media.pause();
+  }
+
   function watchVideoLqip(media, immediate) {
+    if (media.tagName === 'IFRAME') prepareExternalVideo(media);
     var lqip = videoLqipUrl(media);
-    var poster = videoPosterUrl(media);
     var previous = videoLqipStates.get(media);
-    var key = videoLqipKey(media, lqip, poster);
+    var key = videoLqipKey(media, lqip);
 
     if (previous && previous.active &&
-        (previous.host !== media.parentElement || media.nextSibling !== previous.overlay)) {
+        (previous.host !== media.parentElement || media.nextElementSibling !== previous.overlay)) {
       clearVideoLqipVisual(media, previous);
       videoLqipStates.delete(media);
       previous = null;
@@ -1667,6 +2120,8 @@
 
     if (previous && previous.key === key) {
       if (immediate && !previous.active && !previous.done) activateVideoLqip(media, previous);
+      if (media.hasAttribute('data-video-autoplay')) watchVideoAutoplay(media);
+      else unwatchVideoAutoplay(media, true);
       return;
     }
 
@@ -1674,10 +2129,20 @@
 
     var state = {
       active: false,
+      actionButton: null,
+      actionListener: null,
       animationEnd: null,
       done: false,
       errorListener: null,
-      fallbackTimer: null,
+      externalAttempt: 0,
+      externalFrame: 0,
+      externalIsPlaying: false,
+      externalMediaTime: null,
+      externalOff: null,
+      externalPlayer: null,
+      externalProvider: '',
+      externalReady: false,
+      externalWantsPlay: false,
       host: null,
       hostLease: null,
       key: key,
@@ -1685,36 +2150,39 @@
       mediaFailed: false,
       mediaReady: false,
       overlay: null,
-      poster: poster,
-      posterDecoding: false,
-      posterFailed: false,
-      posterImage: null,
-      posterReady: false,
+      paintFrame: 0,
+      pauseListener: null,
       readyEvent: '',
       readyListener: null,
       resourceChanged: Boolean(previous && previous.key !== key),
-      timer: null
+      timer: null,
+      videoFrameId: 0
     };
     videoLqipStates.set(media, state);
 
     if (!lqip) {
       state.done = true;
+      var unusedFacade = adjacentVideoLqipFrame(media);
+      if (unusedFacade) unusedFacade.remove();
       return;
     }
 
-    if (media.tagName === 'VIDEO' && media.readyState >= 2 && !state.resourceChanged) {
-      state.done = true;
-      return;
+    if (media.tagName === 'VIDEO') {
+      state.readyEvent = 'playing';
+      state.readyListener = function () { videoLqipPlaying(media, state); };
+      state.pauseListener = function () { videoLqipPaused(media, state); };
+      state.errorListener = function () { videoLqipFailed(media, state); };
+      media.addEventListener(state.readyEvent, state.readyListener);
+      media.addEventListener('pause', state.pauseListener);
+      media.addEventListener('error', state.errorListener);
+    } else {
+      state.errorListener = function () { videoLqipFailed(media, state); };
+      media.addEventListener('error', state.errorListener);
     }
 
-    state.readyEvent = media.tagName === 'VIDEO' ? 'loadeddata' : 'load';
-    state.readyListener = function () { videoLqipLoaded(media, state); };
-    state.errorListener = function () { videoLqipFailed(media, state); };
-    media.addEventListener(state.readyEvent, state.readyListener);
-    media.addEventListener('error', state.errorListener);
-
-    if (!videoHasSource(media) && !immediate) return;
-    queueVideoLqip(media, state, immediate);
+    if (videoHasSource(media) || immediate) queueVideoLqip(media, state, immediate);
+    if (media.hasAttribute('data-video-autoplay')) watchVideoAutoplay(media);
+    else unwatchVideoAutoplay(media, true);
   }
 
   function blurUp(scope, immediate) {
@@ -1735,9 +2203,11 @@
     });
     mediaWithin(scope, 'video, iframe[data-video-lqip]').forEach(function (media) {
       var state = videoLqipStates.get(media);
-      if (!state) return;
-      clearVideoLqipVisual(media, state);
-      videoLqipStates.delete(media);
+      if (state) {
+        clearVideoLqipVisual(media, state);
+        videoLqipStates.delete(media);
+      }
+      unwatchVideoAutoplay(media, true);
     });
   }
 
@@ -1793,7 +2263,7 @@
         'poster',
         'data-image-lqip',
         'data-video-lqip',
-        'data-video-poster'
+        'data-video-autoplay'
       ]
     });
   }
@@ -2002,11 +2472,10 @@
             if (!video.src && video.dataset.src) video.src = video.dataset.src;
             watchVideoLqip(video, true);
             video.muted = true;
-            var playing = video.play();
-            if (playing && playing.catch) playing.catch(function () {});
+            requestVideoLqipPlayback(video, false);
           } else if (on) {
-            /* Reduced motion keeps the film paused, but its decoded full poster
-               must still replace the tiny preview frame. */
+            /* Reduced motion keeps the preview blurred until the visitor asks
+               to play, then reveals the first genuinely advancing frame. */
             watchVideoLqip(video, true);
           } else if (!video.paused) {
             video.pause();
@@ -2166,8 +2635,7 @@
         if (!video.src && video.dataset.src) video.src = video.dataset.src;
         watchVideoLqip(video, true);
         video.muted = true;
-        var playing = video.play();
-        if (playing && playing.catch) playing.catch(function () {});
+        requestVideoLqipPlayback(video, false);
       } else if (i === quickIndex) {
         watchVideoLqip(video, true);
       } else if (!video.paused) {
@@ -3467,7 +3935,12 @@
           play.addEventListener('click', function () {
             var v = video();
             if (!v) return;
-            if (v.paused) v.play().catch(function () {}); else v.pause();
+            if (v.paused) {
+              watchVideoLqip(v, true);
+              requestVideoLqipPlayback(v, false);
+            } else {
+              v.pause();
+            }
             paintFilm();
           });
         }
@@ -3494,8 +3967,12 @@
           entries.forEach(function (entry) {
             var v = video();
             if (!v) return;
-            if (entry.isIntersecting && !reduceMotion.matches) v.play().catch(function () {});
-            else v.pause();
+            if (entry.isIntersecting && !reduceMotion.matches) {
+              watchVideoLqip(v, true);
+              requestVideoLqipPlayback(v, false);
+            } else {
+              v.pause();
+            }
           });
         }, { threshold: 0.4 }).observe(stage);
       }

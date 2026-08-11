@@ -36,15 +36,15 @@
                   image_size: '1600x',
                   data-video-lqip: video_lqip
               }}
+              {% render 'video-lqip-frame', lqip: video_lqip %}
             {%- when 'external_video' -%}
               {%- assign video_lqip = media.preview_image | image_url: width: 40 -%}
-              {%- assign video_poster = media.preview_image | image_url: width: 1600 -%}
               {{
                 media
                 | external_video_tag:
-                  data-video-lqip: video_lqip,
-                  data-video-poster: video_poster
+                  data-video-lqip: video_lqip
               }}
+              {% render 'video-lqip-frame', lqip: video_lqip %}
             {%- when 'model' -%}
               {{ media | model_viewer_tag }}
           {%- endcase -%}

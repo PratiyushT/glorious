@@ -107,6 +107,7 @@
                       image_size: '1200x',
                       data-video-lqip: video_lqip
                   }}
+                  {% render 'video-lqip-frame', lqip: video_lqip %}
                 {%- elsif block.settings.image != blank -%}
                   <img
                     src="{{ block.settings.image | image_url: width: 1200 }}"

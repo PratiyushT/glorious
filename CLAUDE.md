@@ -124,18 +124,25 @@ roughly 40px wide. Keep the normal full poster and video sources untouched; do
 not make the tiny rendition the actual `poster`, do not use a generic image,
 and do not merely blur the full poster or partially loaded video.
 
-`theme.js` places the tiny preview frame above the media with matching
-`object-fit`, `object-position` and transform. The full poster and video load
-behind it in parallel. The facade reveals only after the full poster decodes,
-the first native video frame is ready, or an external-video iframe is ready.
-This decoded-poster fallback is required for controlled, deferred and
-reduced-motion videos so none can remain permanently blurred; reduced motion
-snaps sharp instead of animating. The same mutation observer covers videos
-inserted or re-sourced after initial render. Without JavaScript, the full poster
-and normal video remain unchanged because the preview facade is script-owned.
-For an external iframe, sharpen the full preview inside the facade and keep it
-there until the embed loads; if the embed fails, that sharp preview remains
-rather than revealing an empty frame.
+Liquid renders the blurred tiny-preview facade beside the media so it covers a
+full poster before first paint whenever JavaScript is available. `theme.js`
+adopts that facade, matches `object-fit`, `object-position` and transform, and
+loads the full poster and video untouched behind it. The tiny preview stays
+blurred and fully opaque until playback has presented a genuinely advancing
+frame. A poster decode, `loadeddata`, buffered `readyState`, a player document's
+`load` event, or a paused cached frame is never reveal authority. The handoff
+fades only the facade's opacity; it never sharpens the tiny preview.
+
+For native media, gate the reveal on `playing` plus an advancing presented frame
+(`requestVideoFrameCallback`, with an advancing-current-time paint fallback).
+For external media, use the YouTube or Vimeo player API and require an actual
+playing/time-advance signal. Autoplay rejection, media/player errors and reduced
+motion retain the blurred preview and expose an accessible Play or Retry action;
+reduced motion snaps directly to the playing video once that real-frame gate is
+met. After a successful first reveal, an intentional pause keeps the real video
+frame visible instead of re-blurring it. The same mutation observer covers
+videos inserted or re-sourced after initial render. Without JavaScript, CSS
+hides the facade so the normal full poster and controls remain usable.
 
 `templates/gift_card.liquid` is `layout none`, so it keeps a small standalone
 copy of the same handoff. Its stock Shopify card uses the CDN's tested

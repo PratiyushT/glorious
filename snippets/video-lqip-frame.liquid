@@ -1,0 +1,24 @@
+{%- comment -%}
+  Server-rendered same-video preview facade. The early `.js` class in
+  theme.liquid makes this cover the full poster before first paint; no-JS
+  visitors keep the normal video/poster because base.css hides the facade.
+
+  Required:
+    lqip: the video's own tiny preview_image rendition
+{%- endcomment -%}
+{%- if lqip != blank -%}
+  <span
+    class="video-lqip-frame is-lqip-loading"
+    data-video-lqip-frame
+    aria-hidden="true"
+    style="--video-lqip-source: url('{{ lqip | escape }}');"
+  >
+    <button
+      class="video-lqip-frame__play"
+      type="button"
+      data-video-lqip-play
+      aria-label="Play video"
+      hidden
+    ><span aria-hidden="true">&#9654;</span></button>
+  </span>
+{%- endif -%}

@@ -661,59 +661,78 @@ a {
   to { opacity: 0; }
 }
 
-/* Videos use their own exact Shopify preview frame. It sits above the full
-   poster/video, so partially loaded full media is never exposed, then fades
-   only after either the poster has decoded or the first video frame exists. */
+/* A video's exact tiny preview stays blurred and opaque until an advancing
+   frame has reached the compositor. The facade itself is not filtered so its
+   accessible Play/Retry action remains crisp. No-JS visitors see Shopify's
+   normal poster and controls. */
 .video-lqip-frame {
   position: absolute;
   inset: 0;
   z-index: 2;
   display: block;
+  overflow: hidden;
+  background-color: var(--c-surface);
   pointer-events: none;
+  will-change: opacity;
+}
+
+.no-js .video-lqip-frame {
+  display: none;
+}
+
+.video-lqip-frame::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
   background-color: var(--c-surface);
   background-image: var(--video-lqip-source);
   background-position: var(--video-lqip-position, 50% 50%);
   background-repeat: no-repeat;
   background-size: var(--video-lqip-fit, cover);
   filter: blur(18px) saturate(0.72) brightness(1.12);
-  will-change: filter, opacity;
 }
 
 .video-lqip-frame.is-lqip-revealing {
-  animation: gj-video-lqip-reveal 0.8s ease-out both;
+  animation: gj-video-lqip-fade 0.35s ease-out both;
 }
 
-/* External-video iframes do not have a poster layer of their own. Their exact
-   full preview sharpens inside the facade, which stays until the embed loads. */
-.video-lqip-frame.is-poster-ready {
-  filter: blur(0) saturate(1) brightness(1);
-  transition: filter 0.8s ease-out;
+.video-lqip-frame__play {
+  position: absolute;
+  inset: 50% auto auto 50%;
+  z-index: 1;
+  width: 3.25rem;
+  height: 3.25rem;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: var(--border-width) solid color-mix(in srgb, var(--c-surface) 72%, transparent);
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--c-heading) 84%, transparent);
+  color: var(--c-surface);
+  font: inherit;
+  font-size: 0.88rem;
+  line-height: 1;
+  cursor: pointer;
+  pointer-events: auto;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 8px 30px color-mix(in srgb, #0D0C0A 28%, transparent);
+  transition: background-color var(--duration) var(--ease),
+              transform var(--duration) var(--ease);
 }
 
-.video-lqip-frame.is-poster-ready.is-lqip-revealing {
-  animation-name: gj-video-lqip-fade;
+.video-lqip-frame__play:hover {
+  background: var(--c-accent);
+  transform: translate(-50%, -50%) scale(1.05);
 }
 
-@keyframes gj-video-lqip-reveal {
-  from {
-    opacity: 1;
-    filter: blur(18px) saturate(0.72) brightness(1.12);
-  }
-  to {
-    opacity: 0;
-    filter: blur(0) saturate(1) brightness(1);
-  }
+.video-lqip-frame__play[hidden] {
+  display: none;
 }
 
 @keyframes gj-video-lqip-fade {
   from { opacity: 1; }
   to { opacity: 0; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .video-lqip-frame.is-poster-ready {
-    transition: none;
-  }
 }
 
 /* A hairline frame offset outside the media. */

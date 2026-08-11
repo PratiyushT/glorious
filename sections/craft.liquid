@@ -25,12 +25,13 @@
                 section.settings.video
                 | video_tag:
                   image_size: '1200x',
-                  autoplay: true,
                   loop: true,
                   muted: true,
                   controls: false,
-                  data-video-lqip: video_lqip
+                  data-video-lqip: video_lqip,
+                  data-video-autoplay: true
               }}
+              {% render 'video-lqip-frame', lqip: video_lqip %}
             {%- elsif section.settings.image != blank -%}
               <img
                 src="{{ section.settings.image | image_url: width: 1200 }}"

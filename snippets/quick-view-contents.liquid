@@ -250,6 +250,7 @@
           {%- assign mp4_sources = gallery_video.sources | where: 'format', 'mp4' -%}
           {%- assign mp4 = mp4_sources.last -%}
           {%- if mp4 != blank -%}
+            {%- assign gallery_video_lqip = gallery_video.preview_image | image_url: width: 40 -%}
             <div class="quick-view__slot" data-quick-slot="{{ gallery_images.size }}" data-quick-spin>
               <video
                 class="quick-view__img quick-view__video"
@@ -262,8 +263,9 @@
                 playsinline
                 preload="none"
                 aria-label="{{ 'products.spin_view' | t }}"
-                data-video-lqip="{{ gallery_video.preview_image | image_url: width: 40 }}"
+                data-video-lqip="{{ gallery_video_lqip }}"
               ></video>
+              {% render 'video-lqip-frame', lqip: gallery_video_lqip %}
             </div>
           {%- endif -%}
         {%- endif -%}
