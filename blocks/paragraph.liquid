@@ -16,7 +16,7 @@
 {%- if block.settings.text != blank -%}
   <p
     class="section-lede reveal"
-    style="{% render 'block-spacing', margin: block.settings.margin, padding: block.settings.padding %}"
+    style="{% render 'block-spacing', padding: block.settings.padding %}"
     {{ block.shopify_attributes }}
   >{{ block.settings.text }}</p>
 {%- endif -%}
@@ -38,20 +38,6 @@
     },
     {
       "type": "select",
-      "id": "margin",
-      "label": "t:blocks.all.margin.label",
-      "info": "t:blocks.all.margin.info",
-      "options": [
-        { "value": "tiny", "label": "t:blocks.all.step.tiny" },
-        { "value": "small", "label": "t:blocks.all.step.small" },
-        { "value": "medium", "label": "t:blocks.all.step.medium" },
-        { "value": "large", "label": "t:blocks.all.step.large" },
-        { "value": "xlarge", "label": "t:blocks.all.step.xlarge" }
-      ],
-      "default": "medium"
-    },
-    {
-      "type": "select",
       "id": "padding",
       "label": "t:blocks.all.padding.label",
       "options": [
@@ -70,7 +56,6 @@
       "name": "t:blocks.paragraph.name",
       "settings": {
         "text": "Share a sentence or two about what this collection is for.",
-        "margin": "medium",
         "padding": "none"
       }
     }

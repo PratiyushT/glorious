@@ -408,15 +408,12 @@
   "blocks": {
     "all": {
       "spacing_header": "Spacing",
-      "margin": {
-        "label": "Margin",
-        "info": "The room the block leaves after itself. Every step is a rung of the theme's own spacing scale."
-      },
       "padding": {
         "label": "Padding"
       },
       "gap": {
-        "label": "Gap"
+        "label": "Vertical gap",
+        "info": "The space between every direct child of the section. Each step is a rung of the theme's own spacing scale."
       },
       "step": {
         "none": "None",

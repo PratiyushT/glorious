@@ -506,28 +506,16 @@ a {
    says why. See "`--body-leading` inherits into UI text and silently inflates
    spacing".
 
-   **The default is assigned here, so the inline property can override it.**
-   The block's Spacing setting writes `--block-margin` into the style attribute
-   and inline wins, which means a block whose setting is untouched writes
-   nothing and keeps this default — and the class stays usable on its own by
-   anything rendering an eyebrow without going through the block.
+   **These margins are for standing on its own.** Inside a section that owns
+   its vertical rhythm — `.collection-list__content` and anything built the
+   same way — they are zeroed and the section's gap spaces it, because a gap
+   and a margin add. They matter wherever an eyebrow is rendered outside such
+   a container, and the top stays a quarter of the bottom there: an eyebrow
+   belongs up against the heading it labels.
 
-   The top is a quarter of the bottom at every step: an eyebrow belongs up
-   against the heading it labels, and what needs to grow is the gap to whatever
-   follows. That proportion is this class's decision, not the scale's — see
-   snippets/block-spacing.liquid.
-
-   Measured at 1440px, as above / label / below / heading-to-row:
-
-     was .section-header    16.5 / 18 / 44   78.5
-     tiny   (2xs)            3   / 18 / 11   32
-     small  (sm)             5   / 18 / 22   45
-     medium (md, default)    8   / 18 / 33   59
-     large  (lg)            11   / 18 / 44   73
-     xlarge (xl)            16   / 18 / 66   100
-
-   An untouched setting measures 8 / 18 / 33 as well, which is the check that
-   the default assigned above and the inline property agree.                 */
+   Measured at 1440px standing alone, above / label / below / heading-to-row:
+   8 / 18 / 33 / 59, against `.section-header`'s 16.5 / 18 / 44 / 78.5. The
+   label box is 18px either way, which is the check that the flex fix holds. */
 .section-eyebrow {
   --block-margin: var(--step-medium);
 
@@ -1882,6 +1870,28 @@ a.card__title::after {
    ends with ragged bottoms where the grid has them level. The product card
    escapes that only because it declares `height: 100%`; the category card does
    not, and should not have to — this is the cell's job. */
+/* ---- Collection list: the section owns the vertical rhythm -----------
+   One `gap` on the section spaces every direct child — each header block and
+   the row itself — rather than each block carrying its own margin. That is
+   Horizon's arrangement and it is what makes a block portable: dropped into
+   another section it brings no opinion about how far it sits from what is
+   above it, and the section it lands in decides.
+
+   **Zeroing the children's own block margins is the load-bearing half.** A
+   gap and a margin add, so `.section-lede`'s 14px and `.section-eyebrow`'s
+   ratio would both stack on top of the gap and the rhythm would be neither
+   one thing nor the other. They keep those margins everywhere else, which is
+   why this zeroes them here rather than removing them at the source.        */
+.collection-list__content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--block-gap, var(--step-large));
+}
+
+.collection-list__content > * {
+  margin-block: 0;
+}
+
 /* The cell is a grid of one, so the card fills it the way it fills a column in
    the plain layout. Without that the cell stretches to the row and the card
    sizes to its own content, and a page whose titles wrap differently ends with

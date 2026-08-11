@@ -23,7 +23,7 @@
 {%- if block.settings.text != blank -%}
   <div
     class="section-eyebrow reveal"
-    style="{% render 'block-spacing', margin: block.settings.margin, padding: block.settings.padding %}"
+    style="{% render 'block-spacing', padding: block.settings.padding %}"
     {{ block.shopify_attributes }}
   >
     <span class="micro">{{ block.settings.text }}</span>
@@ -47,20 +47,6 @@
     },
     {
       "type": "select",
-      "id": "margin",
-      "label": "t:blocks.all.margin.label",
-      "info": "t:blocks.all.margin.info",
-      "options": [
-        { "value": "tiny", "label": "t:blocks.all.step.tiny" },
-        { "value": "small", "label": "t:blocks.all.step.small" },
-        { "value": "medium", "label": "t:blocks.all.step.medium" },
-        { "value": "large", "label": "t:blocks.all.step.large" },
-        { "value": "xlarge", "label": "t:blocks.all.step.xlarge" }
-      ],
-      "default": "medium"
-    },
-    {
-      "type": "select",
       "id": "padding",
       "label": "t:blocks.all.padding.label",
       "options": [
@@ -79,7 +65,6 @@
       "name": "t:blocks.subheading.name",
       "settings": {
         "text": "Subheading",
-        "margin": "medium",
         "padding": "none"
       }
     }

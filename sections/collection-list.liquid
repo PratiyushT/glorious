@@ -44,15 +44,20 @@
   class="section scheme-{{ section.settings.color_scheme }}"
   style="{% render 'section-style', padding_top: section.settings.padding_top, padding_bottom: section.settings.padding_bottom %}"
 >
-  <div class="page-width">
-    {%- comment -%}
-      The header blocks — Title, Subheading, Paragraph — render straight into
-      the page width rather than into a wrapper of their own, deliberately. A
-      `.display` heading has no bottom gap of its own and takes it from being
-      *adjacent* to what follows (`.display + .grid-auto` in base.css); a
-      wrapper here would break that adjacency and sit the row flush against the
-      title. See "A `.display` heading has no bottom gap of its own".
-    {%- endcomment -%}
+  {%- comment -%}
+    **The vertical rhythm belongs to the section, not to the blocks in it.**
+    One `gap` setting spaces every direct child — each header block and the row
+    itself — the way Horizon's sections carry a `gap` and hand it down through
+    a class. A block can then be dropped into any section without bringing its
+    own idea of how far it should sit from its neighbours, which is the whole
+    point of a block being reusable.
+
+    It also retires the adjacency rule here: `.display + .grid-auto` exists
+    because a display heading has no bottom gap of its own, and a flex column
+    with a gap answers that directly rather than by pairing selectors. The rule
+    still serves every section that is not laid out this way.
+  {%- endcomment -%}
+  <div class="page-width collection-list__content" style="{% render 'block-spacing', gap: section.settings.gap %}">
     {% content_for 'blocks' %}
 
     {%- comment -%}
@@ -142,6 +147,20 @@
       "max": 5,
       "step": 1,
       "default": 4
+    },
+    {
+      "type": "select",
+      "id": "gap",
+      "label": "t:blocks.all.gap.label",
+      "info": "t:blocks.all.gap.info",
+      "options": [
+        { "value": "tiny", "label": "t:blocks.all.step.tiny" },
+        { "value": "small", "label": "t:blocks.all.step.small" },
+        { "value": "medium", "label": "t:blocks.all.step.medium" },
+        { "value": "large", "label": "t:blocks.all.step.large" },
+        { "value": "xlarge", "label": "t:blocks.all.step.xlarge" }
+      ],
+      "default": "large"
     },
     {
       "type": "select",
