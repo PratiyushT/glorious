@@ -549,8 +549,8 @@ a {
   color: var(--c-text);
   border-bottom: var(--border-width) solid color-mix(in srgb, var(--c-text) 35%, transparent);
   padding-bottom: 0.4em;
-  transition: color var(--duration) var(--ease),
-              border-color var(--duration) var(--ease);
+  transition: color var(--duration) var(--ease-ui),
+              border-color var(--duration) var(--ease-ui);
 }
 
 .link-rule:hover {
@@ -576,9 +576,9 @@ a {
   text-decoration: none;
   white-space: nowrap;
   cursor: pointer;
-  transition: background-color var(--duration) var(--ease),
-              color var(--duration) var(--ease),
-              border-color var(--duration) var(--ease);
+  transition: background-color var(--duration) var(--ease-ui),
+              color var(--duration) var(--ease-ui),
+              border-color var(--duration) var(--ease-ui);
 }
 
 .btn--primary {
@@ -753,7 +753,7 @@ a {
   pointer-events: auto;
   transform: translate(-50%, -50%);
   box-shadow: 0 8px 30px color-mix(in srgb, #0D0C0A 28%, transparent);
-  transition: background-color var(--duration) var(--ease),
+  transition: background-color var(--duration) var(--ease-ui),
               transform var(--duration) var(--ease);
 }
 
@@ -1008,7 +1008,7 @@ a {
   font-family: var(--font-body);
   font-size: clamp(0.94rem, 1.1vw, 1.06rem);
   color: color-mix(in srgb, var(--c-text) 55%, transparent);
-  transition: color var(--duration) var(--ease);
+  transition: color var(--duration) var(--ease-ui);
 }
 
 .hero__choice.is-on {
@@ -1022,7 +1022,7 @@ a {
   place-items: center;
   border: var(--border-width) solid color-mix(in srgb, var(--c-text) 35%, transparent);
   border-radius: 50%;
-  transition: border-color var(--duration) var(--ease);
+  transition: border-color var(--duration) var(--ease-ui);
 }
 
 .hero__dot > span {
@@ -1030,7 +1030,7 @@ a {
   height: 8px;
   border-radius: 50%;
   background: transparent;
-  transition: background var(--duration) var(--ease);
+  transition: background var(--duration) var(--ease-ui);
 }
 
 .hero__choice.is-on .hero__dot {
@@ -1060,7 +1060,7 @@ a {
   font-size: clamp(0.78rem, 0.9vw, 0.84rem);
   letter-spacing: 0.15em;
   text-transform: uppercase;
-  transition: background var(--duration) var(--ease), color var(--duration) var(--ease);
+  transition: background var(--duration) var(--ease-ui), color var(--duration) var(--ease-ui);
 }
 
 .hero__cta:hover {
@@ -1168,7 +1168,7 @@ a {
   color: color-mix(in srgb, var(--c-text) 60%, transparent);
   cursor: pointer;
   font-size: 1.25rem;
-  transition: color var(--duration) var(--ease);
+  transition: color var(--duration) var(--ease-ui);
 }
 
 .hero-carousel__arrow:hover {
@@ -1492,9 +1492,9 @@ a {
   background: color-mix(in srgb, var(--c-surface) 92%, transparent);
   color: var(--c-text);
   cursor: pointer;
-  transition: background var(--duration) var(--ease),
-              border-color var(--duration) var(--ease),
-              color var(--duration) var(--ease);
+  transition: background var(--duration) var(--ease-ui),
+              border-color var(--duration) var(--ease-ui),
+              color var(--duration) var(--ease-ui);
 }
 
 .card__quick:hover {
@@ -1539,7 +1539,7 @@ a {
   pointer-events: none;
   filter: drop-shadow(0 1px 2px var(--c-surface))
           drop-shadow(0 0 8px color-mix(in srgb, var(--c-surface) 85%, transparent));
-  transition: opacity 0.4s ease, color var(--duration) var(--ease);
+  transition: opacity 0.4s ease, color var(--duration) var(--ease-ui);
 }
 
 .card__arrow--prev { inset-inline-start: 0.25rem; }
@@ -1697,8 +1697,8 @@ a.card__title::after {
      would fall back to currentColor — a hard ink ring round every swatch. */
   border: var(--border-width) solid
     var(--card-swatch-edge, color-mix(in srgb, currentColor 22%, transparent));
-  transition: box-shadow var(--duration) var(--ease),
-              border-color var(--duration) var(--ease);
+  transition: box-shadow var(--duration) var(--ease-ui),
+              border-color var(--duration) var(--ease-ui);
 }
 
 /* The design's ring is a 2px gap in the *card's* colour, then a 1px ink round.
@@ -2042,7 +2042,7 @@ a.card__title::after {
   cursor: pointer;
   font-size: var(--row-arrow-glyph);
   line-height: 1;
-  transition: color var(--duration) var(--ease), opacity var(--duration) var(--ease);
+  transition: color var(--duration) var(--ease-ui), opacity var(--duration) var(--ease-ui);
 }
 
 .row-carousel__arrow:hover {
@@ -2127,7 +2127,7 @@ a.card__title::after {
   position: absolute;
   inset: 8px 0;
   background: color-mix(in srgb, var(--c-text) 22%, transparent);
-  transition: background var(--duration) var(--ease);
+  transition: background var(--duration) var(--ease-ui);
 }
 
 .row-carousel__dot:hover::before {
@@ -2783,7 +2783,7 @@ a.card__title::after {
   cursor: pointer;
   font-size: 0.88rem;
   line-height: 1;
-  transition: color var(--duration) var(--ease);
+  transition: color var(--duration) var(--ease-ui);
 }
 
 .lookbook-card__close:hover {
@@ -2819,7 +2819,7 @@ a.card__title::after {
   letter-spacing: 0.16em;
   text-transform: uppercase;
   text-decoration: none;
-  transition: color var(--duration) var(--ease), border-color var(--duration) var(--ease);
+  transition: color var(--duration) var(--ease-ui), border-color var(--duration) var(--ease-ui);
 }
 
 .lookbook-card__details:hover {
@@ -2842,9 +2842,9 @@ a.card__title::after {
   background: #C7A15C;
   color: #14110D;
   cursor: pointer;
-  transition: background var(--duration) var(--ease),
-              border-color var(--duration) var(--ease),
-              color var(--duration) var(--ease);
+  transition: background var(--duration) var(--ease-ui),
+              border-color var(--duration) var(--ease-ui),
+              color var(--duration) var(--ease-ui);
 }
 
 .lookbook-card__add:hover {
@@ -2877,7 +2877,7 @@ a.card__title::after {
   color: color-mix(in srgb, var(--c-text) 80%, transparent);
   cursor: pointer;
   font-size: 0.81rem;
-  transition: color var(--duration) var(--ease);
+  transition: color var(--duration) var(--ease-ui);
 }
 
 .lookbook-film__play:hover {
@@ -3087,7 +3087,7 @@ a.card__title::after {
   color: color-mix(in srgb, var(--c-text) 55%, transparent);
   cursor: pointer;
   line-height: 1;
-  transition: color var(--duration) var(--ease);
+  transition: color var(--duration) var(--ease-ui);
 }
 
 .lookbook-row__add:hover {
@@ -3373,7 +3373,7 @@ a.card__title::after {
   border: none;
   background: color-mix(in srgb, var(--c-text) 25%, transparent);
   cursor: pointer;
-  transition: width var(--duration) var(--ease), background var(--duration) var(--ease);
+  transition: width var(--duration) var(--ease), background var(--duration) var(--ease-ui);
 }
 
 .quote-dots button[aria-selected="true"] {
@@ -3708,7 +3708,7 @@ a.card__title::after {
   font-size: var(--micro-size);
   letter-spacing: calc(var(--micro-tracking) * 0.77);
   text-transform: uppercase;
-  transition: background var(--duration) var(--ease);
+  transition: background var(--duration) var(--ease-ui);
 }
 
 .overlay-head__close:hover {
@@ -3815,7 +3815,7 @@ a.card__title::after {
   line-height: 1.14;
   color: #EFE9DC;
   text-decoration: none;
-  transition: color var(--duration) var(--ease);
+  transition: color var(--duration) var(--ease-ui);
 }
 
 .nav-menu__link:hover,
@@ -3856,7 +3856,7 @@ a.card__title::after {
   text-transform: uppercase;
   color: color-mix(in srgb, #EFE9DC 60%, transparent);
   text-decoration: none;
-  transition: color var(--duration) var(--ease);
+  transition: color var(--duration) var(--ease-ui);
 }
 
 .nav-menu__category:hover {
@@ -3984,7 +3984,7 @@ a.nav-menu__address:hover {
   line-height: 1.15;
   color: var(--c-ivory);
   caret-color: var(--c-accent);
-  transition: border-color var(--duration) var(--ease);
+  transition: border-color var(--duration) var(--ease-ui);
 }
 
 .search-overlay__field:focus {
@@ -4037,7 +4037,7 @@ a.nav-menu__address:hover {
   letter-spacing: calc(var(--micro-tracking) * 0.64);
   text-transform: uppercase;
   color: color-mix(in srgb, var(--c-ivory) 62%, transparent);
-  transition: color var(--duration) var(--ease);
+  transition: color var(--duration) var(--ease-ui);
 }
 
 .search-overlay__term:hover {
@@ -4473,9 +4473,9 @@ a.nav-menu__address:hover {
   cursor: pointer;
   font-size: 0.9rem;
   line-height: 1;
-  transition: background var(--duration) var(--ease),
-              color var(--duration) var(--ease),
-              border-color var(--duration) var(--ease);
+  transition: background var(--duration) var(--ease-ui),
+              color var(--duration) var(--ease-ui),
+              border-color var(--duration) var(--ease-ui);
 }
 
 .drawer-qty__btn:hover {
@@ -4518,9 +4518,9 @@ a.nav-menu__address:hover {
   font-size: var(--micro-size);
   letter-spacing: calc(var(--micro-tracking) * 0.64);
   text-transform: uppercase;
-  transition: background var(--duration) var(--ease),
-              color var(--duration) var(--ease),
-              border-color var(--duration) var(--ease);
+  transition: background var(--duration) var(--ease-ui),
+              color var(--duration) var(--ease-ui),
+              border-color var(--duration) var(--ease-ui);
 }
 
 .drawer-row__remove:hover {
@@ -4961,7 +4961,7 @@ a.nav-menu__address:hover {
 }
 
 .footer__link {
-  transition: color var(--duration) var(--ease);
+  transition: color var(--duration) var(--ease-ui);
 }
 
 .footer__link:hover {
@@ -5138,7 +5138,7 @@ a.nav-menu__address:hover {
   font-size: var(--fs-sm);
   letter-spacing: 0.06em;
   outline: none;
-  transition: border-color var(--duration) var(--ease);
+  transition: border-color var(--duration) var(--ease-ui);
 }
 
 .modal__field:focus {
@@ -5267,9 +5267,9 @@ a.nav-menu__address:hover {
   cursor: pointer;
   font-size: 0.938rem;
   line-height: 1;
-  transition: background var(--duration) var(--ease),
-              border-color var(--duration) var(--ease),
-              color var(--duration) var(--ease);
+  transition: background var(--duration) var(--ease-ui),
+              border-color var(--duration) var(--ease-ui),
+              color var(--duration) var(--ease-ui);
 }
 
 .quick-view__close:hover {
@@ -5566,7 +5566,7 @@ a.nav-menu__address:hover {
   cursor: pointer;
   filter: drop-shadow(0 1px 2px var(--c-surface))
           drop-shadow(0 0 9px color-mix(in srgb, var(--c-surface) 85%, transparent));
-  transition: transform var(--duration) var(--ease), color var(--duration) var(--ease);
+  transition: transform var(--duration) var(--ease), color var(--duration) var(--ease-ui);
 }
 
 .quick-view__arrow--prev { inset-inline-start: 0.5rem; }
@@ -5600,7 +5600,7 @@ a.nav-menu__address:hover {
   background: color-mix(in srgb, var(--c-surface) 90%, transparent);
   box-shadow: 0 0 0 1px color-mix(in srgb, var(--c-text) 18%, transparent);
   cursor: pointer;
-  transition: background var(--duration) var(--ease);
+  transition: background var(--duration) var(--ease-ui);
 }
 
 .quick-view__dot.is-on {
@@ -5623,7 +5623,7 @@ a.nav-menu__address:hover {
   line-height: 1;
   color: color-mix(in srgb, var(--c-text) 45%, transparent);
   filter: drop-shadow(0 1px 2px color-mix(in srgb, var(--c-surface) 90%, transparent));
-  transition: color var(--duration) var(--ease);
+  transition: color var(--duration) var(--ease-ui);
 }
 
 .quick-view__dot--spin.is-on {
@@ -5798,9 +5798,9 @@ a.nav-menu__address:hover {
   overflow: hidden;
   text-overflow: ellipsis;
   cursor: pointer;
-  transition: background var(--duration) var(--ease),
-              border-color var(--duration) var(--ease),
-              color var(--duration) var(--ease);
+  transition: background var(--duration) var(--ease-ui),
+              border-color var(--duration) var(--ease-ui),
+              color var(--duration) var(--ease-ui);
 }
 
 .quick-view__pill.is-selected {
@@ -5911,9 +5911,9 @@ a.nav-menu__address:hover {
   text-transform: uppercase;
   text-align: center;
   cursor: pointer;
-  transition: background var(--duration) var(--ease),
-              border-color var(--duration) var(--ease),
-              color var(--duration) var(--ease);
+  transition: background var(--duration) var(--ease-ui),
+              border-color var(--duration) var(--ease-ui),
+              color var(--duration) var(--ease-ui);
 }
 
 .quick-view__add:hover {
@@ -5965,7 +5965,7 @@ a.nav-menu__address:hover {
   letter-spacing: calc(var(--micro-tracking) * 0.91);
   text-transform: uppercase;
   text-decoration: none;
-  transition: background var(--duration) var(--ease);
+  transition: background var(--duration) var(--ease-ui);
 }
 
 .quick-view__full:hover {
@@ -5983,9 +5983,9 @@ a.nav-menu__address:hover {
   color: var(--c-accent);
   font-size: 0.938rem;
   line-height: 1;
-  transition: background var(--duration) var(--ease),
-              border-color var(--duration) var(--ease),
-              color var(--duration) var(--ease);
+  transition: background var(--duration) var(--ease-ui),
+              border-color var(--duration) var(--ease-ui),
+              color var(--duration) var(--ease-ui);
 }
 
 .quick-view__full:hover .quick-view__full-arrow {

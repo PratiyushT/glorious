@@ -716,28 +716,47 @@ durations, by how often it uses each: 250 / **350** / 500 / 700 / 900ms.
 - `base` is 350ms, which is the range's own former default, and the setting has
   no stored value — so the conversion changed no pixel and no millisecond.
 
-**The design has two motion registers and this theme currently conflates
-them.** Measured across all 25 design pages:
+**The design has two motion registers, and the theme now keeps them apart.**
+Measured across all 25 design pages:
 
-- *Interaction* — hover, focus, small state changes — is **plain `ease`**, and
-  overwhelmingly at `.35s`: `0.35s ease` is its commonest transition by a wide
-  margin (41 uses), then `0.5s ease` (22), `0.9s ease` (12), `0.3s ease` (10).
-- *Entrance and choreography* — reveals, modals, carousels — is
-  `cubic-bezier(.22,1,.36,1)`, and always slower: .5s, .55s, .6s, .65s, .7s,
+- *Interaction* — a hover, a focus, a colour changing — is **plain `ease` at
+  `.3s`**, and never carries a curve of its own: `color .3s` appears 107 times,
+  `border-color .3s` 38, `background .3s` 11, `box-shadow .3s` 4.
+- *Entrance and choreography* — reveals, modals, the nav morph, a carousel page
+  — is `cubic-bezier(.22,1,.36,1)`, and always slower: .5s, .55s, .6s, .65s,
   1.1s, 1.3s.
 
-`--ease` is the entrance curve, and `base.css` spends it on hovers as well, so
-every button and link in the theme eases on a curve the design reserves for
-things arriving. Separately, the design's **second-most-used curve overall**,
-`cubic-bezier(.19,1,.22,1)` at 54 uses, appears **once** in this theme
-(`base.css:925`) — it is the keyframe easing for its animations.
+So `--ease` is the entrance curve and **`--ease-ui` is plain `ease`**. Before
+the split, `base.css` spent the entrance curve on every button, link, arrow,
+swatch and field in the theme.
 
-Splitting them is the next motion change and it is deliberately **not** in the
-commit that introduced the steps: re-pointing `--ease` moves every hover in the
-theme, which wants measuring against the dev server rather than reasoning
-about. When it happens it is `--ease` (entrance), `--ease-ui` (plain `ease`)
-and `--ease-keyframe` (`.19,1,.22,1`), and the ~50 bare `ease` keywords and
-~40 hand-written durations in `base.css` come onto the tokens with it.
+- **The count that set the old default was measuring the wrong thing.** An
+  earlier pass read `0.35s ease` as the design's commonest transition (41
+  uses) and set `--duration` to 350ms accordingly. That grep matched a duration
+  *followed by an easing keyword* — and the design writes its interaction
+  transitions with **no easing function at all**, leaning on the CSS initial
+  value, so its ~160 `.3s` colour declarations were invisible to it. `base` is
+  300ms.
+- **53 declarations moved**, every one of them `color`, `background`,
+  `background-color`, `border-color` or `box-shadow`. Verified on the page:
+  240 UI properties now compute to plain `ease`, **none** to the entrance
+  curve, and 112 non-UI properties still carry the entrance curve.
+- **Three of them were single-line transitions mixing both registers** — e.g.
+  `transition: width var(--duration) var(--ease), background var(--duration)
+  var(--ease)` — where a line-level pass reads the first property, decides the
+  line is choreography, and skips the interaction half with it. Those need
+  splitting on the top-level commas. The same paren-blind mistake wrecked the
+  verification sweep too: `transitionTimingFunction` split on `", "` shreds
+  `cubic-bezier(0.22, 1, 0.36, 1)` into four fragments and reports nonsense.
+- **`.reveal` got faster as a consequence, and that is correct.** It is
+  `calc(var(--duration) * 2)`, so 350→300 took it from 0.7s to 0.6s — which is
+  the design's own `transform .6s cubic-bezier(.22,1,.36,1)`.
+
+**Still not split: the keyframes.** The design's second-commonest curve,
+`cubic-bezier(.19,1,.22,1)` at 54 uses, is its animation easing and appears
+**once** here (`base.css:925`). `base.css` still carries ~25 `animation:` lines
+on a bare `ease` and ~40 hand-written durations. That is the next motion pass;
+it needs the same per-declaration care rather than a sweep.
 
 ### Block spacing
 

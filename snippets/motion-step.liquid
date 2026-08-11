@@ -18,11 +18,18 @@
   The rungs are the reference design's own transition durations, by how often
   it uses each:
 
-    quick    250ms   the design's .25s
-    base     350ms   the design's .35s — its commonest transition, 41 uses
-    relaxed  500ms   the design's .5s, 22 uses
-    slow     700ms   the design's .7s
-    slowest  900ms   the design's .9s, 12 uses
+    quick    250ms   the design's .25s, 88 uses
+    base     300ms   the design's .3s — its commonest duration outright, 293
+    relaxed  350ms   the design's .35s, 78 uses
+    slow     500ms   the design's .5s, 45 uses
+    slowest  800ms   the design's .8s, 57 uses
+
+  An earlier pass put `base` at 350 on the reading that `0.35s ease` was the
+  design's commonest transition. That count came from a grep for a duration
+  followed by an easing keyword — and the design writes its interaction
+  transitions as `color .3s`, `border-color .3s`, `background .3s` with **no
+  easing function at all**, leaning on the CSS initial value. Those 160-odd
+  declarations were invisible to it. .3s is the design's real answer.
 
   Accepts:
     step  - one of the ids above. Anything unrecognised prints nothing so the
@@ -35,8 +42,8 @@
 
 {%- case step -%}
   {%- when 'quick' -%}250
-  {%- when 'base' -%}350
-  {%- when 'relaxed' -%}500
-  {%- when 'slow' -%}700
-  {%- when 'slowest' -%}900
+  {%- when 'base' -%}300
+  {%- when 'relaxed' -%}350
+  {%- when 'slow' -%}500
+  {%- when 'slowest' -%}800
 {%- endcase -%}

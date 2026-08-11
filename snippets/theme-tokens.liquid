@@ -275,7 +275,15 @@
     {%- capture motion_ms -%}{%- render 'motion-step', step: settings.motion_duration -%}{%- endcapture -%}
     {%- if motion_ms == blank -%}{%- assign motion_ms = 350 -%}{%- endif -%}
     --duration: {% if settings.motion_enabled %}{{ motion_ms }}ms{% else %}0ms{% endif %};
+    {%- comment -%}
+      Two registers, because the design has two. Interaction — a hover, a
+      focus, a colour changing — is plain `ease` in all 25 of its pages, and
+      never carries a curve of its own. `--ease` is the entrance curve, spent
+      on things arriving: reveals, modals, the nav morph, a carousel page.
+      Handing hovers the entrance curve is what this theme did everywhere.
+    {%- endcomment -%}
     --ease: cubic-bezier(0.22, 1, 0.36, 1);
+    --ease-ui: ease;
   }
 
   @media (prefers-reduced-motion: reduce) {
