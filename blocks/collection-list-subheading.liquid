@@ -1,0 +1,33 @@
+{%- comment -%}
+  Collection list — the micro eyebrow, as a block.
+
+  The design pairs a display heading with a small uppercase line beside it, and
+  `.section-header` is the row that holds them. Its bottom margin is what gives
+  a display heading its breathing room, which is why the gap rule in base.css
+  only has to fire when this block is absent.
+{%- endcomment -%}
+
+{%- if block.settings.text != blank -%}
+  <div class="section-header reveal" {{ block.shopify_attributes }}>
+    <span class="micro">{{ block.settings.text }}</span>
+  </div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "t:blocks.collection_list_subheading.name",
+  "tag": null,
+  "settings": [
+    {
+      "type": "text",
+      "id": "text",
+      "label": "t:sections.all.subheading.label"
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:blocks.collection_list_subheading.name"
+    }
+  ]
+}
+{% endschema %}

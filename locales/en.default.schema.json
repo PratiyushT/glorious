@@ -405,6 +405,39 @@
       "text_link": "Text link"
     }
   },
+  "blocks": {
+    "collection_list_title": {
+      "name": "Title"
+    },
+    "collection_list_subheading": {
+      "name": "Subheading"
+    },
+    "collection_list_paragraph": {
+      "name": "Paragraph"
+    },
+    "collection_card": {
+      "name": "Collection card"
+    },
+    "collection_card_image": {
+      "name": "Image"
+    },
+    "collection_card_title": {
+      "name": "Collection title",
+      "fallback": {
+        "label": "Fallback name",
+        "info": "Shown only where a slot has no collection to name."
+      }
+    },
+    "collection_card_count": {
+      "name": "Product count"
+    },
+    "collection_card_reveal": {
+      "name": "Hover reveal",
+      "label": {
+        "label": "Label"
+      }
+    }
+  },
   "sections": {
     "all": {
       "anchor": {
@@ -417,6 +450,9 @@
         "bottom": "Under the row",
         "top": "Above the row",
         "side": "Either side of the row"
+      },
+      "image_ratio": {
+        "label": "Image shape"
       },
       "carousel_motion": {
         "label": "Carousel animation",
@@ -764,35 +800,18 @@
         "info": "Defaults to the collection above. Set this to send it somewhere else."
       }
     },
-    "category_grid": {
-      "name": "Category grid",
+    "collection_list": {
+      "name": "Collection list",
+      "collections": {
+        "label": "Collections",
+        "info": "One card per collection, all from the single Collection card below."
+      },
       "columns": {
         "label": "Maximum columns"
       },
-      "image_ratio": {
-        "label": "Image shape"
-      },
-      "show_counts": {
-        "label": "Show product counts"
-      },
-      "blocks": {
-        "category": {
-          "name": "Category",
-          "collection": {
-            "label": "Collection"
-          },
-          "title": {
-            "label": "Title",
-            "info": "Falls back to the collection title."
-          },
-          "image": {
-            "label": "Image",
-            "info": "Falls back to the collection image."
-          },
-          "link_label": {
-            "label": "Hover label"
-          }
-        }
+      "presets": {
+        "grid": "Grid",
+        "carousel": "Carousel"
       }
     },
     "promises": {

@@ -1,0 +1,35 @@
+{%- comment -%}
+  Collection list — the display heading, as a block.
+
+  It was `section.settings.heading` until the section became a block section.
+  A section can hold either its own blocks or theme blocks and never both, so
+  once the card became a theme block the heading had to become one too.
+
+  `"tag": null` because the block owns its element: `.display` is the theme's
+  own edge-to-edge heading and wrapping it in a generated div would put a box
+  between it and the gap rule below (see `.display + *` in base.css).
+{%- endcomment -%}
+
+{%- if block.settings.text != blank -%}
+  <div class="display reveal" {{ block.shopify_attributes }}>{{ block.settings.text }}</div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "t:blocks.collection_list_title.name",
+  "tag": null,
+  "settings": [
+    {
+      "type": "text",
+      "id": "text",
+      "label": "t:sections.all.heading.label",
+      "default": "Our Products"
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:blocks.collection_list_title.name"
+    }
+  ]
+}
+{% endschema %}

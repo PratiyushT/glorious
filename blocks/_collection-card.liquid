@@ -1,0 +1,53 @@
+{%- comment -%}
+  Collection card — one template, rendered once per collection.
+
+  **This is a single block, not one per collection.** The section holds the list
+  of collections and renders this static block inside its own loop, handing each
+  pass the collection it is for:
+
+      {% content_for 'block', type: '_collection-card', id: 'collection-card',
+                     closest.collection: collection %}
+
+  So four collections show four cards from one set of settings, and the theme
+  editor lists it once with the repeat mark. Anything that would have to differ
+  per card — a title override, a chosen photograph — therefore has no place
+  here; those come from the collection itself.
+
+  Its name is underscored because it is **private**: a merchant never adds it,
+  the section places it. Only its children are in an "Add block" list.
+
+  **The children are placed by CSS, not by their order in the tree.** The design
+  fixes this card's composition — the name and the count on one row, a hairline
+  under them, the photograph below with the hover band over it — so each child
+  claims a named grid area and adding or removing one switches that part on or
+  off without rearranging the rest. The band and the photograph deliberately
+  share the media area, which is how the band covers the photograph exactly
+  while remaining a sibling a merchant can remove on its own.
+
+  The rule is the card's own, not a block: it is the design's join between the
+  head and the photograph rather than a part anyone would want to drop.
+{%- endcomment -%}
+
+{%- liquid
+  assign collection = closest.collection
+  assign url = collection.url | default: routes.all_products_collection_url
+-%}
+
+<a class="cat-card" href="{{ url }}" {{ block.shopify_attributes }}>
+  {% content_for 'blocks' %}
+  <span class="cat-card__rule" aria-hidden="true"></span>
+</a>
+
+{% schema %}
+{
+  "name": "t:blocks.collection_card.name",
+  "tag": null,
+  "blocks": [
+    { "type": "collection-card-image" },
+    { "type": "collection-card-title" },
+    { "type": "collection-card-count" },
+    { "type": "collection-card-reveal" }
+  ],
+  "settings": []
+}
+{% endschema %}

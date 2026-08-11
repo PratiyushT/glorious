@@ -1,0 +1,27 @@
+{%- comment -%}
+  Collection card — how many pieces are in the collection.
+
+  This block *is* the old `show_counts` checkbox: the count shows because the
+  block is there and stops because it was removed, which is one answer rather
+  than two. Nothing renders where the section has no collection to count, so an
+  empty slot never leaves a stray zero beside a title.
+{%- endcomment -%}
+
+{%- if closest.collection != blank -%}
+  <span class="cat-card__count" {{ block.shopify_attributes }}>
+    {{- closest.collection.all_products_count -}}
+  </span>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "t:blocks.collection_card_count.name",
+  "tag": null,
+  "settings": [],
+  "presets": [
+    {
+      "name": "t:blocks.collection_card_count.name"
+    }
+  ]
+}
+{% endschema %}

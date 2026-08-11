@@ -499,7 +499,9 @@ a {
    have contributed, so the rhythm is the same either way. */
 .display + .grid-auto,
 .display + .promises,
-.display + .row-carousel {
+.display + .row-carousel,
+.lookbook__intro + .grid-auto,
+.lookbook__intro + .row-carousel {
   margin-top: var(--space-lg);
 }
 
@@ -1810,7 +1812,17 @@ a.card__title::after {
    ends with ragged bottoms where the grid has them level. The product card
    escapes that only because it declares `height: 100%`; the category card does
    not, and should not have to — this is the cell's job. */
-.row-carousel__cell {
+/* The cell is a grid of one, so the card fills it the way it fills a column in
+   the plain layout. Without that the cell stretches to the row and the card
+   sizes to its own content, and a page whose titles wrap differently ends with
+   ragged bottoms.
+
+   `.collection-list__cell` is the same box in the *grid* layout, where the
+   collection list needs a per-card wrapper of its own: the reveal and the
+   design's 80ms stagger live on it, because a theme block cannot know its
+   place among its siblings and `forloop` only exists out in the section. */
+.row-carousel__cell,
+.collection-list__cell {
   display: grid;
   min-width: 0;
 }
@@ -2153,7 +2165,18 @@ a.card__title::after {
   }
 }
 
-/* ---- Category card ----------------------------------------------- */
+/* ---- Category card -------------------------------------------------
+   The card is composed of theme blocks now — a title, a count, a photograph
+   and the hover band, each one a child a merchant can add or remove — so it is
+   **a grid of named areas rather than a flex column**. Every part claims its
+   area, which is what makes the design's arrangement independent of the order
+   the blocks happen to sit in: dragging the count above the title in the
+   editor cannot move it out of the head row, and removing one part leaves the
+   rest exactly where they were.
+
+   The photograph and the band deliberately share the `media` area. That is how
+   the band covers the photograph precisely while remaining its *sibling*
+   rather than its child, which is what lets either be removed on its own.   */
 
 /* Only the horizontal padding scales — the design holds the vertical
    spacing fixed, so the header keeps its proportions on a phone instead of
@@ -2162,8 +2185,17 @@ a.card__title::after {
   /* 18px – 34px, the design's own. Not 1.13/2.13rem, which is 18.08 and 34.08. */
   --cat-pad-x: clamp(1.125rem, 3vw, 2.125rem);
 
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  /* The middle row takes the slack, which is what puts the rule hard against
+     the photograph however tall the card is stretched — the `margin-top: auto`
+     the flex column used to rely on. */
+  grid-template-rows: auto 1fr auto;
+  grid-template-areas:
+    "title count"
+    "rule  rule"
+    "media media";
+  column-gap: 14px;
   text-decoration: none;
   color: var(--c-text);
   background: var(--c-surface);
@@ -2171,12 +2203,13 @@ a.card__title::after {
   line-height: normal;
 }
 
-.cat-card__head {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 14px;
-  padding: 20px var(--cat-pad-x) 14px;
+/* The head's own padding, split between the two blocks that now make it up so
+   the row still reads as one. Baseline is set per item rather than on the grid,
+   or the photograph and the rule would try to align to a baseline too. */
+.cat-card__title {
+  grid-area: title;
+  align-self: baseline;
+  padding: 20px 0 14px var(--cat-pad-x);
   font-family: var(--font-display);
   font-size: clamp(1.5rem, 2.4vw, 2.1rem);
   letter-spacing: 0.14em;
@@ -2189,6 +2222,9 @@ a.card__title::after {
 }
 
 .cat-card__count {
+  grid-area: count;
+  align-self: baseline;
+  padding: 20px var(--cat-pad-x) 14px 0;
   font-family: var(--font-body);
   font-size: 0.75rem;
   letter-spacing: 0.17em;
@@ -2196,12 +2232,15 @@ a.card__title::after {
 }
 
 .cat-card__rule {
+  grid-area: rule;
+  align-self: end;
   height: var(--border-width);
   background: color-mix(in srgb, var(--c-text) 30%, transparent);
-  margin: auto var(--cat-pad-x) 0;
+  margin-inline: var(--cat-pad-x);
 }
 
 .cat-card__media {
+  grid-area: media;
   position: relative;
   display: block;
   overflow: hidden;
@@ -2222,9 +2261,16 @@ a.card__title::after {
   transform: scale(1.06);
 }
 
+/* Shares the `media` area with the photograph rather than nesting inside it,
+   so the two are siblings a merchant can add and remove independently. The
+   margin has to match the photograph's or the two boxes would not coincide,
+   and the stack order has to be stated rather than left to document order —
+   the blocks can be in either order in the tree. */
 .cat-card__reveal {
-  position: absolute;
-  inset: 0;
+  grid-area: media;
+  position: relative;
+  z-index: 1;
+  margin-top: 16px;
   display: flex;
   align-items: flex-end;
   /* The design's noir, not black: rgba(13,12,10,0) → rgba(13,12,10,.62). */

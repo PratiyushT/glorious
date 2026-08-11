@@ -393,7 +393,7 @@ as on the design's homepage.
 
 ### Homepage sections
 
-`hero`, `featured-products` (Most Loved), `category-grid` (Our Products),
+`hero`, `featured-products` (Most Loved), `collection-list` (Our Products),
 `lookbook` (Shop the look), `promises`, `craft`, `about`, `testimonials`,
 `visit` — plus `header`,
 `announcement-bar`, `cart-drawer`, `newsletter-popup`, `cookie-banner` in the
@@ -408,6 +408,85 @@ is not — a curated landing page, or a filtered URL. All products stands in whe
 no collection is chosen, so the link always has a real destination and never
 becomes the `href="#"` this theme refuses to ship. Its label works the same
 way: `view_all_label`, falling back to the collection's product count.
+
+### Collection list
+
+Our Products, renamed from `category-grid` and rebuilt on **theme blocks** —
+the theme's only `blocks/` directory so far. The editor shows it as
+"Collection list: Grid", which is Shopify rendering `<section name>: <preset
+name>`; the second preset is "Carousel".
+
+- **The card is one block, not one per collection.** `blocks/_collection-card.
+  liquid` is a *static* block and the section renders it once per collection
+  inside its own loop, handing each pass the collection it is for:
+
+  ```liquid
+  {% content_for 'block', type: '_collection-card', id: 'collection-card',
+                 closest.collection: collection %}
+  ```
+
+  Four collections, four cards, **one set of settings** — the editor lists it
+  once with the repeat mark. The list itself is a single `collection_list`
+  section setting.
+
+  The consequence is worth stating plainly: **nothing that must differ per card
+  can live on the card.** The old per-category `title` and `image` pickers are
+  gone, and the title and photograph come from the collection itself. That was
+  already the fallback; what is lost is the override. The stored homepage set
+  titles that matched the collections' own, except `necklaces-pendants`, whose
+  card now reads whatever that collection is called in admin.
+- **`_` means private.** A merchant never adds the card; the section places it.
+  Only its children are in an "Add block" list. The underscore is Shopify's own
+  convention for a block that exists to be rendered statically.
+- **The section can keep the carousel *because* it does the looping.**
+  Merchant-added blocks can only ever render as one flat sibling flow —
+  `content_for 'blocks'` renders them all, and `content_for 'block'` is
+  static-only, so there is no way to wrap a subset. A Title block and a card
+  could therefore never share a section with a moving track. Rendering the card
+  from the section's own loop sidesteps that entirely: the section still wraps
+  each card in `.row-carousel__cell`, and `snippets/row-carousel.liquid` is
+  untouched.
+
+  **The loop is written twice, deliberately.** Only the carousel path captures
+  its cells, because the carousel snippet takes markup; the grid — the default —
+  renders inline so it cannot depend on `{% content_for %}` surviving a
+  `{% capture %}`. Keep the two the same.
+- **The card is a grid of named areas, not a flex column**, and that is what
+  makes the design's arrangement independent of block order. Each part claims
+  its area (`title`, `count`, `rule`, `media`), so dragging the count above the
+  title in the editor cannot move it out of the head row, and removing a part
+  leaves the rest where they were. This is the "fixed structure, blocks toggle
+  parts" reading, chosen over full composability on request.
+
+  The photograph and the hover band **share the `media` area**. That is how the
+  band covers the photograph exactly while staying its *sibling*, which is what
+  lets either be removed on its own — so the band states its own `z-index`
+  rather than relying on document order, and repeats the photograph's 16px
+  margin so the two boxes coincide.
+
+  Verified against the flex card it replaces, at a 439px column: card 439×637,
+  title text at (35,21), the 0.7em arrow at (189,30), the count at (387,39),
+  the rule at (35,73)×369, the media at (1,90) 437×547, the band and its row
+  identical. Every measured value matches.
+- **The `reveal` and its 80ms stagger live on a cell wrapper, not on the card**,
+  because a theme block cannot know its place among its siblings — `forloop`
+  only exists out in the section. `.collection-list__cell` is that wrapper and
+  shares `.row-carousel__cell`'s rule: a grid of one, so the card fills it
+  rather than sizing to its own content.
+- **The header blocks render straight into `.page-width`, with no wrapper.** A
+  `.display` heading has no bottom gap of its own and takes it from being
+  *adjacent* to what follows; a wrapper would break that and sit the row flush
+  against the title. The paragraph block was added to the same rule for the
+  same reason — see "A `.display` heading has no bottom gap of its own".
+- The paragraph reuses `.lookbook__intro`, the theme's one body paragraph under
+  a display heading, rather than forking its numbers.
+- **`t:` keys for blocks live under a new top-level `blocks` namespace** in
+  `locales/en.default.schema.json`, beside `sections` and `settings_schema`.
+- Renaming the section moved "Image shape" out of `sections.category_grid` and
+  into **`sections.all.image_ratio`**, where it belonged all along: `about`,
+  `craft` and `visit` were all reaching into the category grid's namespace for
+  that one label. `theme check` caught it, which is worth knowing — it validates
+  section schemas even though it does not validate `config/settings_schema.json`.
 
 ### The row carousel
 

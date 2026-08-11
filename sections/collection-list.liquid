@@ -1,0 +1,277 @@
+{%- comment -%}
+  Collection list — the "Our Products" panel.
+
+  Renamed from `category-grid`, and rebuilt on theme blocks. Two things follow
+  from that and neither is optional:
+
+  **A section holds either its own blocks or theme blocks, never both.** So the
+  heading and the subheading, which were section settings, are blocks now, and
+  the four category blocks stored in `templates/index.json` had to migrate in
+  the same change.
+
+  **The card is one block, not one per collection.** The list of collections is
+  a single section setting and `_collection-card` is a *static* block rendered
+  once per collection inside the loop below, handed its collection through
+  `closest.collection`. Four collections, one set of card settings — which is
+  also what lets this section keep the carousel: because the section does the
+  looping rather than `content_for 'blocks'`, it can still wrap each card in
+  the cell the carousel needs. Merchant-added blocks can only ever render as
+  one flat sibling flow, so a header block and a card could not otherwise live
+  in the same section as a moving track.
+
+  The row is either the grid — unchanged, and the default — or the carousel
+  Most Loved offers, from the same `snippets/row-carousel.liquid`.
+{%- endcomment -%}
+
+{%- liquid
+  assign is_carousel = false
+  if section.settings.layout == 'carousel'
+    assign is_carousel = true
+  endif
+
+  assign collection_list = section.settings.collections
+
+  comment
+    The carousel's accessible name. There is no heading setting to borrow from
+    any more — the heading is a block, and a section cannot read one — so it
+    falls back to the theme's own label rather than guessing at the block's
+    text.
+  endcomment
+  assign carousel_label = 'general.carousel.label' | t
+-%}
+
+<section
+  class="section scheme-{{ section.settings.color_scheme }}"
+  style="{% render 'section-style', padding_top: section.settings.padding_top, padding_bottom: section.settings.padding_bottom %}"
+>
+  <div class="page-width">
+    {%- comment -%}
+      The header blocks — Title, Subheading, Paragraph — render straight into
+      the page width rather than into a wrapper of their own, deliberately. A
+      `.display` heading has no bottom gap of its own and takes it from being
+      *adjacent* to what follows (`.display + .grid-auto` in base.css); a
+      wrapper here would break that adjacency and sit the row flush against the
+      title. See "A `.display` heading has no bottom gap of its own".
+    {%- endcomment -%}
+    {% content_for 'blocks' %}
+
+    {%- comment -%}
+      22.5rem is the design's 360px floor, and it is what decides when the row
+      breaks. At 20rem the grid fitted an extra column roughly 120px of width
+      too early at every tier.
+
+      The carousel reads the same properties off the very same element — its
+      ruler carries `.grid-auto`'s width expression and inherits these — so
+      neither layout can answer the column question differently.
+    {%- endcomment -%}
+    {%- capture grid_vars -%}
+      --cols: {{ section.settings.columns }}; --gap: var(--grid-gap); --min: 22.5rem;
+    {%- endcapture -%}
+
+    {%- if is_carousel -%}
+      {%- comment -%}
+        The carousel takes its cells as markup, so this one path has to capture
+        them. The grid below deliberately does not: it is the default, and the
+        default should not depend on `{% content_for %}` surviving a capture.
+        The loop is stated twice for that reason and no other — keep them the
+        same.
+      {%- endcomment -%}
+      {%- capture cells -%}
+        {%- for collection in collection_list -%}
+          <div class="row-carousel__cell" data-row-cell>
+            {% content_for 'block', type: '_collection-card', id: 'collection-card', closest.collection: collection %}
+          </div>
+        {%- endfor -%}
+      {%- endcapture -%}
+
+      {%- render 'row-carousel',
+        cells: cells,
+        count: collection_list.size,
+        motion: section.settings.carousel_motion,
+        arrows: section.settings.carousel_arrows,
+        label: carousel_label,
+        track_style: grid_vars
+      -%}
+    {%- else -%}
+      <div class="grid-auto" style="{{ grid_vars | strip }}">
+        {%- comment -%}
+          The cell carries the reveal and the design's 80ms stagger, because a
+          block cannot know its place among its siblings — `forloop` lives out
+          here. It is `display: grid` for the same reason the carousel's cell
+          is: the card then fills it rather than sizing to its own content, so
+          a row of cards whose titles wrap differently still ends level.
+        {%- endcomment -%}
+        {%- for collection in collection_list -%}
+          <div class="collection-list__cell reveal" style="--reveal-delay: {{ forloop.index0 | times: 80 }}ms;">
+            {% content_for 'block', type: '_collection-card', id: 'collection-card', closest.collection: collection %}
+          </div>
+        {%- endfor -%}
+      </div>
+    {%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "t:sections.collection_list.name",
+  "tag": "div",
+  "blocks": [
+    { "type": "collection-list-title" },
+    { "type": "collection-list-subheading" },
+    { "type": "collection-list-paragraph" }
+  ],
+  "settings": [
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:sections.all.color_scheme.label",
+      "default": "scheme_3"
+    },
+    {
+      "type": "collection_list",
+      "id": "collections",
+      "label": "t:sections.collection_list.collections.label",
+      "info": "t:sections.collection_list.collections.info",
+      "limit": 12
+    },
+    {
+      "type": "range",
+      "id": "columns",
+      "label": "t:sections.collection_list.columns.label",
+      "min": 2,
+      "max": 5,
+      "step": 1,
+      "default": 4
+    },
+    {
+      "type": "select",
+      "id": "layout",
+      "label": "t:sections.all.layout.label",
+      "info": "t:sections.all.layout.info",
+      "options": [
+        {
+          "value": "grid",
+          "label": "t:sections.all.layout.grid"
+        },
+        {
+          "value": "carousel",
+          "label": "t:sections.all.layout.carousel"
+        }
+      ],
+      "default": "grid"
+    },
+    {
+      "type": "select",
+      "id": "carousel_motion",
+      "label": "t:sections.all.carousel_motion.label",
+      "info": "t:sections.all.carousel_motion.info",
+      "options": [
+        {
+          "value": "slide",
+          "label": "t:sections.all.carousel_motion.slide"
+        },
+        {
+          "value": "fade",
+          "label": "t:sections.all.carousel_motion.fade"
+        }
+      ],
+      "default": "slide",
+      "visible_if": "{{ section.settings.layout == 'carousel' }}"
+    },
+    {
+      "type": "select",
+      "id": "carousel_arrows",
+      "label": "t:sections.all.carousel_arrows.label",
+      "info": "t:sections.all.carousel_arrows.info",
+      "options": [
+        {
+          "value": "bottom",
+          "label": "t:sections.all.carousel_arrows.bottom"
+        },
+        {
+          "value": "top",
+          "label": "t:sections.all.carousel_arrows.top"
+        },
+        {
+          "value": "side",
+          "label": "t:sections.all.carousel_arrows.side"
+        }
+      ],
+      "default": "bottom",
+      "visible_if": "{{ section.settings.layout == 'carousel' }}"
+    },
+    {
+      "type": "header",
+      "content": "t:sections.all.spacing_header"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "t:sections.all.padding_top.label",
+      "min": 0,
+      "max": 200,
+      "step": 4,
+      "unit": "px",
+      "default": 76
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "t:sections.all.padding_bottom.label",
+      "min": 0,
+      "max": 200,
+      "step": 4,
+      "unit": "px",
+      "default": 96
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:sections.collection_list.presets.grid",
+      "settings": {
+        "layout": "grid"
+      },
+      "blocks": [
+        {
+          "type": "collection-list-title",
+          "settings": { "text": "Our Products" }
+        },
+        {
+          "type": "_collection-card",
+          "static": true,
+          "id": "collection-card",
+          "blocks": [
+            { "type": "collection-card-title" },
+            { "type": "collection-card-count" },
+            { "type": "collection-card-image" },
+            { "type": "collection-card-reveal" }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "t:sections.collection_list.presets.carousel",
+      "settings": {
+        "layout": "carousel"
+      },
+      "blocks": [
+        {
+          "type": "collection-list-title",
+          "settings": { "text": "Our Products" }
+        },
+        {
+          "type": "_collection-card",
+          "static": true,
+          "id": "collection-card",
+          "blocks": [
+            { "type": "collection-card-title" },
+            { "type": "collection-card-count" },
+            { "type": "collection-card-image" },
+            { "type": "collection-card-reveal" }
+          ]
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

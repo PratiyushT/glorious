@@ -123,54 +123,62 @@
       }
     },
     "our-products": {
-      "type": "category-grid",
+      "type": "collection-list",
       "blocks": {
-        "rings": {
-          "type": "category",
+        "heading": {
+          "type": "collection-list-title",
           "settings": {
-            "collection": "rings",
-            "title": "Rings",
-            "link_label": "View pieces"
+            "text": "Our Products"
           }
         },
-        "earrings": {
-          "type": "category",
-          "settings": {
-            "collection": "earrings",
-            "title": "Earrings",
-            "link_label": "View pieces"
-          }
-        },
-        "bracelets": {
-          "type": "category",
-          "settings": {
-            "collection": "bracelets",
-            "title": "Bracelets",
-            "link_label": "View pieces"
-          }
-        },
-        "necklaces": {
-          "type": "category",
-          "settings": {
-            "collection": "necklaces-pendants",
-            "title": "Necklaces & Pendants",
-            "link_label": "View pieces"
-          }
+        "collection-card": {
+          "type": "_collection-card",
+          "static": true,
+          "blocks": {
+            "name": {
+              "type": "collection-card-title",
+              "settings": {
+                "fallback": "Category"
+              }
+            },
+            "count": {
+              "type": "collection-card-count",
+              "settings": {}
+            },
+            "photograph": {
+              "type": "collection-card-image",
+              "settings": {
+                "image_ratio": "4 / 5"
+              }
+            },
+            "reveal": {
+              "type": "collection-card-reveal",
+              "settings": {
+                "label": "View pieces"
+              }
+            }
+          },
+          "block_order": [
+            "name",
+            "count",
+            "photograph",
+            "reveal"
+          ]
         }
       },
       "block_order": [
-        "rings",
-        "earrings",
-        "bracelets",
-        "necklaces"
+        "heading"
       ],
       "settings": {
         "color_scheme": "scheme_3",
-        "heading": "Our Products",
-        "subheading": "",
+        "collections": [
+          "rings",
+          "earrings",
+          "bracelets",
+          "necklaces-pendants"
+        ],
         "columns": 4,
-        "image_ratio": "4 / 5",
-        "show_counts": true,
+        "layout": "grid",
         "padding_top": 76,
         "padding_bottom": 96
       }
