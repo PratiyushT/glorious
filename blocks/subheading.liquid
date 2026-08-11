@@ -1,0 +1,85 @@
+{%- comment -%}
+  A micro eyebrow, as a block.
+
+  **Named for what it is, not for where it first appeared.** Any section can
+  list `subheading` in its `blocks` array and get this; it reads nothing from
+  its parent and emits no class belonging to one. Same rule the row carousel is
+  written to — a shared thing named after one of its callers is how the next
+  reader is misled.
+
+  `.section-eyebrow` rather than `.section-header`: that one is the row Most
+  Loved uses to carry a micro label *and* a "view all" link, and it is spaced
+  for a row with a link in it. On its own the label wants far less air — see
+  base.css for the numbers and what they replaced.
+
+  The spacing setting only reassigns `--eyebrow-space`; the stylesheet holds the
+  default and the ratio between the two margins, so nothing here decides how the
+  eyebrow is spaced, only how much.
+{%- endcomment -%}
+
+{%- liquid
+  case block.settings.spacing
+    when 'minimal'
+      assign eyebrow_space = 'var(--space-2xs)'
+    when 'large'
+      assign eyebrow_space = 'var(--space-lg)'
+    when 'extra_large'
+      assign eyebrow_space = 'var(--space-xl)'
+    else
+      assign eyebrow_space = 'var(--space-md)'
+  endcase
+-%}
+
+{%- if block.settings.text != blank -%}
+  <div
+    class="section-eyebrow reveal"
+    style="--eyebrow-space: {{ eyebrow_space }};"
+    {{ block.shopify_attributes }}
+  >
+    <span class="micro">{{ block.settings.text }}</span>
+  </div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "t:blocks.subheading.name",
+  "tag": null,
+  "settings": [
+    {
+      "type": "text",
+      "id": "text",
+      "label": "t:sections.all.subheading.label"
+    },
+    {
+      "type": "select",
+      "id": "spacing",
+      "label": "t:blocks.all.spacing.label",
+      "info": "t:blocks.all.spacing.info",
+      "options": [
+        {
+          "value": "minimal",
+          "label": "t:blocks.all.spacing.minimal"
+        },
+        {
+          "value": "small",
+          "label": "t:blocks.all.spacing.small"
+        },
+        {
+          "value": "large",
+          "label": "t:blocks.all.spacing.large"
+        },
+        {
+          "value": "extra_large",
+          "label": "t:blocks.all.spacing.extra_large"
+        }
+      ],
+      "default": "small"
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:blocks.subheading.name"
+    }
+  ]
+}
+{% endschema %}

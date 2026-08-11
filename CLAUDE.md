@@ -478,8 +478,43 @@ name>`; the second preset is "Carousel".
   *adjacent* to what follows; a wrapper would break that and sit the row flush
   against the title. The paragraph block was added to the same rule for the
   same reason — see "A `.display` heading has no bottom gap of its own".
-- The paragraph reuses `.lookbook__intro`, the theme's one body paragraph under
-  a display heading, rather than forking its numbers.
+- **The three header blocks are named for what they are — `title`,
+  `subheading`, `paragraph` — not for the section they first appeared in**, and
+  they read nothing from a parent. Any section can list them in its `blocks`
+  array. This is the `fp-` → `row-` correction applied before the mistake was
+  made rather than after: a shared thing named after one of its callers is how
+  the next reader is misled.
+
+  The classes follow the same rule. `.lookbook__intro` became **`.section-lede`**
+  when the paragraph block became its second caller — same values, so the
+  lookbook is untouched but for the class name.
+- **The subheading is `.section-eyebrow`, not `.section-header`.** That one is
+  the row Most Loved uses to carry a micro label *and* a "view all" link, and
+  it is spaced for the link: 16.5 above and 44 below a label only 18px tall.
+  Under a display heading with nothing beside it that reads as a hole.
+
+  **`display: flex` on it is load-bearing and is the whole reason the box is
+  18px.** A plain block wrapper takes its strut from the inherited
+  `--body-leading` (1.85), so the identical 12px label in the identical
+  1.5-leaded `.micro` measured **29.6px** in a div against 18px in
+  `.section-header` — which had eaten most of what the tighter margins saved.
+  `.section-header` is flex for its own reasons and gets the tight box as a
+  side effect; this one says why.
+- **"Spacing" is one setting reassigning one property.** The block writes
+  `--eyebrow-space` and the stylesheet holds both the default and the ratio, so
+  nothing in Liquid decides *how* the eyebrow is spaced, only how much — and
+  the class still works standalone for anything rendering an eyebrow without
+  the block. The top is a quarter of the bottom at every step: an eyebrow
+  belongs against the heading it labels, and what needs to grow is the gap to
+  what follows. Measured at 1440px, above / label / below / heading-to-row:
+
+  | step | | | | |
+  | --- | --- | --- | --- | --- |
+  | *was* `.section-header` | 16.5 | 18 | 44 | 78.5 |
+  | Minimal (`2xs`) | 3 | 18 | 11 | 32 |
+  | Small (`md`, default) | 8 | 18 | 33 | 59 |
+  | Large (`lg`) | 11 | 18 | 44 | 73 |
+  | Extra large (`xl`) | 16 | 18 | 66 | 100 |
 - **`t:` keys for blocks live under a new top-level `blocks` namespace** in
   `locales/en.default.schema.json`, beside `sections` and `settings_schema`.
 - Renaming the section moved "Image shape" out of `sections.category_grid` and

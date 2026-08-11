@@ -126,7 +126,7 @@
       "type": "collection-list",
       "blocks": {
         "heading": {
-          "type": "collection-list-title",
+          "type": "title",
           "settings": {
             "text": "Our Products"
           }

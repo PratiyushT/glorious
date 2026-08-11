@@ -406,13 +406,23 @@
     }
   },
   "blocks": {
-    "collection_list_title": {
+    "all": {
+      "spacing": {
+        "label": "Spacing",
+        "info": "The room the block leaves around itself. The gap below grows; the one above stays tight to what it labels.",
+        "minimal": "Minimal",
+        "small": "Small",
+        "large": "Large",
+        "extra_large": "Extra large"
+      }
+    },
+    "title": {
       "name": "Title"
     },
-    "collection_list_subheading": {
+    "subheading": {
       "name": "Subheading"
     },
-    "collection_list_paragraph": {
+    "paragraph": {
       "name": "Paragraph"
     },
     "collection_card": {

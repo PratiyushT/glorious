@@ -1,0 +1,35 @@
+{%- comment -%}
+  A display heading, as a block.
+
+  **Named for what it is, not for where it first appeared** — any section can
+  list `title` in its `blocks` array and get this. It reads nothing from its
+  parent, so it carries no assumption about which section it is in.
+
+  `"tag": null` because the block owns its element: `.display` is the theme's
+  own edge-to-edge heading and a generated wrapper would put a box between it
+  and whatever follows, which is what the `.display + *` gap rule depends on.
+{%- endcomment -%}
+
+{%- if block.settings.text != blank -%}
+  <div class="display reveal" {{ block.shopify_attributes }}>{{ block.settings.text }}</div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "t:blocks.title.name",
+  "tag": null,
+  "settings": [
+    {
+      "type": "text",
+      "id": "text",
+      "label": "t:sections.all.heading.label",
+      "default": "Our Products"
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:blocks.title.name"
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,32 @@
+{%- comment -%}
+  A body paragraph under a heading, as a block.
+
+  **Named for what it is, not for where it first appeared.** The class was
+  `.lookbook__intro` — the theme's one lede, but named after the single section
+  that happened to own it. It is `.section-lede` now, and the lookbook uses that
+  too, so a second caller does not have to choose between an odd class name and
+  forking the numbers.
+{%- endcomment -%}
+
+{%- if block.settings.text != blank -%}
+  <p class="section-lede reveal" {{ block.shopify_attributes }}>{{ block.settings.text }}</p>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "t:blocks.paragraph.name",
+  "tag": null,
+  "settings": [
+    {
+      "type": "textarea",
+      "id": "text",
+      "label": "t:sections.all.text.label"
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:blocks.paragraph.name"
+    }
+  ]
+}
+{% endschema %}

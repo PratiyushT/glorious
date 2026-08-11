@@ -490,6 +490,42 @@ a {
   text-align: center;
 }
 
+/* A micro eyebrow standing on its own, which is what the `subheading` block
+   renders. It is deliberately *not* `.section-header`: that one is a row built
+   to carry a label and a "view all" link together, and it is spaced for the
+   link — `--space-xs` over `--space-lg`, so 16.5 above and 44 below a label
+   only 18px tall at the top of the scale. Under a display heading with nothing
+   beside it that reads as a hole.
+
+   **`display: flex` is not decoration here, it is the whole reason the box is
+   18px.** A block wrapper takes a strut from the inherited `--body-leading`
+   (1.85), so the same 12px label in the same 1.5-leaded `.micro` measured
+   **29.6px** in a plain div against 18px in `.section-header` — an inflation
+   that quietly ate most of the margin this rule saves. `.section-header` is
+   flex for its own reasons and gets the tight box as a side effect; this one
+   says why. See "`--body-leading` inherits into UI text and silently inflates
+   spacing".
+
+   **One property carries the whole scale**, and the block's "Spacing" setting
+   only reassigns it — so the class is usable on its own, at the default, by
+   anything that renders an eyebrow without going through the block. The top is
+   a quarter of the bottom at every step: an eyebrow belongs up against the
+   heading it labels, and what needs to grow is the gap to whatever follows.
+
+   Measured at 1440px, as above / label / below / heading-to-row:
+
+     was .section-header   16.5 / 18 / 44   78.5
+     minimal (2xs)          3   / 18 / 11   32
+     small   (md, default)  8   / 18 / 33   59
+     large   (lg)          11   / 18 / 44   73
+     extra large (xl)      16   / 18 / 66   100                              */
+.section-eyebrow {
+  --eyebrow-space: var(--space-md);
+
+  display: flex;
+  margin-block: calc(var(--eyebrow-space) / 4) var(--eyebrow-space);
+}
+
 /* A display heading sets line-height below 1, so its box ends level with the
    letters and offers no breathing room of its own. Every section that has a
    subheading gets that room from .section-header's bottom margin — which
@@ -500,8 +536,8 @@ a {
 .display + .grid-auto,
 .display + .promises,
 .display + .row-carousel,
-.lookbook__intro + .grid-auto,
-.lookbook__intro + .row-carousel {
+.section-lede + .grid-auto,
+.section-lede + .row-carousel {
   margin-top: var(--space-lg);
 }
 
@@ -2359,7 +2395,11 @@ a.card__title::after {
   color: var(--c-heading);
 }
 
-.lookbook__intro {
+/* The theme's one body paragraph under a display heading. It was
+   `.lookbook__intro` while the lookbook was its only caller; the `paragraph`
+   block is the second, so it is named for what it is — the same correction
+   `fp-` → `row-` made for the carousel. Values unchanged. */
+.section-lede {
   margin-top: 14px;
   max-width: 520px;
   font-size: 0.97rem;
