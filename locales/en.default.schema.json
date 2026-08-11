@@ -143,7 +143,15 @@
         "label": "Base spacing (wide screens)"
       },
       "section_padding_default": {
-        "label": "Default section padding"
+        "label": "Default section padding",
+        "info": "Used by any section that does not set its own. Steps are the reference design’s own vertical rhythm.",
+        "options__none": "None",
+        "options__xs": "Extra small",
+        "options__sm": "Small",
+        "options__md": "Medium",
+        "options__lg": "Large",
+        "options__xl": "Extra large",
+        "options__max": "Maximum"
       }
     },
     "colors": {
@@ -526,7 +534,16 @@
       },
       "width_full": "Full bleed",
       "width_narrow": "Narrow",
-      "width_page": "Page width"
+      "width_page": "Page width",
+      "space_step": {
+        "none": "None",
+        "xs": "Extra small",
+        "sm": "Small",
+        "md": "Medium",
+        "lg": "Large",
+        "xl": "Extra large",
+        "max": "Maximum"
+      }
     },
     "announcement_bar": {
       "name": "Announcement bar",

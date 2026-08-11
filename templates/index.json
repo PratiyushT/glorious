@@ -76,8 +76,8 @@
         "show_view_all": true,
         "view_all_label": "View All",
         "full_height": true,
-        "padding_top": 72,
-        "padding_bottom": 72
+        "padding_top": "xs",
+        "padding_bottom": "xs"
       }
     },
     "lookbook": {
@@ -118,8 +118,8 @@
         "show_list": true,
         "link_label": "Shop all pieces",
         "link": "/collections/all",
-        "padding_top": 96,
-        "padding_bottom": 110
+        "padding_top": "lg",
+        "padding_bottom": "xl"
       }
     },
     "our-products": {
@@ -179,8 +179,8 @@
         ],
         "columns": 4,
         "layout": "grid",
-        "padding_top": 76,
-        "padding_bottom": 96
+        "padding_top": "lg",
+        "padding_bottom": "max"
       }
     },
     "promises": {
@@ -238,8 +238,8 @@
         "color_scheme": "scheme_1",
         "heading": "Our Promises",
         "subheading": "Promises of Excellence",
-        "padding_top": 76,
-        "padding_bottom": 96
+        "padding_top": "lg",
+        "padding_bottom": "max"
       }
     },
     "craft": {
@@ -301,8 +301,8 @@
         "video": "shopify://files/videos/video.mp4",
         "image_ratio": "4 / 5",
         "show_frame": true,
-        "padding_top": 88,
-        "padding_bottom": 88
+        "padding_top": "md",
+        "padding_bottom": "md"
       }
     },
     "about": {
@@ -351,8 +351,8 @@
         "arch": true,
         "caption_left": "Who it is for",
         "caption_right": "Est. City, State",
-        "padding_top": 76,
-        "padding_bottom": 96
+        "padding_top": "lg",
+        "padding_bottom": "max"
       }
     },
     "testimonials": {
@@ -398,8 +398,8 @@
         "subheading": "Word of Mouth",
         "autorotate": true,
         "interval": 7,
-        "padding_top": 104,
-        "padding_bottom": 56
+        "padding_top": "max",
+        "padding_bottom": "xs"
       }
     },
     "visit": {
@@ -451,8 +451,8 @@
         "arch": true,
         "caption_left": "The salon",
         "caption_right": "By appointment or walk-in",
-        "padding_top": 64,
-        "padding_bottom": 96
+        "padding_top": "sm",
+        "padding_bottom": "max"
       }
     }
   },

@@ -1,36 +1,39 @@
 {%- comment -%}
   Emits inline custom properties for a section's vertical padding.
 
-  Padding is fluid: the merchant sets the wide-screen figure in the editor and
-  it eases down to 60% of that on narrow screens, so a 120px desktop gap never
-  becomes a 120px gap on a phone.
+  The merchant picks a named step, not a pixel figure — see space-step.liquid
+  for the steps and for why they carry the design's whole clamp() triple
+  rather than a single number.
+
+  This snippet used to take a desktop figure and derive the rest: a floor at a
+  flat 60% of it, and a slope from (figure - floor) / the 360-1440 span. That
+  is three of the design's decisions replaced by one of the merchant's, and it
+  did not reproduce the design at any width. Measured against the design's own
+  home page, five of seven sections were 20-24px short at the ceiling while
+  carrying more padding than the design in the middle of the range, because a
+  derived slope ramps from the first pixel where the design holds a floor and
+  then climbs steeply. Most Loved and The Craft happened to land close and
+  the rest did not, which is the shape of a value nobody checked.
 
   Accepts:
-    padding_top    - number (px). Falls back to the global default.
-    padding_bottom - number (px). Falls back to the global default.
+    padding_top    - a step name. Falls back to the global default.
+    padding_bottom - a step name. Falls back to the global default.
 
   Usage:
     <section style="{% render 'section-style', padding_top: section.settings.padding_top %}">
 {%- endcomment -%}
 
 {%- liquid
-  assign vw_min = 360.0
-  assign vw_max = 1440.0
-  assign vw_span = vw_max | minus: vw_min
-  assign root_px = 16.0
-  assign narrow_factor = 0.6
-
-  assign pt = padding_top | default: settings.section_padding_default
-  assign pb = padding_bottom | default: settings.section_padding_default
-
-  assign pt_lo = pt | times: narrow_factor
-  assign pt_slope = pt | minus: pt_lo | divided_by: vw_span
-  assign pt_shift = pt_slope | times: vw_min
-  assign pt_int = pt_lo | minus: pt_shift
-
-  assign pb_lo = pb | times: narrow_factor
-  assign pb_slope = pb | minus: pb_lo | divided_by: vw_span
-  assign pb_shift = pb_slope | times: vw_min
-  assign pb_int = pb_lo | minus: pb_shift
+  assign pt_step = padding_top | default: settings.section_padding_default
+  assign pb_step = padding_bottom | default: settings.section_padding_default
 -%}
---pad-top: clamp({{ pt_lo | divided_by: root_px | round: 4 }}rem, {{ pt_int | divided_by: root_px | round: 4 }}rem + {{ pt_slope | times: 100 | round: 4 }}vw, {{ pt | divided_by: root_px | round: 4 }}rem); --pad-bottom: clamp({{ pb_lo | divided_by: root_px | round: 4 }}rem, {{ pb_int | divided_by: root_px | round: 4 }}rem + {{ pb_slope | times: 100 | round: 4 }}vw, {{ pb | divided_by: root_px | round: 4 }}rem);
+{%- capture pt -%}{%- render 'space-step', step: pt_step -%}{%- endcapture -%}
+{%- capture pb -%}{%- render 'space-step', step: pb_step -%}{%- endcapture -%}
+{%- comment -%}
+  An unrecognised step prints nothing, so fall back to the design's commonest
+  section rhythm rather than emitting an empty length — `--pad-top: ;` is an
+  invalid declaration and would take the padding with it.
+{%- endcomment -%}
+{%- if pt == blank -%}{%- capture pt -%}{%- render 'space-step', step: 'lg' -%}{%- endcapture -%}{%- endif -%}
+{%- if pb == blank -%}{%- capture pb -%}{%- render 'space-step', step: 'lg' -%}{%- endcapture -%}{%- endif -%}
+--pad-top: {{ pt }}; --pad-bottom: {{ pb }};

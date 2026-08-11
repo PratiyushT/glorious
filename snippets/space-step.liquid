@@ -1,0 +1,59 @@
+{%- comment -%}
+  Resolves a named spacing step to the design's own fluid value, and prints it.
+
+  The merchant picks a step, not a number. A slider asks them to invent a
+  figure and lets them pick 91 or 93 with no idea which is right; the theme
+  then has to look correct at every one of fifty values. A step means the
+  theme has to be right six times, and it means the same word is the same
+  distance everywhere in the editor.
+
+  The values are the reference design's own, carried over rather than
+  re-derived. The design states section rhythm as an explicit
+  clamp(min, vw, max) triple — a floor it holds on a phone, a slope it ramps
+  on, and a ceiling it stops at. That is three decisions, and a single number
+  cannot carry them: deriving the floor as a fixed fraction of the ceiling and
+  the slope from (ceiling - floor) gives a different curve at every width,
+  which is what this theme shipped before.
+
+  The rungs are the design's own ceilings, deduplicated across its home,
+  about, lookbook and footer pages — the ten it uses collapse to six within
+  4px, and every rung below is a triple the design states verbatim somewhere:
+
+    none    0
+    xs      clamp(40px, 5vw,  70px)  Footer above; Testimonials below
+    sm      clamp(44px, 6vw,  84px)  Visit above; About pillars, About salon
+    md      clamp(48px, 6vw,  90px)  The Craft; About craft band
+    lg      clamp(56px, 7vw,  96px)  Our Products / Promises / About above;
+                                     Find by Shape; Lookbook above
+    xl      clamp(56px, 8vw, 110px)  Lookbook below; About salon below
+    max     clamp(72px, 9vw, 120px)  Our Products / Promises / About below;
+                                     Visit below
+
+  Three of the design's own figures are not rungs and take the nearest:
+  Most Loved's 72 and About's story 80 sit 2 and 4px off `xs` and `sm`, and
+  Testimonials' 130 above is 10px over `max`. The footer's flat 30px below is
+  not fluid at all and is left to that section — see Phase 4.
+
+  A snippet cannot hand a value back to its caller, so this prints and the
+  caller captures — the same shape as metal-order.liquid.
+
+  Accepts:
+    step  - one of the ids above. Anything unrecognised prints nothing, so the
+            caller's own fallback stands rather than a broken value being
+            emitted. Never print a bare keyword or `var(--step-)` here: both
+            are invalid where a length is wanted, and an invalid value takes
+            the whole declaration with it rather than falling back.
+
+  Usage:
+    {%- capture pad -%}{%- render 'space-step', step: 'lg' -%}{%- endcapture -%}
+{%- endcomment -%}
+
+{%- case step -%}
+  {%- when 'none' -%}0px
+  {%- when 'xs' -%}clamp(40px, 5vw, 70px)
+  {%- when 'sm' -%}clamp(44px, 6vw, 84px)
+  {%- when 'md' -%}clamp(48px, 6vw, 90px)
+  {%- when 'lg' -%}clamp(56px, 7vw, 96px)
+  {%- when 'xl' -%}clamp(56px, 8vw, 110px)
+  {%- when 'max' -%}clamp(72px, 9vw, 120px)
+{%- endcase -%}

@@ -422,14 +422,20 @@
         "default": 22
       },
       {
-        "type": "range",
+        "type": "select",
         "id": "section_padding_default",
         "label": "t:settings_schema.spacing.section_padding_default.label",
-        "min": 0,
-        "max": 200,
-        "step": 4,
-        "unit": "px",
-        "default": 96
+        "info": "t:settings_schema.spacing.section_padding_default.info",
+        "options": [
+        { "value": "none", "label": "t:settings_schema.spacing.section_padding_default.options__none" },
+        { "value": "xs", "label": "t:settings_schema.spacing.section_padding_default.options__xs" },
+        { "value": "sm", "label": "t:settings_schema.spacing.section_padding_default.options__sm" },
+        { "value": "md", "label": "t:settings_schema.spacing.section_padding_default.options__md" },
+        { "value": "lg", "label": "t:settings_schema.spacing.section_padding_default.options__lg" },
+        { "value": "xl", "label": "t:settings_schema.spacing.section_padding_default.options__xl" },
+        { "value": "max", "label": "t:settings_schema.spacing.section_padding_default.options__max" }
+        ],
+        "default": "lg"
       }
     ]
   },

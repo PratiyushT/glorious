@@ -47,8 +47,15 @@ guess at its values.
 highest N is not always the one already unpacked, and a loose `.dc.html` may
 sit in `D:\Downloads` ahead of the zip it came from. Work was once done against
 revision 12 while 13 was already on disk; the whole port had to be re-examined.
-Current revision: **13** (2026-08-09), the **variants release** — it adds
-`gj-variants.js` and touches Product Card, Quick View, Product, Home, Bag
+Current revision: **14** (2026-08-11), the **facets release**. Checked file by
+file against 13: **no `.dc.html` changed at all**, so nothing already ported
+needs re-examining. It adds `gj-facets.js`, wired into All Products and Search
+only, and gives `gj-variants.js`'s price filter a karat-pinning argument
+(`range(id, base, purity)` — "what would these cost in 14k"). Both land in
+templates this theme has not built yet, so neither is ported.
+
+Revision **13** (2026-08-09) was the **variants release** — it added
+`gj-variants.js` and touched Product Card, Quick View, Product, Home, Bag
 Drawer, Search, Account, Checkout, Lookbook, 404, About, Order and Return.
 
 `gj-variants.js` is **deliberately not ported, in any form.** It is a
@@ -348,8 +355,8 @@ see the search overlay below.
   emitted from each scheme's literal colours inside the scheme class, not from
   `var(--c-text)` in `:root` — custom properties inherit their *computed*
   value, so a `:root` derivation would freeze at the first scheme.
-- Section padding goes through `snippets/section-style.liquid`, which eases the
-  merchant's desktop figure down to 60% on narrow screens.
+- Section padding goes through `snippets/section-style.liquid`, which resolves a
+  **named step** to the design's own clamp — see "Spacing steps" below.
 - Fonts are self-hosted woff2 in `assets/` (Italiana, Karla — both OFL), with
   `size-adjust` metric-matched fallbacks to avoid layout shift. Turning off
   "Use the bundled Glorious fonts" switches to Shopify's font library, and
@@ -506,6 +513,69 @@ name>`; the second preset is "Carousel".
   select or highlight, which reads as a broken block rather than an empty one.
   The preset is what "Add block" actually seeds from, so the schema default
   alone is not enough. **Any new block guarded on a setting needs both.**
+
+### Spacing steps
+
+**A merchant picks a step, not a number.** Section padding is a `select` of
+seven named rungs — None, Extra small, Small, Medium, Large, Extra large,
+Maximum — resolved by `snippets/space-step.liquid`, which prints the value and
+is captured by its caller (a snippet cannot hand one back, the same shape as
+`metal-order.liquid`).
+
+A slider asked a merchant to invent a figure, let them pick 91 or 93 with no
+idea which was right, and obliged the theme to look correct at fifty values.
+Six rungs is six.
+
+- **A step resolves to the design's whole `clamp(min, vw, max)` triple, not to
+  one number.** This is the part that was wrong before. The design states
+  section rhythm as three decisions — a floor it holds on a phone, a slope it
+  ramps on, a ceiling it stops at — and `section-style.liquid` used to take one
+  merchant figure and derive the other two, the floor at a flat 60% and the
+  slope from `(ceiling − floor) / span`.
+
+  It matched the design nowhere. Measured against the design's own home page,
+  five of seven sections were **20–24px short at the ceiling** while carrying
+  *more* padding than the design in the middle of the range, because a derived
+  slope ramps from the first pixel where the design holds a floor and then
+  climbs steeply. Our Products, Promises and About were `76/96` against the
+  design's `96/120`; Testimonials `104/56` against `130/70`; Visit `64/96`
+  against `84/120`. Most Loved (`72/72`) and The Craft (`88/88` against 90) had
+  happened to land close, which is what kept it from being obvious.
+
+- **The rungs are the design's own ceilings**, deduplicated across its home,
+  about, lookbook and footer pages. The ten distinct triples it uses collapse
+  to six within 4px, and every rung is a triple the design states verbatim
+  somewhere. Three figures are not rungs and take the nearest: Most Loved's 72
+  and About's story 80 sit 2 and 4px off `xs` and `sm`, and Testimonials' 130
+  above is 10px over `max`.
+
+- **The footer is deliberately not converted.** Its padding below is a flat
+  `30px` in the design, not a clamp at all, so it does not belong on a fluid
+  scale. It keeps its range until the chrome pass.
+
+- **An unrecognised step prints nothing, and the caller supplies the fallback.**
+  Never print a bare keyword or `var(--step-)` where a length is wanted: an
+  invalid value takes the whole declaration with it rather than falling back,
+  so `--pad-top: ;` would drop the padding entirely.
+
+  This is the trap that governs the rest of the slider-to-step conversion.
+  Whether a setting can become a keyword depends on what consumes it, and
+  *Liquid* arithmetic is not the test — **CSS** consumption is. `motion_duration`,
+  `button_padding_y`, `hairline_opacity` and `shadow_opacity` all look like free
+  conversions and are not: `--duration` and `--button-padding-y` sit inside
+  `calc()`, and `--hairline` and `--shadow-strength` inside `color-mix()`, where
+  a keyword invalidates the declaration and silently drops every transition, or
+  every hairline in all four schemes at once. Those must resolve to a **number**.
+  The shipped pattern for that is `type_ratio_min`/`type_ratio_max`: a `select`
+  whose values are numeric strings, coerced with `| times: 1.0`.
+
+- **The recorded `range` audit one-liner is blind to a range and must not be
+  trusted as written.** Its regex cannot cross a brace, and
+  `featured-products`' `products_to_show` carries
+  `"visible_if": "{{ section.settings.limit_products }}"` — the `{{ }}` breaks
+  the character class and that range is skipped silently. Parse the schema
+  block instead (`{%- schema -%}(.*?){%- endschema -%}` → `json.loads` →
+  recursive walk); that form finds all of them. 51 ranges remain.
 
 ### Block spacing
 
