@@ -36,7 +36,7 @@
       </div>
 
       {%- if section.blocks.size > 1 -%}
-        <div class="quote-dots" role="tablist" data-quote-dots>
+        <div class="quote-dots" role="tablist" aria-label="{{ 'testimonials.choose_quote' | t }}" data-quote-dots>
           {%- for block in section.blocks -%}
             <button
               type="button"

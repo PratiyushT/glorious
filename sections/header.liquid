@@ -142,6 +142,25 @@
           {% if cart.item_count == 0 %}hidden{% endif %}
         >{{ cart.item_count }}</span>
       </a>
+
+      {%- comment -%}
+        Adding to the bag changed the number in the corner and said nothing.
+        The whole theme had two live regions and both belonged to search, so a
+        screen reader user could add a piece and get no confirmation that
+        anything had happened.
+
+        It sits outside the link on purpose: a live region inside an
+        interactive element announces unpredictably, and the link's own
+        accessible name already ends with the count. `role="status"` carries
+        `aria-live="polite"` implicitly, and the pair is stated for engines
+        that map only one of them.
+      {%- endcomment -%}
+      <span
+        class="visually-hidden"
+        role="status"
+        aria-live="polite"
+        data-cart-status
+      ></span>
     {%- endif -%}
   </div>
 </nav>

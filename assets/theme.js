@@ -619,10 +619,27 @@
     return document.querySelector('[data-cart-drawer]');
   }
 
-  function cartCounts(value) {
+  function cartCounts(value, announcement) {
     document.querySelectorAll('[data-cart-count]').forEach(function (el) {
       el.textContent = value;
       el.hidden = value === 0;
+    });
+
+    /* Say it as well as show it. The sentence is rendered by Liquid and
+       carried on the re-rendered markup, so the pluralisation and the
+       translation never happen here — the same reason the product card's
+       Add to Bag labels ride on data attributes.
+
+       Skipped on first paint: the region is empty until a change actually
+       happens, or every page load would announce the bag to nobody who
+       asked. */
+    if (announcement == null) return;
+    document.querySelectorAll('[data-cart-status]').forEach(function (el) {
+      /* Re-announce even when the sentence is unchanged — two of the same
+         piece added in a row is still two events, and a live region only
+         speaks when its content differs. */
+      if (el.textContent === announcement) el.textContent = '';
+      el.textContent = announcement;
     });
   }
 
@@ -667,7 +684,12 @@
       }
 
       var source = current.querySelector('[data-cart-count-value]');
-      if (source) cartCounts(parseInt(source.dataset.cartCountValue, 10) || 0);
+      if (source) {
+        cartCounts(
+          parseInt(source.dataset.cartCountValue, 10) || 0,
+          source.dataset.cartAnnounce
+        );
+      }
     }
 
     /* Emptying the bag — or filling it from empty — changes the whole panel at

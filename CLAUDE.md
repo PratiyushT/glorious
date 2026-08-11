@@ -18,6 +18,34 @@ this file that explains a feature and the code that implements it must never
 arrive separately: the note is how the next pass learns why a number is what it
 is.
 
+### Announcements
+
+**Adding to the bag changed a number in the corner and said nothing.** The
+whole theme had two live regions and both belonged to search, so a screen
+reader user could add a piece and get no confirmation that anything had
+happened.
+
+`[data-cart-status]` in the header is a `visually-hidden`
+`role="status" aria-live="polite"` region, and `cartCounts()` writes to it.
+
+- **The sentence is Liquid's, not JavaScript's.** `cart-drawer-contents.liquid`
+  renders `data-cart-announce="{{ 'navigation.bag_count' | t: count: … }}"` on
+  the same element that already carries the count, and `applyCartSection`
+  passes it through. So pluralisation and translation stay where every other
+  string in this theme lives — the same rule the product card's Add to Bag
+  labels follow.
+- **It sits outside the bag link.** A live region inside an interactive element
+  announces unpredictably, and the link's own accessible name already ends with
+  the count.
+- **It starts empty**, so a page load announces nothing. The region only speaks
+  once something has changed.
+- **A repeat re-announces.** A live region only speaks when its content
+  *differs*, and adding the same piece twice is still two events — so the text
+  is cleared and re-set rather than assigned over itself.
+
+The `role="status"` and `aria-live="polite"` pair is stated explicitly even
+though the first implies the second, because engines vary in which they map.
+
 ### Shared renderers
 
 Phase 2's collapses. Each is a snippet the sections call, which removes the

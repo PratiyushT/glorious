@@ -32,7 +32,18 @@
   endunless
 -%}
 
-<div class="drawer__count-source" data-cart-count-value="{{ cart.item_count }}" hidden></div>
+{%- comment -%}
+  The count, and the sentence that announces it. Both come from the markup
+  Shopify has just re-rendered, so neither the number nor its pluralisation is
+  worked out in JavaScript — the same rule the product card's Add to Bag
+  labels follow.
+{%- endcomment -%}
+<div
+  class="drawer__count-source"
+  data-cart-count-value="{{ cart.item_count }}"
+  data-cart-announce="{{ 'navigation.bag_count' | t: count: cart.item_count }}"
+  hidden
+></div>
 
 <div class="drawer__head">
   <span class="drawer__title">

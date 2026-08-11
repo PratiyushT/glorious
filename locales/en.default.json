@@ -147,7 +147,8 @@
     }
   },
   "testimonials": {
-    "show_quote": "Show review {{ number }}"
+    "show_quote": "Show review {{ number }}",
+    "choose_quote": "Choose a quote"
   },
   "blogs": {
     "read_more": "Read more"
