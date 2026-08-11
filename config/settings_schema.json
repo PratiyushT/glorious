@@ -1,8 +1,8 @@
 [
   {
     "name": "theme_info",
-    "theme_name": "Glorious",
-    "theme_version": "0.2.0",
+    "theme_name": "Veylin",
+    "theme_version": "0.3.0",
     "theme_author": "PratiyushT",
     "theme_documentation_url": "https://shopify.dev/docs/storefronts/themes",
     "theme_support_email": "aloomataloo@gmail.com"
@@ -24,7 +24,7 @@
         "id": "wordmark",
         "label": "t:settings_schema.brand.wordmark.label",
         "info": "t:settings_schema.brand.wordmark.info",
-        "default": "GLORIOUS"
+        "default": "STORE NAME"
       },
       {
         "type": "image_picker",
@@ -45,7 +45,7 @@
         "type": "text",
         "id": "shop_address",
         "label": "t:settings_schema.shop.shop_address.label",
-        "default": "8140 N MacArthur Blvd #120, Irving, TX"
+        "default": "123 Example Street, City, State"
       },
       {
         "type": "url",
@@ -58,13 +58,13 @@
         "id": "shop_phone",
         "label": "t:settings_schema.shop.shop_phone.label",
         "info": "t:settings_schema.shop.shop_phone.info",
-        "default": "+1 469-740-2119"
+        "default": "+1 555 000 0000"
       },
       {
         "type": "text",
         "id": "shop_email",
         "label": "t:settings_schema.shop.shop_email.label",
-        "default": "care@gloriousjewelers.com"
+        "default": "hello@example.com"
       }
     ]
   },

@@ -2,7 +2,7 @@
   "settings_schema": {
     "brand": {
       "name": "Brand",
-      "paragraph": "Defaults throughout this theme come from the Glorious design. Every value can be changed here without touching code.",
+      "paragraph": "Every default in this theme comes from its reference design. Change any value here without touching code.",
       "favicon": {
         "label": "Favicon"
       },
@@ -60,7 +60,7 @@
       "name": "Typography",
       "paragraph": "The theme ships with Italiana and Karla self-hosted. Turn the bundled fonts off to pick from Shopify's library instead.",
       "use_bundled_fonts": {
-        "label": "Use the bundled Glorious fonts",
+        "label": "Use the bundled theme fonts",
         "info": "Italiana for display, Karla for body."
       },
       "font_heading": {
