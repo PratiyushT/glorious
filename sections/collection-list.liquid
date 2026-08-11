@@ -42,7 +42,7 @@
 
 <section
   class="section scheme-{{ section.settings.color_scheme }}"
-  style="{% render 'section-style', padding_top: section.settings.padding_top, padding_bottom: section.settings.padding_bottom %}"
+  style="{% render 'section-style', padding_top: section.settings.padding_top, padding_bottom: section.settings.padding_bottom %} {%- if section.settings.content_alignment != blank and section.settings.content_alignment != 'inherit' -%}--section-align: {{ section.settings.content_alignment }}; --section-align-jc: {% if section.settings.content_alignment == 'center' %}center{% elsif section.settings.content_alignment == 'right' %}flex-end{% else %}flex-start{% endif %};{%- endif -%}"
 >
   {%- comment -%}
     **The vertical rhythm belongs to the section, not to the blocks in it.**
@@ -126,6 +126,18 @@
     { "type": "paragraph" }
   ],
   "settings": [
+    {
+      "type": "select",
+      "id": "content_alignment",
+      "label": "t:sections.all.content_alignment.label",
+      "info": "t:sections.all.content_alignment.info",
+      "options": [
+        { "value": "left", "label": "t:settings_schema.options.left" },
+        { "value": "center", "label": "t:settings_schema.options.center" },
+        { "value": "right", "label": "t:settings_schema.options.right" }
+      ],
+      "default": "left"
+    },
     {
       "type": "color_scheme",
       "id": "color_scheme",

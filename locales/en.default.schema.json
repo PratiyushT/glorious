@@ -474,6 +474,7 @@
       "balanced": "Balanced",
       "strong": "Strong",
       "dramatic": "Dramatic",
+      "inherit": "Inherit from section",
       "left": "Left",
       "center": "Center",
       "right": "Right",
@@ -573,7 +574,8 @@
         "label": "Color scheme"
       },
       "content_alignment": {
-        "label": "Content alignment"
+        "label": "Content alignment",
+        "info": "Blocks follow the section unless they set their own."
       },
       "full_height": {
         "label": "Fill the screen height",

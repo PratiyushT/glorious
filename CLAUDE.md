@@ -18,6 +18,34 @@ this file that explains a feature and the code that implements it must never
 arrive separately: the note is how the next pass learns why a number is what it
 is.
 
+### Text alignment
+
+**Two levels, and the block wins.** A section carries `content_alignment` and
+its text blocks follow; a block carries its own `alignment`, defaulting to
+`inherit`, and overrides the section when set.
+
+- **The section publishes a custom property; it does not wrap anything.**
+  `--section-align` and `--section-align-jc` go on the section root, and
+  `.display` / `.section-lede` / `.section-eyebrow` read them as their default.
+  A wrapper was the obvious approach and is wrong twice over: `.align-*`
+  carries `align-items`, so on any container holding a grid it re-aligns the
+  cards; and the collection list's header blocks render **straight into
+  `.page-width` with no wrapper at all**, because `.display + .grid-auto`'s gap
+  depends on that adjacency. Verified: with the section centred, the grid stays
+  `align-items: normal` and the cards stay 682 / 682 / 712px.
+- **`.section-eyebrow` aligns on `justify-content`, not `text-align`.** It is
+  `display: flex`, and that is load-bearing — it is what keeps a 12px label in
+  an 18px box rather than the 29.6px an inherited `--body-leading` gives it. A
+  flex row does not move on `text-align`. Measured through all three states —
+  default, section-set, block-overridden — the box stays 18px.
+- The block's `.align-*` class beats the section's custom property on **source
+  order**, both being one class of specificity, so the defaults are declared
+  above `.align-*` in `base.css` and must stay there.
+- Sections carrying it so far: `collection-list`, `featured-products`,
+  `promises`, `testimonials`, and `rich-text`, which had its own `alignment`
+  first. Any other section adopts it by adding the setting and appending the
+  two properties to its `section-style` render.
+
 ## The design system page
 
 `templates/page.design-system.liquid`, reached at

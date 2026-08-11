@@ -10,8 +10,15 @@
   and whatever follows, which is what the `.display + *` gap rule depends on.
 {%- endcomment -%}
 
+
+{%- liquid
+  assign align_class = ''
+  if block.settings.alignment != blank and block.settings.alignment != 'inherit'
+    assign align_class = ' align-' | append: block.settings.alignment
+  endif
+-%}
 {%- if block.settings.text != blank -%}
-  <div class="display reveal" {{ block.shopify_attributes }}>{{ block.settings.text }}</div>
+  <div class="display reveal{{ align_class }}" {{ block.shopify_attributes }}>{{ block.settings.text }}</div>
 {%- endif -%}
 
 {% schema %}
@@ -19,6 +26,19 @@
   "name": "t:blocks.title.name",
   "tag": null,
   "settings": [
+    {
+      "type": "select",
+      "id": "alignment",
+      "label": "t:sections.all.content_alignment.label",
+      "info": "t:sections.all.content_alignment.info",
+      "options": [
+        { "value": "inherit", "label": "t:settings_schema.options.inherit" },
+        { "value": "left", "label": "t:settings_schema.options.left" },
+        { "value": "center", "label": "t:settings_schema.options.center" },
+        { "value": "right", "label": "t:settings_schema.options.right" }
+      ],
+      "default": "inherit"
+    },
     {
       "type": "text",
       "id": "text",

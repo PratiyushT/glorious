@@ -469,9 +469,33 @@ a {
   padding-inline-start: 1.25em;
 }
 
+/* ---- Text alignment ----------------------------------------------
+   Two levels. A section sets `--section-align`, which its text blocks take as
+   their default; a block overrides it with its own `.align-*` class. These
+   defaults are declared *before* `.align-*` so the block's class wins on
+   source order — both are one class of specificity.
+
+   Deliberately not applied to a container. `.align-*` carries `align-items`,
+   so putting it on anything holding a grid re-aligns the cards; and the
+   collection list's header blocks render straight into `.page-width` with no
+   wrapper at all, because `.display + .grid-auto`'s gap depends on that
+   adjacency. Alignment therefore lands on the text elements themselves. */
+.display,
+.section-lede { text-align: var(--section-align, inherit); }
+
+/* `.section-eyebrow` is `display: flex`, which is load-bearing — it is what
+   keeps the 12px label in an 18px box rather than the 29.6px an inherited
+   `--body-leading` would give it. A flex row does not move on `text-align`,
+   so this one aligns on `justify-content`. */
+.section-eyebrow { justify-content: var(--section-align-jc, flex-start); }
+
 .align-left   { text-align: left; }
 .align-center { text-align: center; align-items: center; }
 .align-right  { text-align: right; align-items: flex-end; }
+
+.section-eyebrow.align-left   { justify-content: flex-start; }
+.section-eyebrow.align-center { justify-content: center; }
+.section-eyebrow.align-right  { justify-content: flex-end; }
 
 /* ---- Section header ---------------------------------------------- */
 
