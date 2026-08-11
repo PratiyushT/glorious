@@ -1179,17 +1179,24 @@ flight, and whatever waits next. `{% render 'loader', label: text, size: 'sm' %}
   in it is `loading="lazy"` on an image — so both the shape and the movement
   here are the theme's. What is kept is its language: hairline, gold, square-on.
 - **Every line is drawn, in turn**: the cut, the girdle, the crown from the
-  middle out, then the pavilion, one keyframe set for all nine — the sequence is
-  `animation-delay: calc(var(--n) * var(--loader-stagger))` and nothing else.
-  Pairs share their `--n`, so the mark is symmetric in every frame.
+  middle out, then the pavilion. The draw sequence is
+  `animation-delay: calc(var(--n) * var(--loader-stagger))`; pairs share their
+  `--n`, so the mark is symmetric in every frame.
+- **The exit reverses the layers, not the draw order**: all inner facets fade
+  together first, then the horizontal girdle, then the outer cut. Each line's
+  second animation shares the draw animation's duration and `--n` delay, while
+  its own keyframe percentages compensate for that delay. Keeping both clocks
+  aligned matters: opacity resets only when that line's dash resets to fully
+  offset, so the next loop cannot flash a complete line into view.
 - **The beat is 3.2s and the stagger 180ms, and both are about feeling like a
   wait rather than a flash.** A line takes about a quarter of the beat to draw,
   and the stagger is nearly as long as the stroke, so lines visibly follow one
   another and five to seven are moving at any moment. The strike runs to the
   middle of the beat, the whole stone stands for two thirds of a second, and
-  the fade takes nearly a fifth — long enough to read as a fade rather than a
-  blink, and still going as the first line is struck again, so the mark is
-  never blank and never still.
+  the staged exit occupies its final third: inner facets at 2.1–2.45s, the
+  girdle at 2.55–2.87s, and the outline at 2.94–3.2s. Each layer fully leaves
+  before the next begins, so the exit reads inside-out rather than as one
+  general fade.
 
   It shipped at 2.6s with an 80ms stagger, which put every line down inside the
   first second and left the rest of the cycle a still picture: measured

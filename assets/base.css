@@ -5917,10 +5917,11 @@ a.nav-menu__address:hover {
    request: table, five crown facets, girdle, and a pavilion converging on the
    culet. The design states no loading state anywhere in its 24 pages, so both
    the shape and the movement are the theme's — the outline is struck in one
-   stroke, the crown lights, the pavilion follows, and the mark fades so it can
-   be struck again. What is kept from the design is its language: hairline,
-   gold, square-on. It is `--c-accent`, so it is the light-background gold on a
-   panel and the champagne on the noir search overlay, with no rule of its own.
+   stroke, the crown lights, the pavilion follows, then the inner facets,
+   girdle and outline leave in that order so the mark can be struck again. What
+   is kept from the design is its language: hairline, gold, square-on. It is
+   `--c-accent`, so it is the light-background gold on a panel and the
+   champagne on the noir search overlay, with no rule of its own.
 
    `pathLength="100"` on the outline is what lets one `stroke-dasharray` drive
    the draw — the alternative is measuring `getTotalLength()` in JavaScript, and
@@ -5992,28 +5993,62 @@ a.nav-menu__address:hover {
    which is what a symmetric curve gives. */
 .loader__line {
   stroke-dasharray: 100;
-  animation: gj-loader-draw var(--loader-beat) ease-in-out infinite both;
+  animation-name: gj-loader-draw, var(--exit);
+  animation-duration: var(--loader-beat);
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  animation-fill-mode: both;
   /* The stagger is about as long as a line takes to draw, so lines visibly
      follow one another instead of all moving together — at 80ms against an
-     830ms stroke they were near enough simultaneous. */
+     830ms stroke they were near enough simultaneous. Both animations share
+     the delay so their invisible loop reset stays aligned with the dash. */
   animation-delay: calc(var(--n, 0) * var(--loader-stagger));
 }
 
-/* A line is drawn over a quarter of the beat, holds while the rest of the
-   stone is struck, and fades over nearly a fifth — long enough to read as a
-   fade rather than as a blink. With the stagger, the last line lands halfway
-   through the beat and the whole stone stands for two thirds of a second.
+/* A line is drawn over a quarter of the beat and holds while the rest of the
+   stone is struck. Its second animation controls only the exit: every inner
+   facet fades together from 2.1–2.45s on the shared clock, the girdle follows
+   from 2.55–2.87s, and the outline finishes from 2.94–3.2s. The percentages
+   differ for each inner draw step only to cancel its `--n` delay.
 
-   The loop is seamless because the fade ends at nothing: the jump back to a
-   fully offset dash happens at opacity 0, with no ink on screen to see it
-   jump. And because the later lines are still going as the first is struck
-   again, the mark is never blank and never still. */
+   Each exit then stays at zero until its own animation restarts. The loop is
+   seamless because that opacity reset and the jump back to a fully offset dash
+   share the same duration and delay: there is no ink on screen to see either
+   jump. */
 @keyframes gj-loader-draw {
-  0%   { stroke-dashoffset: 100; opacity: 1; }
-  26%  { stroke-dashoffset: 0; opacity: 1; }
-  74%  { stroke-dashoffset: 0; opacity: 1; }
-  92%  { stroke-dashoffset: 0; opacity: 0; }
-  100% { stroke-dashoffset: 0; opacity: 0; }
+  0%   { stroke-dashoffset: 100; }
+  26%  { stroke-dashoffset: 0; }
+  100% { stroke-dashoffset: 0; }
+}
+
+@keyframes gj-loader-exit-inner-2 {
+  0%, 54% { opacity: 1; }
+  65%, 100% { opacity: 0; }
+}
+
+@keyframes gj-loader-exit-inner-3 {
+  0%, 48% { opacity: 1; }
+  60%, 100% { opacity: 0; }
+}
+
+@keyframes gj-loader-exit-inner-4 {
+  0%, 43% { opacity: 1; }
+  54%, 100% { opacity: 0; }
+}
+
+@keyframes gj-loader-exit-inner-5 {
+  0%, 37.5% { opacity: 1; }
+  48.5%, 100% { opacity: 0; }
+}
+
+@keyframes gj-loader-exit-girdle {
+  0%, 74% { opacity: 1; }
+  84%, 100% { opacity: 0; }
+}
+
+@keyframes gj-loader-exit-outline {
+  0%, 92% { opacity: 1; }
+  100% { opacity: 0; }
 }
 
 /* Nothing moves, but the mark still has to be *there* — a wait with no sign of

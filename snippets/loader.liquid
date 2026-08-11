@@ -17,10 +17,11 @@
   theme's; what is kept is its language — hairline, gold, square-on.
 
   What it does is draw itself: the outline is struck in one stroke, the facets
-  catch the light once it closes, and the whole mark fades so it can be struck
-  again. `pathLength="100"` is what makes the draw possible without measuring
-  anything in JavaScript — it normalises the outline to 100 units, so one
-  `stroke-dasharray` in the stylesheet drives it.
+  catch the light once it closes, then the inner facets, girdle and outline
+  disappear in that order so it can be struck again. `pathLength="100"` is
+  what makes the draw possible without measuring anything in JavaScript — it
+  normalises the outline to 100 units, so one `stroke-dasharray` in the
+  stylesheet drives it.
 
   Takes:
     label  what a screen reader announces. Defaults to `general.loading`.
@@ -50,7 +51,9 @@
 
     `--n` is the order they are struck in, and pairs share a number so the mark
     is symmetric in every frame: the cut, the girdle, the crown from the middle
-    out, then the pavilion.
+    out, then the pavilion. `--exit` names the fade timeline that compensates
+    for that draw delay, letting all the inner facets disappear together before
+    the girdle and outline without making the next loop flash.
 
     The stroke is deliberately **not** `non-scaling-stroke`, however much a
     hairline that ignores scale sounds right here. It defeats the draw: the dash
@@ -65,24 +68,24 @@
       The cut: the table across the top, the shoulders out to the girdle's
       widest points, and the two long pavilion edges down to the culet.
     {%- endcomment -%}
-    <path class="loader__line" style="--n: 0;" pathLength="100" d="M30 12h40l26 26-46 54-46-54z"></path>
+    <path class="loader__line" style="--n: 0; --exit: gj-loader-exit-outline;" pathLength="100" d="M30 12h40l26 26-46 54-46-54z"></path>
 
     {%- comment -%} The girdle, across the widest points. {%- endcomment -%}
-    <path class="loader__line" style="--n: 1;" pathLength="100" d="M4 38h92"></path>
+    <path class="loader__line" style="--n: 1; --exit: gj-loader-exit-girdle;" pathLength="100" d="M4 38h92"></path>
 
     {%- comment -%}
       The crown: from each end of the table down to the girdle's centre, and
       down to the point below the table's own corner. Five facets between them.
     {%- endcomment -%}
-    <path class="loader__line" style="--n: 2;" pathLength="100" d="M30 12L50 38"></path>
-    <path class="loader__line" style="--n: 2;" pathLength="100" d="M70 12L50 38"></path>
-    <path class="loader__line" style="--n: 3;" pathLength="100" d="M30 12L26 38"></path>
-    <path class="loader__line" style="--n: 3;" pathLength="100" d="M70 12L74 38"></path>
+    <path class="loader__line" style="--n: 2; --exit: gj-loader-exit-inner-2;" pathLength="100" d="M30 12L50 38"></path>
+    <path class="loader__line" style="--n: 2; --exit: gj-loader-exit-inner-2;" pathLength="100" d="M70 12L50 38"></path>
+    <path class="loader__line" style="--n: 3; --exit: gj-loader-exit-inner-3;" pathLength="100" d="M30 12L26 38"></path>
+    <path class="loader__line" style="--n: 3; --exit: gj-loader-exit-inner-3;" pathLength="100" d="M70 12L74 38"></path>
 
     {%- comment -%} The pavilion, converging on the culet. {%- endcomment -%}
-    <path class="loader__line" style="--n: 4;" pathLength="100" d="M50 38L50 92"></path>
-    <path class="loader__line" style="--n: 5;" pathLength="100" d="M26 38L50 92"></path>
-    <path class="loader__line" style="--n: 5;" pathLength="100" d="M74 38L50 92"></path>
+    <path class="loader__line" style="--n: 4; --exit: gj-loader-exit-inner-4;" pathLength="100" d="M50 38L50 92"></path>
+    <path class="loader__line" style="--n: 5; --exit: gj-loader-exit-inner-5;" pathLength="100" d="M26 38L50 92"></path>
+    <path class="loader__line" style="--n: 5; --exit: gj-loader-exit-inner-5;" pathLength="100" d="M74 38L50 92"></path>
   </svg>
   <span class="visually-hidden">{{ loader_label }}</span>
 </span>
