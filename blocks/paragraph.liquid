@@ -6,10 +6,19 @@
   that happened to own it. It is `.section-lede` now, and the lookbook uses that
   too, so a second caller does not have to choose between an odd class name and
   forking the numbers.
+
+  Carries default text for the reason the subheading does: a block that renders
+  nothing until it is filled in is invisible the moment it is added, with no
+  element for the editor to select, which reads as a broken block rather than
+  an empty one.
 {%- endcomment -%}
 
 {%- if block.settings.text != blank -%}
-  <p class="section-lede reveal" {{ block.shopify_attributes }}>{{ block.settings.text }}</p>
+  <p
+    class="section-lede reveal"
+    style="{% render 'block-spacing', margin: block.settings.margin, padding: block.settings.padding %}"
+    {{ block.shopify_attributes }}
+  >{{ block.settings.text }}</p>
 {%- endif -%}
 
 {% schema %}
@@ -20,12 +29,50 @@
     {
       "type": "textarea",
       "id": "text",
-      "label": "t:sections.all.text.label"
+      "label": "t:sections.all.text.label",
+      "default": "Share a sentence or two about what this collection is for."
+    },
+    {
+      "type": "header",
+      "content": "t:blocks.all.spacing_header"
+    },
+    {
+      "type": "select",
+      "id": "margin",
+      "label": "t:blocks.all.margin.label",
+      "info": "t:blocks.all.margin.info",
+      "options": [
+        { "value": "tiny", "label": "t:blocks.all.step.tiny" },
+        { "value": "small", "label": "t:blocks.all.step.small" },
+        { "value": "medium", "label": "t:blocks.all.step.medium" },
+        { "value": "large", "label": "t:blocks.all.step.large" },
+        { "value": "xlarge", "label": "t:blocks.all.step.xlarge" }
+      ],
+      "default": "medium"
+    },
+    {
+      "type": "select",
+      "id": "padding",
+      "label": "t:blocks.all.padding.label",
+      "options": [
+        { "value": "none", "label": "t:blocks.all.step.none" },
+        { "value": "tiny", "label": "t:blocks.all.step.tiny" },
+        { "value": "small", "label": "t:blocks.all.step.small" },
+        { "value": "medium", "label": "t:blocks.all.step.medium" },
+        { "value": "large", "label": "t:blocks.all.step.large" },
+        { "value": "xlarge", "label": "t:blocks.all.step.xlarge" }
+      ],
+      "default": "none"
     }
   ],
   "presets": [
     {
-      "name": "t:blocks.paragraph.name"
+      "name": "t:blocks.paragraph.name",
+      "settings": {
+        "text": "Share a sentence or two about what this collection is for.",
+        "margin": "medium",
+        "padding": "none"
+      }
     }
   ]
 }

@@ -506,24 +506,34 @@ a {
    says why. See "`--body-leading` inherits into UI text and silently inflates
    spacing".
 
-   **One property carries the whole scale**, and the block's "Spacing" setting
-   only reassigns it — so the class is usable on its own, at the default, by
-   anything that renders an eyebrow without going through the block. The top is
-   a quarter of the bottom at every step: an eyebrow belongs up against the
-   heading it labels, and what needs to grow is the gap to whatever follows.
+   **The default is assigned here, so the inline property can override it.**
+   The block's Spacing setting writes `--block-margin` into the style attribute
+   and inline wins, which means a block whose setting is untouched writes
+   nothing and keeps this default — and the class stays usable on its own by
+   anything rendering an eyebrow without going through the block.
+
+   The top is a quarter of the bottom at every step: an eyebrow belongs up
+   against the heading it labels, and what needs to grow is the gap to whatever
+   follows. That proportion is this class's decision, not the scale's — see
+   snippets/block-spacing.liquid.
 
    Measured at 1440px, as above / label / below / heading-to-row:
 
-     was .section-header   16.5 / 18 / 44   78.5
-     minimal (2xs)          3   / 18 / 11   32
-     small   (md, default)  8   / 18 / 33   59
-     large   (lg)          11   / 18 / 44   73
-     extra large (xl)      16   / 18 / 66   100                              */
+     was .section-header    16.5 / 18 / 44   78.5
+     tiny   (2xs)            3   / 18 / 11   32
+     small  (sm)             5   / 18 / 22   45
+     medium (md, default)    8   / 18 / 33   59
+     large  (lg)            11   / 18 / 44   73
+     xlarge (xl)            16   / 18 / 66   100
+
+   An untouched setting measures 8 / 18 / 33 as well, which is the check that
+   the default assigned above and the inline property agree.                 */
 .section-eyebrow {
-  --eyebrow-space: var(--space-md);
+  --block-margin: var(--step-medium);
 
   display: flex;
-  margin-block: calc(var(--eyebrow-space) / 4) var(--eyebrow-space);
+  margin-block: calc(var(--block-margin) / 4) var(--block-margin);
+  padding: var(--block-padding, 0);
 }
 
 /* A display heading sets line-height below 1, so its box ends level with the
@@ -1360,6 +1370,30 @@ a {
   --product-price-tracking: 0.08em;
   --product-meta-tracking: calc(var(--micro-tracking) * 0.64);
   --product-line: 1.5;
+}
+
+/* ---- Block spacing steps --------------------------------------------
+   The five presets a theme block offers for its margin, padding and gap,
+   named for what a merchant is choosing rather than for where they land on
+   the spacing scale. They are *aliases*, not new numbers: every one resolves
+   to a step of the same fluid scale the rest of the theme spaces on, so a
+   block can never introduce a gap the scale does not already contain.
+
+   `none` is not offered in the editor — it is the resting value a block falls
+   back to when a setting is left alone, which is how adding a spacing control
+   to a block changes nothing until someone uses it.
+
+   Aliased at :root beside the --product-* literals, for the same reason:
+   theme-tokens.liquid compiles only *settings* into :root, and which step
+   "Large" means is a decision of the theme's, not the merchant's.         */
+
+:root {
+  --step-none: 0px;
+  --step-tiny: var(--space-2xs);      /*  7 – 11px */
+  --step-small: var(--space-sm);      /* 14 – 22px */
+  --step-medium: var(--space-md);     /* 21 – 33px */
+  --step-large: var(--space-lg);      /* 28 – 44px */
+  --step-xlarge: var(--space-xl);     /* 42 – 66px */
 }
 
 /* ---- Product card ---------------------------------------------------
@@ -2400,7 +2434,12 @@ a.card__title::after {
    block is the second, so it is named for what it is — the same correction
    `fp-` → `row-` made for the carousel. Values unchanged. */
 .section-lede {
+  /* The 14px above is the design's own and is not on the merchant's scale; the
+     gap *below* is what a Spacing setting is for, and it defaults to nothing so
+     the class behaves exactly as it did before the control existed. */
   margin-top: 14px;
+  margin-bottom: var(--block-margin, 0);
+  padding: var(--block-padding, 0);
   max-width: 520px;
   font-size: 0.97rem;
   line-height: 1.8;

@@ -500,21 +500,63 @@ name>`; the second preset is "Carousel".
   `.section-header` — which had eaten most of what the tighter margins saved.
   `.section-header` is flex for its own reasons and gets the tight box as a
   side effect; this one says why.
-- **"Spacing" is one setting reassigning one property.** The block writes
-  `--eyebrow-space` and the stylesheet holds both the default and the ratio, so
-  nothing in Liquid decides *how* the eyebrow is spaced, only how much — and
-  the class still works standalone for anything rendering an eyebrow without
-  the block. The top is a quarter of the bottom at every step: an eyebrow
-  belongs against the heading it labels, and what needs to grow is the gap to
-  what follows. Measured at 1440px, above / label / below / heading-to-row:
+- **A block never renders nothing.** Both the setting *and* the preset carry
+  default text, because a block guarded on `!= blank` with neither is invisible
+  the moment it is added: no element in the preview, nothing for the editor to
+  select or highlight, which reads as a broken block rather than an empty one.
+  The preset is what "Add block" actually seeds from, so the schema default
+  alone is not enough. **Any new block guarded on a setting needs both.**
 
-  | step | | | | |
+### Block spacing
+
+Five presets — Tiny, Small, Medium, Large, Extra large — offered by a theme
+block for its margin, padding and gap, from `snippets/block-spacing.liquid`:
+
+```liquid
+style="{% render 'block-spacing', margin: block.settings.margin, padding: block.settings.padding %}"
+```
+
+- **The steps are aliases, not new numbers.** `--step-tiny` … `--step-xlarge`
+  at `:root` resolve to `--space-2xs / sm / md / lg / xl`, so a block cannot
+  introduce a gap the theme's own scale does not already contain. They are
+  literals at `:root` beside the `--product-*` properties for the same reason:
+  `theme-tokens.liquid` compiles only *settings*, and which rung "Large" means
+  is the theme's decision rather than the merchant's.
+- **The snippet says how much; the stylesheet says what it does.** A block
+  writes `--block-margin` and its own class decides whether that is a gap
+  below, a gap either side, or a ratio of the two — which is how
+  `.section-eyebrow` keeps its tight-above proportion while sharing one
+  merchant-facing scale with everything else.
+- **The fallback lives in the CSS, and that is what makes the control
+  additive.** An untouched setting prints nothing at all, so the class keeps
+  exactly the spacing it had before the control existed: `.section-lede` still
+  gets its 14px above and nothing below, and `.section-eyebrow` its `medium`.
+  An inline custom property beats the class's own assignment, so the default
+  can live where the class is defined.
+- `none` exists as a token but is offered only for padding and gap — it is the
+  resting value, not a choice worth making for a margin.
+- An unrecognised value prints nothing rather than `var(--step-)`, which would
+  be an invalid declaration and take the whole property with it.
+
+  Measured on `.section-eyebrow` at 1440px, above / label / below /
+  heading-to-row. The label box is 18px at every step, which is the check that
+  the flex fix holds; and an untouched setting matches Medium exactly, which is
+  the check that the CSS default and the inline property agree.
+
+  | step | above | label | below | heading→row |
   | --- | --- | --- | --- | --- |
   | *was* `.section-header` | 16.5 | 18 | 44 | 78.5 |
-  | Minimal (`2xs`) | 3 | 18 | 11 | 32 |
-  | Small (`md`, default) | 8 | 18 | 33 | 59 |
+  | Tiny (`2xs`) | 3 | 18 | 11 | 32 |
+  | Small (`sm`) | 5 | 18 | 22 | 45 |
+  | Medium (`md`, default) | 8 | 18 | 33 | 59 |
   | Large (`lg`) | 11 | 18 | 44 | 73 |
   | Extra large (`xl`) | 16 | 18 | 66 | 100 |
+
+**The `title` block deliberately has no spacing settings.** A `.display`
+heading takes its gap from being *adjacent* to what follows
+(`.display + .grid-auto`), so a margin on the block would add to that rather
+than replace it. Giving it the control means reworking the heading-gap rule
+first.
 - **`t:` keys for blocks live under a new top-level `blocks` namespace** in
   `locales/en.default.schema.json`, beside `sections` and `settings_schema`.
 - Renaming the section moved "Image shape" out of `sections.category_grid` and

@@ -1,0 +1,26 @@
+{%- comment -%}
+  The custom properties a block's spacing settings resolve to, for the `style`
+  attribute of any theme block that offers them.
+
+      style="{% render 'block-spacing', margin: block.settings.margin, padding: block.settings.padding %}"
+
+  Accepts `margin`, `padding` and `gap`, each a step name — tiny, small, medium,
+  large, xlarge — and prints only the ones it was given. An unrecognised value
+  prints nothing rather than `var(--step-)`, which would be an invalid property
+  and take the whole declaration with it.
+
+  **The stylesheet decides what each property does; this only says how much.**
+  A block writes `--block-margin` and its own class chooses whether that is a
+  gap below, a gap either side, or a ratio of the two — which is why the eyebrow
+  can keep its tight-above proportion while sharing one merchant-facing scale
+  with everything else. It is also why the fallback lives in the CSS: a block
+  whose setting is untouched writes nothing at all, and the class keeps whatever
+  spacing it had before the control existed.
+{%- endcomment -%}
+
+{%- liquid
+  assign steps = 'tiny,small,medium,large,xlarge' | split: ','
+-%}
+{%- if steps contains margin %}--block-margin: var(--step-{{ margin }});{% endif -%}
+{%- if steps contains padding %}--block-padding: var(--step-{{ padding }});{% endif -%}
+{%- if steps contains gap %}--block-gap: var(--step-{{ gap }});{% endif -%}

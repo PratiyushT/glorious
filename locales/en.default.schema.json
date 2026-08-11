@@ -407,13 +407,24 @@
   },
   "blocks": {
     "all": {
-      "spacing": {
-        "label": "Spacing",
-        "info": "The room the block leaves around itself. The gap below grows; the one above stays tight to what it labels.",
-        "minimal": "Minimal",
+      "spacing_header": "Spacing",
+      "margin": {
+        "label": "Margin",
+        "info": "The room the block leaves after itself. Every step is a rung of the theme's own spacing scale."
+      },
+      "padding": {
+        "label": "Padding"
+      },
+      "gap": {
+        "label": "Gap"
+      },
+      "step": {
+        "none": "None",
+        "tiny": "Tiny",
         "small": "Small",
+        "medium": "Medium",
         "large": "Large",
-        "extra_large": "Extra large"
+        "xlarge": "Extra large"
       }
     },
     "title": {
