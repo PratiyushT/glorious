@@ -1960,6 +1960,33 @@ the quick-view disc, `--card-zoom`, the edge colour).
   diagnostic is to walk the sticky element's ancestors and look for any whose
   computed `overflow` is neither `visible` nor `clip`.
 
+- **Renaming a theme block type orphans every stored instance of it, including
+  ones a merchant added in the editor that no local file knows about.** The
+  server validates `templates/*.json` against the blocks folder it has, so a
+  stored block whose `type` no longer exists fails the whole template with
+  `Invalid value for type in block 'x'. The given theme block type must be
+  defined in the theme blocks folder.`
+
+  Renaming `collection-list-subheading` → `subheading` produced exactly that,
+  and the block keys are how to read it: `collection_list_subheading_6aw8tH`
+  carries the theme editor's own random suffix, so it was added in the editor
+  and existed only in the *remote* template. Migrating `templates/index.json`
+  covers the blocks this repo knows about and cannot cover those.
+
+  So a block type is a **data contract, not just a filename**. Rename one only
+  with the reconcile in hand:
+
+  ```bash
+  shopify theme push --only "blocks/*"
+  shopify theme push --only templates/index.json
+  ```
+
+  Blocks first — the template validates against the server's copy of the
+  folder, which is the same ordering trap as a new section and its template.
+  Restarting `shopify theme dev` does both in one pass and is usually enough.
+  Either way the editor-added blocks are discarded rather than repaired; to
+  keep them, `shopify theme pull --only templates/index.json` first, repoint the
+  stale `type` strings by hand, and push that back.
 - **A brand-new section and the template referencing it can race on upload.**
   `templates/index.json` reaching the server before `sections/foo.liquid` fails
   with `Section type 'foo' does not refer to an existing section file`, which
