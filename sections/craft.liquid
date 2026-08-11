@@ -67,10 +67,10 @@
         {%- if spec_blocks.size > 0 -%}
           <div class="measure">
             {%- for block in spec_blocks -%}
-              <div class="spec-row" {{ block.shopify_attributes }}>
-                <span class="spec-row__label">{{ block.settings.label }}</span>
-                <span class="spec-row__value">{{ block.settings.value }}</span>
-              </div>
+              {%- render 'spec-row',
+                label: block.settings.label,
+                value: block.settings.value,
+                attributes: block.shopify_attributes -%}
             {%- endfor -%}
           </div>
         {%- endif -%}

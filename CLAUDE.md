@@ -18,6 +18,37 @@ this file that explains a feature and the code that implements it must never
 arrive separately: the note is how the next pass learns why a number is what it
 is.
 
+### Shared renderers
+
+Phase 2's collapses. Each is a snippet the sections call, which removes the
+duplicated markup without the block-type migration — that is Phase 3's job, and
+a block type is a data contract.
+
+| snippet | replaced | callers |
+| --- | --- | --- |
+| `button.liquid` | four hand-written button pairs | about, craft, visit |
+| `spec-row.liquid` | craft's `spec` and visit's `detail` | craft, visit |
+| `wordmark-mark.liquid` | three PNG cuts | the lockup |
+
+- **`.spec-row:last-child` draws the closing hairline, so every caller keeps
+  its rows in a wrapper of their own.** Rendered flat beside anything else — a
+  buttons block, say — the last row stops being the last child, the group loses
+  its bottom rule and whatever follows gains one. craft keeps them in
+  `.measure` and visit in a plain `div`. Verified after the collapse: both
+  wrappers hold only `.spec-row` children, and the 1px border lands on row 4 of
+  4 and row 2 of 2 respectively.
+- **The hero is not a caller of either, deliberately.** `.hero__choice` looks
+  like a labelled row and is not one, and `.hero__cta` is not a `.btn`. The
+  hero is art-directed against a fixed viewport height with its own `--hero-*`
+  literals; sharing a component with it would mean either the hero drifts or
+  the component grows a hero-shaped exception. Same reason its button settings
+  were added and then reverted.
+- **A filter cannot be used on a `render` argument**, so every caller that
+  needs to know whether a link is off-site computes `link contains '://'` into
+  a variable first and passes that. `button.liquid` and `spec-row.liquid` both
+  take `new_tab` rather than working it out themselves, because a merchant's
+  absolute URL to their own domain should not open a new tab.
+
 ### Headings
 
 **The homepage had no `<h1>`, and four of its section titles were not headings

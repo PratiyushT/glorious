@@ -92,20 +92,22 @@
                     assign row_link = settings.shop_email | prepend: 'mailto:'
                   endif
                 endif
+                comment
+                  The off-site test happens here because a filter cannot be
+                  used on a `render` argument.
+                endcomment
+                assign row_external = false
+                if row_link contains '://'
+                  assign row_external = true
+                endif
               -%}
 
-              {%- if row_value != blank -%}
-                <div class="spec-row" {{ block.shopify_attributes }}>
-                  <span class="spec-row__label">{{ block.settings.label }}</span>
-                  <span class="spec-row__value">
-                    {%- if row_link != blank -%}
-                      <a href="{{ row_link }}"{% if row_link contains '://' %} target="_blank" rel="noopener"{% endif %}>{{ row_value }}</a>
-                    {%- else -%}
-                      {{ row_value }}
-                    {%- endif -%}
-                  </span>
-                </div>
-              {%- endif -%}
+              {%- render 'spec-row',
+                label: block.settings.label,
+                value: row_value,
+                link: row_link,
+                new_tab: row_external,
+                attributes: block.shopify_attributes -%}
             {%- endfor -%}
           </div>
         {%- endif -%}
