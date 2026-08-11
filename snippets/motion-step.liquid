@@ -1,0 +1,42 @@
+{%- comment -%}
+  Resolves a named motion step to a duration in milliseconds, and prints it.
+
+  The merchant picks a step, not a number — the same rule as space-step.liquid,
+  and the same reason: a slider from 60 to 900 in tens is eighty-five values,
+  of which about five are distinguishable.
+
+  **This prints a bare number, not a CSS time, and that is deliberate.** The
+  caller appends the unit. `--duration` is consumed inside calc() —
+  `calc(var(--duration) * 2)` at base.css:3337 and :6245 — so a step that
+  resolved to a keyword would make those declarations invalid at
+  computed-value time and silently drop the transition rather than fall back.
+  Every step setting whose token reaches calc(), color-mix() or clamp() has to
+  resolve to a number this way; the shipped precedent is type_ratio_min and
+  type_ratio_max, which are selects of numeric strings coerced with
+  `| times: 1.0`.
+
+  The rungs are the reference design's own transition durations, by how often
+  it uses each:
+
+    quick    250ms   the design's .25s
+    base     350ms   the design's .35s — its commonest transition, 41 uses
+    relaxed  500ms   the design's .5s, 22 uses
+    slow     700ms   the design's .7s
+    slowest  900ms   the design's .9s, 12 uses
+
+  Accepts:
+    step  - one of the ids above. Anything unrecognised prints nothing so the
+            caller's fallback stands.
+
+  Usage:
+    {%- capture ms -%}{%- render 'motion-step', step: settings.motion_duration -%}{%- endcapture -%}
+    --duration: {{ ms }}ms;
+{%- endcomment -%}
+
+{%- case step -%}
+  {%- when 'quick' -%}250
+  {%- when 'base' -%}350
+  {%- when 'relaxed' -%}500
+  {%- when 'slow' -%}700
+  {%- when 'slowest' -%}900
+{%- endcase -%}

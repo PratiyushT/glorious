@@ -1042,14 +1042,18 @@
         "default": true
       },
       {
-        "type": "range",
+        "type": "select",
         "id": "motion_duration",
         "label": "t:settings_schema.motion.motion_duration.label",
-        "min": 60,
-        "max": 900,
-        "step": 10,
-        "unit": "ms",
-        "default": 350
+        "info": "t:settings_schema.motion.motion_duration.info",
+        "options": [
+        { "value": "quick", "label": "t:settings_schema.motion.motion_duration.options__quick" },
+        { "value": "base", "label": "t:settings_schema.motion.motion_duration.options__base" },
+        { "value": "relaxed", "label": "t:settings_schema.motion.motion_duration.options__relaxed" },
+        { "value": "slow", "label": "t:settings_schema.motion.motion_duration.options__slow" },
+        { "value": "slowest", "label": "t:settings_schema.motion.motion_duration.options__slowest" }
+        ],
+        "default": "base"
       }
     ]
   }

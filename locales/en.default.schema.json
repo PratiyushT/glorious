@@ -382,7 +382,13 @@
         "label": "Reveal sections on scroll"
       },
       "motion_duration": {
-        "label": "Transition duration"
+        "label": "Motion speed",
+        "info": "How long hovers and state changes take. Steps are the reference design’s own transition durations.",
+        "options__quick": "Quick",
+        "options__base": "Standard",
+        "options__relaxed": "Relaxed",
+        "options__slow": "Slow",
+        "options__slowest": "Very slow"
       }
     },
     "options": {

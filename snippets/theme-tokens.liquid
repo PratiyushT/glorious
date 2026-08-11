@@ -233,8 +233,15 @@
        One colour, not per-scheme: an error reads the same everywhere.   */
     --c-error: {{ settings.color_error | default: '#A2422C' }};
 
-    /* ---- Motion ------------------------------------------------------ */
-    --duration: {% if settings.motion_enabled %}{{ settings.motion_duration }}ms{% else %}0ms{% endif %};
+    /* ---- Motion ------------------------------------------------------
+       The merchant picks a named step; motion-step.liquid resolves it to a
+       bare number and the unit is appended here, because --duration is read
+       inside calc() and a keyword there would drop the declaration. An
+       unrecognised step falls back to the design's own commonest transition
+       rather than emitting `--duration: ms`.                              */
+    {%- capture motion_ms -%}{%- render 'motion-step', step: settings.motion_duration -%}{%- endcapture -%}
+    {%- if motion_ms == blank -%}{%- assign motion_ms = 350 -%}{%- endif -%}
+    --duration: {% if settings.motion_enabled %}{{ motion_ms }}ms{% else %}0ms{% endif %};
     --ease: cubic-bezier(0.22, 1, 0.36, 1);
   }
 

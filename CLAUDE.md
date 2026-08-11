@@ -577,6 +577,45 @@ Six rungs is six.
   block instead (`{%- schema -%}(.*?){%- endschema -%}` → `json.loads` →
   recursive walk); that form finds all of them. 51 ranges remain.
 
+### Motion
+
+`motion_duration` is a `select` of five named steps, resolved by
+`snippets/motion-step.liquid`. The rungs are the design's own transition
+durations, by how often it uses each: 250 / **350** / 500 / 700 / 900ms.
+
+- **The snippet prints a bare number and the caller appends `ms`.** This is the
+  rule for every step setting whose token reaches `calc()`, `color-mix()` or
+  `clamp()`. `--duration` is read as `calc(var(--duration) * 2)` at
+  `base.css:3337` and `:6245`, so a keyword there is invalid at
+  computed-value time and drops the transition outright rather than falling
+  back to anything. `type_ratio_min`/`type_ratio_max` are the shipped
+  precedent — selects of numeric strings coerced with `| times: 1.0`.
+- `base` is 350ms, which is the range's own former default, and the setting has
+  no stored value — so the conversion changed no pixel and no millisecond.
+
+**The design has two motion registers and this theme currently conflates
+them.** Measured across all 25 design pages:
+
+- *Interaction* — hover, focus, small state changes — is **plain `ease`**, and
+  overwhelmingly at `.35s`: `0.35s ease` is its commonest transition by a wide
+  margin (41 uses), then `0.5s ease` (22), `0.9s ease` (12), `0.3s ease` (10).
+- *Entrance and choreography* — reveals, modals, carousels — is
+  `cubic-bezier(.22,1,.36,1)`, and always slower: .5s, .55s, .6s, .65s, .7s,
+  1.1s, 1.3s.
+
+`--ease` is the entrance curve, and `base.css` spends it on hovers as well, so
+every button and link in the theme eases on a curve the design reserves for
+things arriving. Separately, the design's **second-most-used curve overall**,
+`cubic-bezier(.19,1,.22,1)` at 54 uses, appears **once** in this theme
+(`base.css:925`) — it is the keyframe easing for its animations.
+
+Splitting them is the next motion change and it is deliberately **not** in the
+commit that introduced the steps: re-pointing `--ease` moves every hover in the
+theme, which wants measuring against the dev server rather than reasoning
+about. When it happens it is `--ease` (entrance), `--ease-ui` (plain `ease`)
+and `--ease-keyframe` (`.19,1,.22,1`), and the ~50 bare `ease` keywords and
+~40 hand-written durations in `base.css` come onto the tokens with it.
+
 ### Block spacing
 
 Five presets — Tiny, Small, Medium, Large, Extra large — offered by a theme
