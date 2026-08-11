@@ -312,11 +312,17 @@ def R05_step_callers():
     for sid in ('padding_top', 'padding_bottom'):
         fed.setdefault(sid, 'space-step')
 
+    # `inherit` is the documented sentinel for "leave it to the theme setting".
+    # The caller tests for it and never asks the resolver, so it is legitimately
+    # absent from every `when` — see snippets/button.liquid. Any OTHER unknown
+    # id is still an error, which is the point of the rule.
+    SENTINELS = {'inherit'}
+
     def check(where, s):
         sid = s.get('id')
         if sid not in fed:
             return
-        known = resolvers[fed[sid]]
+        known = resolvers[fed[sid]] | SENTINELS
         if s.get('type') != 'select':
             err('R05', where, "%s feeds %s but is a '%s', not a select — its "
                 "value cannot resolve to a step"

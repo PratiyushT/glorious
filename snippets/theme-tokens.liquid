@@ -318,6 +318,12 @@
     {%- endcomment -%}
     --ease: cubic-bezier(0.22, 1, 0.36, 1);
     --ease-ui: ease;
+    {%- comment -%}
+      The design's second curve, and its second-commonest overall at 54 uses:
+      a long ease-out. It carries its keyframe animations and the arrow
+      button's travel — anything that should leave quickly and arrive slowly.
+    {%- endcomment -%}
+    --ease-out: cubic-bezier(0.19, 1, 0.22, 1);
   }
 
   @media (prefers-reduced-motion: reduce) {

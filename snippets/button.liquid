@@ -1,0 +1,125 @@
+{%- comment -%}
+  One button, everywhere.
+
+  The theme had four `buttons` blocks — hero, craft, about, visit — each
+  writing its own markup and each *hardcoding* which variant it rendered:
+  about's first button was always filled, craft's always outline, its second
+  always a link. A merchant could change the words and the destination and
+  nothing else. This renders all of it, and the choice is theirs.
+
+  **A button needs a destination to exist.** A label with no link renders
+  nothing at all, because `href="#"` is a control that looks live and goes
+  nowhere. Callers that have a real fallback route — the hero, the bag drawer —
+  pass it as `link` themselves rather than relying on one here.
+
+  Accepts:
+    label   - required; nothing renders without it
+    link    - required, as above
+    style   - filled | outline | link | quiet | arrow | arrow_outline
+              Defaults to `filled`. The design's four are filled, outline,
+              link and arrow; `quiet` is its stepped-back link, and
+              `arrow_outline` its arrow carrying the outline's frame.
+    size    - a rung of scale-step's `button_size` (xs sm md lg xl), or blank
+              to inherit the theme setting
+    radius  - square | soft | rounded | pill, or blank to inherit
+    class    - extra classes for the caller's own layout
+    new_tab  - true to open off-site, adding rel="noopener". A caller works
+               this out itself (`link contains '://'`) and passes a variable,
+               because a filter cannot be used on a `render` argument.
+    id, aria_label - passed through
+
+  Size and radius are emitted as inline custom properties rather than classes,
+  so a button given neither is byte-identical to what the theme rendered
+  before this snippet existed — `.btn` falls back to the global token. That is
+  what makes the per-button control additive rather than a migration.
+
+  Usage:
+    {%- render 'button', label: b.settings.button_label, link: b.settings.button_link,
+                         style: b.settings.button_style, size: b.settings.button_size,
+                         radius: b.settings.button_radius -%}
+{%- endcomment -%}
+
+{%- liquid
+  if label == blank or link == blank
+    break
+  endif
+
+  case style
+    when 'outline'
+      assign variant = 'btn--outline'
+    when 'link'
+      assign variant = 'btn--link'
+    when 'quiet'
+      assign variant = 'btn--quiet'
+    when 'arrow'
+      assign variant = 'btn--arrow'
+    when 'arrow_outline'
+      assign variant = 'btn--arrow btn--outline'
+    else
+      assign variant = 'btn--primary'
+  endcase
+
+  assign shows_arrow = false
+  if style == 'arrow' or style == 'arrow_outline'
+    assign shows_arrow = true
+  endif
+-%}
+
+{%- comment -%}
+  `inherit` is the sentinel meaning "leave it to the theme setting", so the
+  resolver is never asked about it. Relying on it simply failing to match a
+  `when` would work by accident; saying so is what makes the fallback in
+  `.btn` — `var(--btn-radius, var(--button-radius))` — the deliberate path.
+{%- endcomment -%}
+{%- liquid
+  assign want_size = size
+  assign want_radius = radius
+  if want_size == 'inherit'
+    assign want_size = blank
+  endif
+  if want_radius == 'inherit'
+    assign want_radius = blank
+  endif
+-%}
+{%- capture btn_size -%}{%- if want_size != blank -%}{%- render 'scale-step', scale: 'button_size', step: want_size -%}{%- endif -%}{%- endcapture -%}
+{%- capture btn_radius -%}{%- if want_radius != blank -%}{%- render 'scale-step', scale: 'button_radius', step: want_radius -%}{%- endif -%}{%- endcapture -%}
+
+{%- liquid
+  assign style_attr = ''
+  if btn_size != blank
+    assign s = btn_size | split: ','
+    capture style_attr
+      echo '--btn-pad-x: '
+      echo s[0]
+      echo 'px; --btn-pad-y: '
+      echo s[1]
+      echo 'px; --btn-font: '
+      echo s[2]
+      echo 'px;'
+    endcapture
+  endif
+  if btn_radius != blank
+    capture style_attr
+      echo style_attr
+      echo ' --btn-radius: '
+      echo btn_radius
+      echo 'px;'
+    endcapture
+  endif
+-%}
+
+<a
+  class="btn {{ variant }}{% if class != blank %} {{ class }}{% endif %}"
+  href="{{ link }}"
+  {%- if style_attr != blank %} style="{{ style_attr }}"{% endif %}
+  {%- if id != blank %} id="{{ id }}"{% endif %}
+  {%- if aria_label != blank %} aria-label="{{ aria_label }}"{% endif %}
+  {%- if new_tab %} target="_blank" rel="noopener"{% endif %}
+>
+  {{- label -}}
+  {%- comment -%}
+    The arrow is decoration: the label already says where this goes, so it is
+    hidden from assistive technology rather than announced as "right arrow".
+  {%- endcomment -%}
+  {%- if shows_arrow %}<span aria-hidden="true">&rarr;</span>{% endif -%}
+</a>

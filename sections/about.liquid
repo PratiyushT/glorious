@@ -57,16 +57,18 @@
                 renders nothing at all.
               {%- endcomment -%}
               <div class="btn-row" {{ block.shopify_attributes }}>
-                {%- if block.settings.button_label != blank and block.settings.button_link != blank -%}
-                  <a href="{{ block.settings.button_link }}" class="btn btn--primary">
-                    {{ block.settings.button_label }}&nbsp;&nbsp;&rarr;
-                  </a>
-                {%- endif -%}
-                {%- if block.settings.button_label_2 != blank and block.settings.button_link_2 != blank -%}
-                  <a href="{{ block.settings.button_link_2 }}" class="btn btn--link">
-                    {{ block.settings.button_label_2 }}
-                  </a>
-                {%- endif -%}
+                {%- render 'button',
+                  label: block.settings.button_label,
+                  link: block.settings.button_link,
+                  style: block.settings.button_style,
+                  size: block.settings.button_size,
+                  radius: block.settings.button_radius -%}
+                {%- render 'button',
+                  label: block.settings.button_label_2,
+                  link: block.settings.button_link_2,
+                  style: block.settings.button_style_2,
+                  size: block.settings.button_size_2,
+                  radius: block.settings.button_radius_2 -%}
               </div>
           {%- endcase -%}
         {%- endfor -%}
@@ -195,6 +197,88 @@
       "name": "t:sections.about.blocks.buttons.name",
       "limit": 1,
       "settings": [
+    {
+      "type": "select",
+      "id": "button_style",
+      "label": "t:sections.all.button_style.label",
+      "options": [
+        { "value": "filled", "label": "t:settings_schema.button_style.filled" },
+        { "value": "outline", "label": "t:settings_schema.button_style.outline" },
+        { "value": "link", "label": "t:settings_schema.button_style.link" },
+        { "value": "quiet", "label": "t:settings_schema.button_style.quiet" },
+        { "value": "arrow", "label": "t:settings_schema.button_style.arrow" },
+        { "value": "arrow_outline", "label": "t:settings_schema.button_style.arrow_outline" }
+      ],
+      "default": "filled"
+    },
+    {
+      "type": "select",
+      "id": "button_size",
+      "label": "t:sections.all.button_size.label",
+      "options": [
+        { "value": "inherit", "label": "t:settings_schema.button_size.inherit" },
+        { "value": "xs", "label": "t:settings_schema.button_size.xs" },
+        { "value": "sm", "label": "t:settings_schema.button_size.sm" },
+        { "value": "md", "label": "t:settings_schema.button_size.md" },
+        { "value": "lg", "label": "t:settings_schema.button_size.lg" },
+        { "value": "xl", "label": "t:settings_schema.button_size.xl" }
+      ],
+      "default": "inherit"
+    },
+    {
+      "type": "select",
+      "id": "button_radius",
+      "label": "t:sections.all.button_radius.label",
+      "options": [
+        { "value": "inherit", "label": "t:settings_schema.button_radius.inherit" },
+        { "value": "square", "label": "t:settings_schema.button_radius.square" },
+        { "value": "soft", "label": "t:settings_schema.button_radius.soft" },
+        { "value": "rounded", "label": "t:settings_schema.button_radius.rounded" },
+        { "value": "pill", "label": "t:settings_schema.button_radius.pill" }
+      ],
+      "default": "inherit"
+    },
+    {
+      "type": "select",
+      "id": "button_style_2",
+      "label": "t:sections.all.button_style_2.label",
+      "options": [
+        { "value": "filled", "label": "t:settings_schema.button_style.filled" },
+        { "value": "outline", "label": "t:settings_schema.button_style.outline" },
+        { "value": "link", "label": "t:settings_schema.button_style.link" },
+        { "value": "quiet", "label": "t:settings_schema.button_style.quiet" },
+        { "value": "arrow", "label": "t:settings_schema.button_style.arrow" },
+        { "value": "arrow_outline", "label": "t:settings_schema.button_style.arrow_outline" }
+      ],
+      "default": "link"
+    },
+    {
+      "type": "select",
+      "id": "button_size_2",
+      "label": "t:sections.all.button_size_2.label",
+      "options": [
+        { "value": "inherit", "label": "t:settings_schema.button_size.inherit" },
+        { "value": "xs", "label": "t:settings_schema.button_size.xs" },
+        { "value": "sm", "label": "t:settings_schema.button_size.sm" },
+        { "value": "md", "label": "t:settings_schema.button_size.md" },
+        { "value": "lg", "label": "t:settings_schema.button_size.lg" },
+        { "value": "xl", "label": "t:settings_schema.button_size.xl" }
+      ],
+      "default": "inherit"
+    },
+    {
+      "type": "select",
+      "id": "button_radius_2",
+      "label": "t:sections.all.button_radius_2.label",
+      "options": [
+        { "value": "inherit", "label": "t:settings_schema.button_radius.inherit" },
+        { "value": "square", "label": "t:settings_schema.button_radius.square" },
+        { "value": "soft", "label": "t:settings_schema.button_radius.soft" },
+        { "value": "rounded", "label": "t:settings_schema.button_radius.rounded" },
+        { "value": "pill", "label": "t:settings_schema.button_radius.pill" }
+      ],
+      "default": "inherit"
+    },
         {
           "type": "text",
           "id": "button_label",

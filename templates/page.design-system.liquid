@@ -110,7 +110,14 @@
   .ds__tile--entrance { transition: transform calc(var(--duration) * 2) var(--ease), background calc(var(--duration) * 2) var(--ease); }
   .ds__tile:hover { transform: translateY(-10px); background: var(--c-accent); }
 
-  .ds__buttons { display: flex; flex-wrap: wrap; gap: var(--space-sm); margin-block-end: var(--space-lg); }
+  .ds__buttons {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-sm);
+    margin-block: var(--space-2xs) var(--space-lg);
+  }
+  .ds__ink { padding: var(--space-lg); margin-block-start: var(--space-sm); }
   .ds__loaders { display: flex; align-items: center; gap: var(--space-xl); }
 </style>
 
@@ -209,11 +216,55 @@
   {%- comment -%} ---- Buttons ------------------------------------------- {%- endcomment -%}
   <section class="ds__block">
     <h2 class="h2">Buttons</h2>
+    <p class="rte measure">
+      The design's own four, plus its stepped-back link and its arrow carrying
+      the outline's frame. Every one is a real <code>snippets/button.liquid</code>
+      render, so what is below is what a section emits. Hover the arrows —
+      the gap travels 11px to 19px on the long ease-out.
+    </p>
+
+    <div class="micro">Style</div>
     <div class="ds__buttons">
-      <a class="btn" href="{{ routes.all_products_collection_url }}">Primary</a>
-      <a class="btn btn--secondary" href="{{ routes.all_products_collection_url }}">Secondary</a>
-      <button class="btn" type="button" disabled>Disabled</button>
-      <a class="btn btn--square" href="{{ routes.all_products_collection_url }}">Square</a>
+      {%- assign ds_styles = 'filled,outline,link,quiet,arrow,arrow_outline' | split: ',' -%}
+      {%- for st in ds_styles -%}
+        {%- render 'button', label: st, link: routes.all_products_collection_url, style: st -%}
+      {%- endfor -%}
+      <button class="btn btn--primary" type="button" disabled>Disabled</button>
+    </div>
+
+    <div class="micro">Size — per button, overriding the theme setting</div>
+    <div class="ds__buttons">
+      {%- assign ds_sizes = 'xs,sm,md,lg,xl' | split: ',' -%}
+      {%- for sz in ds_sizes -%}
+        {%- render 'button', label: sz, link: routes.all_products_collection_url, style: 'filled', size: sz -%}
+      {%- endfor -%}
+    </div>
+
+    <div class="micro">Shape — per button, overriding the theme setting</div>
+    <div class="ds__buttons">
+      {%- assign ds_radii = 'square,soft,rounded,pill' | split: ',' -%}
+      {%- for rd in ds_radii -%}
+        {%- render 'button', label: rd, link: routes.all_products_collection_url, style: 'outline', radius: rd -%}
+      {%- endfor -%}
+    </div>
+
+    <div class="micro">Card and full-width</div>
+    <div class="ds__buttons">
+      <a class="btn btn--square" href="{{ routes.all_products_collection_url }}">Square (in-card)</a>
+    </div>
+
+    {%- comment -%}
+      "Same four, inverted for dark bands and the atelier footer" — the design's
+      own note. It is a scheme, not six more variants, so the specimens below
+      are the identical renders inside a dark colour scheme.
+    {%- endcomment -%}
+    <div class="micro">On ink — the same four, in a dark scheme</div>
+    <div class="ds__ink scheme-scheme_2">
+      <div class="ds__buttons">
+        {%- for st in ds_styles -%}
+          {%- render 'button', label: st, link: routes.all_products_collection_url, style: st -%}
+        {%- endfor -%}
+      </div>
     </div>
     <div class="ds__row"><code class="ds__key" data-ds-var="--button-radius">--button-radius</code><span></span></div>
     <div class="ds__row"><code class="ds__key" data-ds-var="--button-padding-x">--button-padding-x</code><span></span></div>

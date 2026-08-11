@@ -279,7 +279,9 @@
             "button_label": "Bespoke Commissions",
             "button_link": "/#visit",
             "button_label_2": "Old Gold, Renewed",
-            "button_link_2": "/#visit"
+            "button_link_2": "/#visit",
+            "button_style": "outline",
+            "button_style_2": "link"
           }
         }
       },
@@ -332,7 +334,9 @@
             "button_label": "Our Full Story",
             "button_link": "/pages/about",
             "button_label_2": "The Craft",
-            "button_link_2": "/#craft"
+            "button_link_2": "/#craft",
+            "button_style": "filled",
+            "button_style_2": "link"
           }
         }
       },
@@ -429,7 +433,9 @@
             "button_label": "Get Directions",
             "button_link": "",
             "button_label_2": "Contact Us",
-            "button_link_2": ""
+            "button_link_2": "",
+            "button_style": "filled",
+            "button_style_2": "link"
           }
         }
       },

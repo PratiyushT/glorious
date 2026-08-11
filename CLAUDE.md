@@ -18,6 +18,58 @@ this file that explains a feature and the code that implements it must never
 arrive separately: the note is how the next pass learns why a number is what it
 is.
 
+### Buttons
+
+**The design's four variants, chosen per button.** `snippets/button.liquid`
+renders every one; the four `buttons` blocks — hero, craft, about, visit — used
+to write their own markup and *hardcode* which variant they emitted, so a
+merchant could change the words and the destination and nothing else.
+
+The design states its own model: *"Four variants carry every action across the
+store. Pill geometry, uppercase Karla at .15em, and a single gold accent.
+Nothing else."*
+
+| style | the design's note | shape |
+| --- | --- | --- |
+| `filled` | primary | accent fill, inverts to ink on hover |
+| `outline` | "Secondary, sits beside filled." | hairline frame, fills to ink |
+| `link` | "Inline, low weight. Size guides, policies." | gold rule, no frame |
+| `quiet` | — | the same, stepped back to 55% ink |
+| `arrow` | "Navigational. Moves you somewhere." | gap **11 → 19px** on hover |
+| `arrow_outline` | — | the arrow carrying the outline's frame, 12 → 20px |
+
+- **`min-block-size: 44px` on every button.** The design states it — "44px
+  minimum tap height" — and it is the target size WCAG asks for. The theme had
+  it nowhere. It is a min-height rather than a padding floor so the link
+  variants, which have no padding at all, still meet it without growing their
+  type. Verified across 23 specimens: none under 44.
+- **Size and radius are inline custom properties, not classes.** `.btn` reads
+  `var(--btn-radius, var(--button-radius))`, so a button given neither renders
+  byte-identically to before the snippet existed. That is what makes the
+  per-button control additive rather than a migration — the global setting is
+  the default, not the law. Same cascade as the text alignment above.
+- **`inherit` is the sentinel for "leave it to the theme setting"**, and the
+  snippet tests for it rather than relying on the resolver failing to match.
+  `veylin-lint`'s R05 exempts exactly that one value and still fails on any
+  other unknown id — checked by injecting `pilll` and watching it fire.
+- **The arrow is `aria-hidden`.** The label already says where the button goes.
+  about and visit previously appended a literal `&nbsp;&nbsp;&rarr;` inside the
+  link text, which every screen reader announced.
+- **The hero keeps `.hero__cta` and is deliberately not converted.** It is
+  art-directed against a fixed viewport height with its own `--hero-*`
+  literals, so button settings there would be inert — they were added and
+  reverted rather than left as controls that do nothing. Its second render
+  site did gain the `shopify_attributes` it was missing: below 990px that is
+  the visible CTA, and the editor could not select it.
+- **Three of the design's own figures were wrong in the theme and are fixed
+  here**: `button_size` `md` was 28/16/12 against the design's 34/18/13, so
+  every button sat between its two sizes; `button_tracking` `md` was .16em
+  against the design's .15em; and the link variants had no type step of their
+  own, where the design sets them a notch smaller and looser (12px/.16em).
+- **A filled button no longer carries an arrow.** about and visit had one, and
+  "filled with an arrow" is not one of the design's four. The travel is now an
+  explicit choice — pick `arrow` or `arrow_outline`.
+
 ### Text alignment
 
 **Two levels, and the block wins.** A section carries `content_alignment` and

@@ -126,21 +126,30 @@
                 assign contact_link = settings.shop_email | prepend: 'mailto:'
               endif
             -%}
+            {%- comment -%}
+              A filter cannot be used on a `render` argument, so the off-site
+              test is done here and handed over as a variable.
+            {%- endcomment -%}
+            {%- liquid
+              assign directions_external = false
+              if directions_link contains '://'
+                assign directions_external = true
+              endif
+            -%}
             <div class="btn-row" {{ block.shopify_attributes }}>
-              {%- if block.settings.button_label != blank and directions_link != blank -%}
-                <a
-                  href="{{ directions_link }}"
-                  class="btn btn--primary"
-                  {% if directions_link contains '://' %}target="_blank" rel="noopener"{% endif %}
-                >
-                  {{ block.settings.button_label }}&nbsp;&nbsp;&rarr;
-                </a>
-              {%- endif -%}
-              {%- if block.settings.button_label_2 != blank and contact_link != blank -%}
-                <a href="{{ contact_link }}" class="btn btn--link">
-                  {{ block.settings.button_label_2 }}
-                </a>
-              {%- endif -%}
+              {%- render 'button',
+                label: block.settings.button_label,
+                link: directions_link,
+                style: block.settings.button_style,
+                size: block.settings.button_size,
+                radius: block.settings.button_radius,
+                new_tab: directions_external -%}
+              {%- render 'button',
+                label: block.settings.button_label_2,
+                link: contact_link,
+                style: block.settings.button_style_2,
+                size: block.settings.button_size_2,
+                radius: block.settings.button_radius_2 -%}
             </div>
           {%- endif -%}
         {%- endfor -%}
@@ -318,6 +327,88 @@
       "name": "t:sections.visit.blocks.buttons.name",
       "limit": 1,
       "settings": [
+    {
+      "type": "select",
+      "id": "button_style",
+      "label": "t:sections.all.button_style.label",
+      "options": [
+        { "value": "filled", "label": "t:settings_schema.button_style.filled" },
+        { "value": "outline", "label": "t:settings_schema.button_style.outline" },
+        { "value": "link", "label": "t:settings_schema.button_style.link" },
+        { "value": "quiet", "label": "t:settings_schema.button_style.quiet" },
+        { "value": "arrow", "label": "t:settings_schema.button_style.arrow" },
+        { "value": "arrow_outline", "label": "t:settings_schema.button_style.arrow_outline" }
+      ],
+      "default": "filled"
+    },
+    {
+      "type": "select",
+      "id": "button_size",
+      "label": "t:sections.all.button_size.label",
+      "options": [
+        { "value": "inherit", "label": "t:settings_schema.button_size.inherit" },
+        { "value": "xs", "label": "t:settings_schema.button_size.xs" },
+        { "value": "sm", "label": "t:settings_schema.button_size.sm" },
+        { "value": "md", "label": "t:settings_schema.button_size.md" },
+        { "value": "lg", "label": "t:settings_schema.button_size.lg" },
+        { "value": "xl", "label": "t:settings_schema.button_size.xl" }
+      ],
+      "default": "inherit"
+    },
+    {
+      "type": "select",
+      "id": "button_radius",
+      "label": "t:sections.all.button_radius.label",
+      "options": [
+        { "value": "inherit", "label": "t:settings_schema.button_radius.inherit" },
+        { "value": "square", "label": "t:settings_schema.button_radius.square" },
+        { "value": "soft", "label": "t:settings_schema.button_radius.soft" },
+        { "value": "rounded", "label": "t:settings_schema.button_radius.rounded" },
+        { "value": "pill", "label": "t:settings_schema.button_radius.pill" }
+      ],
+      "default": "inherit"
+    },
+    {
+      "type": "select",
+      "id": "button_style_2",
+      "label": "t:sections.all.button_style_2.label",
+      "options": [
+        { "value": "filled", "label": "t:settings_schema.button_style.filled" },
+        { "value": "outline", "label": "t:settings_schema.button_style.outline" },
+        { "value": "link", "label": "t:settings_schema.button_style.link" },
+        { "value": "quiet", "label": "t:settings_schema.button_style.quiet" },
+        { "value": "arrow", "label": "t:settings_schema.button_style.arrow" },
+        { "value": "arrow_outline", "label": "t:settings_schema.button_style.arrow_outline" }
+      ],
+      "default": "link"
+    },
+    {
+      "type": "select",
+      "id": "button_size_2",
+      "label": "t:sections.all.button_size_2.label",
+      "options": [
+        { "value": "inherit", "label": "t:settings_schema.button_size.inherit" },
+        { "value": "xs", "label": "t:settings_schema.button_size.xs" },
+        { "value": "sm", "label": "t:settings_schema.button_size.sm" },
+        { "value": "md", "label": "t:settings_schema.button_size.md" },
+        { "value": "lg", "label": "t:settings_schema.button_size.lg" },
+        { "value": "xl", "label": "t:settings_schema.button_size.xl" }
+      ],
+      "default": "inherit"
+    },
+    {
+      "type": "select",
+      "id": "button_radius_2",
+      "label": "t:sections.all.button_radius_2.label",
+      "options": [
+        { "value": "inherit", "label": "t:settings_schema.button_radius.inherit" },
+        { "value": "square", "label": "t:settings_schema.button_radius.square" },
+        { "value": "soft", "label": "t:settings_schema.button_radius.soft" },
+        { "value": "rounded", "label": "t:settings_schema.button_radius.rounded" },
+        { "value": "pill", "label": "t:settings_schema.button_radius.pill" }
+      ],
+      "default": "inherit"
+    },
         {
           "type": "text",
           "id": "button_label",

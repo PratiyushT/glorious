@@ -584,16 +584,25 @@ a {
 
 /* ---- Buttons ----------------------------------------------------- */
 
+/* Every geometric value falls back to the theme setting, so a button that is
+   given nothing looks exactly as it always did. A per-button setting writes
+   the `--btn-*` property inline and wins — the same cascade as the section /
+   block alignment above: the global is the default, not the law. */
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.75em;
-  padding: var(--button-padding-y) var(--button-padding-x);
+  /* The design states 44px as the minimum tap height, and it is also the
+     target size WCAG asks for. `min-height` rather than a padding floor, so a
+     compact button still meets it without growing its type. */
+  min-block-size: 44px;
+  box-sizing: border-box;
+  padding: var(--btn-pad-y, var(--button-padding-y)) var(--btn-pad-x, var(--button-padding-x));
   border: var(--button-border-width) solid transparent;
-  border-radius: var(--button-radius);
+  border-radius: var(--btn-radius, var(--button-radius));
   font-family: var(--font-body);
-  font-size: var(--button-size);
+  font-size: var(--btn-font, var(--button-size));
   line-height: 1.2;
   text-transform: var(--button-transform);
   letter-spacing: var(--button-tracking);
@@ -644,18 +653,92 @@ a {
   border-color: var(--c-text);
 }
 
+/* "Inline, low weight. Size guides, policies." — the design's own note. Its
+   rule is gold at rest and gold on hover, which is what separates it from the
+   quiet link below; the theme had a single link style drawn in ink at 30% and
+   so shipped neither of the design's two. */
+/* The design sets its link variants a step down from the framed buttons —
+   12px at .16em against 13px at .15em — so they read as inline text rather
+   than as a button that lost its frame. */
+.btn--link,
+.btn--quiet,
+.btn--arrow:not(.btn--outline) {
+  font-size: var(--btn-font, calc(var(--button-size) - 1px));
+  letter-spacing: calc(var(--button-tracking) + 0.01em);
+}
+
 .btn--link {
   padding: 0;
   border: 0;
   background: none;
   color: var(--c-text);
-  border-bottom: var(--border-width) solid color-mix(in srgb, var(--c-text) 30%, transparent);
+  border-bottom: var(--border-width) solid color-mix(in srgb, var(--c-accent) 85%, transparent);
   border-radius: 0;
+  line-height: 2.6;
 }
 
 .btn--link:hover {
   color: var(--c-accent);
   border-color: var(--c-accent);
+}
+
+/* The same shape, stepped back: for the link that has to be present without
+   asking for attention. */
+.btn--quiet {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: color-mix(in srgb, var(--c-text) 55%, transparent);
+  border-bottom: var(--border-width) solid color-mix(in srgb, var(--c-text) 22%, transparent);
+  border-radius: 0;
+  line-height: 2.6;
+}
+
+.btn--quiet:hover {
+  color: var(--c-text);
+  border-color: var(--c-text);
+}
+
+/* "Navigational. Moves you somewhere." The arrow travels on hover — 11px to
+   19px of gap — and that travel is the whole variant, so it is the one place
+   the design's second easing curve is doing visible work. Colour keeps the
+   interaction register; only the gap gets the long ease-out. */
+.btn--arrow {
+  padding: 0;
+  border: 0;
+  background: none;
+  border-radius: 0;
+  color: var(--c-text);
+  gap: 11px;
+  transition: gap 0.35s var(--ease-out),
+              color var(--duration) var(--ease-ui);
+}
+
+.btn--arrow:hover {
+  gap: 19px;
+  color: var(--c-accent);
+}
+
+/* An arrow that also carries the outline's frame. The design gives it a
+   slightly tighter resting gap than the bare arrow and the same travel. */
+.btn--arrow.btn--outline {
+  padding: var(--btn-pad-y, var(--button-padding-y)) var(--btn-pad-x, var(--button-padding-x));
+  border: var(--button-border-width) solid color-mix(in srgb, var(--c-accent) 55%, transparent);
+  border-radius: var(--btn-radius, var(--button-radius));
+  gap: 12px;
+}
+
+.btn--arrow.btn--outline:hover {
+  gap: 20px;
+}
+
+/* Reduced motion keeps the colour change and drops the travel, rather than
+   dropping the affordance altogether. */
+@media (prefers-reduced-motion: reduce) {
+  .btn--arrow { transition: color var(--duration) var(--ease-ui); }
+  .btn--arrow:hover,
+  .btn--arrow.btn--outline:hover { gap: 11px; }
+  .btn--arrow.btn--outline:hover { gap: 12px; }
 }
 
 .btn-row {

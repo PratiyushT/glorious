@@ -495,6 +495,29 @@
       "solid": "Solid",
       "outline": "Outline",
       "text_link": "Text link"
+    },
+    "button_style": {
+      "filled": "Filled",
+      "outline": "Outline",
+      "link": "Link",
+      "quiet": "Quiet link",
+      "arrow": "Arrow",
+      "arrow_outline": "Arrow outline"
+    },
+    "button_size": {
+      "inherit": "Use theme setting",
+      "xs": "Extra small",
+      "sm": "Small",
+      "md": "Medium",
+      "lg": "Large",
+      "xl": "Extra large"
+    },
+    "button_radius": {
+      "inherit": "Use theme setting",
+      "square": "Square",
+      "soft": "Soft",
+      "rounded": "Rounded",
+      "pill": "Pill"
     }
   },
   "blocks": {
@@ -629,6 +652,24 @@
         "lg": "Large",
         "xl": "Extra large",
         "max": "Maximum"
+      },
+      "button_style": {
+        "label": "Button style"
+      },
+      "button_style_2": {
+        "label": "Second button style"
+      },
+      "button_size": {
+        "label": "Button size"
+      },
+      "button_size_2": {
+        "label": "Second button size"
+      },
+      "button_radius": {
+        "label": "Button shape"
+      },
+      "button_radius_2": {
+        "label": "Second button shape"
       }
     },
     "announcement_bar": {

@@ -197,22 +197,34 @@
       padding_x,padding_y,label_size — one decision, three settings before.
       A merchant wanting a larger button had to move all three and keep them
       in proportion, and nothing said they were one choice.
+
+      Two rungs are the design's own, stated in its geometry note — "Full
+      pill. 18px vertical padding, 34px horizontal" is `md`, and its compact
+      button is `sm`. The theme previously shipped 28/16/12, which is neither:
+      a little larger than the design's compact and a good deal smaller than
+      its default. `md` is now the design's figure, so a button left alone
+      matches the reference rather than sitting between its two sizes.
     {%- endcomment -%}
     {%- case step -%}
-      {%- when 'xs' -%}20,12,11
-      {%- when 'sm' -%}24,14,11
-      {%- when 'md' -%}28,16,12
-      {%- when 'lg' -%}34,19,13
-      {%- when 'xl' -%}40,22,14
+      {%- when 'xs' -%}20,11,11
+      {%- when 'sm' -%}26,13,12
+      {%- when 'md' -%}34,18,13
+      {%- when 'lg' -%}40,21,14
+      {%- when 'xl' -%}48,25,15
     {%- endcase -%}
 
   {%- when 'button_tracking' -%}
+    {%- comment -%}
+      `md` is the design's own .15em for a framed button. The link variants
+      step up to .16em, which base.css derives rather than storing twice.
+      It shipped at 160 and so set every button one notch loose.
+    {%- endcomment -%}
     {%- case step -%}
       {%- when 'xs' -%}60
-      {%- when 'sm' -%}110
-      {%- when 'md' -%}160
-      {%- when 'lg' -%}220
-      {%- when 'xl' -%}300
+      {%- when 'sm' -%}105
+      {%- when 'md' -%}150
+      {%- when 'lg' -%}210
+      {%- when 'xl' -%}290
     {%- endcase -%}
 
   {%- when 'button_border_width' -%}

@@ -221,8 +221,18 @@
       </div>
 
       {%- if button_block != blank and button_block.settings.button_label != blank -%}
+        {%- comment -%}
+          The second of two render sites for one block: CSS decides which is
+          visible per breakpoint. It has to carry `shopify_attributes` too, or
+          below 990px — where this is the one on screen — the theme editor
+          cannot select or highlight the button a merchant is looking at.
+        {%- endcomment -%}
         <div class="hero__cta-row">
-          <a class="hero__cta" href="{{ button_block.settings.button_link | default: routes.all_products_collection_url }}">
+          <a
+            class="hero__cta"
+            href="{{ button_block.settings.button_link | default: routes.all_products_collection_url }}"
+            {{ button_block.shopify_attributes }}
+          >
             {{ button_block.settings.button_label }}
             <span aria-hidden="true">&rarr;</span>
           </a>
