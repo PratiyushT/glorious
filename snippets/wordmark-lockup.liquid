@@ -24,9 +24,9 @@
   assign mark = settings.wordmark_mark
   if mark == blank
     if use_light
-      assign mark_url = 'glorious-mark-white.png' | asset_url
+      assign mark_url = 'wordmark-mark-white.png' | asset_url
     else
-      assign mark_url = 'glorious-mark-dark.png' | asset_url
+      assign mark_url = 'wordmark-mark-dark.png' | asset_url
     endif
   else
     assign mark_url = mark | image_url: width: 300

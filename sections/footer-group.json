@@ -7,15 +7,15 @@
       "settings": {
         "color_scheme": "scheme_2",
         "show_wordmark": true,
-        "copyright": "Glorious Jewelers · Irving, Texas"
+        "copyright": "Veylin · City, State"
       },
       "blocks": {
         "social": {
           "type": "social",
           "settings": {
-            "instagram": "https://www.instagram.com/gloriousjewelers/",
-            "facebook": "https://www.facebook.com/gloriousjewelers",
-            "pinterest": "https://in.pinterest.com/gloriousjewelers/"
+            "instagram": "https://www.instagram.com/",
+            "facebook": "https://www.facebook.com/",
+            "pinterest": "https://www.pinterest.com/"
           }
         },
         "navigation": {

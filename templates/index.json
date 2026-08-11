@@ -311,7 +311,7 @@
         "p1": {
           "type": "paragraph",
           "settings": {
-            "text": "<p>At Glorious, jewelry is more than an accessory — it is the silent storyteller of your journey. A diamond and antique 22-karat gold house in Irving, Texas, we blend the richness of Indian tradition with timeless elegance.</p>"
+            "text": "<p>Tell the story behind the shop here — where it began, what it makes, and who it is for. Two or three sentences carry further than a page of them.</p>"
           }
         },
         "p2": {
@@ -349,8 +349,8 @@
         "image": "shopify://shop_images/about.webp",
         "image_ratio": "4 / 5",
         "arch": true,
-        "caption_left": "The Glorious woman",
-        "caption_right": "Est. Irving, TX",
+        "caption_left": "Who it is for",
+        "caption_right": "Est. City, State",
         "padding_top": 76,
         "padding_bottom": 96
       }
@@ -441,7 +441,7 @@
       "settings": {
         "color_scheme": "scheme_1",
         "subheading": "Visit",
-        "heading": "The salon in Irving.",
+        "heading": "Visit the salon.",
         "text": "<p>Come in for a private viewing — sizing, bespoke consultations, and old-gold appraisals happen at the counter, unhurried.</p>",
         "layout": "image_first",
         "show_rule": true,

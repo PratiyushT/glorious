@@ -59,9 +59,9 @@
         "social": {
           "type": "social",
           "settings": {
-            "instagram": "https://www.instagram.com/gloriousjewelers/",
-            "facebook": "https://www.facebook.com/gloriousjewelers",
-            "pinterest": "https://in.pinterest.com/gloriousjewelers/"
+            "instagram": "https://www.instagram.com/",
+            "facebook": "https://www.facebook.com/",
+            "pinterest": "https://www.pinterest.com/"
           }
         }
       },
@@ -93,13 +93,13 @@
         "enabled": true,
         "color_scheme": "scheme_1",
         "delay": 2,
-        "eyebrow": "The Glorious List",
+        "eyebrow": "The Veylin List",
         "heading": "Take 10% Off Your First Order",
         "text": "Sign up for early access to new collections, private previews, and your welcome offer.",
-        "fine_print": "By subscribing you agree to receive email from Glorious Jewelers. Unsubscribe anytime.",
+        "fine_print": "By subscribing you agree to receive email from this shop. Unsubscribe anytime.",
         "success_heading": "You're on the List",
         "success_text": "Enjoy 10% off your first order with the code below.",
-        "offer_code": "GLORIOUS10"
+        "offer_code": "WELCOME10"
       }
     },
     "cookie-banner": {

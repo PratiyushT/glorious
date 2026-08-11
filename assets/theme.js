@@ -1,4 +1,4 @@
-/* Glorious — progressive enhancement only.
+/* Veylin — progressive enhancement only.
    Every section renders and functions with JavaScript disabled; this file adds
    the behaviour the markup hints at. No dependencies.
 
@@ -4066,7 +4066,16 @@
         var choice = btn.dataset.cookieChoice;
         var accepted = choice === 'all';
 
-        safeStore(function () { localStorage.setItem('glorious-cookies', choice); });
+        /* The key is the notice's own `data-storage-key`, not a literal. The
+           overlay controller reads that same attribute to decide whether this
+           visitor has answered already (see `storageKey` in registerOverlay),
+           so a literal here is two names for one fact — and renaming the theme
+           proved it: the attribute moved and this did not, which would have
+           left the notice writing one key and testing another, and so asking
+           every visitor again on every page. */
+        var notice = btn.closest('[data-storage-key]');
+        var key = notice && notice.dataset.storageKey;
+        if (key) safeStore(function () { localStorage.setItem(key, choice); });
 
         var api = window.Shopify && window.Shopify.customerPrivacy;
         if (api && typeof api.setTrackingConsent === 'function') {
