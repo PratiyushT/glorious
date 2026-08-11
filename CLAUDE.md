@@ -1959,6 +1959,24 @@ the quick-view disc, `--card-zoom`, the edge colour).
 - **The footer accordion opens one row at a time**, as the design does —
   opening a section closes whichever was open. That lives in `initFooter`, not
   in CSS.
+- **Never edit a theme file in place with a tool that writes a temp file
+  beside it.** `sed -i` does exactly that — it writes `sedXXXXXX` in the same
+  directory and renames it over the original — and `shopify theme dev` watches
+  those directories, so the watcher sees a new theme file and uploads it. A
+  `sed -i` across three sections and a block produced upload attempts for
+  `sections/sedqvvMWG`, `sections/seduudBTX`, `sections/sedWZvqks` and
+  `blocks/sedCm3KYF`, each followed by a delete. Nothing reached the store only
+  because the session was failing to authenticate at the time; with a working
+  session they would have landed on the remote theme as junk and then been
+  removed.
+
+  Nothing is left behind locally — `sed` renames its temp away — so `git
+  status` is clean afterwards and the only trace is in the dev server's log.
+  Which is what makes it worth writing down: the evidence disappears.
+
+  Use an editor that writes the file in place. The same caution applies to any
+  `python -c "... open(p,'w') ..."` that writes to a sibling path first, and to
+  editor swap files if one is ever pointed at this tree.
 - **Audit every `range` after touching one.** Shopify validates the two rules
   server-side and `theme check` does not, so a bad step only shows up as
   `Failed to Upload Theme Files` with `default must be a step in the range`.
