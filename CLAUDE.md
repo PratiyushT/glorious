@@ -260,6 +260,14 @@ see the search overlay below.
   queries because the hero is always full-bleed and full-height — its
   container *is* the viewport.
 
+  **The quick view carries the exceptions**, and both are about the viewport
+  rather than the panel. Its gallery takes a taller floor past 64.0625rem; and
+  its `details` scrolling mode is gated on `min-height: 40rem`, because whether
+  that arrangement is viable at all depends on how much vertical room there is
+  — a thing no container query can ask, since `container-type: size` needs a
+  height that does not depend on contents. Reach for a height query only with
+  that justification.
+
   The source design instructs mobile-first authoring with `min-width` queries.
   This theme is still mobile-first — every unprefixed declaration *is* the
   narrow-screen state, and `clamp()` floors are the mobile values — it just
@@ -1098,13 +1106,133 @@ at detached markup by the second piece. Responses are cached per URL.
 - **The gallery slides where the card cross-fades** — one track translated by
   whole slots. Double-click zooms to 2.2× at the point clicked, with drag,
   pinch, ctrl-wheel and the design's minimap. Changing slide resets the zoom.
-- **The gallery never inherits a taller details column's height.** In two-column
-  mode it fills, but never exceeds, the Quick View panel's visible block size;
-  its width still fills the left grid track. When the intrinsic grid fits two
-  26.25rem columns, `settings.quick_view_contained_media` applies that height
-  and keeps the gallery sticky as one default-on behavior while the panel
-  scrolls; disabling it removes both. The two-column trigger is the
-  `.quick-view__contents` container at 52.5rem, not a viewport guess.
+- **What scrolls in two columns is one setting of three — `quick_view_scroll` —
+  because the three are alternatives.**
+
+  - `panel` is the design's own: the modal is `max-height:94vh;overflow:auto`
+    and everything in it moves together. It carries no class.
+  - `media` caps the gallery to the panel's visible block size and keeps it
+    sticky there while the taller details column scrolls the panel past it, so
+    the gallery never inherits that column's height. Its width still fills the
+    left grid track.
+  - `details` is the **default and a departure made on request**: the panel
+    itself stops scrolling and only the middle of the details column moves.
+
+  It is a select rather than a second checkbox because two would offer four
+  combinations of which one is meaningless — with only the details scrolling
+  the panel does not scroll at all, so the gallery is capped to it by
+  construction and there is nothing left for a "keep it pinned" to do, and
+  nothing to be sticky against. Same rule the tax note is written to: "is it
+  on?" has exactly one answer. The two-column trigger in all three is the
+  `.quick-view__contents` container at 52.5rem, not a viewport guess; below it
+  the panel scrolls as a whole whichever is chosen.
+- **`details` pins the name, the price, Add to Bag, the reassurance line and
+  View full details. The axes and the specification are what scroll.**
+  `.quick-view__details` wraps that middle and is `display: contents` under the
+  other two modes, so it changes no geometry there whatever.
+
+  **It is gated on `min-height: 40rem` as well as on the container's width, and
+  that gate is not optional.** The pinned rows and the bar are a fixed cost —
+  measured, 290px of rows at 1280 wide, 312 at the narrowest two-column width,
+  about 46 more for a title that wraps, and a 74px bar — and the scroller is
+  only what is left. Where that remainder reaches zero the scroller collapses,
+  and **a zero-height scrollport shows nothing however much it holds**: every
+  axis and the whole specification would be invisible, with the panel no longer
+  scrolling to compensate. Measured at **932×430 — an iPhone Pro Max in
+  landscape, not a contrived window** — the container is 876px so two columns
+  fired and `.quick-view__details` came out **0px tall holding 823px**. It
+  shipped that way for one revision of this change and a review pass caught it;
+  the verification that missed it had checked that Add to Bag was reachable,
+  which it was, and never asked whether the axes were.
+
+  Below the gate the panel scrolls as a whole, which is `panel`'s behaviour and
+  known good. Just above it, at 1280×648, the region measures 163px against
+  823px of content — small but real, and never zero. It is a *media* query
+  because the arrangement depends on block size, which a container query cannot
+  ask: `container-type: size` needs a height independent of contents, and the
+  panel's is not.
+
+  Seven things are load-bearing, each documented beside its rule in `base.css`:
+
+  - **`.quick-view__frame`.** The column of exactly the panel's visible height
+    has to be a *descendant* of the element carrying `container-type`, never
+    that element itself — the `.row-carousel__frame` trap, hit again here. On
+    `.quick-view__contents` it parses, uploads and never fires; measurement is
+    what caught it, since every rule on a descendant applied and that one did
+    not. It is also what keeps the loading state safe: `theme.js` empties the
+    contents before adding `is-loading`, so the frame does not exist while the
+    diamond is on screen and no empty box can be given a screen of height.
+  - **`grid-template-rows: minmax(0, 1fr)`**, or the implicit `auto` row sizes
+    to its content first and a long details column grows it past the panel,
+    carrying View full details off the bottom of the screen.
+  - **`flex: 0 1 auto` on the scroller** — it shrinks but never grows, which is
+    what keeps `justify-content: center` meaningful.
+  - **`flex: none` on everything else in the column**, or the pinned rows give
+    way alongside the scroller and it is the title that shrinks. The scroller
+    beats that rule on specificity, (0,3,0) against (0,2,0), not on source
+    order, so neither can be moved and quietly lose.
+  - **The column keeps an `auto` overflow of its own** for the band the height
+    gate cannot reach — a title wrapping to three lines just past 40rem, say —
+    **and `justify-content: safe center` is what makes that reachable.** A
+    centred flex column splits its overflow across *both* ends and `scrollTop`
+    clamps at 0, so the start-side half is clipped away from every input. That
+    is the classic centred-overflow trap and it had shipped here: at 1280×400
+    the eyebrow sat 23px above the scroll origin with no way to reach it.
+    `safe` falls back to `start` exactly when the column overflows and is plain
+    `center` when it does not, so short-piece geometry is untouched.
+  - **The scroller grows sideways and is pulled back by the same amount**, so
+    the rows keep the width and x they have in every other mode. Two things
+    need that room: the focus ring, which reaches 5px out (`:focus-visible` is
+    a 2px stroke at a 3px offset) against the 2px a control sits inside the
+    region, and the scrollbar, which is subtracted from the content box and
+    would otherwise narrow every row by 11px and crowd the values against it.
+    The end margin gives back the ring's reach, 6px of air *and*
+    `--scrollbar-size`, derived from the token rather than typed. 22px in all,
+    against a column padding of at least 33.6px wherever two columns fit.
+    **`scrollbar-gutter: stable` is what keeps that honest** — the margin is
+    unconditional and a scrollbar is not, so without it a piece whose details
+    do not overflow would have its rows hanging 11px into the padding. It is
+    the one place in this theme the property belongs; the global note under
+    "Scrollbars" rules it out on `html`, where it would break theme.js's live
+    measurement, and nothing measures this one.
+  - **The panel keeps `overflow: auto`**, not `hidden`, so anything that does
+    overflow stays reachable rather than clipped.
+
+  **The region is a tab stop only when it actually scrolls, and `theme.js`
+  decides that by measuring.** A scroll container has to be reachable by
+  keyboard and nothing gives this one that for free: it holds focusable
+  children, which is exactly the case where Chrome's keyboard-focusable-
+  scrollers behaviour declines to add it to the tab order, and no other engine
+  adds it either. Tabbing its own controls is not a substitute — the
+  specification sits after every one of them, and each `<select>` axis eats the
+  arrow keys to change the variant, so the tail of the region was mouse-only.
+  `syncQuickDetails()` sets `tabindex`, `role` and the label when
+  `scrollHeight > clientHeight`, and takes all three off when it does not: a
+  stray tab stop on a region that cannot move is worse than none. Under the
+  other two modes the wrapper is `display: contents` and has no box, so both
+  values read 0 and the test is false by construction. It runs on fill and on
+  resize, since both thresholds it depends on move with the window.
+
+  Measured at 1280×900 against a six-axis piece: the panel is 823px and does
+  not scroll, the gallery is 748 (823 less the 75px bar), the details region
+  scrolls 406px, and the title, the price, Add to Bag, the bar and the gallery
+  all move **0**. A short piece's stack is *pixel-identical* to `panel` mode —
+  title at 247, Add to Bag at 523 in both — because the scroller only shrinks
+  and the column stays centred. A row measures 499.01px wide and 1.71px inside
+  the column whether the region scrolls or not, with 11px of air to the bar.
+
+  **The panel surface is always the full visible height here**, though, where
+  `panel` shrink-wraps a short piece to 715. That is the fixed frame height,
+  and it is the same thing `media` does (which is always 823 for any piece);
+  the stack inside lands on the same screen position either way, so what
+  changes is the porcelain around it. It cannot be given up without giving up
+  the gallery's minimum too: the gallery's `min-block-size: 0` is what lets it
+  take the row's height, so a shrink-wrapping frame would let a short piece
+  squeeze the well below the design's own floor.
+
+  At 420px wide every mode is identical: one column, both wrappers inert, the
+  panel scrolling. At 932×430 and at 1280×400 the height gate hands over to
+  that same whole-panel scroll, and every axis and spec row is reachable again.
 - Clarity, colour and certification are **theme settings** with the design's
   values as defaults, and the matching `custom.diamond_clarity_grade` /
   `custom.diamond_color_grade` / `custom.certification_lab` product metafield

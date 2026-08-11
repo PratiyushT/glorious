@@ -288,9 +288,12 @@
       "quick_view_enabled": {
         "label": "Enable quick view"
       },
-      "quick_view_contained_media": {
-        "label": "Cap and keep media visible",
-        "info": "In the two-column Quick View, fits media to the visible modal height and keeps it pinned while longer product details scroll."
+      "quick_view_scroll": {
+        "label": "Two-column scrolling",
+        "info": "What moves when a piece has more to say than the panel can hold. Only applies where there is room for two columns; below that the whole panel scrolls whichever is chosen.",
+        "panel": "The whole panel scrolls",
+        "media": "Pin the media, scroll the panel",
+        "details": "Scroll only the details"
       },
       "quick_view_add_label": {
         "label": "Add button label"

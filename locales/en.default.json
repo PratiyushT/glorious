@@ -67,6 +67,7 @@
     "quick_view_of": "Quick view: {{ title }}",
     "quick_view_loading": "Loading",
     "view_full_details": "View Full Details",
+    "details_region": "Product details",
     "previous_view": "Previous view",
     "next_view": "Next view",
     "go_to_view": "Go to view",

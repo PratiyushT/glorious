@@ -2568,6 +2568,39 @@
     return overlay ? overlay.el.querySelector('[data-quick-view-panel]') : null;
   }
 
+  /* The details region is a scroll container only where the merchant asked for
+     one and only in two columns, and only *then* should it be a tab stop.
+
+     A scroller has to be reachable by keyboard, and nothing gives this one that
+     for free: it holds focusable children, which is exactly the case where
+     Chrome's keyboard-focusable-scrollers behaviour declines to add it to the
+     tab order, and no other engine adds it either. Tabbing through its own
+     controls is not a substitute — the specification list sits after every one
+     of them, and each `<select>` axis eats the arrow keys to change the variant
+     — so the tail of the region would be mouse-only.
+
+     Which is why this is measured rather than rendered. Under the other two
+     modes the wrapper is `display: contents` and has no box at all, so both
+     values read 0 and the test is false; in two columns with nothing to scroll
+     it is false as well. A stray tab stop on a region that does not move is
+     worse than none, so the attributes come off again when it stops
+     overflowing. */
+  function syncQuickDetails() {
+    var panel = quickPanel();
+    var region = panel && panel.querySelector('.quick-view__details');
+    if (!region) return;
+
+    if (region.scrollHeight > region.clientHeight + 1) {
+      region.setAttribute('tabindex', '0');
+      region.setAttribute('role', 'group');
+      region.setAttribute('aria-label', region.dataset.label || '');
+    } else {
+      region.removeAttribute('tabindex');
+      region.removeAttribute('role');
+      region.removeAttribute('aria-label');
+    }
+  }
+
   function quickFill(html) {
     var panel = quickPanel();
     var host = panel && panel.querySelector('[data-quick-view-contents]');
@@ -2580,6 +2613,7 @@
     resetQuickZoom();
     paintQuick(0);
     blurUp(host, true);
+    syncQuickDetails();
   }
 
   function openQuickView(url) {
@@ -2881,6 +2915,12 @@
   }
 
   function initQuickView() {
+    /* Both thresholds the details region depends on — the panel's width and the
+       viewport's height — move on a resize, so whether it scrolls at all can
+       change under an open panel. Cheap enough to answer every time: one
+       lookup and two property reads. */
+    window.addEventListener('resize', syncQuickDetails, { passive: true });
+
     /* Any card's quick-view link opens the overlay instead of navigating. */
     document.addEventListener('click', function (event) {
       var trigger = event.target.closest && event.target.closest('[data-quick-view]');

@@ -5171,10 +5171,19 @@ a.nav-menu__address:hover {
   }
 }
 
-/* The auto-fit grid becomes two columns when both 26.25rem tracks fit. Only
-   then does the media stay pinned while taller product details scroll. Its
-   block size fills, but never exceeds, the panel's visible height instead of
-   inheriting the details column's full height; its inline size is untouched. */
+/* ---- Quick view: what scrolls in two columns ----
+   `settings.quick_view_scroll`, one choice of three. The auto-fit grid becomes
+   two columns when both 26.25rem tracks fit, and only then does either of the
+   two departures below apply — below that width the panel scrolls as a whole
+   whichever is chosen, which is the design's own behaviour.
+
+   `panel` is that design behaviour and carries no class at all: the modal is
+   `max-height:94vh;overflow:auto` and everything in it moves together.        */
+
+/* `media` — the media is capped to the panel's visible height and held there
+   while the taller details column scrolls the panel past it. Its block size
+   fills, but never exceeds, that height instead of inheriting the details
+   column's full height; its inline size is untouched. */
 @container quick-view (min-width: 52.5rem) {
   .quick-view--contained-media .quick-view__gallery {
     align-self: start;
@@ -5182,6 +5191,182 @@ a.nav-menu__address:hover {
     min-block-size: 0;
     position: sticky;
     top: 0;
+  }
+}
+
+/* `details` — the panel itself stops scrolling. Its contents become a column of
+   exactly the visible height, the gallery and the details row fill whatever is
+   left above the View full details bar, and the only thing that moves is the
+   middle of the details column: the axes and the specification. The piece's
+   name and price, Add to Bag, the reassurance line and View full details all
+   stay where they are.
+
+   The media is therefore capped by construction here, and nothing is sticky:
+   `position: sticky` needs a scrollport that moves, and this one does not.
+   That is precisely why this and `--contained-media` are one setting rather
+   than two checkboxes — see snippets/quick-view.liquid.
+
+   **It needs vertical room, and asks for it with a height query.** The pinned
+   rows and the bar are a fixed cost — measured, 290px of rows at 1280 wide
+   (312 at the narrowest two-column width, plus about 46 more for a title that
+   wraps) and a 74px bar — and whatever is left over is the scroller. Where that
+   remainder reaches zero the scroller collapses, and a zero-height scrollport
+   shows nothing however much it has to scroll: **every axis and the whole
+   specification would be invisible, with the panel no longer scrolling to
+   compensate.** That is not a hypothetical short window. Measured at 932×430,
+   an iPhone Pro Max held in landscape, the container is 876px so two columns
+   fire, and `.quick-view__details` came out **0px tall holding 823px** — no
+   swatch, no select, no specification, and nothing to scroll them into view.
+
+   So the mode is gated on `min-height: 40rem` as well, and below it the panel
+   scrolls as a whole, which is the design's own behaviour and known good. At
+   640px the frame is 560–584, the bar takes 74 and the rows 290–312, leaving
+   150–200px of scroller even with a two-line title; the cliff measures at about
+   500px. It is a *media* query because the arrangement depends on block size,
+   and a container query cannot ask that — `container-type: size` needs a height
+   that does not depend on contents, which the panel's does.
+
+   Seven things are load-bearing.
+
+   - **The column is `.quick-view__frame`, not `.quick-view__contents`.** The
+     contents element carries `container-type`, and a container cannot be styled
+     by a query against its own size — exactly as `.row-carousel` is measured
+     and `.row-carousel__frame` is laid out. On the contents this rule parses,
+     uploads and never fires; measured, every rule below it applied and it did
+     not. The frame's absence while the panel is loading is also what makes a
+     fixed height safe there: theme.js empties the contents before it shows the
+     diamond, so there is no box to give a screen's worth of height to.
+
+   - **`grid-template-rows: minmax(0, 1fr)`.** An implicit `auto` row is sized
+     to its content *first* and only stretched afterwards, so a long details
+     column would grow the row past the panel and carry the View full details
+     bar off the bottom of the screen. Naming the row caps it at the space the
+     flex gives it. It is inside the query, where the grid has exactly one row;
+     below it there are two and they must keep sizing to their content.
+
+   - **The scroller shrinks but never grows** (`flex: 0 1 auto`). The column
+     keeps `justify-content: center`, so a piece with two axes reads exactly as
+     it does today — centred, no scrollbar, nothing to notice. `1 1 auto` would
+     instead pin the name to the top and the button to the bottom of every
+     panel and open a hole between them: a change to every short piece to solve
+     a problem only long ones have.
+
+   - **Everything else in the column is `flex: none`**, or the pinned rows give
+     way alongside the scroller and it is the title that shrinks. The scroller
+     wins over that rule on specificity — (0,3,0) against (0,2,0) — rather than
+     on source order, so neither rule can be moved and quietly lose.
+
+   - **The column keeps an `auto` overflow of its own, as the last resort**, for
+     the band the height query cannot reach: a title that wraps to three lines,
+     say, on a viewport only just past 40rem. It cannot fire while the scroller
+     still has room to give, so no second scrollbar appears in the ordinary
+     case. **`justify-content: safe center` is what makes it work.** A centred
+     flex column splits its overflow across *both* ends, and `scrollTop` clamps
+     at 0 — so the start-side half is clipped and unreachable by any input,
+     which is the classic centred-overflow trap. `safe` falls back to `start`
+     exactly when the column overflows and behaves as plain `center` when it
+     does not, so the short-piece geometry is untouched.
+
+   - **The panel keeps `overflow: auto`.** The frame is exactly the panel's own
+     `max-height`, so nothing scrolls there in practice; leaving it `auto`
+     rather than `hidden` means a panel that somehow does overflow stays
+     reachable instead of having its contents clipped away.
+
+   - **The scroller grows sideways past the column and is pulled back by the
+     same amount, so the rows keep the exact width and x they have in every
+     other mode.** Two things need that room and neither may be paid for out of
+     the rows.
+
+     The **focus ring**: `overflow-y: auto` computes `overflow-x` to `auto` too,
+     so the region clips on the inline axis as well, and a control sits only 2px
+     inside it (`.quick-view__opt`'s 0.125rem) while `:focus-visible` is a 2px
+     stroke at a 3px offset and so reaches 5px out. Without the inset a focused
+     swatch loses its inline-start stroke and a full-width select loses both.
+     `scroll-padding-block` is that same 5px for the block axis, where it is
+     scrolling a control flush to the edge that clips the ring.
+
+     The **bar**: a classic scrollbar is taken out of the content box, so left
+     alone it would narrow every row by 11px and crowd the values against it.
+     The end margin therefore returns the ring's reach, the air *and*
+     `--scrollbar-size`, which is why it is derived from that token rather than
+     from a number typed here. 22px in total, against a column padding of at
+     least 33.6px at any width where two columns fit, so the bar always lands
+     inside the column's own margin with room to spare.
+
+     **`scrollbar-gutter: stable` is what makes that honest**, and it is the one
+     place in this theme where the property belongs. The margin is unconditional
+     but a scrollbar is not, so without it a piece whose details do not overflow
+     would have its rows 11px *wider* than the column and hanging into the
+     padding. Reserving the gutter keeps the content box identical in both
+     states — measured, a row is 499.01px wide and 1.71px inside the column
+     whether the region scrolls or not. The global note under "Scrollbars" rules
+     the property out on `html`, where it would break theme.js's live
+     measurement of the document scrollbar; nothing measures this one.
+
+     The give-back is the *declared* `--scrollbar-size`, and an engine is free
+     to reserve something else — Chrome reserves 10px here, since specifying
+     `scrollbar-width` makes it ignore the `::-webkit-scrollbar` width. The
+     difference is that one pixel, and it lands in the column's 48px of padding
+     rather than anywhere it can be seen.
+
+   .quick-view__details is `display: contents` everywhere else, so under the
+   other two modes it changes no geometry whatever: its rows stay flex items of
+   .quick-view__info exactly as they were before it existed.                  */
+.quick-view__details {
+  display: contents;
+}
+
+@media (min-height: 40rem) {
+  @container quick-view (min-width: 52.5rem) {
+    .quick-view--scroll-details .quick-view__frame {
+      display: flex;
+      flex-direction: column;
+      block-size: var(--qv-visible-height);
+    }
+
+    .quick-view--scroll-details .quick-view__grid {
+      flex: 1 1 auto;
+      grid-template-rows: minmax(0, 1fr);
+      min-block-size: 0;
+    }
+
+    .quick-view--scroll-details .quick-view__gallery {
+      min-block-size: 0;
+    }
+
+    .quick-view--scroll-details .quick-view__info {
+      justify-content: safe center;
+      min-block-size: 0;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+    }
+
+    .quick-view--scroll-details .quick-view__info > * {
+      flex: none;
+    }
+
+    .quick-view--scroll-details .quick-view__info > .quick-view__details {
+      /* The focus ring's own reach — a 2px stroke at a 3px offset. */
+      --qv-details-ring: 0.3125rem;
+      /* Air between the rows and the bar. */
+      --qv-details-air: 0.375rem;
+
+      display: block;
+      flex: 0 1 auto;
+      min-block-size: 0;
+      padding-inline-start: var(--qv-details-ring);
+      padding-inline-end: calc(var(--qv-details-ring) + var(--qv-details-air));
+      margin-inline-start: calc(var(--qv-details-ring) * -1);
+      margin-inline-end: calc((var(--qv-details-ring) + var(--qv-details-air) + var(--scrollbar-size)) * -1);
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      scrollbar-gutter: stable;
+      scroll-padding-block: var(--qv-details-ring);
+    }
+
+    .quick-view--scroll-details .quick-view__full {
+      flex: none;
+    }
   }
 }
 

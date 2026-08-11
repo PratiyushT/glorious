@@ -215,6 +215,22 @@
   assign add_label = settings.quick_view_add_label | default: 'Add to Bag'
 -%}
 
+{%- comment -%}
+  `.quick-view__frame` exists to be laid out, because `.quick-view__contents`
+  exists to be measured — the same shape as `.row-carousel__frame`, and for the
+  same reason. **A container cannot be styled by a query against its own size.**
+  Where the merchant has asked for only the details to scroll, the row and the
+  View full details bar become a column of exactly the panel's visible height,
+  and that column has to be a *descendant* of the element carrying
+  `container-type`, not the element itself. Putting it on the contents looks
+  right, passes theme check, and simply never fires — measured: the rules on
+  every descendant applied and that one did not.
+
+  It is also what keeps the loading state safe. theme.js empties the contents
+  before it adds `is-loading`, so while the diamond is on screen this element
+  does not exist and nothing can give an empty box a screen's worth of height.
+{%- endcomment -%}
+<div class="quick-view__frame">
 <div class="quick-view__grid">
   <div class="quick-view__gallery" data-quick-gallery{% if zoom_base != blank %} style="--qv-zoom-base: {{ zoom_base }};"{% endif %}>
     {%- if slide_count > 0 -%}
@@ -361,6 +377,17 @@
       <span data-qv-price>{{ current_variant.price | money }}</span>{% render 'tax-note' %}
     </div>
 
+    {%- comment -%}
+      What scrolls, where the merchant has asked for only the details to.
+
+      The piece's name, its price and the two things a visitor does with it —
+      Add to Bag and View full details — stay put; the axes and the
+      specification are what moves. The wrapper is `display: contents` in every
+      other case, so it changes no geometry at all under the design's own
+      whole-panel scroll: the rows remain flex items of .quick-view__info
+      exactly as they were before it existed.
+    {%- endcomment -%}
+    <div class="quick-view__details" data-label="{{ 'products.details_region' | t | escape }}">
     {%- if has_options -%}
       {%- for position in option_order -%}
         {%- liquid
@@ -599,6 +626,7 @@
         </div>
       {%- endif -%}
     </dl>
+    </div>
 
     {%- comment -%}
       One button, always — the rows above are what choose the piece now, so the
@@ -665,3 +693,4 @@
   <span>{{ 'products.view_full_details' | t }}</span>
   <span class="quick-view__full-arrow" aria-hidden="true">&rarr;</span>
 </a>
+</div>

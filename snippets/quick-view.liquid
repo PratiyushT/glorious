@@ -15,13 +15,34 @@
   scheme goes on the panel.
 {%- endcomment -%}
 
+{%- liquid
+  comment
+    `quick_view_scroll` is one choice of three because the three are alternatives
+    — the same reason the tax note has exactly one switch. Two checkboxes would
+    offer four combinations of which one is meaningless: with only the details
+    scrolling the panel does not scroll at all, so the media is capped to it by
+    construction and there is nothing left for a "keep it pinned" to do.
+
+    `panel` is the design's own — the modal is `max-height:94vh;overflow:auto`
+    and everything in it moves together — and so carries no class at all.
+  endcomment
+  case settings.quick_view_scroll
+    when 'panel'
+      assign qv_scroll_class = ''
+    when 'media'
+      assign qv_scroll_class = ' quick-view--contained-media'
+    else
+      assign qv_scroll_class = ' quick-view--scroll-details'
+  endcase
+-%}
+
 <div class="overlay overlay--quick" data-overlay="quick-view" data-overlay-modal hidden>
   <button class="overlay__veil" type="button" data-overlay-close="quick-view">
     <span class="visually-hidden">{{ 'navigation.close' | t }}</span>
   </button>
 
   <div
-    class="quick-view{% unless settings.quick_view_contained_media == false %} quick-view--contained-media{% endunless %} scheme-{{ settings.quick_view_color_scheme }}"
+    class="quick-view{{ qv_scroll_class }} scheme-{{ settings.quick_view_color_scheme }}"
     role="dialog"
     aria-modal="true"
     aria-label="{{ 'products.quick_view' | t }}"

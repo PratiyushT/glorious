@@ -814,11 +814,25 @@
         "default": true
       },
       {
-        "type": "checkbox",
-        "id": "quick_view_contained_media",
-        "label": "t:settings_schema.quick_view.quick_view_contained_media.label",
-        "info": "t:settings_schema.quick_view.quick_view_contained_media.info",
-        "default": true
+        "type": "select",
+        "id": "quick_view_scroll",
+        "label": "t:settings_schema.quick_view.quick_view_scroll.label",
+        "info": "t:settings_schema.quick_view.quick_view_scroll.info",
+        "options": [
+          {
+            "value": "panel",
+            "label": "t:settings_schema.quick_view.quick_view_scroll.panel"
+          },
+          {
+            "value": "media",
+            "label": "t:settings_schema.quick_view.quick_view_scroll.media"
+          },
+          {
+            "value": "details",
+            "label": "t:settings_schema.quick_view.quick_view_scroll.details"
+          }
+        ],
+        "default": "details"
       },
       {
         "type": "color_scheme",
