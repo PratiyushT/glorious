@@ -588,26 +588,40 @@ Six rungs is six.
   against `84/120`. Most Loved (`72/72`) and The Craft (`88/88` against 90) had
   happened to land close, which is what kept it from being obvious.
 
-- **The rungs are the design's own ceilings**, deduplicated across its home,
-  about, lookbook and footer pages. Measured against the design at 1280px, six
-  of the nine padded sections land **exactly** — Most Loved, Our Products,
-  Promises, The Craft, About and the Lookbook — where before the conversion
-  they were 13–20px short. Three take the nearest rung:
+- **Every rung is fluid, and no two are alike at any width.** This is a
+  requirement, not an accident, and the first version of the scale failed it in
+  three ways that only a rendered page revealed: `2xs` was a flat `30px` and so
+  not responsive at all; `xl` and `lg` shared a 56px floor and were **identical
+  on any phone**; and `sm` and `md` shared a 6vw slope, so they were the same
+  value from 1024 to 1280 and parted only at the ceiling. Four of seven sizes
+  were distinguishable on mobile.
 
-  | section | design | rung | at 1280 | at 1440 |
-  | --- | --- | --- | --- | --- |
-  | Testimonials above | `clamp(72,10vw,130)` | `max` | −12.8 | −10 |
-  | Visit above | `clamp(40,7vw,84)` | `sm` | −7.2 | **exact** |
-  | Footer above | `clamp(44,6vw,70)` | `xs` | −6 | **exact** |
+  The scale is built on the design's own two relationships rather than round
+  numbers — slope ≈ ceiling / 13.5 and floor ≈ 0.58 × ceiling, which is what
+  its own triples do (96 → 7vw, 120 → 9vw, 70 → 5vw). Ceilings step by roughly
+  1.2–1.4×, and the floors step **18 / 28 / 40 / 48 / 56 / 64 / 72** so the
+  difference shows on a 360px phone first rather than only on a desktop.
+  Smallest gap between adjacent rungs at any width: **6px**.
 
-  Visit and the footer differ only in slope, and both share the design's
-  ceiling, so they are exact wherever the clamp is capped and a little light
-  through the middle of the range. Testimonials is the one real ceiling loss:
-  130 is a rung of its own or it is 120.
+  | width | 360 | 768 | 1024 | 1440 | 1920 |
+  | --- | --- | --- | --- | --- | --- |
+  | `2xs` | 18 | 18 | 23 | 30 | 30 |
+  | `xs` | 28 | 28 | 36 | 50 | 50 |
+  | `sm` | 40 | 40 | 51 | 70 | 70 |
+  | `md` | 48 | 48 | 61 | 86 | 90 |
+  | `lg` | 56 | 56 | 72 | 96 | 96 |
+  | `xl` | 64 | 64 | 82 | 110 | 110 |
+  | `max` | 72 | 72 | 92 | 120 | 120 |
 
-- **`2xs` is a flat `30px`, not a clamp**, because the design's footer below is
-  a flat 30px. A gap that small has nothing to gain by shrinking on a phone,
-  and the scale would be lying if it pretended otherwise.
+- **Two of the design's figures are not rungs**, because keeping them is what
+  made the scale collide. Visit above was `clamp(40,7vw,84)` and takes `md`
+  (+6 at the ceiling); Testimonials above was `clamp(72,10vw,130)` and takes
+  `max` (−10). Everything else lands on the design's own ceiling: Most Loved,
+  The Craft, Our Products, Promises, About, the Lookbook and the footer.
+
+- **The footer below is fluid here and flat in the design.** The design states
+  a literal `30px`; `2xs` eases it to 18 on a phone. A deliberate departure, on
+  the rule that everything in this theme stays responsive.
 
 - **The footer is converted with everything else**, and the reason is worth
   keeping. It was left on its range in the first pass, on the argument that its

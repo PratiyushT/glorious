@@ -76,8 +76,8 @@
         "show_view_all": true,
         "view_all_label": "View All",
         "full_height": true,
-        "padding_top": "xs",
-        "padding_bottom": "xs"
+        "padding_top": "sm",
+        "padding_bottom": "sm"
       }
     },
     "lookbook": {
@@ -399,7 +399,7 @@
         "autorotate": true,
         "interval": 7,
         "padding_top": "max",
-        "padding_bottom": "xs"
+        "padding_bottom": "sm"
       }
     },
     "visit": {
@@ -451,7 +451,7 @@
         "arch": true,
         "caption_left": "The salon",
         "caption_right": "By appointment or walk-in",
-        "padding_top": "sm",
+        "padding_top": "md",
         "padding_bottom": "max"
       }
     }

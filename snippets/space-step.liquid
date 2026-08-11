@@ -20,17 +20,36 @@
   4px, and every rung below is a triple the design states verbatim somewhere:
 
     none    0
-    2xs     30px                     Footer below — flat in the design, not a
-                                     clamp: a 30px gap has nothing to gain by
-                                     shrinking on a phone
-    xs      clamp(40px, 5vw,  70px)  Footer above; Testimonials below
-    sm      clamp(44px, 6vw,  84px)  Visit above; About pillars, About salon
-    md      clamp(48px, 6vw,  90px)  The Craft; About craft band
-    lg      clamp(56px, 7vw,  96px)  Our Products / Promises / About above;
-                                     Find by Shape; Lookbook above
-    xl      clamp(56px, 8vw, 110px)  Lookbook below; About salon below
-    max     clamp(72px, 9vw, 120px)  Our Products / Promises / About below;
-                                     Visit below
+    2xs     clamp(18px, 2.2vw,  30px)  Footer below
+    xs      clamp(28px, 3.5vw,  50px)
+    sm      clamp(40px,   5vw,  70px)  Footer above; Testimonials below
+    md      clamp(48px,   6vw,  90px)  The Craft; About craft band; Visit above
+    lg      clamp(56px,   7vw,  96px)  Our Products / Promises / About above;
+                                       Find by Shape; Lookbook above
+    xl      clamp(64px,   8vw, 110px)  Lookbook below; About salon below
+    max     clamp(72px,   9vw, 120px)  Our Products / Promises / About below;
+                                       Visit below
+
+  **Every rung is fluid and every rung differs from its neighbours at every
+  width**, which the first version of this scale did not manage. Measured, it
+  had three defects and all three showed only on a real page: `2xs` was a flat
+  30px and so not responsive at all; `xl` and `lg` shared a 56px floor and were
+  *identical* on any phone; and `sm` and `md` shared a 6vw slope, so they were
+  the same value from 1024 to 1280 and separated only at the ceiling. Four of
+  seven sizes were distinguishable on mobile.
+
+  The scale is built on the design's own two relationships rather than on
+  round numbers — slope is about ceiling/13.5 and the floor about 0.58 of the
+  ceiling, which is what its own triples do (96 -> 7vw, 120 -> 9vw, 70 -> 5vw).
+  Ceilings step by roughly 1.2-1.4x so no two rungs read alike, and the floors
+  step 18/28/40/48/56/64/72 so the difference is visible on a 360px phone
+  first, not only on a desktop.
+
+  Two of the design's figures are not rungs any more, because keeping them was
+  what made the scale collide: About's 84 (Visit above takes `md`, +6 at the
+  ceiling) and Testimonials' 130 above (takes `max`, -10). The footer below is
+  a flat 30px in the design and is fluid here on request — 30 at the ceiling,
+  easing to 18 on a phone.
 
   Three of the design's own figures are not rungs and take the nearest:
   Most Loved's 72 and About's story 80 sit 2 and 4px off `xs` and `sm`, and
@@ -53,11 +72,11 @@
 
 {%- case step -%}
   {%- when 'none' -%}0px
-  {%- when '2xs' -%}30px
-  {%- when 'xs' -%}clamp(40px, 5vw, 70px)
-  {%- when 'sm' -%}clamp(44px, 6vw, 84px)
+  {%- when '2xs' -%}clamp(18px, 2.2vw, 30px)
+  {%- when 'xs' -%}clamp(28px, 3.5vw, 50px)
+  {%- when 'sm' -%}clamp(40px, 5vw, 70px)
   {%- when 'md' -%}clamp(48px, 6vw, 90px)
   {%- when 'lg' -%}clamp(56px, 7vw, 96px)
-  {%- when 'xl' -%}clamp(56px, 8vw, 110px)
+  {%- when 'xl' -%}clamp(64px, 8vw, 110px)
   {%- when 'max' -%}clamp(72px, 9vw, 120px)
 {%- endcase -%}
