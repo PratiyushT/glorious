@@ -5564,21 +5564,20 @@ a.nav-menu__address:hover {
 
 /* ---- Quick view: waiting, and where the entrance goes ----
    The overlay opens on the click rather than on the response, so there is
-   always a panel to look at while the piece is on its way.
+   always a loading mark to look at while the piece is on its way.
 
-   **The panel does not play its entrance while it is waiting.** The design's
-   modal is never on screen at a size other than its final one — its data is
-   local, so it mounts with the piece already in it. Here the markup arrives
-   afterwards, and the panel was playing `gj-modal-in` against the skeleton and
-   then resizing once the piece landed: measured 473px → 885px, a 412px jump,
-   after the 450ms entrance had already finished. No skeleton size can fix that,
-   because the height is set by the info column and varies by piece.
+   **There is no panel surface while it is waiting.** The design's modal is
+   never on screen at a size other than its final one — its data is local, so it
+   mounts with the piece already in it. Here the markup arrives afterwards, and
+   showing the loader inside the empty panel made a small box become the full
+   two-column product view. Reserving only the gallery height could not prevent
+   that width and content-height jump.
 
-   So the wait is a plain fade, and the entrance is saved for the panel at its
-   real size. Removing `is-loading` changes the computed `animation-name` from
-   `gj-fade-in` to `gj-modal-in`, which restarts it at time 0 — one entrance,
-   the design's own, at the right geometry, with the piece in it. The panel is
-   never seen changing size.
+   So `is-loading` reduces the panel wrapper to a transparent carrier for the
+   mark and moves its close control to the overlay corner. Removing the class
+   changes the computed `animation-name` from `gj-fade-in` to `gj-modal-in`,
+   which restarts it at time 0 — the first visible panel is the real one, with
+   the piece already in it, and it plays the design's entrance exactly once.
 
    Specificity is what makes this safe, and it is deliberate:
    `.overlay.is-closing .quick-view` (0,3,0) still outranks
@@ -5589,33 +5588,35 @@ a.nav-menu__address:hover {
    compounded entrances, and `.quick-view__close` is a sibling of the contents
    so it would fall out of an entrance the design includes.
 
-   The skeleton stands in for the gallery, so it takes the gallery's own two
-   clamps rather than only the narrow one.                                  */
+   The loading close stays present and focusable: the veil can dismiss a
+   pointer click, but keyboard focus still needs a visible place to land.    */
 .quick-view.is-loading {
+  width: auto;
+  max-height: none;
+  overflow: visible;
+  background: transparent;
   animation: gj-fade-in 0.3s ease both;
+}
+
+.quick-view.is-loading .quick-view__close {
+  position: fixed;
+  top: clamp(0.625rem, 3vw, 2.5rem);
+  inset-inline-end: clamp(0.625rem, 3vw, 2.5rem);
 }
 
 .quick-view__loading {
   display: none;
   margin: 0;
-  min-height: clamp(21.25rem, 95vw, 30rem);
 }
 
-@media (min-width: 64.0625rem) {
-  .quick-view__loading {
-    min-height: clamp(21.25rem, 95vw, 40rem);
-  }
-}
-
-/* The wait is the theme's one loading mark on the panel's own well, not a
-   shimmering block standing in for markup that has not arrived: nothing here
-   knows the shape of the piece it is fetching, and a skeleton that guesses
-   wrong is worse than a mark that admits it is waiting. The box keeps the
-   gallery's clamps above, so the panel is already the size it will be. */
+/* The wait is the theme's one loading mark directly on the veil, not a
+   shimmering block or an empty panel standing in for markup that has not
+   arrived. Nothing here knows the final product height, so the mark admits it
+   is waiting and the panel waits until it knows its real geometry. */
 .quick-view.is-loading .quick-view__loading {
   display: grid;
   place-items: center;
-  background: var(--qv-well);
+  background: transparent;
 }
 
 /* ---- Overlays: cookie notice -------------------------------------- */

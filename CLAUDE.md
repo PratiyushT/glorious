@@ -1013,22 +1013,22 @@ at detached markup by the second piece. Responses are cached per URL.
   never a wait with nothing on screen. The trigger was a real link to the
   product before the script touched it and goes back to being one if the
   request fails.
-- **The entrance is held until the piece lands, and that is the whole of the
-  open animation's fidelity.** Every value in it is already exact to the design
-  — `gj-modal-in` is `gjModal` keyframe for keyframe at `.45s
+- **The entrance is held until the piece lands, and there is no panel surface
+  around the wait.** Every entrance value is already exact to the design —
+  `gj-modal-in` is `gjModal` keyframe for keyframe at `.45s
   cubic-bezier(.22,1,.36,1) both`, the veil is `gjFadeIn .3s ease both`, and the
   geometry (1300px, 94vh, z-index 250, veil at 62% and `blur(8px)`) matches. The
-  defect was *when* it played: the panel animated against the wait and then
-  resized once the markup arrived — measured **473px → 885px, after the 450ms
-  entrance had already finished**. No size for the waiting box fixes that,
-  because the height is set by the info column and varies by piece.
+  defect was *when* it played: an empty loading box was visible at its intrinsic
+  size, then became the much larger two-column panel when the response arrived.
+  Its height is set by the info column and varies by piece, so guessing a
+  placeholder size merely moves the jump.
 
-  So `.quick-view.is-loading` carries a plain `gj-fade-in` and nothing else.
-  Dropping the class flips the computed `animation-name` to `gj-modal-in`, which
-  restarts it at time 0 — one entrance, at the real geometry, with the piece in
-  it, exactly as the design's modal always mounts. The cached path already did
-  this and now both converge. Verified: `gj-fade-in` at 480px while loading,
-  `gj-modal-in` at 968px on fill.
+  `.quick-view.is-loading` is therefore a transparent, content-sized carrier
+  for the diamond, with the close control fixed at the overlay corner. Dropping
+  the class flips `animation-name` from `gj-fade-in` to `gj-modal-in`, which
+  restarts it at time 0 — the first visible panel has its real geometry and its
+  product already in it. The cached and fetched paths both converge on that one
+  entrance.
 
   **The specificity is load-bearing.** `.overlay.is-closing .quick-view` (0,3,0)
   still outranks `.quick-view.is-loading` (0,2,0), so closing mid-fetch plays
@@ -1242,8 +1242,8 @@ flight, and whatever waits next. `{% render 'loader', label: text, size: 'sm' %}
 - **In the quick view it replaces a shimmering skeleton.** Nothing in that panel
   knows the shape of the piece it is fetching, so a skeleton was guessing, and a
   skeleton that guesses wrong is worse than a mark that admits it is waiting.
-  The box keeps the gallery's own two clamps, which is what holds the panel at
-  the size it will be — see the entrance note above, which depends on it.
+  The diamond sits directly on the veil; no panel surface is shown until the
+  product markup establishes its real size — see the entrance note above.
 - **In the search overlay it sits in the field, not in the results.** Nothing a
   visitor is already reading moves while the next query flies. It is out of
   flow, or the field would lose width the moment it appeared and the caret would
