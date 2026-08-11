@@ -288,6 +288,10 @@
       "quick_view_enabled": {
         "label": "Enable quick view"
       },
+      "quick_view_contained_media": {
+        "label": "Cap and keep media visible",
+        "info": "In the two-column Quick View, fits media to the visible modal height and keeps it pinned while longer product details scroll."
+      },
       "quick_view_add_label": {
         "label": "Add button label"
       },

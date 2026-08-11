@@ -4864,6 +4864,8 @@ a.nav-menu__address:hover {
 /* ---- Overlays: newsletter modal ----------------------------------- */
 
 .overlay {
+  --overlay-pad: clamp(0.625rem, 3vw, 2.5rem);
+
   position: fixed;
   inset: 0;
   z-index: 240;
@@ -4873,7 +4875,7 @@ a.nav-menu__address:hover {
      0.6rem, which is 9.6px. Shared with the newsletter popup deliberately —
      Newsletter Popup.dc.html states the same clamp as Quick View.dc.html, so
      scoping the correction to .overlay--quick would leave the newsletter wrong. */
-  padding: clamp(0.625rem, 3vw, 2.5rem);
+  padding: var(--overlay-pad);
 }
 
 .overlay[hidden] {
@@ -5089,15 +5091,25 @@ a.nav-menu__address:hover {
   --qv-price-size: 1.063rem;   /* 17px */
   --qv-pad: clamp(1.375rem, 4vw, 3rem);
   --qv-zoom-base: 1;
+  /* The panel must fit inside the overlay's actual visible content box, not
+     merely inside 94% of a viewport whose outer padding still has to fit. */
+  --qv-visible-height: min(94vh, calc(100vh - var(--overlay-pad) - var(--overlay-pad)));
 
   position: relative;
   width: min(81.25rem, 100%);
   max-height: 94vh;
+  max-height: var(--qv-visible-height);
   overflow: auto;
   overscroll-behavior: contain;
   background: var(--c-bg);
   color: var(--c-text);
   animation: gj-modal-in 0.45s var(--ease) both;
+}
+
+@supports (height: 100dvh) {
+  .quick-view {
+    --qv-visible-height: min(94vh, calc(100dvh - var(--overlay-pad) - var(--overlay-pad)));
+  }
 }
 
 .overlay.is-closing .quick-view {
@@ -5138,6 +5150,11 @@ a.nav-menu__address:hover {
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 26.25rem), 1fr));
 }
 
+.quick-view__contents {
+  container-name: quick-view;
+  container-type: inline-size;
+}
+
 .quick-view__gallery {
   position: relative;
   min-height: clamp(21.25rem, 95vw, 30rem);
@@ -5151,6 +5168,20 @@ a.nav-menu__address:hover {
 @media (min-width: 64.0625rem) {
   .quick-view__gallery {
     min-height: clamp(21.25rem, 95vw, 40rem);
+  }
+}
+
+/* The auto-fit grid becomes two columns when both 26.25rem tracks fit. Only
+   then does the media stay pinned while taller product details scroll. Its
+   block size fills, but never exceeds, the panel's visible height instead of
+   inheriting the details column's full height; its inline size is untouched. */
+@container quick-view (min-width: 52.5rem) {
+  .quick-view--contained-media .quick-view__gallery {
+    align-self: start;
+    block-size: var(--qv-visible-height);
+    min-block-size: 0;
+    position: sticky;
+    top: 0;
   }
 }
 

@@ -814,6 +814,13 @@
         "default": true
       },
       {
+        "type": "checkbox",
+        "id": "quick_view_contained_media",
+        "label": "t:settings_schema.quick_view.quick_view_contained_media.label",
+        "info": "t:settings_schema.quick_view.quick_view_contained_media.info",
+        "default": true
+      },
+      {
         "type": "color_scheme",
         "id": "quick_view_color_scheme",
         "label": "t:sections.all.color_scheme.label",

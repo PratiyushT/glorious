@@ -1098,6 +1098,13 @@ at detached markup by the second piece. Responses are cached per URL.
 - **The gallery slides where the card cross-fades** — one track translated by
   whole slots. Double-click zooms to 2.2× at the point clicked, with drag,
   pinch, ctrl-wheel and the design's minimap. Changing slide resets the zoom.
+- **The gallery never inherits a taller details column's height.** In two-column
+  mode it fills, but never exceeds, the Quick View panel's visible block size;
+  its width still fills the left grid track. When the intrinsic grid fits two
+  26.25rem columns, `settings.quick_view_contained_media` applies that height
+  and keeps the gallery sticky as one default-on behavior while the panel
+  scrolls; disabling it removes both. The two-column trigger is the
+  `.quick-view__contents` container at 52.5rem, not a viewport guess.
 - Clarity, colour and certification are **theme settings** with the design's
   values as defaults, and the matching `custom.diamond_clarity_grade` /
   `custom.diamond_color_grade` / `custom.certification_lab` product metafield
