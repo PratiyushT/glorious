@@ -18,6 +18,44 @@ this file that explains a feature and the code that implements it must never
 arrive separately: the note is how the next pass learns why a number is what it
 is.
 
+### Headings
+
+**The homepage had no `<h1>`, and four of its section titles were not headings
+at all.** Measured before the fix: `h1: 0`, and Most Loved, Our Products, Our
+Promises and About Us each rendered `<div class="display">`. The only real
+headings below them were the five `<h3>` promise cards — so the document's
+outline started at level three, under nothing.
+
+- **The wordmark is the `h1`.** It was a `div` carrying `role="img"` and an
+  `aria-label`, which announces a picture rather than a heading. It is an `h1`
+  now, with the animated letters `aria-hidden` and a single
+  `.visually-hidden` text node supplying the accessible name — verified as
+  `"VEYLIN"`, not the doubled string `textContent` reports.
+
+  **Spans, not divs, inside it.** An `h1` takes phrasing content and a nested
+  `div` is invalid HTML; the theme has a store review to pass. The letters stay
+  one element each, since the entrance animates them 60ms apart off `--letter`.
+
+- **`.display` needs `margin-block: 0`, and that is load-bearing.** As a `div`
+  it had no default margin and needed none. As an `h1`/`h2` the user agent adds
+  0.83em top and bottom, which stacks on the `.display + .grid-auto` rule and
+  spaces every section title differently from its neighbour. This is the same
+  shape as the note about `.display` having no bottom gap of its own.
+
+- **The level is a merchant setting**, on `blocks/title.liquid` and on the
+  three sections that render `.display` from a section setting — h1 / h2 / h3 /
+  not-a-heading, defaulting to h2. A Liquid guard rejects anything else rather
+  than interpolating an arbitrary tag name.
+
+  `"tag": null` on the title block still holds and matters more than before:
+  the block owns its one element, a generated wrapper would break the
+  `.display + .grid-auto` adjacency, and changing the tag keeps both — it is
+  still a single element, and the gap rule matches on the class.
+
+Verified on the page: **one `h1`, no non-heading `.display` left, and no level
+jumps** — H1 → H2 → H3 throughout. The hero still fits its viewport exactly at
+1280×910 and 390×844, at zoom 1, with no horizontal overflow.
+
 ### Colour
 
 **Every colour a merchant sees is reachable from a setting.** It was not:

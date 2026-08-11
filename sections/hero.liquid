@@ -67,16 +67,29 @@
     </div>
   {%- endif -%}
 
+  {%- comment -%}
+    The wordmark is the page's heading, not a picture of one. It was a `div`
+    carrying `role="img"`, so the homepage announced no heading at all — and a
+    document whose only headings are the five `h3` promise cards has a
+    hierarchy that starts at level three.
+
+    Spans rather than divs because an `h1` takes phrasing content: nesting a
+    `div` in it is invalid HTML, and this theme has a store review to pass. The
+    letters stay one element each — the entrance animates them 60ms apart off
+    `--letter` — so the whole lockup is hidden from assistive technology and
+    the accessible name is a single text node instead.
+  {%- endcomment -%}
   {%- if section.settings.show_wordmark -%}
-    <div class="hero__wordmark" data-nav-anchor>
-      <div class="hero__wordmark-inner">
-        <div class="hero__letters" role="img" aria-label="{{ wordmark_source }}">
+    <h1 class="hero__wordmark" data-nav-anchor>
+      <span class="visually-hidden">{{ wordmark_source }}</span>
+      <span class="hero__wordmark-inner" aria-hidden="true">
+        <span class="hero__letters">
           {%- for letter in wordmark_letters -%}
-            <span style="--letter: {{ forloop.index0 }};" aria-hidden="true">{{ letter }}</span>
+            <span style="--letter: {{ forloop.index0 }};">{{ letter }}</span>
           {%- endfor -%}
-        </div>
-      </div>
-    </div>
+        </span>
+      </span>
+    </h1>
   {%- endif -%}
 
   <div class="hero__fit" data-hero-fit>

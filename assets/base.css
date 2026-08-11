@@ -384,7 +384,13 @@ a {
 /* ---- Type -------------------------------------------------------- */
 
 /* The oversized edge-to-edge section titles. */
+/* `margin-block: 0` is load-bearing the moment this is a real heading. As a
+   `div` it had no default margin and needed none; as an `h1`/`h2` the user
+   agent adds 0.83em top and bottom, which would stack on top of the
+   `.display + .grid-auto` gap rule below and space every section title
+   differently from the one beside it. */
 .display {
+  margin-block: 0;
   font-family: var(--font-display);
   font-weight: var(--display-weight);
   font-size: var(--fs-display);
@@ -996,7 +1002,13 @@ a {
   }
 }
 
+/* An `h1` now, so its user-agent margin and font-size have to go — the
+   lockup's size lives on `.hero__letters`. `.hero__wordmark-inner` is a span
+   and needs `display: block` for its auto margins to centre anything. */
 .hero__wordmark {
+  margin: 0;
+  font-size: inherit;
+  font-weight: inherit;
   position: absolute;
   top: var(--hero-top);
   left: var(--hero-side);
@@ -1006,6 +1018,7 @@ a {
 }
 
 .hero__wordmark-inner {
+  display: block;
   max-width: var(--hero-max);
   margin-inline: auto;
   overflow: visible clip;

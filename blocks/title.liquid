@@ -17,8 +17,24 @@
     assign align_class = ' align-' | append: block.settings.alignment
   endif
 -%}
+{%- comment -%}
+  The element is the merchant's choice, because a section title is a heading
+  and a document needs its levels in order. It was always a `div`, so a page
+  built from these blocks announced no headings at all.
+
+  `"tag": null` still holds and matters more than ever: the block owns its one
+  element, and a generated wrapper would break the `.display + .grid-auto`
+  adjacency the gap rule depends on. Changing the tag keeps that — it is still
+  a single element, and the rule matches on the class.
+{%- endcomment -%}
+{%- liquid
+  assign heading_tag = block.settings.heading_level | default: 'h2'
+  unless heading_tag == 'h1' or heading_tag == 'h2' or heading_tag == 'h3' or heading_tag == 'div'
+    assign heading_tag = 'h2'
+  endunless
+-%}
 {%- if block.settings.text != blank -%}
-  <div class="display reveal{{ align_class }}" {{ block.shopify_attributes }}>{{ block.settings.text }}</div>
+  <{{ heading_tag }} class="display reveal{{ align_class }}" {{ block.shopify_attributes }}>{{ block.settings.text }}</{{ heading_tag }}>
 {%- endif -%}
 
 {% schema %}
@@ -26,6 +42,19 @@
   "name": "t:blocks.title.name",
   "tag": null,
   "settings": [
+    {
+      "type": "select",
+      "id": "heading_level",
+      "label": "t:sections.all.heading_level.label",
+      "info": "t:sections.all.heading_level.info",
+      "options": [
+        { "value": "h1", "label": "t:settings_schema.heading_level.h1" },
+        { "value": "h2", "label": "t:settings_schema.heading_level.h2" },
+        { "value": "h3", "label": "t:settings_schema.heading_level.h3" },
+        { "value": "div", "label": "t:settings_schema.heading_level.div" }
+      ],
+      "default": "h2"
+    },
     {
       "type": "select",
       "id": "alignment",

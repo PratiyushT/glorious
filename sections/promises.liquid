@@ -1,3 +1,9 @@
+{%- liquid
+  assign heading_tag = section.settings.heading_level | default: 'h2'
+  unless heading_tag == 'h1' or heading_tag == 'h2' or heading_tag == 'h3' or heading_tag == 'div'
+    assign heading_tag = 'h2'
+  endunless
+-%}
 {%- comment -%}
   Promises. Numbering is generated from block order, so reordering or removing
   a promise in the editor renumbers the set automatically.
@@ -13,7 +19,7 @@
 >
   <div class="page-width">
     {%- if section.settings.heading != blank -%}
-      <div class="display reveal">{{ section.settings.heading }}</div>
+      <{{ heading_tag }} class="display reveal">{{ section.settings.heading }}</{{ heading_tag }}>
     {%- endif -%}
 
     {%- if section.settings.subheading != blank -%}
@@ -67,6 +73,19 @@
   "name": "t:sections.promises.name",
   "tag": "div",
   "settings": [
+    {
+      "type": "select",
+      "id": "heading_level",
+      "label": "t:sections.all.heading_level.label",
+      "info": "t:sections.all.heading_level.info",
+      "options": [
+        { "value": "h1", "label": "t:settings_schema.heading_level.h1" },
+        { "value": "h2", "label": "t:settings_schema.heading_level.h2" },
+        { "value": "h3", "label": "t:settings_schema.heading_level.h3" },
+        { "value": "div", "label": "t:settings_schema.heading_level.div" }
+      ],
+      "default": "h2"
+    },
     {
       "type": "select",
       "id": "content_alignment",
