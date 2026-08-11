@@ -18,6 +18,52 @@ this file that explains a feature and the code that implements it must never
 arrive separately: the note is how the next pass learns why a number is what it
 is.
 
+## The convention checker
+
+```bash
+python bin/veylin-lint.py
+```
+
+**Every rule this file states in prose that can be checked, is checked.** Run it
+beside `shopify theme check --path . --output json`; the two do not overlap.
+`--list` names the rules, `-o R05` runs one. Exit 1 on any error; warnings never
+fail the run. `bin/` is not a Shopify theme directory, so nothing in it ships.
+
+It exists because a convention held only as long as the next reader was
+diligent, and this theme has already paid for that twice — see the footer under
+"Spacing steps", and the block-type rename under "Things that cost time once".
+
+| | |
+| --- | --- |
+| R01 | range steps are legal — Shopify validates these server-side and `theme check` does not |
+| R02 | a `select`'s default is one of its own options |
+| R03 | schema `t:` keys resolve, **including `config/settings_schema.json`**, which `TranslationKeyExists` does not read |
+| R04 | storefront `\| t` keys resolve |
+| R05 | every setting feeding a step resolver offers only ids that resolver knows |
+| R06 | `settings.x` names a setting that exists |
+| R07 | a stored block type exists, as a theme block or in its section's schema |
+| R08 | no `href="#"` |
+| R09 | no literal shop address, telephone, email or map URL outside `config/` |
+| R10 | every `<img>` declares `data-image-lqip` (warning; `"off"` for a logo) |
+
+**R05 is the one written from a scar.** `section-style.liquid` stopped
+understanding numbers when padding became a step, the footer kept its range, and
+its stored `70`/`30` matched no rung — so the resolver printed nothing, the
+caller's fallback filled in `lg`, and the footer silently doubled its padding. A
+resolver with a fallback absorbs a caller you forgot to convert and reports
+nothing. R05 finds each resolver's `when` ids, finds every setting handed to it,
+and fails if that setting is not a `select` whose every option and default are
+ids the resolver actually has.
+
+**Two things learned writing it, worth keeping.** Parse, do not pattern-match:
+the recorded `range` one-liner missed 1 of 36 because its regex could not cross
+the brace in `visible_if: "{{ … }}"`. And a rule must ignore prose about itself
+— on its first runs, R08 flagged this repo's own comments *explaining* why
+`href="#"` is banned, in three different comment syntaxes (Liquid tag, bare
+`comment` inside a `{% liquid %}` block, and CSS `/* */`). Of the 15 findings in
+the first run, 14 were bugs in the rules. `strip_comments`, `strip_inert` and
+`strip_liquid` are why, and a new textual rule should use them.
+
 ## Shopify CLI
 
 - **Version: 4.6.1**, installed globally via npm (`@shopify/cli`), not a project dependency.
