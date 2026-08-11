@@ -92,6 +92,7 @@
             {%- if image != blank -%}
               <img
                 src="{{ image | image_url: width: 900 }}"
+                data-image-lqip="{{ image | image_url: width: 40 }}"
                 srcset="{{ image | image_url: width: 300 }} 300w, {{ image | image_url: width: 500 }} 500w, {{ image | image_url: width: 700 }} 700w, {{ image | image_url: width: 1000 }} 1000w"
                 sizes="(min-width: 60rem) 25vw, 100vw"
                 alt="{{ image.alt | default: title | escape }}"

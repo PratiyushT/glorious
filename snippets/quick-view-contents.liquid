@@ -232,6 +232,7 @@
             <img
               class="quick-view__img"
               src="{{ media | image_url: width: 1100 }}"
+              data-image-lqip="{{ media | image_url: width: 40 }}"
               srcset="{{ media | image_url: width: 500 }} 500w, {{ media | image_url: width: 800 }} 800w, {{ media | image_url: width: 1100 }} 1100w, {{ media | image_url: width: 1600 }} 1600w"
               sizes="(min-width: 55rem) 50vw, 95vw"
               alt="{{ media.alt | default: product.title | escape }}"
@@ -241,7 +242,6 @@
               decoding="async"
               draggable="false"
               data-quick-zoomable
-              data-card-blur
             >
           </div>
         {%- endfor -%}

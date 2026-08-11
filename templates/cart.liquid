@@ -53,7 +53,8 @@
               <div class="split" style="--split-min: 8rem; --split-align: flex-start;">
                 <div class="media" style="max-width: 6rem; aspect-ratio: 1 / 1;">
                   {%- if item.image -%}
-                    {{ item.image | image_url: width: 300 | image_tag: loading: 'lazy', alt: item.title }}
+                    {%- assign item_lqip = item.image | image_url: width: 40 -%}
+                    {{ item.image | image_url: width: 300 | image_tag: loading: 'lazy', alt: item.title, data-image-lqip: item_lqip }}
                   {%- endif -%}
                 </div>
                 <div class="stack stack--tight">

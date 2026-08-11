@@ -68,6 +68,7 @@
                   if thumb_rw > 0
                     assign thumb_h = 64 | times: thumb_rh | divided_by: thumb_rw
                     assign thumb_crop_h = 128 | times: thumb_rh | divided_by: thumb_rw
+                    assign thumb_lqip_h = 40 | times: thumb_rh | divided_by: thumb_rw
                     assign thumb_ar = thumb_rw | append: ' / ' | append: thumb_rh
                   else
                     comment
@@ -75,6 +76,7 @@
                       is nothing to crop to and nothing fixed to declare.
                     endcomment
                     assign thumb_crop_h = 0
+                    assign thumb_lqip_h = 0
                     assign thumb_h = 64 | times: item.image.height | divided_by: item.image.width
                     assign thumb_ar = item.image.width | append: ' / ' | append: item.image.height
                   endif
@@ -97,8 +99,10 @@
                     <img
                       {%- if thumb_crop_h > 0 %}
                         src="{{ item.image | image_url: width: 128, height: thumb_crop_h, crop: 'center' }}"
+                        data-image-lqip="{{ item.image | image_url: width: 40, height: thumb_lqip_h, crop: 'center' }}"
                       {%- else %}
                         src="{{ item.image | image_url: width: 128 }}"
+                        data-image-lqip="{{ item.image | image_url: width: 40 }}"
                       {%- endif %}
                       alt=""
                       width="{{ thumb_w }}"

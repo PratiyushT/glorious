@@ -7,6 +7,7 @@
         {%- for article in blog.articles -%}
           <article class="card">
             {%- if article.image -%}
+              {%- assign article_lqip = article.image | image_url: width: 40 -%}
               <a class="card__media media" href="{{ article.url }}" style="aspect-ratio: 4 / 3;">
                 {{
                   article.image
@@ -15,7 +16,8 @@
                     widths: '300,500,700,1000',
                     sizes: '(min-width: 60rem) 33vw, 100vw',
                     loading: 'lazy',
-                    alt: article.title
+                    alt: article.title,
+                    data-image-lqip: article_lqip
                 }}
               </a>
             {%- endif -%}

@@ -7,6 +7,7 @@
         <a class="card" href="{{ collection.url }}">
           <div class="card__media media" style="aspect-ratio: 4 / 3;">
             {%- if collection.featured_image -%}
+              {%- assign collection_lqip = collection.featured_image | image_url: width: 40 -%}
               {{
                 collection.featured_image
                 | image_url: width: 1000
@@ -14,7 +15,8 @@
                   widths: '300,500,700,1000',
                   sizes: '(min-width: 60rem) 33vw, 100vw',
                   loading: 'lazy',
-                  alt: collection.title
+                  alt: collection.title,
+                  data-image-lqip: collection_lqip
               }}
             {%- else -%}
               {{ 'collection-1' | placeholder_svg_tag: 'placeholder-svg' }}

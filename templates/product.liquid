@@ -15,6 +15,7 @@
         <div class="media">
           {%- case media.media_type -%}
             {%- when 'image' -%}
+              {%- assign media_lqip = media | image_url: width: 40 -%}
               {{
                 media
                 | image_url: width: 1600
@@ -22,7 +23,8 @@
                   widths: '400,600,800,1200,1600',
                   sizes: '(min-width: 60rem) 50vw, 100vw',
                   loading: 'lazy',
-                  alt: media.alt
+                  alt: media.alt,
+                  data-image-lqip: media_lqip
               }}
             {%- when 'video' -%}
               {{ media | video_tag: controls: true, preload: 'metadata', image_size: '1600x' }}

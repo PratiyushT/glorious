@@ -142,6 +142,7 @@
           {%- if section.settings.image != blank -%}
             <img
               src="{{ section.settings.image | image_url: width: 1200 }}"
+              data-image-lqip="{{ section.settings.image | image_url: width: 40 }}"
               srcset="{{ section.settings.image | image_url: width: 500 }} 500w, {{ section.settings.image | image_url: width: 800 }} 800w, {{ section.settings.image | image_url: width: 1200 }} 1200w"
               sizes="(min-width: 68.75rem) 44vh, (min-width: 61.875rem) 46vh, 62vw"
               alt="{{ section.settings.image.alt | escape }}"
@@ -184,6 +185,7 @@
                         {%- if product.featured_media -%}
                           <img
                             src="{{ product.featured_media | image_url: width: 500 }}"
+                            data-image-lqip="{{ product.featured_media | image_url: width: 40 }}"
                             srcset="{{ product.featured_media | image_url: width: 300 }} 300w, {{ product.featured_media | image_url: width: 500 }} 500w, {{ product.featured_media | image_url: width: 760 }} 760w"
                             sizes="15.5rem"
                             alt=""

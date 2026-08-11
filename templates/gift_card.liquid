@@ -1,7 +1,15 @@
 {% layout none %}
 
-{% assign formatted_initial_value = gift_card.initial_value | money_without_trailing_zeros %}
-{% assign formatted_initial_value_stripped = formatted_initial_value | strip_html %}
+{%- liquid
+  assign formatted_initial_value = gift_card.initial_value | money_without_trailing_zeros
+  assign formatted_initial_value_stripped = formatted_initial_value | strip_html
+  assign gift_card_image_url = 'gift-card/card.jpg' | shopify_asset_url
+  assign gift_card_lqip_separator = '?'
+  if gift_card_image_url contains '?'
+    assign gift_card_lqip_separator = '&'
+  endif
+  assign gift_card_lqip_url = gift_card_image_url | append: gift_card_lqip_separator | append: 'width=40'
+-%}
 
 <!DOCTYPE html>
 <html>
@@ -17,6 +25,31 @@
   <meta name="description" content="Here's your gift card!">
 
   {{ 'gift-card.css' | shopify_asset_url | stylesheet_tag }}
+
+  <style>
+    .gift-card-image-lqip {
+      background-position: var(--gift-card-lqip-position, 50% 50%) !important;
+      background-repeat: no-repeat !important;
+      background-size: var(--gift-card-lqip-fit, cover) !important;
+    }
+
+    .gift-card-image-lqip.is-lqip-loading {
+      filter: blur(18px) saturate(.72) brightness(1.12);
+    }
+
+    .gift-card-image-lqip.is-lqip-revealing {
+      animation: gift-card-lqip-reveal .8s ease-out both;
+    }
+
+    @keyframes gift-card-lqip-reveal {
+      from { filter: blur(18px) saturate(.72) brightness(1.12); }
+      to { filter: blur(0) saturate(1) brightness(1); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .gift-card-image-lqip.is-lqip-revealing { animation-duration: .01ms; }
+    }
+  </style>
 
   {%- comment -%}
     Shopify's stock template ships both of these through `script_tag`, which
@@ -102,7 +135,8 @@
                     still sizes the image, these only reserve its ratio.
                   {%- endcomment -%}
                   <img
-                    src="{{ 'gift-card/card.jpg' | shopify_asset_url }}"
+                    src="{{ gift_card_image_url }}"
+                    data-image-lqip="{{ gift_card_lqip_url }}"
                     alt="Gift card illustration"
                     width="848"
                     height="565"
@@ -149,11 +183,67 @@
 
       <footer role="contentinfo">
         {% if gift_card.pass_url %}
-          <a href="{{ gift_card.pass_url }}"><img id="apple-wallet-badge" src="{{ 'gift-card/add-to-apple-wallet.svg' | shopify_asset_url }}" width="120" height="40" alt="Add To Apple Wallet"></a>
+          <a href="{{ gift_card.pass_url }}"><img id="apple-wallet-badge" src="{{ 'gift-card/add-to-apple-wallet.svg' | shopify_asset_url }}" data-image-lqip="off" width="120" height="40" alt="Add To Apple Wallet"></a>
         {% endif %}
       </footer>
 
     </div>
+
+    <script>
+      (function () {
+        var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+        document.querySelectorAll('img[data-image-lqip]:not([data-image-lqip="off"])').forEach(function (image) {
+          if (image.complete && image.naturalWidth > 0) return;
+
+          var style = window.getComputedStyle(image);
+          var fit = style.objectFit || 'fill';
+          var backgroundFit = fit === 'cover' || fit === 'contain'
+            ? fit
+            : fit === 'fill'
+              ? '100% 100%'
+              : fit === 'scale-down'
+                ? 'contain'
+                : 'auto';
+
+          image.style.setProperty('background-image', 'url(' + JSON.stringify(image.dataset.imageLqip) + ')', 'important');
+          image.style.setProperty('--gift-card-lqip-fit', backgroundFit);
+          image.style.setProperty('--gift-card-lqip-position', style.objectPosition || '50% 50%');
+          image.classList.add('gift-card-image-lqip', 'is-lqip-loading');
+
+          var timer = null;
+          function clear() {
+            if (timer) window.clearTimeout(timer);
+            image.classList.remove('gift-card-image-lqip', 'is-lqip-loading', 'is-lqip-revealing');
+            image.style.removeProperty('background-image');
+            image.style.removeProperty('--gift-card-lqip-fit');
+            image.style.removeProperty('--gift-card-lqip-position');
+          }
+
+          function reveal() {
+            var decoded = typeof image.decode === 'function'
+              ? image.decode().catch(function () {})
+              : Promise.resolve();
+
+            decoded.then(function () {
+              if (!image.naturalWidth || reduceMotion.matches) {
+                clear();
+                return;
+              }
+
+              image.classList.add('is-lqip-revealing');
+              image.classList.remove('is-lqip-loading');
+              image.addEventListener('animationend', clear, { once: true });
+              timer = window.setTimeout(clear, 1000);
+            });
+          }
+
+          image.addEventListener('load', reveal, { once: true });
+          image.addEventListener('error', clear, { once: true });
+          if (image.complete && image.naturalWidth === 0) clear();
+        });
+      })();
+    </script>
 
 </body>
 </html>

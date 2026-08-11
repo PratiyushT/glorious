@@ -635,6 +635,32 @@ a {
   border-radius: var(--radius-arch) var(--radius-arch) var(--radius) var(--radius);
 }
 
+/* A true same-image low-quality preview. JavaScript adds these classes only
+   while the full source is outstanding, so no-script and cached-image paths
+   remain untouched. The tiny rendition is the img's own background and uses
+   its object fit/position; the decoded full image then sharpens over it. */
+.image-lqip {
+  /* Several components set `background` later in this file. These temporary
+     longhands must win over those shorthands or the tiny image disappears. */
+  background-image: var(--image-lqip-source) !important;
+  background-position: var(--image-lqip-position, 50% 50%) !important;
+  background-repeat: no-repeat !important;
+  background-size: var(--image-lqip-fit, cover) !important;
+}
+
+.image-lqip.is-lqip-loading {
+  filter: blur(18px) saturate(0.72) brightness(1.12);
+}
+
+.image-lqip.is-lqip-revealing {
+  animation: gj-image-lqip-reveal 0.8s ease-out both;
+}
+
+@keyframes gj-image-lqip-reveal {
+  from { filter: blur(18px) saturate(0.72) brightness(1.12); }
+  to { filter: blur(0) saturate(1) brightness(1); }
+}
+
 /* A hairline frame offset outside the media. */
 .media-frame {
   position: relative;

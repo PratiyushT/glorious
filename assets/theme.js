@@ -471,6 +471,7 @@
     function render(html) {
       live.innerHTML = html;
       live.hidden = false;
+      blurUp(live, true);
       if (resting) resting.hidden = true;
       if (popular) popular.hidden = true;
 
@@ -650,6 +651,7 @@
       var was = figure ? figure.textContent : null;
 
       current.innerHTML = next.innerHTML;
+      blurUp(current, true);
 
       if (scroller) scroller.scrollTop = scrolled;
 
@@ -933,25 +935,300 @@
     });
   }
 
-  /* ---- Media blur-up ---------------------------------------------------
-     The design fades a photograph in from a blur as it arrives. The blur is
-     added here rather than in the stylesheet, and only to media that has not
-     loaded yet — so a visitor without scripting is never left looking at one
-     that never clears, and a cached image never blurs at all. */
+  /* ---- Same-image low-quality previews -------------------------------
+     Every raster image carries a tiny rendition of that same image in
+     `data-image-lqip`. It is painted as the image element's own background,
+     using the same fit and position as the full source, so there is no generic
+     placeholder and no extra layer to jump at handoff. The real src/srcset is
+     left alone and loads in parallel. Once it has loaded, decode() is awaited
+     before the blur sharpens away.
 
-  function blurUp(scope) {
-    scope.querySelectorAll('[data-card-blur]').forEach(function (media) {
-      if (!bindOnce(media, 'boundBlur')) return;
+     Loading state remains progressive enhancement: classes and backgrounds
+     are added only here. Cached images never flash a preview, lazy images are
+     activated near the viewport, and source-less card slides wait until their
+     deferred source is promoted. */
 
-      var isVideo = media.tagName === 'VIDEO';
-      var ready = isVideo ? media.readyState >= 2 : media.complete && media.naturalWidth > 0;
-      if (ready) return;
+  var imageLqipStates = new WeakMap();
+  var imageLqipBound = new WeakSet();
+  var imageLqipViewport = null;
+  var imageLqipMutations = null;
 
-      media.classList.add('is-blurred');
+  function mediaWithin(scope, selector) {
+    var media = [];
+    if (scope.matches && scope.matches(selector)) media.push(scope);
+    if (scope.querySelectorAll) {
+      media = media.concat(Array.prototype.slice.call(scope.querySelectorAll(selector)));
+    }
+    return media;
+  }
 
-      function clear() { media.classList.remove('is-blurred'); }
-      media.addEventListener(isVideo ? 'loadeddata' : 'load', clear, { once: true });
-      media.addEventListener('error', clear, { once: true });
+  function derivedImageLqip(image) {
+    var raw = image.currentSrc || image.getAttribute('src') || image.dataset.src || '';
+    if (!raw || /^(?:data|blob):/i.test(raw)) return '';
+
+    try {
+      var url = new window.URL(raw, document.baseURI);
+      var shopifyHost = /(^|\.)cdn\.shopify\.com$/i.test(url.hostname);
+      var shopifyPath = url.origin === window.location.origin && url.pathname.indexOf('/cdn/shop/') === 0;
+      if ((!shopifyHost && !shopifyPath) || /\.svg$/i.test(url.pathname)) return '';
+
+      var width = parseInt(url.searchParams.get('width'), 10) || 0;
+      var height = parseInt(url.searchParams.get('height'), 10) || 0;
+      if (width > 0 && height > 0) {
+        var scale = 40 / Math.max(width, height);
+        url.searchParams.set('width', Math.max(1, Math.round(width * scale)));
+        url.searchParams.set('height', Math.max(1, Math.round(height * scale)));
+      } else if (height > 0) {
+        url.searchParams.set('height', '40');
+      } else {
+        url.searchParams.set('width', '40');
+      }
+      return url.href;
+    } catch (error) {
+      return '';
+    }
+  }
+
+  function imageLqipUrl(image) {
+    var supplied = image.getAttribute('data-image-lqip');
+    if (supplied === 'off') return '';
+    if (supplied) {
+      try {
+        return new window.URL(supplied, document.baseURI).href;
+      } catch (error) {
+        return supplied;
+      }
+    }
+
+    var source = image.currentSrc || image.getAttribute('src') || image.dataset.src || '';
+    if (/\.svg(?:[?#]|$)/i.test(source) || /^data:image\/svg\+xml/i.test(source)) {
+      image.setAttribute('data-image-lqip', 'off');
+      return '';
+    }
+
+    var derived = derivedImageLqip(image);
+    if (derived) image.setAttribute('data-image-lqip', derived);
+    return derived;
+  }
+
+  function imageLqipKey(image, lqip) {
+    return [
+      image.getAttribute('src') || '',
+      image.getAttribute('srcset') || '',
+      image.dataset.src || '',
+      image.dataset.srcset || '',
+      lqip
+    ].join('|');
+  }
+
+  function unobserveImageLqip(image) {
+    if (imageLqipViewport) imageLqipViewport.unobserve(image);
+  }
+
+  function clearImageLqipVisual(image, state) {
+    if (state && state.timer) {
+      window.clearTimeout(state.timer);
+      state.timer = null;
+    }
+    if (state && state.animationEnd) {
+      image.removeEventListener('animationend', state.animationEnd);
+      state.animationEnd = null;
+    }
+
+    unobserveImageLqip(image);
+    image.classList.remove('image-lqip', 'is-lqip-loading', 'is-lqip-revealing');
+    image.style.removeProperty('--image-lqip-source');
+    image.style.removeProperty('--image-lqip-fit');
+    image.style.removeProperty('--image-lqip-position');
+  }
+
+  function activateImageLqip(image, state) {
+    if (imageLqipStates.get(image) !== state || state.active || state.done) return;
+
+    var hasSource = Boolean(image.getAttribute('src') || image.getAttribute('srcset'));
+    if (!hasSource) return;
+
+    if (image.complete) {
+      state.done = true;
+      unobserveImageLqip(image);
+      return;
+    }
+
+    var style = window.getComputedStyle(image);
+    var fit = style.objectFit || 'fill';
+    var backgroundFit = 'auto';
+    if (fit === 'cover' || fit === 'contain') backgroundFit = fit;
+    else if (fit === 'fill') backgroundFit = '100% 100%';
+    else if (fit === 'scale-down') backgroundFit = 'contain';
+
+    image.style.setProperty('--image-lqip-source', 'url(' + JSON.stringify(state.lqip) + ')');
+    image.style.setProperty('--image-lqip-fit', backgroundFit);
+    image.style.setProperty('--image-lqip-position', style.objectPosition || '50% 50%');
+    image.classList.add('image-lqip', 'is-lqip-loading');
+    state.active = true;
+  }
+
+  function queueImageLqip(image, state, immediate) {
+    if (immediate || image.getAttribute('loading') !== 'lazy' || !('IntersectionObserver' in window)) {
+      activateImageLqip(image, state);
+      return;
+    }
+
+    if (!imageLqipViewport) {
+      imageLqipViewport = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (!entry.isIntersecting) return;
+          imageLqipViewport.unobserve(entry.target);
+          var current = imageLqipStates.get(entry.target);
+          if (current) activateImageLqip(entry.target, current);
+        });
+      }, { rootMargin: '1200px 0px', threshold: 0.01 });
+    }
+
+    imageLqipViewport.observe(image);
+  }
+
+  function finishImageLqip(image, state) {
+    if (imageLqipStates.get(image) !== state) return;
+    clearImageLqipVisual(image, state);
+  }
+
+  function revealImageLqip(image, state) {
+    if (imageLqipStates.get(image) !== state || state.done) return;
+    state.done = true;
+    unobserveImageLqip(image);
+
+    if (!state.active) return;
+    if (reduceMotion.matches) {
+      finishImageLqip(image, state);
+      return;
+    }
+
+    image.classList.add('is-lqip-revealing');
+    image.classList.remove('is-lqip-loading');
+
+    state.animationEnd = function (event) {
+      if (event.animationName !== 'gj-image-lqip-reveal') return;
+      finishImageLqip(image, state);
+    };
+    image.addEventListener('animationend', state.animationEnd);
+    state.timer = window.setTimeout(function () {
+      finishImageLqip(image, state);
+    }, 1000);
+  }
+
+  function imageLqipLoaded(image) {
+    var state = imageLqipStates.get(image);
+    if (!state || state.done) return;
+
+    var decoded = typeof image.decode === 'function'
+      ? image.decode().catch(function () {})
+      : Promise.resolve();
+
+    decoded.then(function () {
+      if (imageLqipStates.get(image) !== state) return;
+      if (image.naturalWidth > 0) revealImageLqip(image, state);
+      else finishImageLqip(image, state);
+    });
+  }
+
+  function imageLqipFailed(image) {
+    var state = imageLqipStates.get(image);
+    if (!state) return;
+    state.done = true;
+    finishImageLqip(image, state);
+  }
+
+  function watchImageLqip(image, immediate) {
+    if (!imageLqipBound.has(image)) {
+      imageLqipBound.add(image);
+      image.addEventListener('load', function () { imageLqipLoaded(image); });
+      image.addEventListener('error', function () { imageLqipFailed(image); });
+    }
+
+    var lqip = imageLqipUrl(image);
+    var previous = imageLqipStates.get(image);
+    var key = imageLqipKey(image, lqip);
+
+    if (previous && previous.key === key) {
+      if (immediate && !previous.active && !previous.done) activateImageLqip(image, previous);
+      return;
+    }
+
+    if (previous) {
+      clearImageLqipVisual(image, previous);
+    }
+
+    var state = {
+      active: false,
+      done: false,
+      key: key,
+      lqip: lqip,
+      timer: null,
+      animationEnd: null
+    };
+    imageLqipStates.set(image, state);
+
+    if (!lqip) {
+      state.done = true;
+      return;
+    }
+
+    var hasSource = Boolean(image.getAttribute('src') || image.getAttribute('srcset'));
+    if (!hasSource) return;
+
+    if (image.complete) {
+      state.done = true;
+      return;
+    }
+
+    queueImageLqip(image, state, immediate);
+  }
+
+  function bindVideoBlur(video) {
+    if (!bindOnce(video, 'boundBlur')) return;
+    if (video.readyState >= 2) return;
+
+    video.classList.add('is-blurred');
+    function clear() { video.classList.remove('is-blurred'); }
+    video.addEventListener('loadeddata', clear, { once: true });
+    video.addEventListener('error', clear, { once: true });
+  }
+
+  function blurUp(scope, immediate) {
+    mediaWithin(scope, 'img').forEach(function (image) {
+      watchImageLqip(image, Boolean(immediate));
+    });
+    mediaWithin(scope, 'video[data-card-blur]').forEach(bindVideoBlur);
+  }
+
+  function initImageLqipObserver() {
+    if (imageLqipMutations || !('MutationObserver' in window) || !document.body) return;
+
+    imageLqipMutations = new MutationObserver(function (records) {
+      var changed = [];
+
+      records.forEach(function (record) {
+        if (record.type === 'childList') {
+          Array.prototype.forEach.call(record.addedNodes, function (node) {
+            if (node.nodeType === 1) blurUp(node, false);
+          });
+          return;
+        }
+
+        if (record.target.tagName === 'IMG' && changed.indexOf(record.target) === -1) {
+          changed.push(record.target);
+        }
+      });
+
+      changed.forEach(function (image) { watchImageLqip(image, true); });
+    });
+
+    imageLqipMutations.observe(document.body, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['src', 'srcset', 'data-src', 'data-srcset', 'data-image-lqip']
     });
   }
 
@@ -1262,7 +1539,7 @@
     quickIndex = 0;
     resetQuickZoom();
     paintQuick(0);
-    blurUp(host);
+    blurUp(host, true);
   }
 
   function openQuickView(url) {
@@ -2816,14 +3093,15 @@
     initHero(scope);
     initRowCarousels(scope);
     initLookbook(scope);
+    blurUp(scope);
     initCards(scope);
     initCardMetals(scope);
-    blurUp(scope);
     initOverlays(scope);
     initCookieChoice(scope);
   }
 
   function boot() {
+    initImageLqipObserver();
     initNav();
     init(document);
     initSearch();

@@ -103,6 +103,7 @@
                 {%- elsif block.settings.image != blank -%}
                   <img
                     src="{{ block.settings.image | image_url: width: 1200 }}"
+                    data-image-lqip="{{ block.settings.image | image_url: width: 40 }}"
                     srcset="{{ block.settings.image | image_url: width: 500 }} 500w, {{ block.settings.image | image_url: width: 800 }} 800w, {{ block.settings.image | image_url: width: 1200 }} 1200w"
                     sizes="(min-width: 61.25rem) 35rem, 100vw"
                     alt="{{ block.settings.image.alt | escape }}"
@@ -203,6 +204,7 @@
                         {%- if pin_product.featured_media -%}
                           <img
                             src="{{ pin_product.featured_media | image_url: width: 128 }}"
+                            data-image-lqip="{{ pin_product.featured_media | image_url: width: 40 }}"
                             alt=""
                             width="64"
                             height="64"
@@ -339,6 +341,7 @@
                             {%- if pin_product.featured_media -%}
                               <img
                                 src="{{ pin_product.featured_media | image_url: width: 112 }}"
+                                data-image-lqip="{{ pin_product.featured_media | image_url: width: 40 }}"
                                 alt=""
                                 width="56"
                                 height="56"

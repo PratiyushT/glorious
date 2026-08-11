@@ -92,11 +92,29 @@ design's **checkout page cannot become a theme template** — Shopify hosts
 checkout; customising it needs Checkout Extensibility (Plus for
 `checkout.liquid`).
 
-The card and quick view's **low-quality image placeholder is deliberately not
-ported.** The design puts a blurred thumbnail behind each photograph, and then
-gives the photograph itself an opaque white background — which covers the
-thumbnail completely, so it never shows. Only the blur-up on the photograph
-itself is visible, and that is what is here.
+**Every raster image uses a same-image low-quality preview, except a logo.**
+This is a theme-wide contract, not a card or Quick View detail. Every
+theme-controlled `<img>` must carry `data-image-lqip` with a roughly 40px
+rendition of that exact source (`image_url: width: 40`, preserving any crop;
+the Shopify CDN's `width=40` transform for a theme asset). The Glorious mark
+and other branded vector logo/badge assets explicitly carry
+`data-image-lqip="off"`. Do not use a
+generic placeholder and do not merely blur the full-size request.
+
+`theme.js` paints the tiny rendition as the same `<img>` element's background,
+matches its `object-fit` and `object-position`, leaves the responsive full
+source loading in parallel, waits for `img.decode()`, then sharpens the decoded
+image over it. Cached images stay sharp; lazy images start near the viewport;
+deferred card slides start when their real source is promoted; a mutation
+observer covers Quick View, predictive search, cart re-renders, theme-editor
+reloads and Shopify-CDN images inserted in rich text or by an app. The classes
+remain script-owned so a visitor without JavaScript is never left blurred.
+
+`templates/gift_card.liquid` is `layout none`, so it keeps a small standalone
+copy of the same handoff. Its stock Shopify card uses the CDN's tested
+`width=40` rendition; if that global image is replaced, prefer a theme asset and
+`asset_img_url` so the resizing contract is explicit. The Apple Wallet badge is
+a vector brand logo and stays opted out, as does the generated QR code.
 
 The design's **client-side search index (`search-index.js`) is deliberately
 not ported.** Its job is done by Shopify's Predictive Search API instead —
@@ -987,9 +1005,11 @@ Used by Most Loved, the collection template and the search template.
   below it, while the zoom crops 27–71px off each side. That is the design's own
   arrangement rather than a fault in the port, and `adapt` is the setting that
   closes the band. Measure before "fixing" the frame.
-- The blur-up class is added **by the script**, and only to media that has not
-  arrived yet. Putting it in the stylesheet would leave a visitor without
-  scripting looking at a photograph that never clears.
+- LQIP state is added **by the script**, and only while a non-cached full image
+  is outstanding. Putting the loading class in Liquid or the base stylesheet
+  would leave a visitor without scripting looking at a photograph that never
+  clears. A new image without `data-image-lqip` is incomplete work unless it is
+  a logo carrying the explicit `off` value.
 
 ### Quick view
 

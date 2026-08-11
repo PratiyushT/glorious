@@ -44,6 +44,7 @@
           {%- if section.settings.image != blank -%}
             <img
               src="{{ section.settings.image | image_url: width: 900 }}"
+              data-image-lqip="{{ section.settings.image | image_url: width: 40 }}"
               srcset="{{ section.settings.image | image_url: width: 400 }} 400w, {{ section.settings.image | image_url: width: 700 }} 700w, {{ section.settings.image | image_url: width: 900 }} 900w"
               sizes="(min-width: 56rem) 50vw, 100vw"
               alt="{{ section.settings.image.alt | escape }}"
@@ -54,6 +55,7 @@
           {%- else -%}
             <img
               src="{{ 'cat-necklaces.webp' | asset_url }}"
+              data-image-lqip="{{ 'cat-necklaces.webp' | asset_url }}&amp;width=40"
               alt=""
               aria-hidden="true"
               width="1000"

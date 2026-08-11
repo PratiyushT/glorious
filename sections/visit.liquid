@@ -27,6 +27,7 @@
           {%- if section.settings.image != blank -%}
             <img
               src="{{ section.settings.image | image_url: width: 1000 }}"
+              data-image-lqip="{{ section.settings.image | image_url: width: 40 }}"
               srcset="{{ section.settings.image | image_url: width: 400 }} 400w, {{ section.settings.image | image_url: width: 700 }} 700w, {{ section.settings.image | image_url: width: 1000 }} 1000w"
               sizes="(min-width: 60rem) 40vw, 100vw"
               alt="{{ section.settings.image.alt | escape }}"

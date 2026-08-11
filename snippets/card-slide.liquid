@@ -12,8 +12,9 @@
   the rest of the card however far down the stack it sits — a hundred slides
   would be a hundred requests per card, times every card in the grid.
 
-  `blurUp()` binds its load listener before any of this is swapped in, so a
-  deferred slide still fades up from the design's blur when it arrives.
+  The image LQIP runtime registers every slide before `initCards()` promotes a
+  deferred source, so it can show this photograph's tiny rendition while the
+  full source loads and decodes.
 
   Accepts:
     media   - product media object, of type image.
@@ -30,6 +31,7 @@
   assign w600 = media | image_url: width: 600
   assign w900 = media | image_url: width: 900
   assign w1200 = media | image_url: width: 1200
+  assign lqip = media | image_url: width: 40
   assign alt_text = media.alt | default: product.title | escape
 -%}
 
@@ -47,12 +49,12 @@
       data-src="{{ src }}"
       data-srcset="{{ srcset }}"
     {% endif %}
+    data-image-lqip="{{ lqip }}"
     sizes="{{ sizes }}"
     alt="{{ alt_text }}"
     width="{{ media.width }}"
     height="{{ media.height }}"
     loading="{{ loading }}"
     decoding="async"
-    data-card-blur
   >
 </span>
