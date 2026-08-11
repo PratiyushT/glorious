@@ -20,6 +20,9 @@
   4px, and every rung below is a triple the design states verbatim somewhere:
 
     none    0
+    2xs     30px                     Footer below — flat in the design, not a
+                                     clamp: a 30px gap has nothing to gain by
+                                     shrinking on a phone
     xs      clamp(40px, 5vw,  70px)  Footer above; Testimonials below
     sm      clamp(44px, 6vw,  84px)  Visit above; About pillars, About salon
     md      clamp(48px, 6vw,  90px)  The Craft; About craft band
@@ -50,6 +53,7 @@
 
 {%- case step -%}
   {%- when 'none' -%}0px
+  {%- when '2xs' -%}30px
   {%- when 'xs' -%}clamp(40px, 5vw, 70px)
   {%- when 'sm' -%}clamp(44px, 6vw, 84px)
   {%- when 'md' -%}clamp(48px, 6vw, 90px)

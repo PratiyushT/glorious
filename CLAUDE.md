@@ -543,15 +543,38 @@ Six rungs is six.
   happened to land close, which is what kept it from being obvious.
 
 - **The rungs are the design's own ceilings**, deduplicated across its home,
-  about, lookbook and footer pages. The ten distinct triples it uses collapse
-  to six within 4px, and every rung is a triple the design states verbatim
-  somewhere. Three figures are not rungs and take the nearest: Most Loved's 72
-  and About's story 80 sit 2 and 4px off `xs` and `sm`, and Testimonials' 130
-  above is 10px over `max`.
+  about, lookbook and footer pages. Measured against the design at 1280px, six
+  of the nine padded sections land **exactly** — Most Loved, Our Products,
+  Promises, The Craft, About and the Lookbook — where before the conversion
+  they were 13–20px short. Three take the nearest rung:
 
-- **The footer is deliberately not converted.** Its padding below is a flat
-  `30px` in the design, not a clamp at all, so it does not belong on a fluid
-  scale. It keeps its range until the chrome pass.
+  | section | design | rung | at 1280 | at 1440 |
+  | --- | --- | --- | --- | --- |
+  | Testimonials above | `clamp(72,10vw,130)` | `max` | −12.8 | −10 |
+  | Visit above | `clamp(40,7vw,84)` | `sm` | −7.2 | **exact** |
+  | Footer above | `clamp(44,6vw,70)` | `xs` | −6 | **exact** |
+
+  Visit and the footer differ only in slope, and both share the design's
+  ceiling, so they are exact wherever the clamp is capped and a little light
+  through the middle of the range. Testimonials is the one real ceiling loss:
+  130 is a rung of its own or it is 120.
+
+- **`2xs` is a flat `30px`, not a clamp**, because the design's footer below is
+  a flat 30px. A gap that small has nothing to gain by shrinking on a phone,
+  and the scale would be lying if it pretended otherwise.
+
+- **The footer is converted with everything else**, and the reason is worth
+  keeping. It was left on its range in the first pass, on the argument that its
+  flat bottom did not belong on a fluid scale — but `section-style.liquid` had
+  by then stopped understanding numbers, so the footer's stored `70` and `30`
+  matched no rung, fell through to the `lg` fallback, and the footer rendered
+  **89.6px top and bottom** against the ~42/27.6 it had before. The commit that
+  did it said in its own message that the footer kept its slider.
+
+  Nothing in the source looked wrong; only the rendered page showed it. **A
+  resolver with a fallback will absorb a caller you forgot to convert and tell
+  you nothing** — so when a shared snippet changes what it accepts, every
+  caller converts in that same commit, or the fallback has to be loud.
 
 - **An unrecognised step prints nothing, and the caller supplies the fallback.**
   Never print a bare keyword or `var(--step-)` where a length is wanted: an

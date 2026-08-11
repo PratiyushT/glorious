@@ -551,6 +551,7 @@
       "width_page": "Page width",
       "space_step": {
         "none": "None",
+        "2xs": "Extra extra small",
         "xs": "Extra small",
         "sm": "Small",
         "md": "Medium",

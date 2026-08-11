@@ -210,24 +210,36 @@
       "content": "t:sections.all.spacing_header"
     },
     {
-      "type": "range",
+      "type": "select",
       "id": "padding_top",
       "label": "t:sections.all.padding_top.label",
-      "min": 0,
-      "max": 200,
-      "step": 2,
-      "unit": "px",
-      "default": 70
+      "options": [
+      { "value": "none", "label": "t:sections.all.space_step.none" },
+      { "value": "2xs", "label": "t:sections.all.space_step.2xs" },
+      { "value": "xs", "label": "t:sections.all.space_step.xs" },
+      { "value": "sm", "label": "t:sections.all.space_step.sm" },
+      { "value": "md", "label": "t:sections.all.space_step.md" },
+      { "value": "lg", "label": "t:sections.all.space_step.lg" },
+      { "value": "xl", "label": "t:sections.all.space_step.xl" },
+      { "value": "max", "label": "t:sections.all.space_step.max" }
+      ],
+      "default": "xs"
     },
     {
-      "type": "range",
+      "type": "select",
       "id": "padding_bottom",
       "label": "t:sections.all.padding_bottom.label",
-      "min": 0,
-      "max": 200,
-      "step": 2,
-      "unit": "px",
-      "default": 30
+      "options": [
+      { "value": "none", "label": "t:sections.all.space_step.none" },
+      { "value": "2xs", "label": "t:sections.all.space_step.2xs" },
+      { "value": "xs", "label": "t:sections.all.space_step.xs" },
+      { "value": "sm", "label": "t:sections.all.space_step.sm" },
+      { "value": "md", "label": "t:sections.all.space_step.md" },
+      { "value": "lg", "label": "t:sections.all.space_step.lg" },
+      { "value": "xl", "label": "t:sections.all.space_step.xl" },
+      { "value": "max", "label": "t:sections.all.space_step.max" }
+      ],
+      "default": "2xs"
     }
   ],
   "blocks": [
