@@ -1263,6 +1263,13 @@ would raise a chip nobody asked for. It is **decorative only**: everything
 carrying `data-tip` also has its own accessible name, so nothing depends on
 it and nothing is announced twice.
 
+An overlay's automatic opening focus does **not** raise its tooltip. The
+controller marks the target only for the synchronous `focusin` event and
+removes the marker immediately afterwards; when a visitor later tabs back to
+that control, normal focus-visible tooltip behaviour still applies. Without
+that distinction, Quick View opened with a black “Close” chip already hanging
+from its close button even though nobody had hovered or tabbed to it.
+
 ### Overlays
 
 Six layers share one controller in `theme.js`: `menu`, `search`, `cart`,

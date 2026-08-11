@@ -212,7 +212,15 @@
         var target = el.querySelector('[data-overlay-autofocus]') ||
                      el.querySelector('[data-overlay-close]') ||
                      el;
-        if (target.focus) target.focus();
+        if (target.focus) {
+          /* Focus belongs in every modal immediately, but it is not a visitor
+             asking to see that control's tooltip. The marker exists only for
+             this synchronous focus event; tabbing back later remains genuine
+             keyboard focus and raises the tip normally. */
+          target.setAttribute('data-tip-silent-focus', '');
+          target.focus();
+          target.removeAttribute('data-tip-silent-focus');
+        }
       }, 0);
     }
 
@@ -1883,7 +1891,11 @@
 
     document.addEventListener('focusin', function (event) {
       var target = trigger(event.target);
-      if (target && event.target.matches(':focus-visible')) show(target);
+      if (target &&
+          !target.hasAttribute('data-tip-silent-focus') &&
+          event.target.matches(':focus-visible')) {
+        show(target);
+      }
     }, true);
 
     document.addEventListener('focusout', hide, true);
