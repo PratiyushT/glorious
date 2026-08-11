@@ -101,14 +101,21 @@ and other branded vector logo/badge assets explicitly carry
 `data-image-lqip="off"`. Do not use a
 generic placeholder and do not merely blur the full-size request.
 
-`theme.js` paints the tiny rendition as the same `<img>` element's background,
-matches its `object-fit` and `object-position`, leaves the responsive full
-source loading in parallel, waits for `img.decode()`, then sharpens the decoded
-image over it. Cached images stay sharp; lazy images start near the viewport;
-deferred card slides start when their real source is promoted; a mutation
-observer covers Quick View, predictive search, cart re-renders, theme-editor
-reloads and Shopify-CDN images inserted in rich text or by an app. The classes
-remain script-owned so a visitor without JavaScript is never left blurred.
+`theme.js` places that tiny rendition in an exact-size facade above the real
+`<img>`, matching its box, `object-fit`, `object-position`, border radius and
+transform for the facade's whole lifetime. It shares the image's stack level so
+later controls and hover content remain above it. The responsive full source
+loads untouched behind it. After `img.decode()`, only the facade's opacity
+fades; never reveal the full pixels in one paint and then try to disguise the
+swap by animating blur, saturation or brightness on the real image. Cached
+images stay sharp; lazy images start near the viewport; deferred card slides
+start when their real source is promoted; a mutation observer covers Quick
+View, predictive search, cart re-renders, theme-editor reloads and Shopify-CDN
+images inserted in rich text or by an app, including cleanup when dynamic
+content is removed mid-load. The facade remains script-owned so a visitor
+without JavaScript is never left blurred. The standalone gift-card layout
+implements the same overlap-and-fade contract locally because it does not load
+`theme.js` or `base.css`.
 
 **Every hosted or external video uses a same-video low-quality preview frame.**
 Every theme-controlled `video_tag`, manual `<video>` and `external_video_tag`

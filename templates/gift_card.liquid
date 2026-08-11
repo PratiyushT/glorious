@@ -27,27 +27,35 @@
   {{ 'gift-card.css' | shopify_asset_url | stylesheet_tag }}
 
   <style>
-    .gift-card-image-lqip {
+    .gift-card-image-lqip-frame {
+      position: absolute;
+      z-index: 1;
+      display: block;
+      overflow: hidden;
+      pointer-events: none;
+      background-color: #fff;
+      background-image: var(--gift-card-lqip-source);
       background-position: var(--gift-card-lqip-position, 50% 50%) !important;
       background-repeat: no-repeat !important;
       background-size: var(--gift-card-lqip-fit, cover) !important;
-    }
-
-    .gift-card-image-lqip.is-lqip-loading {
       filter: blur(18px) saturate(.72) brightness(1.12);
+      will-change: opacity;
     }
 
-    .gift-card-image-lqip.is-lqip-revealing {
-      animation: gift-card-lqip-reveal .8s ease-out both;
+    .gift-card-image-lqip-frame.is-lqip-revealing {
+      animation: gift-card-lqip-fade .35s ease-out both;
     }
 
-    @keyframes gift-card-lqip-reveal {
-      from { filter: blur(18px) saturate(.72) brightness(1.12); }
-      to { filter: blur(0) saturate(1) brightness(1); }
+    @keyframes gift-card-lqip-fade {
+      from { opacity: 1; }
+      to { opacity: 0; }
     }
 
-    @media (prefers-reduced-motion: reduce) {
-      .gift-card-image-lqip.is-lqip-revealing { animation-duration: .01ms; }
+    /* These labels are later siblings of the loading facade and remain the
+       readable top layer while the gift-card artwork finishes decoding. */
+    #gift-card-amount,
+    #gift-card-code-outer {
+      z-index: 2;
     }
   </style>
 
@@ -196,6 +204,9 @@
         document.querySelectorAll('img[data-image-lqip]:not([data-image-lqip="off"])').forEach(function (image) {
           if (image.complete && image.naturalWidth > 0) return;
 
+          var host = image.parentElement;
+          if (!host) return;
+
           var style = window.getComputedStyle(image);
           var fit = style.objectFit || 'fill';
           var backgroundFit = fit === 'cover' || fit === 'contain'
@@ -206,18 +217,53 @@
                 ? 'contain'
                 : 'auto';
 
-          image.style.setProperty('background-image', 'url(' + JSON.stringify(image.dataset.imageLqip) + ')', 'important');
-          image.style.setProperty('--gift-card-lqip-fit', backgroundFit);
-          image.style.setProperty('--gift-card-lqip-position', style.objectPosition || '50% 50%');
-          image.classList.add('gift-card-image-lqip', 'is-lqip-loading');
+          var hostPosition = host.style.getPropertyValue('position');
+          var hostPositionPriority = host.style.getPropertyPriority('position');
+          var ownsHostPosition = window.getComputedStyle(host).position === 'static';
+          if (ownsHostPosition) host.style.setProperty('position', 'relative');
+
+          var facade = document.createElement('span');
+          facade.className = 'gift-card-image-lqip-frame';
+          facade.setAttribute('aria-hidden', 'true');
+          facade.style.setProperty('--gift-card-lqip-source', 'url(' + JSON.stringify(image.dataset.imageLqip) + ')');
+          facade.style.setProperty('--gift-card-lqip-fit', backgroundFit);
+          facade.style.setProperty('--gift-card-lqip-position', style.objectPosition || '50% 50%');
+          host.insertBefore(facade, image.nextSibling);
+
+          function sync() {
+            var currentStyle = window.getComputedStyle(image);
+            var width = parseFloat(currentStyle.width);
+            var height = parseFloat(currentStyle.height);
+            if (currentStyle.boxSizing !== 'border-box') {
+              width += parseFloat(currentStyle.paddingLeft) + parseFloat(currentStyle.paddingRight) +
+                parseFloat(currentStyle.borderLeftWidth) + parseFloat(currentStyle.borderRightWidth);
+              height += parseFloat(currentStyle.paddingTop) + parseFloat(currentStyle.paddingBottom) +
+                parseFloat(currentStyle.borderTopWidth) + parseFloat(currentStyle.borderBottomWidth);
+            }
+            facade.style.left = image.offsetLeft + 'px';
+            facade.style.top = image.offsetTop + 'px';
+            facade.style.width = (isFinite(width) ? width : image.offsetWidth) + 'px';
+            facade.style.height = (isFinite(height) ? height : image.offsetHeight) + 'px';
+            facade.style.borderRadius = currentStyle.borderRadius;
+            facade.style.transform = currentStyle.transform === 'none' ? '' : currentStyle.transform;
+            facade.style.transformOrigin = currentStyle.transformOrigin || '';
+          }
+          sync();
+
+          var sizeObserver = 'ResizeObserver' in window ? new ResizeObserver(sync) : null;
+          if (sizeObserver) sizeObserver.observe(image);
+          else window.addEventListener('resize', sync);
 
           var timer = null;
           function clear() {
             if (timer) window.clearTimeout(timer);
-            image.classList.remove('gift-card-image-lqip', 'is-lqip-loading', 'is-lqip-revealing');
-            image.style.removeProperty('background-image');
-            image.style.removeProperty('--gift-card-lqip-fit');
-            image.style.removeProperty('--gift-card-lqip-position');
+            if (sizeObserver) sizeObserver.disconnect();
+            else window.removeEventListener('resize', sync);
+            if (facade.parentNode) facade.parentNode.removeChild(facade);
+            if (ownsHostPosition && host.style.getPropertyValue('position') === 'relative') {
+              if (hostPosition) host.style.setProperty('position', hostPosition, hostPositionPriority);
+              else host.style.removeProperty('position');
+            }
           }
 
           function reveal() {
@@ -231,10 +277,11 @@
                 return;
               }
 
-              image.classList.add('is-lqip-revealing');
-              image.classList.remove('is-lqip-loading');
-              image.addEventListener('animationend', clear, { once: true });
-              timer = window.setTimeout(clear, 1000);
+              facade.classList.add('is-lqip-revealing');
+              facade.addEventListener('animationend', function (event) {
+                if (event.animationName === 'gift-card-lqip-fade') clear();
+              }, { once: true });
+              timer = window.setTimeout(clear, 700);
             });
           }
 

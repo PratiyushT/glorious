@@ -937,13 +937,14 @@
 
   /* ---- Same-media low-quality previews -------------------------------
      Every raster image carries a tiny rendition of that same image in
-     `data-image-lqip`. It is painted as the image element's own background,
-     using the same fit and position as the full source, so there is no generic
-     placeholder and no extra layer to jump at handoff. Every video carries a
-     tiny rendition of its own Shopify preview frame in `data-video-lqip`; that
-     frame sits over the untouched full poster/video until the poster decodes
-     or the first real frame arrives. External-video iframes use the same
-     preview-frame facade. Full sources always load in parallel.
+     `data-image-lqip`. A precisely aligned facade keeps that rendition above
+     the untouched full source until decode completes, then fades away; the
+     browser never has to replace preview pixels in the visible image layer.
+     Every video carries a tiny rendition of its own Shopify preview frame in
+     `data-video-lqip`; that frame sits over the untouched full poster/video
+     until the poster decodes or the first real frame arrives. External-video
+     iframes use the same preview-frame facade. Full sources always load in
+     parallel.
 
      Loading state remains progressive enhancement: classes and backgrounds
      are added only here. Cached images never flash a preview, lazy images are
@@ -953,9 +954,11 @@
   var imageLqipStates = new WeakMap();
   var imageLqipBound = new WeakSet();
   var imageLqipViewport = null;
+  var imageLqipActive = [];
+  var imageLqipSyncFrame = 0;
   var videoLqipStates = new WeakMap();
   var videoLqipViewport = null;
-  var videoLqipHosts = new WeakMap();
+  var mediaLqipHosts = new WeakMap();
   var mediaLqipMutations = null;
 
   function mediaWithin(scope, selector) {
@@ -1034,21 +1037,153 @@
     if (imageLqipViewport) imageLqipViewport.unobserve(image);
   }
 
+  function measureImageLqipFrame(image) {
+    var style = window.getComputedStyle(image);
+    var width = parseFloat(style.width);
+    var height = parseFloat(style.height);
+    var fit = style.objectFit || 'fill';
+    var backgroundFit = 'auto';
+    if (fit === 'cover' || fit === 'contain') backgroundFit = fit;
+    else if (fit === 'fill') backgroundFit = '100% 100%';
+    else if (fit === 'scale-down') backgroundFit = 'contain';
+    if (style.boxSizing !== 'border-box') {
+      width += parseFloat(style.paddingLeft) + parseFloat(style.paddingRight) +
+        parseFloat(style.borderLeftWidth) + parseFloat(style.borderRightWidth);
+      height += parseFloat(style.paddingTop) + parseFloat(style.paddingBottom) +
+        parseFloat(style.borderTopWidth) + parseFloat(style.borderBottomWidth);
+    }
+
+    var left = image.offsetLeft;
+    var top = image.offsetTop;
+    var boxWidth = isFinite(width) ? width : image.offsetWidth;
+    var boxHeight = isFinite(height) ? height : image.offsetHeight;
+    var radius = style.borderRadius || '';
+    var clipPath = !style.clipPath || style.clipPath === 'none' ? '' : style.clipPath;
+    var zIndex = style.zIndex || '';
+    var transform = style.transform === 'none' ? '' : style.transform;
+    var transformOrigin = style.transformOrigin || '';
+    var objectPosition = style.objectPosition || '50% 50%';
+    var backgroundColor = style.backgroundColor && style.backgroundColor !== 'transparent' &&
+      style.backgroundColor !== 'rgba(0, 0, 0, 0)' ? style.backgroundColor : '';
+    return {
+      backgroundColor: backgroundColor,
+      backgroundFit: backgroundFit,
+      boxHeight: boxHeight,
+      boxWidth: boxWidth,
+      clipPath: clipPath,
+      key: [
+        left, top, boxWidth, boxHeight, radius, clipPath, zIndex, transform,
+        transformOrigin, backgroundFit, objectPosition, backgroundColor
+      ].join('|'),
+      left: left,
+      objectPosition: objectPosition,
+      radius: radius,
+      top: top,
+      transform: transform,
+      transformOrigin: transformOrigin,
+      zIndex: zIndex
+    };
+  }
+
+  function applyImageLqipFrame(state, geometry) {
+    if (!state || !state.overlay || state.geometryKey === geometry.key) return;
+    state.geometryKey = geometry.key;
+
+    state.overlay.style.left = geometry.left + 'px';
+    state.overlay.style.top = geometry.top + 'px';
+    state.overlay.style.width = geometry.boxWidth + 'px';
+    state.overlay.style.height = geometry.boxHeight + 'px';
+    state.overlay.style.borderRadius = geometry.radius;
+    state.overlay.style.clipPath = geometry.clipPath;
+    state.overlay.style.zIndex = geometry.zIndex;
+    state.overlay.style.transform = geometry.transform;
+    state.overlay.style.transformOrigin = geometry.transformOrigin;
+    state.overlay.style.setProperty('--image-lqip-fit', geometry.backgroundFit);
+    state.overlay.style.setProperty('--image-lqip-position', geometry.objectPosition);
+
+    if (geometry.backgroundColor) {
+      state.overlay.style.setProperty('--image-lqip-color', geometry.backgroundColor);
+    } else {
+      state.overlay.style.removeProperty('--image-lqip-color');
+    }
+  }
+
+  function syncImageLqipFrame(image, state) {
+    if (!state || !state.overlay || !state.host || !state.overlay.isConnected) return;
+    applyImageLqipFrame(state, measureImageLqipFrame(image));
+  }
+
+  function syncActiveImageLqipFrames() {
+    imageLqipSyncFrame = 0;
+    var active = imageLqipActive.slice();
+    imageLqipActive = [];
+    var connected = [];
+    var detached = [];
+
+    active.forEach(function (image) {
+      var state = imageLqipStates.get(image);
+      if (!state || !state.active || !state.overlay) return;
+      if (!image.isConnected || !state.overlay.isConnected) {
+        detached.push({ image: image, state: state });
+        return;
+      }
+      connected.push({ image: image, state: state });
+    });
+
+    detached.forEach(function (entry) {
+      clearImageLqipVisual(entry.image, entry.state);
+    });
+
+    /* Read every live box before writing any facade styles. This keeps a grid
+       of slow-loading images to one layout pass per frame instead of one pass
+       per image. */
+    connected.forEach(function (entry) {
+      entry.geometry = measureImageLqipFrame(entry.image);
+    });
+    connected.forEach(function (entry) {
+      applyImageLqipFrame(entry.state, entry.geometry);
+      imageLqipActive.push(entry.image);
+    });
+
+    if (imageLqipActive.length) {
+      imageLqipSyncFrame = window.requestAnimationFrame(syncActiveImageLqipFrames);
+    }
+  }
+
+  function trackImageLqipFrame(image) {
+    if (imageLqipActive.indexOf(image) === -1) imageLqipActive.push(image);
+    if (!imageLqipSyncFrame) {
+      imageLqipSyncFrame = window.requestAnimationFrame(syncActiveImageLqipFrames);
+    }
+  }
+
+  function untrackImageLqipFrame(image) {
+    imageLqipActive = imageLqipActive.filter(function (active) { return active !== image; });
+    if (!imageLqipActive.length && imageLqipSyncFrame) {
+      window.cancelAnimationFrame(imageLqipSyncFrame);
+      imageLqipSyncFrame = 0;
+    }
+  }
+
   function clearImageLqipVisual(image, state) {
     if (state && state.timer) {
       window.clearTimeout(state.timer);
       state.timer = null;
     }
-    if (state && state.animationEnd) {
-      image.removeEventListener('animationend', state.animationEnd);
+    if (state && state.overlay && state.animationEnd) {
+      state.overlay.removeEventListener('animationend', state.animationEnd);
       state.animationEnd = null;
     }
 
     unobserveImageLqip(image);
+    untrackImageLqipFrame(image);
+    if (state && state.overlay && state.overlay.parentNode) state.overlay.parentNode.removeChild(state.overlay);
+    if (state) {
+      state.active = false;
+      state.overlay = null;
+    }
     image.classList.remove('image-lqip', 'is-lqip-loading', 'is-lqip-revealing');
-    image.style.removeProperty('--image-lqip-source');
-    image.style.removeProperty('--image-lqip-fit');
-    image.style.removeProperty('--image-lqip-position');
+    releaseMediaLqipHost(state);
   }
 
   function activateImageLqip(image, state) {
@@ -1063,18 +1198,28 @@
       return;
     }
 
-    var style = window.getComputedStyle(image);
-    var fit = style.objectFit || 'fill';
-    var backgroundFit = 'auto';
-    if (fit === 'cover' || fit === 'contain') backgroundFit = fit;
-    else if (fit === 'fill') backgroundFit = '100% 100%';
-    else if (fit === 'scale-down') backgroundFit = 'contain';
+    var host = image.parentElement;
+    /* An img inside video is fallback content, not a rendered image surface.
+       Its parent video owns the preview-frame lifecycle instead. */
+    if (!host || host.tagName === 'VIDEO') {
+      state.done = true;
+      unobserveImageLqip(image);
+      return;
+    }
 
-    image.style.setProperty('--image-lqip-source', 'url(' + JSON.stringify(state.lqip) + ')');
-    image.style.setProperty('--image-lqip-fit', backgroundFit);
-    image.style.setProperty('--image-lqip-position', style.objectPosition || '50% 50%');
-    image.classList.add('image-lqip', 'is-lqip-loading');
+    acquireMediaLqipHost(host, state);
+
+    var overlay = document.createElement('span');
+    overlay.className = 'image-lqip-frame is-lqip-loading';
+    overlay.setAttribute('aria-hidden', 'true');
+    overlay.style.setProperty('--image-lqip-source', 'url(' + JSON.stringify(state.lqip) + ')');
+    host.insertBefore(overlay, image.nextSibling);
+
+    state.overlay = overlay;
     state.active = true;
+    syncImageLqipFrame(image, state);
+    trackImageLqipFrame(image);
+    image.classList.add('image-lqip', 'is-lqip-loading');
   }
 
   function queueImageLqip(image, state, immediate) {
@@ -1107,7 +1252,7 @@
     state.done = true;
     unobserveImageLqip(image);
 
-    if (!state.active) return;
+    if (!state.active || !state.overlay) return;
     if (reduceMotion.matches) {
       finishImageLqip(image, state);
       return;
@@ -1115,15 +1260,17 @@
 
     image.classList.add('is-lqip-revealing');
     image.classList.remove('is-lqip-loading');
+    state.overlay.classList.add('is-lqip-revealing');
+    state.overlay.classList.remove('is-lqip-loading');
 
     state.animationEnd = function (event) {
-      if (event.animationName !== 'gj-image-lqip-reveal') return;
+      if (event.animationName !== 'gj-image-lqip-fade') return;
       finishImageLqip(image, state);
     };
-    image.addEventListener('animationend', state.animationEnd);
+    state.overlay.addEventListener('animationend', state.animationEnd);
     state.timer = window.setTimeout(function () {
       finishImageLqip(image, state);
-    }, 1000);
+    }, 900);
   }
 
   function imageLqipLoaded(image) {
@@ -1159,6 +1306,13 @@
     var previous = imageLqipStates.get(image);
     var key = imageLqipKey(image, lqip);
 
+    if (previous && previous.active &&
+        (previous.host !== image.parentElement || image.nextSibling !== previous.overlay)) {
+      clearImageLqipVisual(image, previous);
+      imageLqipStates.delete(image);
+      previous = null;
+    }
+
     if (previous && previous.key === key) {
       if (immediate && !previous.active && !previous.done) activateImageLqip(image, previous);
       return;
@@ -1171,8 +1325,12 @@
     var state = {
       active: false,
       done: false,
+      geometryKey: '',
       key: key,
       lqip: lqip,
+      host: null,
+      hostLease: null,
+      overlay: null,
       timer: null,
       animationEnd: null
     };
@@ -1249,8 +1407,8 @@
     if (videoLqipViewport) videoLqipViewport.unobserve(media);
   }
 
-  function acquireVideoLqipHost(host, state) {
-    var lease = videoLqipHosts.get(host);
+  function acquireMediaLqipHost(host, state) {
+    var lease = mediaLqipHosts.get(host);
     if (!lease) {
       var hostStyle = window.getComputedStyle(host);
       lease = {
@@ -1260,7 +1418,7 @@
         positionValue: host.style.getPropertyValue('position')
       };
       if (lease.ownsPosition) host.style.setProperty('position', 'relative');
-      videoLqipHosts.set(host, lease);
+      mediaLqipHosts.set(host, lease);
     }
 
     lease.count += 1;
@@ -1268,10 +1426,10 @@
     state.hostLease = lease;
   }
 
-  function releaseVideoLqipHost(state) {
+  function releaseMediaLqipHost(state) {
     var host = state && state.host;
     var lease = state && state.hostLease;
-    if (!host || !lease || videoLqipHosts.get(host) !== lease) return;
+    if (!host || !lease || mediaLqipHosts.get(host) !== lease) return;
 
     lease.count = Math.max(0, lease.count - 1);
     if (lease.count === 0) {
@@ -1282,7 +1440,7 @@
           host.style.removeProperty('position');
         }
       }
-      videoLqipHosts.delete(host);
+      mediaLqipHosts.delete(host);
     }
 
     state.host = null;
@@ -1322,7 +1480,7 @@
     if (state && state.overlay && state.overlay.parentNode) state.overlay.parentNode.removeChild(state.overlay);
     if (state) state.overlay = null;
     media.classList.remove('video-lqip', 'is-lqip-loading', 'is-lqip-revealing');
-    releaseVideoLqipHost(state);
+    releaseMediaLqipHost(state);
   }
 
   function finishVideoLqip(media, state) {
@@ -1415,7 +1573,7 @@
       return;
     }
 
-    acquireVideoLqipHost(host, state);
+    acquireMediaLqipHost(host, state);
 
     var style = window.getComputedStyle(media);
     var fit = style.objectFit || 'cover';
@@ -1500,6 +1658,13 @@
     var previous = videoLqipStates.get(media);
     var key = videoLqipKey(media, lqip, poster);
 
+    if (previous && previous.active &&
+        (previous.host !== media.parentElement || media.nextSibling !== previous.overlay)) {
+      clearVideoLqipVisual(media, previous);
+      videoLqipStates.delete(media);
+      previous = null;
+    }
+
     if (previous && previous.key === key) {
       if (immediate && !previous.active && !previous.done) activateVideoLqip(media, previous);
       return;
@@ -1561,6 +1726,21 @@
     });
   }
 
+  function clearRemovedMediaLqip(scope) {
+    mediaWithin(scope, 'img').forEach(function (image) {
+      var state = imageLqipStates.get(image);
+      if (!state) return;
+      clearImageLqipVisual(image, state);
+      imageLqipStates.delete(image);
+    });
+    mediaWithin(scope, 'video, iframe[data-video-lqip]').forEach(function (media) {
+      var state = videoLqipStates.get(media);
+      if (!state) return;
+      clearVideoLqipVisual(media, state);
+      videoLqipStates.delete(media);
+    });
+  }
+
   function initMediaLqipObserver() {
     if (mediaLqipMutations || !('MutationObserver' in window) || !document.body) return;
 
@@ -1572,6 +1752,9 @@
         if (record.type === 'childList') {
           Array.prototype.forEach.call(record.addedNodes, function (node) {
             if (node.nodeType === 1) blurUp(node, false);
+          });
+          Array.prototype.forEach.call(record.removedNodes, function (node) {
+            if (node.nodeType === 1 && !node.isConnected) clearRemovedMediaLqip(node);
           });
           if ((record.target.tagName === 'VIDEO' || record.target.tagName === 'IFRAME') &&
               changedVideos.indexOf(record.target) === -1) {

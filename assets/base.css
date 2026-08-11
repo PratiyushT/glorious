@@ -635,30 +635,30 @@ a {
   border-radius: var(--radius-arch) var(--radius-arch) var(--radius) var(--radius);
 }
 
-/* A true same-image low-quality preview. JavaScript adds these classes only
-   while the full source is outstanding, so no-script and cached-image paths
-   remain untouched. The tiny rendition is the img's own background and uses
-   its object fit/position; the decoded full image then sharpens over it. */
-.image-lqip {
-  /* Several components set `background` later in this file. These temporary
-     longhands must win over those shorthands or the tiny image disappears. */
+/* The exact tiny rendition fully covers its corresponding image until the
+   full source has decoded. Only this upper facade fades, so the two sources
+   overlap throughout the handoff instead of swapping in a single paint. */
+.image-lqip-frame {
+  position: absolute;
+  display: block;
+  overflow: hidden;
+  pointer-events: none;
+  background-color: var(--image-lqip-color, var(--c-surface));
   background-image: var(--image-lqip-source) !important;
   background-position: var(--image-lqip-position, 50% 50%) !important;
   background-repeat: no-repeat !important;
   background-size: var(--image-lqip-fit, cover) !important;
-}
-
-.image-lqip.is-lqip-loading {
   filter: blur(18px) saturate(0.72) brightness(1.12);
+  will-change: opacity;
 }
 
-.image-lqip.is-lqip-revealing {
-  animation: gj-image-lqip-reveal 0.8s ease-out both;
+.image-lqip-frame.is-lqip-revealing {
+  animation: gj-image-lqip-fade 0.35s ease-out both;
 }
 
-@keyframes gj-image-lqip-reveal {
-  from { filter: blur(18px) saturate(0.72) brightness(1.12); }
-  to { filter: blur(0) saturate(1) brightness(1); }
+@keyframes gj-image-lqip-fade {
+  from { opacity: 1; }
+  to { opacity: 0; }
 }
 
 /* Videos use their own exact Shopify preview frame. It sits above the full
@@ -1383,7 +1383,6 @@ a {
   background: var(--c-surface);
   /* The design's framing correction. Liquid works the factor out per piece. */
   transform: scale(var(--card-zoom));
-  transition: filter 0.9s ease 0.1s;
 }
 
 /* Without the script the first slide is simply the one on show. The design's
@@ -5162,13 +5161,13 @@ a.nav-menu__address:hover {
   transform: translate(var(--qv-tx, 0px), var(--qv-ty, 0px))
              scale(calc(var(--qv-zoom, 1) * var(--qv-zoom-base, 1)));
   transform-origin: 50% 50%;
-  transition: transform 0.55s var(--ease), filter 0.9s ease 0.1s;
+  transition: transform 0.55s var(--ease);
 }
 
 /* While a pointer is driving the zoom, the transform must follow it frame for
    frame — an easing curve here would lag behind the finger. */
 .quick-view__img[data-quick-dragging] {
-  transition: filter 0.9s ease 0.1s;
+  transition: none;
 }
 
 [data-quick-zoomable] {
