@@ -3,12 +3,19 @@
   so the brand reads GL[mark]RIOUS on one line. Used in the nav bar, the nav
   pill and the menu overlay header.
 
-  The emblem has a light and a dark cut; which one is used follows the surface
-  it sits on rather than being hardcoded.
+  The theme's own emblem is inline SVG on `currentColor`, so it takes the
+  colour of the surface it sits on. It used to be two PNG cuts, light and
+  dark, chosen by an `on_dark` flag — which is what `currentColor` does by
+  itself, and correctly for any colour scheme rather than only for black and
+  white. `on_dark` is therefore accepted and ignored, so existing callers do
+  not need touching.
+
+  A merchant's own mark is still an `<img>`: it is their artwork and the theme
+  must not recolour it.
 
   Accepts:
     size    - 'sm' (nav), 'md' (default), 'lg' (menu overlay).
-    on_dark - true to use the light emblem. Defaults to true.
+    on_dark - accepted for compatibility; the emblem now follows currentColor.
 {%- endcomment -%}
 
 {%- liquid
@@ -16,19 +23,8 @@
   assign letters = source | split: ''
   assign scale = size | default: 'md'
 
-  assign use_light = true
-  if on_dark == false
-    assign use_light = false
-  endif
-
   assign mark = settings.wordmark_mark
-  if mark == blank
-    if use_light
-      assign mark_url = 'wordmark-mark-white.png' | asset_url
-    else
-      assign mark_url = 'wordmark-mark-dark.png' | asset_url
-    endif
-  else
+  if mark != blank
     assign mark_url = mark | image_url: width: 300
   endif
 
@@ -49,16 +45,20 @@
 <span class="lockup lockup--{{ scale }}" role="img" aria-label="{{ source }}">
   {%- for letter in letters -%}
     {%- if forloop.index0 == mark_index -%}
-      <img
-        class="lockup__mark"
-        src="{{ mark_url }}"
-        data-image-lqip="off"
-        alt=""
-        aria-hidden="true"
-        width="139"
-        height="154"
-        loading="eager"
-      >
+      {%- if mark_url != blank -%}
+        <img
+          class="lockup__mark"
+          src="{{ mark_url }}"
+          data-image-lqip="off"
+          alt=""
+          aria-hidden="true"
+          width="139"
+          height="154"
+          loading="eager"
+        >
+      {%- else -%}
+        {%- render 'wordmark-mark' -%}
+      {%- endif -%}
     {%- else -%}
       {%- liquid
         assign is_lead = false

@@ -1,0 +1,43 @@
+{%- comment -%}
+  The theme's own emblem, drawn rather than shipped as artwork.
+
+  It replaced three PNGs — a dark cut, a light cut and a spare, about 50KB
+  between them — which were the previous shop's real logo. A theme for sale
+  cannot carry another business's mark, and renaming the files did not change
+  what was inside them.
+
+  Inline SVG on `currentColor`, so:
+    - it takes the colour of whatever surface it sits on, which is what the two
+      cuts existed to fake, and it follows a merchant's colour scheme for free;
+    - it costs no request and about 400 bytes against 50KB;
+    - it stays sharp at any size, where the PNGs were fixed at 139x154.
+
+  Deliberately generic: a lozenge with a girdle and two crown facets. It is a
+  placeholder a merchant replaces in `wordmark_mark`, and it is drawn in the
+  theme's own language — hairline, square-on, geometric — so a store that never
+  replaces it still looks deliberate rather than unfinished.
+
+  `stroke-width` is in the viewBox's own units and scales with the mark. Do not
+  reach for `vector-effect: non-scaling-stroke` — see the loader's note; it is
+  not needed here, and it destroys any future dash animation.
+
+  Accepts:
+    class - extra classes for the caller
+{%- endcomment -%}
+
+<svg
+  class="lockup__mark{% if class != blank %} {{ class }}{% endif %}"
+  viewBox="0 0 139 154"
+  width="139"
+  height="154"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="7"
+  stroke-linejoin="round"
+  aria-hidden="true"
+  focusable="false"
+>
+  <path d="M69.5 8 L131 77 L69.5 146 L8 77 Z" />
+  <path d="M8 77 H131" />
+  <path d="M40 42 L52 77 M99 42 L87 77" stroke-linecap="round" />
+</svg>
