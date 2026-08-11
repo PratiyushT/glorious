@@ -694,11 +694,47 @@ Five scales, thirteen endpoints, now five steps, from
   from an older version of the theme degrades to the design rather than to an
   empty `clamp()`.
 
-Between this, the spacing steps and the motion step, **72 ranges are now 38** —
-and 14 of the remaining are legitimately continuous: the lookbook's eight point
-coordinates, two popup delays, a carousel interval, a column count, a product
-count and the nav's scroll threshold. Two more are the footer's, waiting on the
-chrome pass.
+**Every other numeric setting is a step too**, resolved by the same snippet.
+`scale-step.liquid` holds them all, so there is one place a rung is defined and
+one contract — print numbers, never keywords, and let the caller append the
+unit:
+
+| setting | rungs | `md` is |
+| --- | --- | --- |
+| `body_leading` `display_leading` `heading_leading` | Tightest…Loosest | the design's 185 / 95 / 108 |
+| `display_tracking` `heading_tracking` `button_tracking` | Tightest…Loosest | the design's 20 / 0 / 160‰ |
+| `micro` | Extra small…Extra large | 12px + 220‰ |
+| `radius_base` `radius_arch` `border_width` | Extra small…Extra large | 0 / 220 / 1 |
+| `hairline_opacity` `shadow_opacity` | Extra small…Extra large | 14% / 55% |
+| `button_size` | Extra small…Extra large | 28 / 16 / 12 |
+| `button_radius` | Square / Soft / Rounded / Pill | Pill |
+
+- **`micro` and `button_size` are merges, on the same argument as the fluid
+  scales.** Micro size and micro tracking are one decision about a label;
+  button padding-x, padding-y and label size are one decision about a button,
+  and a merchant wanting a bigger button had to move three sliders and keep
+  them in proportion.
+- **`button_radius` is named for the shape, not sized.** A corner is a look,
+  not a quantity. `pill` emits 999px, which the browser caps at half the
+  shorter side — safe here only because nothing animates a *button's* radius.
+  The nav animates one and must keep `calc(var(--nav-pill-h) / 2)`; a sentinel
+  there crosses the cap 3.3% of the way in and the corners snap.
+- **The four `color-mix()` and `calc()` consumers came through unchanged**
+  because every rung is a number: `--hairline`, `--shadow-strength`,
+  `--button-padding-y` and `--duration`. This is the whole reason for the
+  print-numbers rule.
+
+**72 ranges are now 18, and every survivor is genuinely continuous** — four
+width measures (`page_width`, `page_width_narrow`, `content_width`,
+`grid_min_column`), the lookbook's eight point coordinates, two popup delays, a
+carousel interval, a column count, a product count and the nav's scroll
+threshold. 89 merchant-facing theme settings are 73.
+
+Verified on the page: **all 19 affected tokens compute identically** to the
+range defaults they replaced. The one apparent difference is not one —
+`--heading-tracking` serialises as `0.0em` where it was `0em`, and
+`letter-spacing: 0em` computes to `normal` in Blink just as `0.0em` does.
+Checked with a probe rather than assumed.
 
 ### Motion
 

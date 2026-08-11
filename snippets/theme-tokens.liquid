@@ -31,6 +31,37 @@
 {%- capture s_head -%}{%- render 'scale-step', scale: 'section_heading', step: settings.section_heading_size -%}{%- endcapture -%}
 {%- if s_head == blank -%}{%- capture s_head -%}{%- render 'scale-step', scale: 'section_heading', step: 'md' -%}{%- endcapture -%}{%- endif -%}
 
+{%- capture s_bleading -%}{%- render 'scale-step', scale: 'body_leading', step: settings.body_leading -%}{%- endcapture -%}
+{%- if s_bleading == blank -%}{%- capture s_bleading -%}{%- render 'scale-step', scale: 'body_leading', step: 'md' -%}{%- endcapture -%}{%- endif -%}
+{%- capture s_dleading -%}{%- render 'scale-step', scale: 'display_leading', step: settings.display_leading -%}{%- endcapture -%}
+{%- if s_dleading == blank -%}{%- capture s_dleading -%}{%- render 'scale-step', scale: 'display_leading', step: 'md' -%}{%- endcapture -%}{%- endif -%}
+{%- capture s_dtrack -%}{%- render 'scale-step', scale: 'display_tracking', step: settings.display_tracking -%}{%- endcapture -%}
+{%- if s_dtrack == blank -%}{%- capture s_dtrack -%}{%- render 'scale-step', scale: 'display_tracking', step: 'md' -%}{%- endcapture -%}{%- endif -%}
+{%- capture s_hleading -%}{%- render 'scale-step', scale: 'heading_leading', step: settings.heading_leading -%}{%- endcapture -%}
+{%- if s_hleading == blank -%}{%- capture s_hleading -%}{%- render 'scale-step', scale: 'heading_leading', step: 'md' -%}{%- endcapture -%}{%- endif -%}
+{%- capture s_htrack -%}{%- render 'scale-step', scale: 'heading_tracking', step: settings.heading_tracking -%}{%- endcapture -%}
+{%- if s_htrack == blank -%}{%- capture s_htrack -%}{%- render 'scale-step', scale: 'heading_tracking', step: 'md' -%}{%- endcapture -%}{%- endif -%}
+{%- capture s_micro -%}{%- render 'scale-step', scale: 'micro', step: settings.micro -%}{%- endcapture -%}
+{%- if s_micro == blank -%}{%- capture s_micro -%}{%- render 'scale-step', scale: 'micro', step: 'md' -%}{%- endcapture -%}{%- endif -%}
+{%- capture s_radius -%}{%- render 'scale-step', scale: 'radius_base', step: settings.radius_base -%}{%- endcapture -%}
+{%- if s_radius == blank -%}{%- capture s_radius -%}{%- render 'scale-step', scale: 'radius_base', step: 'xs' -%}{%- endcapture -%}{%- endif -%}
+{%- capture s_arch -%}{%- render 'scale-step', scale: 'radius_arch', step: settings.radius_arch -%}{%- endcapture -%}
+{%- if s_arch == blank -%}{%- capture s_arch -%}{%- render 'scale-step', scale: 'radius_arch', step: 'md' -%}{%- endcapture -%}{%- endif -%}
+{%- capture s_border -%}{%- render 'scale-step', scale: 'border_width', step: settings.border_width -%}{%- endcapture -%}
+{%- if s_border == blank -%}{%- capture s_border -%}{%- render 'scale-step', scale: 'border_width', step: 'sm' -%}{%- endcapture -%}{%- endif -%}
+{%- capture s_hair -%}{%- render 'scale-step', scale: 'hairline_opacity', step: settings.hairline_opacity -%}{%- endcapture -%}
+{%- if s_hair == blank -%}{%- capture s_hair -%}{%- render 'scale-step', scale: 'hairline_opacity', step: 'md' -%}{%- endcapture -%}{%- endif -%}
+{%- capture s_shadow -%}{%- render 'scale-step', scale: 'shadow_opacity', step: settings.shadow_opacity -%}{%- endcapture -%}
+{%- if s_shadow == blank -%}{%- capture s_shadow -%}{%- render 'scale-step', scale: 'shadow_opacity', step: 'md' -%}{%- endcapture -%}{%- endif -%}
+{%- capture s_btnsize -%}{%- render 'scale-step', scale: 'button_size', step: settings.button_size -%}{%- endcapture -%}
+{%- if s_btnsize == blank -%}{%- capture s_btnsize -%}{%- render 'scale-step', scale: 'button_size', step: 'md' -%}{%- endcapture -%}{%- endif -%}
+{%- capture s_btntrack -%}{%- render 'scale-step', scale: 'button_tracking', step: settings.button_tracking -%}{%- endcapture -%}
+{%- if s_btntrack == blank -%}{%- capture s_btntrack -%}{%- render 'scale-step', scale: 'button_tracking', step: 'md' -%}{%- endcapture -%}{%- endif -%}
+{%- capture s_btnborder -%}{%- render 'scale-step', scale: 'button_border_width', step: settings.button_border_width -%}{%- endcapture -%}
+{%- if s_btnborder == blank -%}{%- capture s_btnborder -%}{%- render 'scale-step', scale: 'button_border_width', step: 'sm' -%}{%- endcapture -%}{%- endif -%}
+{%- capture s_btnradius -%}{%- render 'scale-step', scale: 'button_radius', step: settings.button_radius -%}{%- endcapture -%}
+{%- if s_btnradius == blank -%}{%- capture s_btnradius -%}{%- render 'scale-step', scale: 'button_radius', step: 'pill' -%}{%- endcapture -%}{%- endif -%}
+
 {%- liquid
   assign vw_min = 360.0
   assign vw_max = 1440.0
@@ -65,6 +96,9 @@
   assign disp_min = dsp[0] | times: 1.0
   assign disp_grow = dsp[1] | times: 1.0
   assign disp_max = dsp[2] | times: 1.0
+
+  assign mic = s_micro | split: ','
+  assign btn = s_btnsize | split: ','
 
   assign shd = s_head | split: ','
   assign head_min = shd[0] | times: 1.0
@@ -181,8 +215,8 @@
        Sized directly against the viewport so the wordmark-style titles
        hold their edge-to-edge proportion at every width.                */
     --fs-display: clamp({{ disp_min | divided_by: root_px | round: 4 }}rem, {{ disp_grow | divided_by: 10.0 }}vw, {{ disp_max | divided_by: root_px | round: 4 }}rem);
-    --display-leading: {{ settings.display_leading | divided_by: 100.0 }};
-    --display-tracking: {{ settings.display_tracking | divided_by: 1000.0 }}em;
+    --display-leading: {{ s_dleading | times: 1.0 | divided_by: 100.0 }};
+    --display-tracking: {{ s_dtrack | times: 1.0 | divided_by: 1000.0 }}em;
     --display-transform: {% if settings.display_uppercase %}uppercase{% else %}none{% endif %};
 
     /* Section headings — the sentence-case titles inside sections. */
@@ -224,19 +258,19 @@
     --font-display-style: {{ settings.font_heading.style }};
     --display-weight: {{ settings.font_heading.weight }};
     {%- endif %}
-    --heading-leading: {{ settings.heading_leading | divided_by: 100.0 }};
-    --heading-tracking: {{ settings.heading_tracking | divided_by: 1000.0 }}em;
-    --body-leading: {{ settings.body_leading | divided_by: 100.0 }};
-    --micro-size: {{ settings.micro_size }}px;
-    --micro-tracking: {{ settings.micro_tracking | divided_by: 1000.0 }}em;
+    --heading-leading: {{ s_hleading | times: 1.0 | divided_by: 100.0 }};
+    --heading-tracking: {{ s_htrack | times: 1.0 | divided_by: 1000.0 }}em;
+    --body-leading: {{ s_bleading | times: 1.0 | divided_by: 100.0 }};
+    --micro-size: {{ mic[0] }}px;
+    --micro-tracking: {{ mic[1] | times: 1.0 | divided_by: 1000.0 }}em;
 
     /* ---- Shape ------------------------------------------------------- */
-    --radius: {{ settings.radius_base }}px;
-    --radius-sm: {{ settings.radius_base | divided_by: 2.0 | round: 2 }}px;
-    --radius-arch: clamp({{ settings.radius_arch | times: 0.55 | round: 0 }}px, 15vw, {{ settings.radius_arch }}px);
-    --border-width: {{ settings.border_width }}px;
-    --hairline: {{ settings.hairline_opacity }}%;
-    --shadow-strength: {{ settings.shadow_opacity }}%;
+    --radius: {{ s_radius }}px;
+    --radius-sm: {{ s_radius | times: 1.0 | divided_by: 2.0 | round: 2 }}px;
+    --radius-arch: clamp({{ s_arch | times: 0.55 | round: 0 }}px, 15vw, {{ s_arch }}px);
+    --border-width: {{ s_border }}px;
+    --hairline: {{ s_hair }}%;
+    --shadow-strength: {{ s_shadow }}%;
 
     /* ---- Buttons ----------------------------------------------------- */
     {%- comment -%}
@@ -244,12 +278,12 @@
       than a literal pill value. At the maximum, emit a radius large enough to
       round any button fully — which is what the design specifies.
     {%- endcomment -%}
-    --button-radius: {% if settings.button_radius >= 50 %}999px{% else %}{{ settings.button_radius }}px{% endif %};
-    --button-padding-x: {{ settings.button_padding_x }}px;
-    --button-padding-y: {{ settings.button_padding_y }}px;
-    --button-size: {{ settings.button_size }}px;
-    --button-tracking: {{ settings.button_tracking | divided_by: 1000.0 }}em;
-    --button-border-width: {{ settings.button_border_width }}px;
+    --button-radius: {{ s_btnradius }}px;
+    --button-padding-x: {{ btn[0] }}px;
+    --button-padding-y: {{ btn[1] }}px;
+    --button-size: {{ btn[2] }}px;
+    --button-tracking: {{ s_btntrack | times: 1.0 | divided_by: 1000.0 }}em;
+    --button-border-width: {{ s_btnborder }}px;
     --button-transform: {% if settings.button_uppercase %}uppercase{% else %}none{% endif %};
 
     /* ---- Product cards ----------------------------------------------- */

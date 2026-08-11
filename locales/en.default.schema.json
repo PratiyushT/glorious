@@ -82,15 +82,32 @@
         "label": "Type scale (wide screens)"
       },
       "body_leading": {
-        "label": "Body line height"
+        "label": "Body line spacing",
+        "info": "How much air between lines of body copy.",
+        "options__xs": "Tightest",
+        "options__sm": "Tight",
+        "options__md": "Normal",
+        "options__lg": "Loose",
+        "options__xl": "Loosest"
       },
       "display_header": "Display headings",
       "display_paragraph": "The oversized section titles that run edge to edge. These scale with the viewport rather than stepping at breakpoints.",
       "display_leading": {
-        "label": "Display line height"
+        "label": "Display line spacing",
+        "info": "Leading for the large edge-to-edge titles.",
+        "options__xs": "Tightest",
+        "options__sm": "Tight",
+        "options__md": "Normal",
+        "options__lg": "Loose",
+        "options__xl": "Loosest"
       },
       "display_tracking": {
-        "label": "Display letter spacing"
+        "label": "Display letter spacing",
+        "options__xs": "Tightest",
+        "options__sm": "Tight",
+        "options__md": "Normal",
+        "options__lg": "Loose",
+        "options__xl": "Loosest"
       },
       "display_uppercase": {
         "label": "Uppercase display headings"
@@ -98,19 +115,23 @@
       "section_header": "Section headings",
       "headings_header": "Headings",
       "heading_leading": {
-        "label": "Heading line height"
+        "label": "Heading line spacing",
+        "options__xs": "Tightest",
+        "options__sm": "Tight",
+        "options__md": "Normal",
+        "options__lg": "Loose",
+        "options__xl": "Loosest"
       },
       "heading_tracking": {
-        "label": "Heading letter spacing"
+        "label": "Heading letter spacing",
+        "options__xs": "Tightest",
+        "options__sm": "Tight",
+        "options__md": "Normal",
+        "options__lg": "Loose",
+        "options__xl": "Loosest"
       },
       "micro_header": "Micro labels",
       "micro_paragraph": "The small uppercase eyebrow text above section headings and inside cards.",
-      "micro_size": {
-        "label": "Micro label size"
-      },
-      "micro_tracking": {
-        "label": "Micro label letter spacing"
-      },
       "type_base": {
         "label": "Body text size",
         "info": "Sets the whole type scale — every other size is derived from it.",
@@ -132,6 +153,15 @@
       "section_heading_size": {
         "label": "Section heading size",
         "info": "The sentence-case titles inside sections.",
+        "options__xs": "Extra small",
+        "options__sm": "Small",
+        "options__md": "Medium",
+        "options__lg": "Large",
+        "options__xl": "Extra large"
+      },
+      "micro": {
+        "label": "Micro label size",
+        "info": "The small uppercase labels. Sets size and letter spacing together.",
         "options__xs": "Extra small",
         "options__sm": "Small",
         "options__md": "Medium",
@@ -214,43 +244,82 @@
       "name": "Shape",
       "paragraph": "The design pairs square cards and imagery with fully rounded buttons.",
       "radius_base": {
-        "label": "Card and image corner radius"
+        "label": "Corner radius",
+        "info": "The reference design is square.",
+        "options__xs": "Extra small",
+        "options__sm": "Small",
+        "options__md": "Medium",
+        "options__lg": "Large",
+        "options__xl": "Extra large"
       },
       "radius_arch": {
-        "label": "Arched image radius",
-        "info": "The tall arch on the about and visit photographs."
+        "label": "Arch height",
+        "info": "The arched image top used by About and Visit.",
+        "options__xs": "Extra small",
+        "options__sm": "Small",
+        "options__md": "Medium",
+        "options__lg": "Large",
+        "options__xl": "Extra large"
       },
       "border_width": {
-        "label": "Border width"
+        "label": "Border width",
+        "options__xs": "Extra small",
+        "options__sm": "Small",
+        "options__md": "Medium",
+        "options__lg": "Large",
+        "options__xl": "Extra large"
       },
       "hairline_opacity": {
         "label": "Hairline strength",
-        "info": "Opacity of the thin rules that separate rows and sections."
+        "info": "How visible the fine rules are against the background.",
+        "options__xs": "Extra small",
+        "options__sm": "Small",
+        "options__md": "Medium",
+        "options__lg": "Large",
+        "options__xl": "Extra large"
       },
       "shadow_opacity": {
-        "label": "Card hover shadow"
+        "label": "Shadow strength",
+        "options__xs": "Extra small",
+        "options__sm": "Small",
+        "options__md": "Medium",
+        "options__lg": "Large",
+        "options__xl": "Extra large"
       }
     },
     "buttons": {
       "name": "Buttons",
       "button_radius": {
-        "label": "Button corner radius",
-        "info": "At the maximum the button is fully rounded into a pill, as in the design."
-      },
-      "button_padding_x": {
-        "label": "Horizontal padding"
-      },
-      "button_padding_y": {
-        "label": "Vertical padding"
+        "label": "Button shape",
+        "options__square": "Square",
+        "options__soft": "Soft",
+        "options__rounded": "Rounded",
+        "options__pill": "Pill"
       },
       "button_size": {
-        "label": "Label size"
+        "label": "Button size",
+        "info": "Sets padding and label size together.",
+        "options__xs": "Extra small",
+        "options__sm": "Small",
+        "options__md": "Medium",
+        "options__lg": "Large",
+        "options__xl": "Extra large"
       },
       "button_tracking": {
-        "label": "Label letter spacing"
+        "label": "Button letter spacing",
+        "options__xs": "Tightest",
+        "options__sm": "Tight",
+        "options__md": "Normal",
+        "options__lg": "Loose",
+        "options__xl": "Loosest"
       },
       "button_border_width": {
-        "label": "Border width"
+        "label": "Button border width",
+        "options__xs": "Extra small",
+        "options__sm": "Small",
+        "options__md": "Medium",
+        "options__lg": "Large",
+        "options__xl": "Extra large"
       },
       "button_uppercase": {
         "label": "Uppercase button text"

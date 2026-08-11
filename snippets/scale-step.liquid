@@ -83,4 +83,160 @@
       {%- when 'xl' -%}56,66,90
     {%- endcase -%}
 
+  {%- comment -%}
+    Single-value scales below. Same contract: numbers only, `md` is the
+    reference design's own figure except where noted, and the caller appends
+    the unit. Several of these land in calc() or color-mix(), where a keyword
+    would invalidate the declaration outright.
+  {%- endcomment -%}
+
+  {%- when 'body_leading' -%}
+    {%- case step -%}
+      {%- when 'xs' -%}145
+      {%- when 'sm' -%}165
+      {%- when 'md' -%}185
+      {%- when 'lg' -%}200
+      {%- when 'xl' -%}215
+    {%- endcase -%}
+
+  {%- when 'display_leading' -%}
+    {%- case step -%}
+      {%- when 'xs' -%}85
+      {%- when 'sm' -%}90
+      {%- when 'md' -%}95
+      {%- when 'lg' -%}108
+      {%- when 'xl' -%}122
+    {%- endcase -%}
+
+  {%- when 'display_tracking' -%}
+    {%- case step -%}
+      {%- when 'xs' -%}-20
+      {%- when 'sm' -%}0
+      {%- when 'md' -%}20
+      {%- when 'lg' -%}40
+      {%- when 'xl' -%}60
+    {%- endcase -%}
+
+  {%- when 'heading_leading' -%}
+    {%- case step -%}
+      {%- when 'xs' -%}95
+      {%- when 'sm' -%}101
+      {%- when 'md' -%}108
+      {%- when 'lg' -%}122
+      {%- when 'xl' -%}138
+    {%- endcase -%}
+
+  {%- when 'heading_tracking' -%}
+    {%- case step -%}
+      {%- when 'xs' -%}-30
+      {%- when 'sm' -%}-15
+      {%- when 'md' -%}0
+      {%- when 'lg' -%}25
+      {%- when 'xl' -%}60
+    {%- endcase -%}
+
+  {%- when 'micro' -%}
+    {%- comment -%} size,tracking — one decision about the micro label {%- endcomment -%}
+    {%- case step -%}
+      {%- when 'xs' -%}10,140
+      {%- when 'sm' -%}11,180
+      {%- when 'md' -%}12,220
+      {%- when 'lg' -%}13,265
+      {%- when 'xl' -%}15,320
+    {%- endcase -%}
+
+  {%- when 'radius_base' -%}
+    {%- comment -%} the design is square: `xs` is 0 and is the default {%- endcomment -%}
+    {%- case step -%}
+      {%- when 'xs' -%}0
+      {%- when 'sm' -%}2
+      {%- when 'md' -%}4
+      {%- when 'lg' -%}8
+      {%- when 'xl' -%}16
+    {%- endcase -%}
+
+  {%- when 'radius_arch' -%}
+    {%- case step -%}
+      {%- when 'xs' -%}120
+      {%- when 'sm' -%}170
+      {%- when 'md' -%}220
+      {%- when 'lg' -%}270
+      {%- when 'xl' -%}320
+    {%- endcase -%}
+
+  {%- when 'border_width' -%}
+    {%- comment -%} the design's hairline is 1px: `sm` is the default {%- endcomment -%}
+    {%- case step -%}
+      {%- when 'xs' -%}0
+      {%- when 'sm' -%}1
+      {%- when 'md' -%}2
+      {%- when 'lg' -%}3
+      {%- when 'xl' -%}4
+    {%- endcase -%}
+
+  {%- when 'hairline_opacity' -%}
+    {%- case step -%}
+      {%- when 'xs' -%}6
+      {%- when 'sm' -%}10
+      {%- when 'md' -%}14
+      {%- when 'lg' -%}22
+      {%- when 'xl' -%}34
+    {%- endcase -%}
+
+  {%- when 'shadow_opacity' -%}
+    {%- case step -%}
+      {%- when 'xs' -%}25
+      {%- when 'sm' -%}40
+      {%- when 'md' -%}55
+      {%- when 'lg' -%}70
+      {%- when 'xl' -%}85
+    {%- endcase -%}
+
+  {%- when 'button_size' -%}
+    {%- comment -%}
+      padding_x,padding_y,label_size — one decision, three settings before.
+      A merchant wanting a larger button had to move all three and keep them
+      in proportion, and nothing said they were one choice.
+    {%- endcomment -%}
+    {%- case step -%}
+      {%- when 'xs' -%}20,12,11
+      {%- when 'sm' -%}24,14,11
+      {%- when 'md' -%}28,16,12
+      {%- when 'lg' -%}34,19,13
+      {%- when 'xl' -%}40,22,14
+    {%- endcase -%}
+
+  {%- when 'button_tracking' -%}
+    {%- case step -%}
+      {%- when 'xs' -%}60
+      {%- when 'sm' -%}110
+      {%- when 'md' -%}160
+      {%- when 'lg' -%}220
+      {%- when 'xl' -%}300
+    {%- endcase -%}
+
+  {%- when 'button_border_width' -%}
+    {%- case step -%}
+      {%- when 'xs' -%}0
+      {%- when 'sm' -%}1
+      {%- when 'md' -%}2
+      {%- when 'lg' -%}3
+      {%- when 'xl' -%}4
+    {%- endcase -%}
+
+  {%- when 'button_radius' -%}
+    {%- comment -%}
+      Named for the shape rather than sized, because a button's corner is a
+      look and not a quantity. `pill` is 999px, which the browser caps at half
+      the shorter side — safe here because nothing animates a button's radius.
+      The nav does animate one and must never use a sentinel: see the note on
+      `calc(var(--nav-pill-h) / 2)`.
+    {%- endcomment -%}
+    {%- case step -%}
+      {%- when 'square' -%}0
+      {%- when 'soft' -%}4
+      {%- when 'rounded' -%}12
+      {%- when 'pill' -%}999
+    {%- endcase -%}
+
 {%- endcase -%}
