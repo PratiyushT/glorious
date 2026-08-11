@@ -18,6 +18,34 @@ this file that explains a feature and the code that implements it must never
 arrive separately: the note is how the next pass learns why a number is what it
 is.
 
+## The design system page
+
+`templates/page.design-system.liquid`, reached at
+`/pages/<any-page>?view=design-system` or by assigning the template to a page.
+
+Two jobs. It is the one place the whole system is visible at once — a token
+that changes shows up beside every other token it has to live with. And it is
+the **visual-regression surface** the theme's invariant asks for: a homepage
+exercises maybe a third of the tokens, so diffing it can only ever catch a
+third of the damage.
+
+- **It reads computed values back from the browser rather than printing the
+  settings.** That distinction is the whole point. Liquid can only print what
+  it *meant* to emit, and every expensive bug in this theme so far looked
+  perfectly correct in source — the footer that fell through a step fallback,
+  the container query that parsed and never fired, the scroll region 0px tall
+  holding 823px. A custom property that resolves to nothing is invisible in
+  Liquid and blank on screen; reading it back is the only way the page can say
+  so, which is why an unresolved token paints itself `--c-error`.
+- **Its CSS is inline in the template, not in `base.css`.** It is developer
+  tooling, and shipping ~70 lines of it to every shopper on every template
+  would be paying for it forever to serve nobody.
+- **Every string on it is literal English, deliberately.** Translating a page
+  no shopper sees would put ~90 keys into every locale a merchant maintains.
+- The spacing-step specimen is the useful one to watch: eight bars whose
+  heights must stay monotonic and visibly apart at every window width. Measured
+  at 1280 they are 2 / 21 / 34 / 48 / 58 / 67 / 77 / 87px.
+
 ## The convention checker
 
 ```bash

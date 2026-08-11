@@ -1,0 +1,289 @@
+{%- comment -%}
+  Veylin's design system, rendered by the theme itself.
+
+  Reach it at /pages/<any-page>?view=design-system, or assign the template to
+  a page in admin. It is developer-facing: every string here is literal English
+  on purpose, because translating a page no shopper sees would put ~90 keys in
+  every locale a merchant has to maintain.
+
+  Two jobs:
+
+  1. It is the one place the whole system is visible at once. A token that
+     changes shows up here, next to every other token it has to live with.
+  2. It is the visual-regression surface. Diff this page across a change and
+     anything unintended has to explain itself — which is what the theme's
+     invariant asks for, and what the section pages cannot give you, since a
+     homepage exercises maybe a third of the tokens.
+
+  It reads the *computed* values rather than the settings, so what it prints is
+  what the browser actually resolved — not what Liquid meant to emit. That
+  distinction is the entire point: the footer padding bug, the container query
+  that never fired and the 0px scroll region were all correct in source.
+{%- endcomment -%}
+
+{%- comment -%}
+  Styled here rather than in base.css on purpose: this page is developer
+  tooling, and shipping its ~70 lines to every shopper on every template would
+  be paying for it forever to serve nobody. The theme's own tokens do the work;
+  these rules only lay the specimens out.
+{%- endcomment -%}
+<style>
+  .ds { padding-block: var(--space-2xl) var(--space-3xl); }
+  .ds__head { margin-block-end: var(--space-2xl); }
+  .ds__block { margin-block-start: var(--space-3xl); }
+  .ds__block > .h2 { margin-block-end: var(--space-sm); }
+  .ds__block > .rte { margin-block-end: var(--space-lg); }
+
+  .ds__row {
+    display: grid;
+    grid-template-columns: minmax(12rem, 18rem) 1fr;
+    gap: var(--space-sm);
+    align-items: baseline;
+    padding-block: var(--space-2xs);
+    border-block-end: var(--border-width) solid var(--c-hairline);
+  }
+  .ds__key {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.8125rem;
+    color: var(--c-muted);
+    word-break: break-all;
+  }
+  .ds__key--empty { color: var(--c-error); font-weight: 700; }
+  .ds__row > span:last-child {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.75rem;
+    color: var(--c-text);
+  }
+
+  .ds__scheme { padding: var(--space-lg); margin-block-end: var(--space-md); }
+  .ds__scheme-name { margin-block-end: var(--space-sm); }
+  .ds__swatches {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
+    gap: var(--space-sm);
+  }
+  .ds__swatch { display: flex; align-items: center; gap: 0.5rem; min-width: 0; }
+  .ds__chip {
+    inline-size: 1.75rem;
+    block-size: 1.75rem;
+    flex: none;
+    border: var(--border-width) solid var(--c-hairline);
+    border-radius: var(--radius-sm);
+  }
+  .ds__swatch-name {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.6875rem;
+    color: var(--c-muted);
+    overflow-wrap: anywhere;
+  }
+  .ds__scheme-demo { margin-block-start: var(--space-md); }
+
+  .ds__steps { display: flex; align-items: flex-end; gap: var(--space-md); flex-wrap: wrap; }
+  .ds__step { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; }
+  .ds__bar {
+    display: block;
+    inline-size: 3rem;
+    min-block-size: 2px;
+    background: var(--c-accent);
+  }
+  .ds__step-val {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.625rem;
+    color: var(--c-muted);
+    text-align: center;
+    max-inline-size: 7rem;
+  }
+
+  .ds__motion { display: flex; gap: var(--space-md); margin-block-end: var(--space-lg); }
+  .ds__tile {
+    display: grid;
+    place-items: center;
+    inline-size: 9rem;
+    block-size: 5rem;
+    background: var(--c-surface);
+    border: var(--border-width) solid var(--c-hairline);
+    font-size: var(--micro-size);
+    letter-spacing: var(--micro-tracking);
+    text-transform: uppercase;
+  }
+  .ds__tile--ui { transition: transform var(--duration) var(--ease-ui), background var(--duration) var(--ease-ui); }
+  .ds__tile--entrance { transition: transform calc(var(--duration) * 2) var(--ease), background calc(var(--duration) * 2) var(--ease); }
+  .ds__tile:hover { transform: translateY(-10px); background: var(--c-accent); }
+
+  .ds__buttons { display: flex; flex-wrap: wrap; gap: var(--space-sm); margin-block-end: var(--space-lg); }
+  .ds__loaders { display: flex; align-items: center; gap: var(--space-xl); }
+</style>
+
+<div class="page-width ds">
+  <header class="ds__head">
+    <div class="micro">Veylin design system</div>
+    <h1 class="display">The system, rendered by the theme</h1>
+    <p class="section-lede">
+      Every value below is read back from the browser, not from the schema.
+      Resize the window — everything fluid is meant to move.
+    </p>
+  </header>
+
+  {%- comment -%} ---- Colour schemes ------------------------------------ {%- endcomment -%}
+  <section class="ds__block">
+    <h2 class="h2">Colour schemes</h2>
+    <p class="rte measure">Each scheme sets its own text, surface and accent, and derives its hairline, shadow and veil from its own literal colours rather than from <code>:root</code>.</p>
+    {%- for scheme in settings.color_schemes -%}
+      <div class="ds__scheme scheme-{{ scheme.id }}">
+        <div class="ds__scheme-name micro">{{ scheme.id }}</div>
+        <div class="ds__swatches">
+          {%- assign roles = 'bg,text,heading,muted,accent,border,surface,button,button-label,link,hairline,shadow' | split: ',' -%}
+          {%- for role in roles -%}
+            <div class="ds__swatch">
+              <span class="ds__chip" style="background: var(--c-{{ role }})"></span>
+              <span class="ds__swatch-name" data-ds-var="--c-{{ role }}">--c-{{ role }}</span>
+            </div>
+          {%- endfor -%}
+        </div>
+        <p class="ds__scheme-demo">Body copy in this scheme, with <a href="{{ routes.root_url }}">a link</a> and <em>emphasis</em>.</p>
+      </div>
+    {%- endfor -%}
+  </section>
+
+  {%- comment -%} ---- Type ---------------------------------------------- {%- endcomment -%}
+  <section class="ds__block">
+    <h2 class="h2">Type scale</h2>
+    <p class="rte measure">Nine fluid steps interpolated between 360 and 1440, plus two art-directed heading scales of their own.</p>
+    <div class="ds__type">
+      {%- assign steps = 'xs,sm,base,md,lg,xl,2xl,3xl,4xl' | split: ',' -%}
+      {%- for s in steps -%}
+        <div class="ds__row">
+          <code class="ds__key" data-ds-var="--fs-{{ s }}">--fs-{{ s }}</code>
+          <span style="font-size: var(--fs-{{ s }}); line-height: 1.2">Veylin</span>
+        </div>
+      {%- endfor -%}
+      <div class="ds__row">
+        <code class="ds__key" data-ds-var="--fs-section">--fs-section</code>
+        <span class="h2">Section heading</span>
+      </div>
+      <div class="ds__row">
+        <code class="ds__key" data-ds-var="--fs-display">--fs-display</code>
+        <span class="display">Display</span>
+      </div>
+    </div>
+  </section>
+
+  {%- comment -%} ---- Spacing steps ------------------------------------- {%- endcomment -%}
+  <section class="ds__block">
+    <h2 class="h2">Spacing steps</h2>
+    <p class="rte measure">
+      The rungs a merchant picks from for section padding. Every one is fluid and
+      no two are alike at any width — the bars below should never match, at any
+      window size.
+    </p>
+    <div class="ds__steps">
+      {%- assign rungs = 'none,2xs,xs,sm,md,lg,xl,max' | split: ',' -%}
+      {%- for r in rungs -%}
+        {%- capture v -%}{%- render 'space-step', step: r -%}{%- endcapture -%}
+        <div class="ds__step">
+          <code class="ds__key">{{ r }}</code>
+          <span class="ds__bar" style="height: {{ v }}"></span>
+          <span class="ds__step-val" data-ds-measure="bar">{{ v }}</span>
+        </div>
+      {%- endfor -%}
+    </div>
+  </section>
+
+  {%- comment -%} ---- Motion -------------------------------------------- {%- endcomment -%}
+  <section class="ds__block">
+    <h2 class="h2">Motion</h2>
+    <p class="rte measure">
+      Two registers. <code>--ease-ui</code> is plain <code>ease</code> and belongs to
+      interaction; <code>--ease</code> is the entrance curve and belongs to things
+      arriving. Hover the tiles.
+    </p>
+    <div class="ds__motion">
+      <div class="ds__tile ds__tile--ui"><span>--ease-ui</span></div>
+      <div class="ds__tile ds__tile--entrance"><span>--ease</span></div>
+    </div>
+    <div class="ds__row"><code class="ds__key" data-ds-var="--duration">--duration</code><span></span></div>
+    <div class="ds__row"><code class="ds__key" data-ds-var="--ease-ui">--ease-ui</code><span></span></div>
+    <div class="ds__row"><code class="ds__key" data-ds-var="--ease">--ease</code><span></span></div>
+  </section>
+
+  {%- comment -%} ---- Buttons ------------------------------------------- {%- endcomment -%}
+  <section class="ds__block">
+    <h2 class="h2">Buttons</h2>
+    <div class="ds__buttons">
+      <a class="btn" href="{{ routes.all_products_collection_url }}">Primary</a>
+      <a class="btn btn--secondary" href="{{ routes.all_products_collection_url }}">Secondary</a>
+      <button class="btn" type="button" disabled>Disabled</button>
+      <a class="btn btn--square" href="{{ routes.all_products_collection_url }}">Square</a>
+    </div>
+    <div class="ds__row"><code class="ds__key" data-ds-var="--button-radius">--button-radius</code><span></span></div>
+    <div class="ds__row"><code class="ds__key" data-ds-var="--button-padding-x">--button-padding-x</code><span></span></div>
+    <div class="ds__row"><code class="ds__key" data-ds-var="--button-padding-y">--button-padding-y</code><span></span></div>
+    <div class="ds__row"><code class="ds__key" data-ds-var="--button-size">--button-size</code><span></span></div>
+    <div class="ds__row"><code class="ds__key" data-ds-var="--button-tracking">--button-tracking</code><span></span></div>
+  </section>
+
+  {%- comment -%} ---- Shape and layout ---------------------------------- {%- endcomment -%}
+  <section class="ds__block">
+    <h2 class="h2">Shape and layout</h2>
+    <div class="ds__type">
+      {%- assign shape = '--radius,--radius-sm,--radius-arch,--border-width,--hairline,--shadow-strength,--page-width,--page-width-narrow,--content-width,--gutter,--grid-min,--grid-gap,--micro-size,--micro-tracking,--body-leading,--heading-leading,--display-leading,--display-tracking' | split: ',' -%}
+      {%- for t in shape -%}
+        <div class="ds__row"><code class="ds__key" data-ds-var="{{ t }}">{{ t }}</code><span></span></div>
+      {%- endfor -%}
+    </div>
+  </section>
+
+  {%- comment -%} ---- The product card ---------------------------------- {%- endcomment -%}
+  <section class="ds__block">
+    <h2 class="h2">Product card</h2>
+    <p class="rte measure">The real snippet, so its caption type, swatch row and framing are checked here rather than only on the homepage.</p>
+    {%- assign ds_collection = collections.all -%}
+    <div class="grid-auto grid-auto--products">
+      {%- for product in ds_collection.products limit: 4 -%}
+        {%- render 'product-card', product: product -%}
+      {%- else -%}
+        {%- render 'product-card' -%}
+      {%- endfor -%}
+    </div>
+  </section>
+
+  {%- comment -%} ---- Loading mark -------------------------------------- {%- endcomment -%}
+  <section class="ds__block">
+    <h2 class="h2">Loading</h2>
+    <div class="ds__loaders">
+      {%- render 'loader', size: 'sm' -%}
+      {%- render 'loader', size: 'md' -%}
+      {%- render 'loader', size: 'lg' -%}
+    </div>
+  </section>
+</div>
+
+{%- comment -%}
+  Values are filled in by script rather than by Liquid, because Liquid can only
+  print what it *meant* to emit. A custom property that resolves to nothing —
+  the failure this theme keeps meeting — looks identical in the source and
+  blank on the page. Reading it back is the only way the page can tell you.
+{%- endcomment -%}
+<script>
+  (function () {
+    var root = getComputedStyle(document.documentElement);
+    document.querySelectorAll('[data-ds-var]').forEach(function (el) {
+      var name = el.getAttribute('data-ds-var');
+      var scope = el.closest('[class*="scheme-"]') || document.documentElement;
+      var val = getComputedStyle(scope).getPropertyValue(name).trim() || root.getPropertyValue(name).trim();
+      var out = el.nextElementSibling;
+      var text = val || '(unresolved)';
+      /* Some rows keep a live specimen in the value slot — a line of type set
+         in the size being named — so the resolved value goes onto the key
+         itself rather than overwriting what it is there to demonstrate. */
+      if (out && out.tagName === 'SPAN' && !out.textContent.trim()) out.textContent = text;
+      else el.textContent = name + '  ' + text;
+      el.setAttribute('title', text);
+      if (!val) el.classList.add('ds__key--empty');
+    });
+    document.querySelectorAll('[data-ds-measure="bar"]').forEach(function (el) {
+      var bar = el.previousElementSibling;
+      if (bar) el.textContent = el.textContent.trim() + '  =  ' + Math.round(bar.getBoundingClientRect().height) + 'px';
+    });
+  })();
+</script>
