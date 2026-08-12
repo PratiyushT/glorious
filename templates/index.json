@@ -108,19 +108,57 @@
             "photograph": {
               "type": "product-card-image",
               "settings": {
-                "image_ratio": "inherit",
-                "image_fit": "inherit"
+                "image_ratio": "1/1",
+                "image_fit": "contain",
+                "image_zoom": true,
+                "show_video": true
               }
             },
             "name": {
               "type": "product-card-title",
               "settings": {}
             },
+            "caption": {
+              "type": "group",
+              "blocks": {
+                "option": {
+                  "type": "product-card-option-name",
+                  "settings": {}
+                },
+                "dot": {
+                  "type": "product-card-text",
+                  "settings": {
+                    "text": "·"
+                  }
+                },
+                "carat": {
+                  "type": "product-card-text",
+                  "settings": {
+                    "text": "{{ closest.product.metafields.custom.total_carat_weight.value }}"
+                  }
+                },
+                "unit": {
+                  "type": "product-card-text",
+                  "settings": {
+                    "text": "ct"
+                  }
+                }
+              },
+              "block_order": ["option", "dot", "carat", "unit"],
+              "settings": {
+                "direction": "horizontal",
+                "distribute": "start",
+                "align": "baseline",
+                "wrap": true,
+                "stack_below": "never",
+                "gap": "tiny"
+              }
+            },
             "metal": {
               "type": "product-card-variants",
               "settings": {
                 "control": "swatches",
-                "show_name": true
+                "swatch_shape": "round"
               }
             },
             "karats": {
@@ -135,9 +173,12 @@
                   "settings": {}
                 },
                 "tax": {
-                  "type": "product-card-tax-note",
+                  "type": "product-card-text",
                   "settings": {
-                    "text": "inc. all taxes"
+                    "text": "inc. all taxes",
+                    "size": "note",
+                    "text_transform": "none",
+                    "color_source": "muted"
                   }
                 }
               },
@@ -148,27 +189,30 @@
                 "align": "baseline",
                 "wrap": true,
                 "stack_below": "never",
-                "gap": "none"
+                "gap": "tiny"
               }
             },
             "add": {
               "type": "product-card-add",
-              "settings": {}
-            },
-            "quick-view": {
-              "type": "product-card-quick-view",
-              "settings": {}
+              "settings": {
+                "label": "Add to Bag"
+              }
             }
           },
           "block_order": [
             "photograph",
             "name",
+            "caption",
             "metal",
             "karats",
             "price-row",
-            "add",
-            "quick-view"
-          ]
+            "add"
+          ],
+          "settings": {
+            "text_align": "left",
+            "quick_view_desktop": true,
+            "quick_view_compact": true
+          }
         }
       },
       "block_order": ["heading", "row"],

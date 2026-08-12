@@ -16,6 +16,15 @@
   element whose label and disabled state it swaps — both read from the
   `[data-card]` root, so this block can sit anywhere in the card.
 
+  **Both labels ride on the button, not on the card root**, and that follows
+  from the label being this block's setting. A metal can be sold out while the
+  one Liquid rendered was not, so `theme.js` has to swap between them without a
+  translation string of its own — and it used to read them off the root, which
+  was correct only while the words came from a theme setting both could see. A
+  block cannot hand its setting to its parent, so the attributes moved to where
+  the setting is. `theme.js` prefers the button's and falls back to the root's,
+  which is what keeps `snippets/product-card.liquid` working unchanged.
+
   **The form carries an id of its own.** Shopify derives one from the product,
   so a page rendering the same piece twice — this card and a collection row,
   say — would put two elements with the same id in the document, which is both
@@ -25,10 +34,8 @@
 
 {%- liquid
   assign product = closest.product
-  assign label = block.settings.label
-  if label == blank
-    assign label = settings.card_add_label | default: 'Add to Bag'
-  endif
+  assign label = block.settings.label | default: 'Add to Bag'
+  assign sold_out_label = 'products.sold_out' | t
 
   assign chosen = blank
   if product != blank
@@ -55,13 +62,20 @@
 {%- elsif product.available -%}
   {%- form 'product', product, id: form_id, class: 'card__add-form', data-cart-add: '' -%}
     <input type="hidden" name="id" value="{{ chosen.id }}" data-card-add-id>
-    <button type="submit" name="add" class="btn btn--square card__add" {{ block.shopify_attributes }}>
+    <button
+      type="submit"
+      name="add"
+      class="btn btn--square card__add"
+      data-add-label="{{ label | escape }}"
+      data-sold-out-label="{{ sold_out_label | escape }}"
+      {{ block.shopify_attributes }}
+    >
       {{- label -}}
     </button>
   {%- endform -%}
 {%- else -%}
   <span class="btn btn--square card__add" aria-disabled="true" {{ block.shopify_attributes }}>
-    {{- 'products.sold_out' | t -}}
+    {{- sold_out_label -}}
   </span>
 {%- endif -%}
 
@@ -74,7 +88,7 @@
       "type": "text",
       "id": "label",
       "label": "t:blocks.product_card_add.label.label",
-      "info": "t:blocks.product_card_add.label.info"
+      "default": "Add to Bag"
     }
   ],
   "presets": [

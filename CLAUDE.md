@@ -362,36 +362,111 @@ that reaches for a parent would tie the two cards' structures together again.
   view's axes are written to: *which control an axis gets is derived, not
   tabled.*
 
-- **The carat weight stays in the control's caption and is not a
-  `product-card-meta` block.** The design states the caption as
-  `metalName(sel) + ' · ' + carat` — one line describing the piece *as
-  configured* — and only that block knows what was picked. On its own row the
-  carat stops following the caption it qualifies. Caught by measurement, not by
-  reading: the composed card read "Yellow Gold" where the same piece on
-  `/collections/all` read "Yellow Gold · 9.878 ct". `product-card-meta` is for
-  what the piece is regardless of the pick, and is additive.
+- **The theme must not assume a jewellery store, and the caption is where that
+  assumption lived.** It was one element built in Liquid — the chosen metal,
+  then `custom.total_carat_weight`, joined with " · " and suffixed "ct". A shop
+  selling anything else got a hardcoded metafield lookup resolving to nothing
+  and no way to put its own fact there. **The caption is composed now**: a
+  `group` holding `product-card-option-name`, a `product-card-text` carrying
+  the separator, a second bound to whatever metafield the shop keeps, and a
+  third for the unit.
 
-- **The tax note is a sibling block, and that is what makes it possible at
-  all.** `theme.js` replaces `[data-card-price]`'s whole `innerHTML` on a metal
-  pick, which is why the snippet card has to capture the note *inside* the
-  price markup. Out here it is never touched — the arrangement the quick view
+  That is four blocks where there was one string, and it is the right trade. It
+  renders identically — "Yellow Gold · 1.5 ct", still following the pick,
+  because the name block is the `[data-card-meta]` the script writes into — and
+  none of it is in the theme.
+
+  This was written the other way one commit earlier, on the argument that the
+  design states the caption as `metalName(sel) + ' · ' + carat` and only the
+  control knows what was picked. The first half is a fact about *this* design;
+  the second is answered by making the name its own block. **Fidelity to the
+  design is not a licence to bake its catalogue in.**
+
+  **Two jewellery assumptions remain and are not fixed here.**
+  `snippets/card-option.liquid` finds the card's option by matching "metal" in
+  its name, and `blocks/product-card-available.liquid` matches "purity" or
+  "karat". The first is load-bearing — it decides which variant the price and
+  the button answer for, and generalising it to "the first option with a native
+  swatch" would change which variant this shop's cards stand on. The second is
+  display-only and could take an option picker safely, its choice driving
+  nothing else. Both are deliberate leftovers, not oversights.
+
+- **`product-card-text` is one block for every fixed thing a card says**, and
+  it replaced two that were the same element with different words. It prints a
+  typed line or a dynamic source, and every type control — font, size, letter
+  case, colour — is an **override that emits nothing when unset**, so
+  `.card__meta`'s rule stays the single description of what a caption looks
+  like rather than being restated in Liquid.
+
+  **Its sizes are the theme's `--product-*` tokens, not lengths.** A merchant
+  picks "as large as the price", not a number, so a shop that retunes its type
+  scale moves this with it. One rung is named for a relationship rather than an
+  element: "Beside the price" is `calc(var(--product-price-size) * 0.75)`,
+  which is `.price-tax`'s own `0.75em` stated where the note is no longer
+  inside the price element to inherit it from. Without it the note rendered
+  11.9px against the 11.26px the same note has on a collection page.
+
+- **The tax note is a text block now, and that is how the global one gets
+  retired.** `theme.js` replaces `[data-card-price]`'s whole `innerHTML` on a
+  pick, which is why the snippet card must capture its note *inside* the price
+  markup; a sibling is never touched, which is the arrangement the quick view
   already uses. The price and the note share a row through a `group`.
 
-  **It carries its own words and does not obey `settings.show_tax_note`**,
-  which reverses this file's own rule that every surface obeys that one switch
-  and none may override it. The reversal is deliberate, on request, and its
-  scope is this one section's card. The cost is the one the rule was written to
-  prevent and should be stated rather than discovered: a merchant who turns the
-  shop-wide note off still has Most Loved saying "inc. all taxes" until the
-  block is removed or its text cleared. **A section-level toggle is still
-  banned** — a checkbox ANDed with the shop-wide switch gives "is it on?" two
-  answers. A block is present or it is not.
+  It does not obey `settings.show_tax_note`, which reverses this file's rule
+  that every surface obeys that one switch. Deliberate, on request, and the
+  direction of travel: the shop-wide note is to be phased out rather than
+  extended. The cost while both exist should be stated rather than discovered —
+  turning the shop-wide note off leaves Most Loved saying "inc. all taxes"
+  until the block is cleared. **A section-level toggle is still banned**: a
+  checkbox ANDed with the shop-wide switch gives "is it on?" two answers. A
+  block is present or it is not.
 
-- **`.price-tax` had to restate its size.** It is deliberately `0.75em` of
-  whatever price it follows, which works while it is inside the price element;
-  as a sibling its `em` resolved against the caption's size and it rendered
-  11.9px against the 11.26px the same note has on a collection page.
-  `.card--composed .price-tax` states the price's size as its base.
+- **Everything under Theme settings → Product cards that is still a setting
+  lives on these blocks.** The frame, the fit, the framing correction and the
+  spin on the image block; the button's words on the button block; the
+  alignment and the quick view on the card. Everything else that was a
+  checkbox — the caption, the swatches, the note, the button — is now the
+  presence of a block, which is what a block is for.
+
+  **The theme settings stay and are not fallbacks.** `snippets/product-card.
+  liquid` still draws the collection and search grids and still reads them;
+  nothing in a block consults them. So changing one moves those two grids and
+  leaves Most Loved alone. That is the price of one card built two ways, and it
+  ends when those templates are rebuilt.
+
+- **The quick view is two settings on the card, not a block** — show on
+  desktop, show on tablet and mobile. It is the one control here that is not
+  about arranging anything: the disc is a fixed corner of the photograph, and
+  whether it earns its place is a question about the pointer, since a hover
+  affordance on a phone is a tap target competing with the card's own link.
+  Media queries rather than container queries for exactly that reason, at the
+  48rem threshold `blocks/group.liquid` already stacks on. With both off the
+  disc is simply absent; the card's link still opens the product page.
+
+- **Both button labels moved onto the button.** A metal can be sold out while
+  the one Liquid rendered was not, so `theme.js` swaps between two strings it
+  is handed — and it read them off the card root, which was correct only while
+  the words came from a theme setting both could see. The words are the button
+  block's setting now, and a block cannot hand a setting to its parent, so the
+  attributes live where the setting does. The script prefers the button's and
+  falls back to the root's, which is what keeps the snippet card working
+  untouched.
+
+- **Swatch shape is one published property, not a second kind of dot.**
+  `product-card-variants` writes `--swatch-radius` on the row and `.swatch-dot`
+  reads it with a `50%` fallback, so the dot stays round everywhere else it is
+  drawn — the quick view and the product page both leave it alone. Square
+  resolves to `var(--radius-base, 0)` rather than a literal. Verified square:
+  radius 0, dot still 20×20, and the selected ring still drawn, `box-shadow`
+  following the corners.
+
+- **A dynamic source binds against `closest.product` inside a static block, and
+  it must end in `.value`.** Both halves were confirmed by the server rather
+  than assumed — it rejected the binding with *"Metafield
+  'closest.product.metafields.custom.total_carat_weight' must end with '.value'
+  when not using a metafield filter"*, which proves the `closest.product` root
+  was accepted and only the leaf was wrong. That is what makes
+  `product-card-text` able to carry a shop's own facts at all.
 
 - **`UniqueStaticBlockId` fails a section that names the same static block id
   twice in one branch**, which the real-cards / placeholder-cards pair did.
@@ -404,16 +479,22 @@ that reaches for a parent would tie the two cards' structures together again.
 
 **Verified against `snippets/product-card.liquid` on `/collections/all`, which
 is the whole point of leaving it in place.** Every gap in the caption stack is
-identical — media→title **15.9**, title→caption **6**, caption→swatches **0**,
-swatches→note **3**, note→price **7**, price→button **13** — with the caption
-box **18px**, the tax note **11.256px**, and all seven cards level at **635**.
-A metal pick moves the caption, the price, the posted variant, the card's own
-link and the quick view's, and **leaves the tax note standing**. Two of four
-slides carry a real `src`, so the deferral contract holds. Zero duplicate ids
-on the page, and the add form carries `card_form_<id>` of its own rather than
-Shopify's derived one. At 375px: one column, price and note still on one row,
-44px button, no horizontal overflow. The carousel layout renders the same seven
-composed cards at `--row-per: 3`.
+identical — media→title **16**, caption→swatches **0**, swatches→note **3**,
+price→button **13** — with the caption row **18px** on one line, the tax note
+**11.256px**, and all seven cards level. Title→caption is **6.9** against the
+snippet card's 6, the caption having become a `group` and so taking the 7px
+`.card--composed > .layout-group` gives a price row; a pixel, and the same rule
+serving both rows is worth more than removing it.
+
+The composed caption reads **"Yellow Gold · 1.5 ct"** from four blocks and
+moves to "White Gold · 1.5 ct" on a pick, with the price and the posted variant
+following and **the tax note left standing**. Two of four slides carry a real
+`src`, so the deferral contract holds. Zero duplicate ids, and the add form
+carries `card_form_<id>` of its own rather than Shopify's derived one. At 375px:
+one column, caption and price rows each still on one line, no horizontal
+overflow. Square swatches and the per-device quick view were both checked by
+flipping the stored settings and put back. The carousel layout renders the same
+seven composed cards at `--row-per: 3`.
 
 ### Weight
 

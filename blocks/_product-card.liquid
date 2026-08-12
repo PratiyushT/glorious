@@ -19,8 +19,7 @@
   the collection card's are. `.card--composed` names one grid row `media`, so
   the photograph and the quick-view disc claim it whatever order they are
   dragged into and every other child flows underneath in the order the merchant
-  chose. That is what keeps the disc over the photograph while the two remain
-  siblings either of which can be removed on its own.
+  chose.
 
   **`snippets/product-card.liquid` is untouched and stays the card everywhere
   else.** The collection and search templates still render it, so the theme
@@ -30,33 +29,88 @@
   `[data-card]` root rather than by walking the tree, which is what lets the
   markup be rearranged like this at all.
 
-  The card root keeps three things that belong to no one child:
+  **Everything under Theme settings → Product cards that is still a *setting*
+  lives on these blocks now**, so a merchant edits the card where the card is:
+  the frame, the fit, the framing correction and the spin on the photograph
+  block, the button's words on the button block, the alignment and the quick
+  view here. The theme settings stay because the snippet card still reads them,
+  and they are **not** fallbacks — nothing here consults them, and changing one
+  moves the collection and search grids while leaving this card alone. That is
+  the price of one card built two ways, and it ends when those templates are
+  rebuilt.
 
-    - `data-card-multi`, the no-JavaScript hover swap, gated on the photograph
-      count rather than the slide count for the reason recorded in CLAUDE.md.
-    - both button labels, so a metal pick can swap between them without a
-      translation string in JavaScript.
+  Everything else that was a setting is now the presence of a block, which is
+  what a block is for: the caption, the option control, the price, the "in
+  stock" note, the button.
 
-  It states them itself rather than taking them from the image or the add
-  block, because either can be removed and the attributes would go with it.
+  **`data-card-multi` is the one thing the root states for a child**, because
+  the CSS selector that drives the no-JavaScript hover swap is
+  `.card[data-card-multi]` — it has to be here. It is gated on the photograph
+  count rather than the slide count, for the reason recorded in CLAUDE.md, and
+  it costs nothing when the image block is removed, there being no slides for
+  it to act on.
+
+  **The quick view is a setting rather than a block, and per device.** It is
+  the one control here that is not about arranging anything: the disc is a
+  fixed corner of the photograph, and whether it is worth showing is a question
+  about the pointer rather than about composition — a hover affordance on a
+  phone is a tap target competing with the card's own link. Two checkboxes, so
+  a shop can keep it on a desktop and drop it on everything narrower.
 {%- endcomment -%}
 
 {%- liquid
   assign product = closest.product
   assign card_photos = product.media | where: 'media_type', 'image'
-  assign add_label = settings.card_add_label | default: 'Add to Bag'
-  assign sold_out_label = 'products.sold_out' | t
+
+  assign quick_class = ''
+  unless block.settings.quick_view_desktop
+    assign quick_class = quick_class | append: ' card__quick--hide-wide'
+  endunless
+  unless block.settings.quick_view_compact
+    assign quick_class = quick_class | append: ' card__quick--hide-compact'
+  endunless
+
+  assign quick_view_on = false
+  if block.settings.quick_view_desktop or block.settings.quick_view_compact
+    assign quick_view_on = true
+  endif
+
+  assign quick_view_label = 'products.quick_view_of' | t: title: product.title
 -%}
 
 <div
   class="card card--composed"
   data-card
   {% if card_photos.size > 1 %}data-card-multi{% endif %}
-  data-add-label="{{ add_label | escape }}"
-  data-sold-out-label="{{ sold_out_label | escape }}"
+  style="--card-align: {{ block.settings.text_align }};"
   {{ block.shopify_attributes }}
 >
   {% content_for 'blocks' %}
+
+  {%- comment -%}
+    A real link to the piece, which `theme.js` upgrades into the overlay.
+    Without scripting it lands on the product page: the same information, one
+    navigation further away — so turning both checkboxes off removes a
+    convenience and never a route.
+
+    It is the card's own markup rather than a block because it is not part of
+    the flow the merchant arranges: it sits in the `media` grid row, over the
+    photograph, and there is nowhere else in a card for it to go.
+  {%- endcomment -%}
+  {%- if quick_view_on and product != blank -%}
+    <a
+      class="card__quick{{ quick_class }}"
+      href="{{ product.url }}"
+      data-quick-view
+      data-tip="{{ 'products.quick_view' | t }}"
+      aria-label="{{ quick_view_label }}"
+    >
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true" focusable="false">
+        <path d="M2.5 12S6 6.5 12 6.5 21.5 12 21.5 12 18 17.5 12 17.5 2.5 12 2.5 12z" />
+        <circle cx="12" cy="12" r="2.6" />
+      </svg>
+    </a>
+  {%- endif -%}
 </div>
 
 {% schema %}
@@ -66,15 +120,42 @@
   "blocks": [
     { "type": "product-card-image" },
     { "type": "product-card-title" },
+    { "type": "product-card-option-name" },
     { "type": "product-card-variants" },
-    { "type": "product-card-meta" },
+    { "type": "product-card-text" },
     { "type": "product-card-available" },
     { "type": "product-card-price" },
-    { "type": "product-card-tax-note" },
     { "type": "product-card-add" },
-    { "type": "product-card-quick-view" },
     { "type": "group" }
   ],
-  "settings": []
+  "settings": [
+    {
+      "type": "select",
+      "id": "text_align",
+      "label": "t:settings_schema.product_cards.card_text_align.label",
+      "options": [
+        { "value": "left", "label": "t:settings_schema.options.left" },
+        { "value": "center", "label": "t:settings_schema.options.center" }
+      ],
+      "default": "left"
+    },
+    {
+      "type": "header",
+      "content": "t:blocks.product_card.quick_view_header"
+    },
+    {
+      "type": "checkbox",
+      "id": "quick_view_desktop",
+      "label": "t:blocks.product_card.quick_view_desktop.label",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "quick_view_compact",
+      "label": "t:blocks.product_card.quick_view_compact.label",
+      "info": "t:blocks.product_card.quick_view_compact.info",
+      "default": true
+    }
+  ]
 }
 {% endschema %}

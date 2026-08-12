@@ -7,11 +7,18 @@
   follow it. The photograph does not — we shoot one metal."
 
   Every control is a **real link** to the piece at that value, so a pick works
-  without scripting — it simply navigates — and each value's caption and price
-  markup is rendered onto the link by Liquid, so a pick costs no request and no
+  without scripting — it simply navigates — and each value's price markup is
+  rendered onto the link by Liquid, so a pick costs no request and no
   arithmetic in the browser. (The design uses a `<button>`; a button without
   script does nothing, and the theme's rule is that nothing is load-bearing
   without scripting.)
+
+  **This block is the control and nothing else.** The name of the chosen value
+  is `product-card-option-name`, a block of its own, because the caption is
+  something a merchant composes: a shop selling one thing wants "White Gold",
+  and a shop selling another wants the name beside two facts of its own. The
+  two used to be one block and the caption was assembled here, which put this
+  theme's first catalogue into the theme.
 
   **There is no option picker here, and that is a structural finding rather
   than a simplification.** A theme block cannot read its parent's settings and
@@ -20,24 +27,14 @@
   independently, and would go on answering for the option they derive. The row
   would mark one value selected while the price beside it quoted another, with
   nothing on screen to say why. So all three derive the option identically
-  through `snippets/card-option.liquid`. Same rule the quick view's axes are
-  written to: "Which control an axis gets is derived, not tabled."
-
-  What *is* a setting here is presentation, which nothing else depends on: how
-  the values are drawn, and whether the chosen one is named above them.
+  through `snippets/card-option.liquid`.
 
   **Swatches paint from the option value's own Color metafield and from nowhere
   else.** `snippets/metal-swatch.liquid` is the single place the theme decides
-  what a metal looks like, shared with the quick view and the product page. A
+  what a value looks like, shared with the quick view and the product page. A
   value with no swatch configured paints nothing and keeps its hairline and its
   accessible name, so it stays pickable and announced — that is the connection
-  missing in admin, not a theme fault. Never hardcode a table of metals here.
-
-  The order is `snippets/metal-order.liquid`'s: the design's own metal table,
-  not the order the option happens to carry, with anything it does not
-  recognise appended rather than dropped. That is what makes it safe on an
-  option that is not a metal at all — every value is unmatched, so the merchant's
-  own order survives intact.
+  missing in admin, not a theme fault. Never hardcode a table of values here.
 {%- endcomment -%}
 
 {%- liquid
@@ -63,6 +60,13 @@
     endfor
   endif
 
+  comment
+    The order is `snippets/metal-order.liquid`'s: the design's own table, not
+    the order the option happens to carry, with anything it does not recognise
+    appended rather than dropped. That last part is what makes it safe on an
+    option it knows nothing about — every value is unmatched, so the merchant's
+    own order survives intact.
+  endcomment
   capture ordered_values_raw
     render 'metal-order', option: card_option_drop
   endcapture
@@ -74,76 +78,31 @@
   endif
 
   comment
-    **The caption is the design's own — "White Gold · 1.0 ct" — and the carat
-    half belongs here rather than to a `product-card-meta` block.** It reads
-    like a second fact and is not one: the design states the caption as
-    `metalName(sel) + ' · ' + carat`, one line describing the piece *as
-    configured*, and only this block knows what was picked. Split onto a line of
-    its own the carat stops following the caption it qualifies, and Most Loved
-    would say less than the same card says on a collection page.
-
-    `product-card-meta` is for what the piece is regardless of the pick, which
-    is why it is additive rather than where this lives.
-
-    No karat prefix. It read "22K White Gold · 1.0 ct" once, which said the
-    karat twice — the "Available in" block already lists every karat the piece
-    comes in, and the card cannot choose one anyway.
+    Round or square, and it is one declaration rather than a second dot. The
+    radius is published as `--swatch-radius`, which `.swatch-dot` reads with a
+    `50%` fallback — so the dot is round wherever nothing says otherwise, which
+    is every other place it is drawn (the quick view, the product page).
   endcomment
-  assign carat_label = product.metafields.custom.total_carat_weight.value | append: ''
-  if carat_label != blank
-    unless carat_label contains 'ct'
-      assign carat_label = carat_label | append: ' ct'
-    endunless
-  endif
-
-  comment
-    **Joined with `append`, not inside a `capture`.** Written as a capture, the
-    separator sits between two whitespace-stripping tag delimiters, and those
-    dashes eat the spaces either side of it: the caption came out
-    "Yellow Gold·1.5 ct", while the identical string built for the swatch links
-    read correctly because those tags happened not to strip. Either half can be
-    missing and "· 1.5 ct" with nothing before it is not a caption, so the join
-    is conditional. Same idiom `snippets/product-card.liquid` uses.
-  endcomment
-  assign selected_caption = selected_value
-  if carat_label != blank
-    if selected_caption != blank
-      assign selected_caption = selected_caption | append: ' · ' | append: carat_label
-    else
-      assign selected_caption = carat_label
-    endif
+  assign swatch_radius = '50%'
+  if block.settings.swatch_shape == 'square'
+    assign swatch_radius = 'var(--radius-base, 0)'
   endif
 -%}
-
-{%- comment -%}
-  The chosen value's name. Without a control it is a fixed string and says so
-  with `data-card-meta-fixed`, which is what stops `theme.js` rewriting an
-  element nothing can change — the same marker the metafield-fed caption
-  carries in `snippets/product-card.liquid`.
-{%- endcomment -%}
-{%- if block.settings.show_name -%}
-  <span
-    class="card__meta"
-    data-card-meta
-    {% if card_option_drop == blank %}data-card-meta-fixed{% endif %}
-    {% if card_option_drop == blank %}{{ block.shopify_attributes }}{% endif %}
-  >{{ selected_caption }}</span>
-{%- endif -%}
 
 {%- if card_option_drop != blank -%}
   <div
     class="{% if is_pills %}card__pills{% else %}card__swatches{% endif %}"
-    {% unless is_pills %}data-card-swatches{% endunless %}
+    {% unless is_pills %}data-card-swatches style="--swatch-radius: {{ swatch_radius }};"{% endunless %}
     {{ block.shopify_attributes }}
   >
     {%- for value in ordered_values -%}
       {%- liquid
         comment
-          The card offers no karat or size control, so a pick has to choose a
-          variant on the customer's behalf: the dearest *available* one carrying
-          this value. A sold-out variant cannot be bought, so preferring it
-          would post something that fails at checkout; where the whole value is
-          sold out the dearest overall stands in and the button says Sold out.
+          The card offers no second control, so a pick has to choose a variant
+          on the customer's behalf: the dearest *available* one carrying this
+          value. A sold-out variant cannot be bought, so preferring it would
+          post something that fails at checkout; where the whole value is sold
+          out the dearest overall stands in and the button says Sold out.
 
           This is `card-option.liquid`'s rule applied per value rather than to
           the selected one, which is why it is written out here — the snippet
@@ -187,23 +146,13 @@
             break
           endif
         endfor
-
-        comment
-          The caption this value would give, rendered onto the link so a pick
-          needs no string in JavaScript. Same composition as the selected one,
-          and built the same way for the same reason.
-        endcomment
-        assign value_caption = value
-        if carat_label != blank
-          assign value_caption = value_caption | append: ' · ' | append: carat_label
-        endif
       -%}
 
       {%- comment -%}
         The price markup a pick writes into `[data-card-price]`. It carries the
         figure and nothing else: `theme.js` replaces that element's whole
-        `innerHTML`, and the tax note is a sibling block out of its reach — see
-        `blocks/product-card-price.liquid`.
+        `innerHTML`, and anything beside the price — a note, a unit — is a
+        sibling block out of its reach.
       {%- endcomment -%}
       {%- capture value_price_html -%}
         {%- if chosen.compare_at_price > chosen.price -%}
@@ -219,7 +168,7 @@
         data-metal-value="{{ value | escape }}"
         data-metal-id="{{ chosen.id }}"
         data-metal-available="{{ chosen.available }}"
-        data-metal-meta="{{ value_caption | escape }}"
+        data-metal-meta="{{ value | escape }}"
         data-metal-price="{{ value_price_html | escape }}"
         {% unless is_pills %}data-tip="{{ value | escape }}"{% endunless %}
         aria-label="{{ value | escape }}"
@@ -275,11 +224,15 @@
       "default": "swatches"
     },
     {
-      "type": "checkbox",
-      "id": "show_name",
-      "label": "t:blocks.product_card_variants.show_name.label",
-      "info": "t:blocks.product_card_variants.show_name.info",
-      "default": true
+      "type": "select",
+      "id": "swatch_shape",
+      "label": "t:blocks.product_card_variants.swatch_shape.label",
+      "visible_if": "{{ block.settings.control == 'swatches' }}",
+      "options": [
+        { "value": "round", "label": "t:blocks.product_card_variants.swatch_shape.round" },
+        { "value": "square", "label": "t:blocks.product_card_variants.swatch_shape.square" }
+      ],
+      "default": "round"
     }
   ],
   "presets": [
@@ -287,7 +240,7 @@
       "name": "t:blocks.product_card_variants.name",
       "settings": {
         "control": "swatches",
-        "show_name": true
+        "swatch_shape": "round"
       }
     }
   ]

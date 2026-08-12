@@ -1841,17 +1841,18 @@ a {
   padding-inline: 0;
 }
 
-/* `.price-tax` is deliberately sized as a fraction of the price it follows —
-   "a fraction of whatever price it follows rather than a fixed step on the
-   scale" — which works while it is *inside* the price element. Out here it is a
-   sibling by design, because that is what keeps a metal pick from wiping it
-   (`theme.js` replaces `[data-card-price]`'s whole innerHTML), so its `em`
-   would resolve against the caption's size instead and it rendered a step
-   larger than the same note on a collection page: an 11.9px note against
-   11.26px. It restates the price's size as its base and the `0.75em` does the
-   rest. */
-.card--composed .price-tax {
-  font-size: calc(var(--product-price-size) * 0.75);
+/* The quick-view disc is two checkboxes on the card, not a block, and they are
+   about the pointer rather than the layout: a hover affordance on a phone is a
+   tap target competing with the card's own link. Media queries rather than
+   container queries for exactly that reason — the question is what kind of
+   device is being used, which the card's own width cannot answer. 48rem is the
+   theme's own tablet threshold, the one `blocks/group.liquid` stacks on. */
+@media (min-width: 48rem) {
+  .card__quick--hide-wide { display: none; }
+}
+
+@media (max-width: 47.9375rem) {
+  .card__quick--hide-compact { display: none; }
 }
 
 /* A group zeroes its children's block margins — a gap and a margin add, so a
@@ -1980,7 +1981,11 @@ a.card__title::after {
   display: block;
   width: 100%;
   height: 100%;
-  border-radius: 50%;
+  /* Round unless the row it sits in says otherwise, which is every other place
+     the dot is drawn — the quick view and the product page both leave it
+     alone. `product-card-variants` publishes `--swatch-radius` on the row, so
+     the shape is one declaration rather than a second kind of dot. */
+  border-radius: var(--swatch-radius, 50%);
   /* Unpainted when the metal was not recognised — the hairline still draws the
      dot, so it reads as "no colour known" rather than as the wrong metal. */
   background: var(--metal-swatch, transparent);
@@ -2086,8 +2091,14 @@ a.card__title::after {
 }
 
 /* The gaps stay card-scoped — outside a card the class is caption type only,
-   and the surrounding stack spaces it. */
-.card__meta {
+   and the surrounding stack spaces it.
+
+   `.card__text` shares every one of these values, because a text block left
+   alone *is* a caption line: the block emits a declaration only for a control
+   the merchant has actually set, so this rule stays the single description of
+   what a caption looks like rather than being restated in Liquid. */
+.card__meta,
+.card__text {
   display: block;
   margin: var(--card-meta-gap, 0) 0 var(--card-price-gap, 0);
   min-height: 1.5em;

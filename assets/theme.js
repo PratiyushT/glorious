@@ -2405,14 +2405,22 @@
     /* A metal can be sold out while the one Liquid rendered was not, and the
        button is only a button — nothing else would stop it posting a variant
        that cannot be bought. Liquid hands over both labels so the swap needs no
-       string here. */
+       string here.
+
+       The button's own labels win over the card's. On a card built from blocks
+       the words are the button block's setting, and a block cannot hand a
+       setting to its parent — so the attributes live where the setting does.
+       The snippet card states them on the root and carries none on the button,
+       which is what this falls back to. */
     var add = card.querySelector('.card__add');
     if (add && add.tagName === 'BUTTON') {
       var sold = swatch.dataset.metalAvailable === 'false';
       add.disabled = sold;
       add.setAttribute('aria-disabled', sold ? 'true' : 'false');
 
-      var label = sold ? card.dataset.soldOutLabel : card.dataset.addLabel;
+      var label = sold
+        ? (add.dataset.soldOutLabel || card.dataset.soldOutLabel)
+        : (add.dataset.addLabel || card.dataset.addLabel);
       if (label) add.textContent = label;
     }
 

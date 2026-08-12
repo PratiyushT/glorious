@@ -13,11 +13,21 @@
   to be `.card__media`. Lifted out to be a sibling it would centre itself on
   the whole card — the caption included — and sit over the price.
 
-  The frame is this block's setting for the same reason the collection card's
-  is on its image block: the frame belongs to the photograph. Both settings
-  default to `inherit`, which is the theme's own sentinel for "leave it to the
-  theme setting" — so a card built from blocks starts identical to every other
-  grid in the shop and the control is a departure rather than a migration.
+  **Every setting the photograph obeys is this block's own** — the frame, the
+  fit, the framing correction and whether a spin counts as a slide. They were
+  `settings.card_*` under Theme settings → Product cards, read here through an
+  `inherit` sentinel; they are stated outright now, so the card is edited where
+  the card is rather than in two places.
+
+  The theme settings stay, because `snippets/product-card.liquid` still renders
+  the collection and search grids and still reads them. They are not a fallback
+  for this block: nothing here consults them, and changing one moves those two
+  grids and leaves Most Loved where it is. That is the price of one card built
+  two ways, and it ends when those templates are rebuilt on blocks.
+
+  The shipped defaults are the theme settings' own, so the conversion moved no
+  pixel — Square and "Fit the whole piece", which is itself a documented
+  departure from the design's 3/4 frame.
 
   The order is the product's own. The metal control deliberately does not touch
   it: "Colour is chosen on the card itself: the name, the price and what goes
@@ -31,18 +41,12 @@
   assign img_sizes = '(max-width: 700px) 70vw, 460px'
 
   comment
-    `inherit` falls through to the theme setting, so an untouched block renders
-    byte-identically to `snippets/product-card.liquid`.
-
     Every value has to do what it says, `adapt` included — it fell through to
     the same 3/4 box once, so choosing it changed nothing at all. Adapt takes
     the shape from the first photograph the card actually shows; a card with no
     photograph keeps 3/4, there being nothing to adapt to.
   endcomment
   assign ratio_setting = block.settings.image_ratio
-  if ratio_setting == blank or ratio_setting == 'inherit'
-    assign ratio_setting = settings.card_image_ratio
-  endif
 
   assign ratio_value = '3 / 4'
   if ratio_setting == 'adapt'
@@ -55,9 +59,6 @@
   endif
 
   assign fit_value = block.settings.image_fit
-  if fit_value == 'inherit'
-    assign fit_value = blank
-  endif
 
   comment
     The design's framing correction. Its photographs are shot on white with
@@ -67,7 +68,7 @@
     metafield overrides it per piece; the theme setting turns it off.
   endcomment
   assign card_zoom = blank
-  if settings.card_image_zoom
+  if block.settings.image_zoom
     assign card_zoom = product.metafields.custom.card_zoom.value
     if card_zoom == blank
       assign zoom_match = product.type | append: ' ' | append: product.title | downcase
@@ -93,7 +94,7 @@
   endcomment
   assign card_video = blank
   assign card_mp4 = blank
-  if settings.card_show_video
+  if block.settings.show_video
     assign product_videos = product.media | where: 'media_type', 'video'
     assign first_video = product_videos.first
     if first_video != blank
@@ -120,7 +121,7 @@
 
 <div
   class="card__media"
-  style="aspect-ratio: {{ ratio_value }};{% if card_zoom != blank %} --card-zoom: {{ card_zoom }};{% endif %}{% if fit_value != blank %} --card-fit: {{ fit_value }};{% endif %}"
+  style="aspect-ratio: {{ ratio_value }};{% if card_zoom != blank %} --card-zoom: {{ card_zoom }};{% endif %} --card-fit: {{ fit_value }};"
   {{ block.shopify_attributes }}
 >
   {%- if product == blank -%}
@@ -222,28 +223,39 @@
       "type": "select",
       "id": "image_ratio",
       "label": "t:sections.all.image_ratio.label",
-      "info": "t:blocks.all.inherit.info",
       "options": [
-        { "value": "inherit", "label": "t:blocks.all.inherit.label" },
         { "value": "adapt", "label": "t:settings_schema.options.adapt" },
         { "value": "1/1", "label": "t:settings_schema.options.square" },
         { "value": "4/5", "label": "t:settings_schema.options.portrait" },
         { "value": "3/4", "label": "t:settings_schema.options.tall_portrait" },
         { "value": "4/3", "label": "t:settings_schema.options.landscape" }
       ],
-      "default": "inherit"
+      "default": "1/1"
     },
     {
       "type": "select",
       "id": "image_fit",
       "label": "t:settings_schema.product_cards.card_image_fit.label",
-      "info": "t:blocks.all.inherit.info",
+      "info": "t:settings_schema.product_cards.card_image_fit.info",
       "options": [
-        { "value": "inherit", "label": "t:blocks.all.inherit.label" },
         { "value": "contain", "label": "t:settings_schema.options.contain" },
         { "value": "cover", "label": "t:settings_schema.options.cover" }
       ],
-      "default": "inherit"
+      "default": "contain"
+    },
+    {
+      "type": "checkbox",
+      "id": "image_zoom",
+      "label": "t:settings_schema.product_cards.card_image_zoom.label",
+      "info": "t:settings_schema.product_cards.card_image_zoom.info",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_video",
+      "label": "t:settings_schema.product_cards.card_show_video.label",
+      "info": "t:settings_schema.product_cards.card_show_video.info",
+      "default": true
     }
   ],
   "presets": [

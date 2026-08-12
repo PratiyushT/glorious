@@ -560,8 +560,7 @@
         "xlarge": "Extra large"
       },
       "inherit": {
-        "label": "Use theme setting",
-        "info": "Leave this to follow Theme settings → Product cards, so every grid in the shop stays consistent."
+        "label": "Leave as it is"
       }
     },
     "title": {
@@ -596,7 +595,15 @@
       }
     },
     "product_card": {
-      "name": "Product card"
+      "name": "Product card",
+      "quick_view_header": "Quick view",
+      "quick_view_desktop": {
+        "label": "Show on desktop"
+      },
+      "quick_view_compact": {
+        "label": "Show on tablet and mobile",
+        "info": "The disc opens the piece in an overlay. With both off it is simply not shown — the card's own link still opens the product page."
+      }
     },
     "product_card_image": {
       "name": "Photograph"
@@ -607,11 +614,46 @@
     "product_card_price": {
       "name": "Price"
     },
-    "product_card_tax_note": {
-      "name": "Price note",
+    "product_card_option_name": {
+      "name": "Chosen option"
+    },
+    "product_card_text": {
+      "name": "Text",
+      "type_header": "Type",
       "text": {
         "label": "Text",
-        "info": "Shown beside the price on this card only. It does not follow Theme settings → Pricing, so clear it — or remove the block — if the shop stops pricing tax-inclusively."
+        "info": "Type a line, or connect it to a product metafield with the dynamic-source button. A single character works too — a \"·\" between two blocks inside a group."
+      },
+      "font": {
+        "label": "Font",
+        "body": "Body",
+        "heading": "Heading"
+      },
+      "size": {
+        "label": "Size",
+        "info": "Steps of the theme's own product type, so a shop that retunes its type scale moves this with it.",
+        "xs": "Smaller than the caption",
+        "note": "Beside the price",
+        "sm": "Caption",
+        "md": "Price",
+        "lg": "Product title",
+        "xl": "Larger than the title"
+      },
+      "text_transform": {
+        "label": "Letter case",
+        "uppercase": "UPPERCASE",
+        "lowercase": "lowercase",
+        "capitalize": "Capitalise Each Word",
+        "none": "As typed"
+      },
+      "color_source": {
+        "label": "Colour",
+        "info": "Muted follows whatever scheme the card is in. A picked colour does not, and has to be right on every scheme the shop uses.",
+        "muted": "Muted",
+        "custom": "Custom"
+      },
+      "custom_color": {
+        "label": "Custom colour"
       }
     },
     "product_card_variants": {
@@ -622,35 +664,20 @@
         "swatches": "Swatches",
         "pills": "Written values"
       },
-      "show_name": {
-        "label": "Name the chosen value",
-        "info": "Adds a caption above the control — \"White Gold\" — that follows what the customer picks."
+      "swatch_shape": {
+        "label": "Swatch shape",
+        "round": "Round",
+        "square": "Square"
       }
     },
     "product_card_available": {
-      "name": "Available in",
-      "info": "Lists every karat the piece comes in. Shown only where it has a purity or karat option."
-    },
-    "product_card_meta": {
-      "name": "Caption line",
-      "text": {
-        "label": "Text",
-        "info": "Connect this to a product metafield with the dynamic-source button, or type one line to say the same thing on every card."
-      },
-      "suffix": {
-        "label": "Suffix",
-        "info": "Appended unless the value already ends with it — e.g. \"ct\" for a carat weight stored as a bare number."
-      }
+      "name": "Available in"
     },
     "product_card_add": {
       "name": "Add to Bag",
       "label": {
-        "label": "Label",
-        "info": "Leave empty to follow Theme settings → Product cards."
+        "label": "Label"
       }
-    },
-    "product_card_quick_view": {
-      "name": "Quick view"
     },
     "prose": {
       "name": "Paragraph (rich text)"
