@@ -529,11 +529,35 @@ a {
   flex-wrap: var(--group-wrap, wrap);
   justify-content: var(--group-justify, flex-start);
   align-items: var(--group-align, baseline);
-  gap: var(--block-gap, var(--step-medium));
   min-width: 0;
+
+  /* **The two axes come from two places, and that is the whole rule.**
+
+     Across a row the gap is the group's own setting — that is what the control
+     is for, and it is a horizontal decision.
+
+     Down the page it is `--block-gap`, inherited from the section, so a group
+     that stacks — by choice, or because the container query fired — falls back
+     into the rhythm the section already spaces everything else by. A group
+     carrying its own vertical gap sat visibly out of step with the heading
+     above it, and no setting can fix that: the right value is not the
+     merchant's to guess, it is the one the section is already using.
+
+     This is also why the group writes `--group-gap` rather than `--block-gap`.
+     Custom properties inherit, so writing the shared name would shadow the
+     section's value for everything inside the group and there would be nothing
+     left to inherit. */
+  column-gap: var(--group-gap, var(--step-medium));
+  row-gap: var(--block-gap, var(--step-large));
 }
 
-.layout-group__inner > * {
+/* **Two classes deep, and that is not cosmetic.** `.section-eyebrow` carries
+   its own `margin-block` and is declared further down this file; at one class
+   each, source order decides, and the eyebrow won — so a stacked group showed
+   28.9px between its children where the section's rhythm is 7.2. Qualifying by
+   the parent takes this to (0,2,0) and settles it on specificity rather than on
+   where the rule happens to sit. Same shape as the `.line-options` note. */
+.layout-group > .layout-group__inner > * {
   margin-block: 0;
 }
 

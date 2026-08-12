@@ -660,8 +660,8 @@
         "info": "Off keeps everything on one row, however narrow it gets."
       },
       "gap": {
-        "label": "Space between blocks",
-        "info": "The gap between the blocks in this group, along whichever direction it runs."
+        "label": "Space along the row",
+        "info": "Only applies while the blocks sit side by side. Stacked, the space comes from the section's own gap so the rhythm matches everything above and below."
       },
       "stack_below": {
         "label": "Stack when narrow",

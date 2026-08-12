@@ -57,6 +57,34 @@
   unless block.settings.wrap
     assign wrap = 'nowrap'
   endunless
+
+  comment
+    **The gap is emitted as `--group-gap`, deliberately not as `--block-gap`.**
+
+    `block-spacing` writes `--block-gap`, and the section wrapper above writes
+    the same property to state its own vertical rhythm. Custom properties
+    inherit, so a group writing `--block-gap` *shadows the section's* for
+    everything inside it — which is how a stacked group ended up spacing its
+    children by its own horizontal setting instead of the section's rhythm, and
+    sat visibly out of step with the gap above it.
+
+    Under its own name the section's value survives inheritance, and the
+    stylesheet can spend each on the axis it belongs to: this on `column-gap`,
+    the section's on `row-gap`. So the setting is horizontal only, and a group
+    that stacks — by choice or because the container query fired — falls back
+    into the section's rhythm with nothing to configure.
+
+    The step guard is `block-spacing`'s own: an unrecognised value prints
+    nothing rather than `var(--step-)`, which would be invalid and take the
+    whole declaration with it. `none` prints `0`.
+  endcomment
+  assign gap_steps = 'tiny,small,medium,large,xlarge' | split: ','
+  assign gap_css = ''
+  if block.settings.gap == 'none'
+    assign gap_css = '--group-gap: 0;'
+  elsif gap_steps contains block.settings.gap
+    assign gap_css = '--group-gap: var(--step-' | append: block.settings.gap | append: ');'
+  endif
 -%}
 
 {%- comment -%}
@@ -79,7 +107,7 @@
 >
   <div
     class="layout-group__inner"
-    style="--group-direction: {{ direction }}; --group-justify: {{ justify }}; --group-align: {{ align }}; --group-wrap: {{ wrap }};{% render 'block-spacing', gap: block.settings.gap %}"
+    style="--group-direction: {{ direction }}; --group-justify: {{ justify }}; --group-align: {{ align }}; --group-wrap: {{ wrap }};{{ gap_css }}"
   >
     {% content_for 'blocks' %}
   </div>
