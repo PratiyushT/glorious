@@ -1,65 +1,85 @@
 {%- comment -%}
-  The inline declarations a text style resolves to.
-
-  **One place decides what a style means**, shared by every block that offers
-  one. `product-card-text` and `product-card-option-values` each carried the
-  same ladder — font role, size, letter case, colour, five `case` statements
-  apiece — and an audit put the duplication at roughly 5,100 identical
-  characters across the two files. A third block offering text would have made
-  it three copies.
-
-  **It prints inline declarations rather than a class name, and that is
-  deliberate.** `.text-caption` and `.card__meta` are both one class of
-  specificity, and `.card__meta` is declared later in `base.css`, so a class
-  would lose to the very rule it is supposed to override — silently, with the
-  markup looking exactly right. Inline wins outright and needs no ordering
-  contract between two distant parts of the stylesheet.
-
-  **An untouched style prints nothing at all**, which is what makes the control
-  additive: the block keeps whatever `.card__meta` gives it until a merchant
-  chooses otherwise. That is the rule this theme is built to — the fallback
-  lives in the CSS, so adding a control changes nothing until someone uses it.
-
-  **A style says nothing about the element.** Whether a thing is a heading is a
-  question about the page's outline, and every caller asks it separately.
+  Resolves one typography preset and its optional block-level overrides into
+  inline declarations. Inline output deliberately wins over a component's
+  fallback class without creating a stylesheet-order contract.
 
   Accepts:
-    style - a style key, or 'inherit' / blank for none.
-    color - a colour, or blank to inherit.
+    preset         - title, heading_1…heading_5, subheading, paragraph, small,
+                     or caption. `style` is accepted as a legacy alias.
+    font_style     - inherit, accent, body, subheading, or heading.
+    font_size      - inherit, 3xs…8xl.
+    color          - a colour, or blank to inherit.
+    line_height    - inherit, tight, snug, normal, relaxed, or loose.
+    text_case      - inherit, default (as typed), uppercase, lowercase, or
+                     capitalize.
+    letter_spacing - inherit, tighter, tight, normal, wide, or wider.
+
+  Every value is guarded. A stale or unknown stored value is ignored rather
+  than producing an unresolved custom property.
 {%- endcomment -%}
 
 {%- liquid
-  assign known = 'display,title,subtitle,lead,body,small,caption' | split: ','
+  assign resolved_preset = preset | default: style
+
+  comment
+    Preserve blocks saved under the previous seven-style system. The schema
+    now writes only the ten current values; this mapping is read compatibility.
+  endcomment
+  case resolved_preset
+    when 'display'
+      assign resolved_preset = 'title'
+    when 'subtitle'
+      assign resolved_preset = 'subheading'
+    when 'lead', 'body'
+      assign resolved_preset = 'paragraph'
+  endcase
+
+  assign known_presets = 'title,heading_1,heading_2,heading_3,heading_4,heading_5,subheading,paragraph,small,caption' | split: ','
+  assign known_fonts = 'accent,body,subheading,heading' | split: ','
+  assign known_sizes = '3xs,2xs,xs,sm,md,lg,xl,2xl,3xl,4xl,5xl,6xl,7xl,8xl' | split: ','
+  assign known_leading = 'tight,snug,normal,relaxed,loose' | split: ','
+  assign known_tracking = 'tighter,tight,normal,wide,wider' | split: ','
+  assign known_case = 'default,uppercase,lowercase,capitalize' | split: ','
   assign out = ''
 
-  comment
-    Every property comes from the style's own token, so the seven definitions
-    stay in `theme-tokens.liquid` and an unrecognised stored value fails as an
-    unresolved token rather than as a wrong number. The guard is what keeps that
-    true: without it a stale key would print `var(--text-foo-size)`, which is
-    invalid at computed-value time and would take the declaration with it.
-  endcomment
-  if known contains style
-    assign out = out | append: 'font-family: var(--text-' | append: style | append: '-font);'
-    assign out = out | append: 'font-size: var(--text-' | append: style | append: '-size);'
-    assign out = out | append: 'line-height: var(--text-' | append: style | append: '-leading);'
-    assign out = out | append: 'letter-spacing: var(--text-' | append: style | append: '-tracking);'
-    assign out = out | append: 'text-transform: var(--text-' | append: style | append: '-case);'
+  if known_presets contains resolved_preset
+    assign out = out | append: 'font-family:var(--text-' | append: resolved_preset | append: '-font);'
+    assign out = out | append: 'font-weight:var(--text-' | append: resolved_preset | append: '-weight);'
+    assign out = out | append: 'font-style:var(--text-' | append: resolved_preset | append: '-style);'
+    assign out = out | append: 'font-size:var(--text-' | append: resolved_preset | append: '-size);'
+    assign out = out | append: 'line-height:var(--text-' | append: resolved_preset | append: '-leading);'
+    assign out = out | append: 'letter-spacing:var(--text-' | append: resolved_preset | append: '-tracking);'
+    assign out = out | append: 'text-transform:var(--text-' | append: resolved_preset | append: '-case);'
   endif
 
-  comment
-    **One colour picker, and empty means inherit.** It was a select of
-    inherit / muted / faint / custom with a picker behind the last — four
-    options and a conditional field to say one thing. A picker that is empty
-    already says "leave it alone", so the select was ceremony.
+  if known_fonts contains font_style
+    assign out = out | append: 'font-family:var(--font-' | append: font_style | append: ');'
+    assign out = out | append: 'font-weight:var(--font-' | append: font_style | append: '-weight);'
+    assign out = out | append: 'font-style:var(--font-' | append: font_style | append: '-style);'
+  endif
 
-    A picked colour is absolute and does not follow a scheme, which is the cost
-    of the simpler control: a shop using this on both a light and a dark scheme
-    has to pick one that works on both, or leave it empty and let the scheme's
-    own text colour through.
-  endcomment
+  if known_sizes contains font_size
+    assign out = out | append: 'font-size:var(--type-' | append: font_size | append: ');'
+  endif
+
   if color != blank
-    assign out = out | append: 'color: ' | append: color | append: ';'
+    assign out = out | append: 'color:' | append: color | append: ';'
+  endif
+
+  if known_leading contains line_height
+    assign out = out | append: 'line-height:var(--lead-' | append: line_height | append: ');'
+  endif
+
+  if known_case contains text_case
+    if text_case == 'default'
+      assign out = out | append: 'text-transform:none;'
+    else
+      assign out = out | append: 'text-transform:' | append: text_case | append: ';'
+    endif
+  endif
+
+  if known_tracking contains letter_spacing
+    assign out = out | append: 'letter-spacing:var(--track-' | append: letter_spacing | append: ');'
   endif
 -%}
 {{- out -}}

@@ -96,7 +96,11 @@
     <div class="hero__grid" data-hero-grid>
       <div class="hero__copy">
         {%- if text_block != blank and text_block.settings.text != blank -%}
-          <div class="hero__intro rte" {{ text_block.shopify_attributes }}>
+          <div
+            class="hero__intro rte"
+            style="{% render 'text-style', preset: text_block.settings.style, font_style: text_block.settings.override_font, font_size: text_block.settings.override_size, color: text_block.settings.color, line_height: text_block.settings.override_leading, text_case: text_block.settings.override_case, letter_spacing: text_block.settings.override_tracking %}"
+            {{ text_block.shopify_attributes }}
+          >
             {{ text_block.settings.text }}
           </div>
         {%- endif -%}
@@ -324,6 +328,112 @@
           "id": "text",
           "label": "t:sections.all.text.label",
           "default": "<p>Authentic handcrafted diamond jewelry with heritage character and refined radiance — IGI-certified stones, set in 18-karat gold.</p>"
+        },
+        {
+          "type": "select",
+          "id": "style",
+          "label": "t:blocks.all.text_preset.label",
+          "info": "t:blocks.all.text_preset.info",
+          "options": [
+            { "value": "title", "label": "t:settings_schema.typography.presets.title.header" },
+            { "value": "heading_1", "label": "t:settings_schema.typography.presets.heading_1.header" },
+            { "value": "heading_2", "label": "t:settings_schema.typography.presets.heading_2.header" },
+            { "value": "heading_3", "label": "t:settings_schema.typography.presets.heading_3.header" },
+            { "value": "heading_4", "label": "t:settings_schema.typography.presets.heading_4.header" },
+            { "value": "heading_5", "label": "t:settings_schema.typography.presets.heading_5.header" },
+            { "value": "subheading", "label": "t:settings_schema.typography.presets.subheading.header" },
+            { "value": "paragraph", "label": "t:settings_schema.typography.presets.paragraph.header" },
+            { "value": "small", "label": "t:settings_schema.typography.presets.small.header" },
+            { "value": "caption", "label": "t:settings_schema.typography.presets.caption.header" }
+          ],
+          "default": "paragraph"
+        },
+        {
+          "type": "header",
+          "content": "t:blocks.all.override_header"
+        },
+        {
+          "type": "select",
+          "id": "override_font",
+          "label": "t:blocks.all.override_font.label",
+          "options": [
+            { "value": "inherit", "label": "t:blocks.all.inherit.label" },
+            { "value": "accent", "label": "t:settings_schema.typography.roles.accent" },
+            { "value": "body", "label": "t:settings_schema.typography.roles.body" },
+            { "value": "subheading", "label": "t:settings_schema.typography.roles.subheading" },
+            { "value": "heading", "label": "t:settings_schema.typography.roles.heading" }
+          ],
+          "default": "inherit"
+        },
+        {
+          "type": "select",
+          "id": "override_size",
+          "label": "t:blocks.all.override_size.label",
+          "options": [
+            { "value": "inherit", "label": "t:blocks.all.inherit.label" },
+            { "value": "3xs", "label": "t:settings_schema.typography.scale.3xs" },
+            { "value": "2xs", "label": "t:settings_schema.typography.scale.2xs" },
+            { "value": "xs", "label": "t:settings_schema.typography.scale.xs" },
+            { "value": "sm", "label": "t:settings_schema.typography.scale.sm" },
+            { "value": "md", "label": "t:settings_schema.typography.scale.md" },
+            { "value": "lg", "label": "t:settings_schema.typography.scale.lg" },
+            { "value": "xl", "label": "t:settings_schema.typography.scale.xl" },
+            { "value": "2xl", "label": "t:settings_schema.typography.scale.2xl" },
+            { "value": "3xl", "label": "t:settings_schema.typography.scale.3xl" },
+            { "value": "4xl", "label": "t:settings_schema.typography.scale.4xl" },
+            { "value": "5xl", "label": "t:settings_schema.typography.scale.5xl" },
+            { "value": "6xl", "label": "t:settings_schema.typography.scale.6xl" },
+            { "value": "7xl", "label": "t:settings_schema.typography.scale.7xl" },
+            { "value": "8xl", "label": "t:settings_schema.typography.scale.8xl" }
+          ],
+          "default": "inherit"
+        },
+        {
+          "type": "color",
+          "id": "color",
+          "label": "t:blocks.all.text_color.label",
+          "info": "t:blocks.all.text_color.info"
+        },
+        {
+          "type": "select",
+          "id": "override_leading",
+          "label": "t:blocks.all.override_leading.label",
+          "options": [
+            { "value": "inherit", "label": "t:blocks.all.inherit.label" },
+            { "value": "tight", "label": "t:settings_schema.typography.leading.tight" },
+            { "value": "snug", "label": "t:settings_schema.typography.leading.snug" },
+            { "value": "normal", "label": "t:settings_schema.typography.leading.normal" },
+            { "value": "relaxed", "label": "t:settings_schema.typography.leading.relaxed" },
+            { "value": "loose", "label": "t:settings_schema.typography.leading.loose" }
+          ],
+          "default": "inherit"
+        },
+        {
+          "type": "select",
+          "id": "override_case",
+          "label": "t:blocks.all.override_case.label",
+          "options": [
+            { "value": "inherit", "label": "t:blocks.all.inherit.label" },
+            { "value": "default", "label": "t:settings_schema.typography.case.default" },
+            { "value": "uppercase", "label": "t:settings_schema.typography.case.uppercase" },
+            { "value": "lowercase", "label": "t:settings_schema.typography.case.lowercase" },
+            { "value": "capitalize", "label": "t:settings_schema.typography.case.capitalize" }
+          ],
+          "default": "inherit"
+        },
+        {
+          "type": "select",
+          "id": "override_tracking",
+          "label": "t:blocks.all.override_tracking.label",
+          "options": [
+            { "value": "inherit", "label": "t:blocks.all.inherit.label" },
+            { "value": "tighter", "label": "t:settings_schema.typography.tracking.tighter" },
+            { "value": "tight", "label": "t:settings_schema.typography.tracking.tight" },
+            { "value": "normal", "label": "t:settings_schema.typography.tracking.normal" },
+            { "value": "wide", "label": "t:settings_schema.typography.tracking.wide" },
+            { "value": "wider", "label": "t:settings_schema.typography.tracking.wider" }
+          ],
+          "default": "inherit"
         }
       ]
     },

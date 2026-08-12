@@ -1,9 +1,9 @@
 {%- comment -%}
   Compiles merchant settings into CSS custom properties.
 
-  Defaults come from the reference design, but nothing here is hardcoded — the
-  whole visual system is a function of config/settings_schema.json. base.css
-  consumes these variables and declares no literal size, colour or breakpoint.
+  Merchant settings are compiled here, while the named type, leading and
+  tracking scales live in base.css. Components consume the resulting custom
+  properties rather than reading settings independently.
 
   Fluid formula, per step:
     slope     = (max - min) / (viewport_max - viewport_min)
@@ -12,37 +12,18 @@
 {%- endcomment -%}
 
 {%- comment -%}
-  Five fluid scales, each a named step rather than its two or three raw
-  endpoints — see scale-step.liquid. The snippet prints numbers and these
+  The layout scales remain named steps rather than raw endpoints — see
+  scale-step.liquid. The snippet prints numbers and these
   capture-and-split them, because a snippet cannot hand a value back and
   because every one of these lands in arithmetic below.
 
   Each falls back to `md`, the reference design's own value, if the stored
   step is not one the snippet knows.
 {%- endcomment -%}
-{%- capture s_type -%}{%- render 'scale-step', scale: 'type_base', step: settings.type_base -%}{%- endcapture -%}
-{%- if s_type == blank -%}{%- capture s_type -%}{%- render 'scale-step', scale: 'type_base', step: 'md' -%}{%- endcapture -%}{%- endif -%}
 {%- capture s_gut -%}{%- render 'scale-step', scale: 'gutter', step: settings.gutter -%}{%- endcapture -%}
 {%- if s_gut == blank -%}{%- capture s_gut -%}{%- render 'scale-step', scale: 'gutter', step: 'md' -%}{%- endcapture -%}{%- endif -%}
 {%- capture s_space -%}{%- render 'scale-step', scale: 'space_base', step: settings.space_base -%}{%- endcapture -%}
 {%- if s_space == blank -%}{%- capture s_space -%}{%- render 'scale-step', scale: 'space_base', step: 'md' -%}{%- endcapture -%}{%- endif -%}
-{%- capture s_disp -%}{%- render 'scale-step', scale: 'display', step: settings.display_size -%}{%- endcapture -%}
-{%- if s_disp == blank -%}{%- capture s_disp -%}{%- render 'scale-step', scale: 'display', step: 'md' -%}{%- endcapture -%}{%- endif -%}
-{%- capture s_head -%}{%- render 'scale-step', scale: 'section_heading', step: settings.section_heading_size -%}{%- endcapture -%}
-{%- if s_head == blank -%}{%- capture s_head -%}{%- render 'scale-step', scale: 'section_heading', step: 'md' -%}{%- endcapture -%}{%- endif -%}
-
-{%- capture s_bleading -%}{%- render 'scale-step', scale: 'body_leading', step: settings.body_leading -%}{%- endcapture -%}
-{%- if s_bleading == blank -%}{%- capture s_bleading -%}{%- render 'scale-step', scale: 'body_leading', step: 'md' -%}{%- endcapture -%}{%- endif -%}
-{%- capture s_dleading -%}{%- render 'scale-step', scale: 'display_leading', step: settings.display_leading -%}{%- endcapture -%}
-{%- if s_dleading == blank -%}{%- capture s_dleading -%}{%- render 'scale-step', scale: 'display_leading', step: 'md' -%}{%- endcapture -%}{%- endif -%}
-{%- capture s_dtrack -%}{%- render 'scale-step', scale: 'display_tracking', step: settings.display_tracking -%}{%- endcapture -%}
-{%- if s_dtrack == blank -%}{%- capture s_dtrack -%}{%- render 'scale-step', scale: 'display_tracking', step: 'md' -%}{%- endcapture -%}{%- endif -%}
-{%- capture s_hleading -%}{%- render 'scale-step', scale: 'heading_leading', step: settings.heading_leading -%}{%- endcapture -%}
-{%- if s_hleading == blank -%}{%- capture s_hleading -%}{%- render 'scale-step', scale: 'heading_leading', step: 'md' -%}{%- endcapture -%}{%- endif -%}
-{%- capture s_htrack -%}{%- render 'scale-step', scale: 'heading_tracking', step: settings.heading_tracking -%}{%- endcapture -%}
-{%- if s_htrack == blank -%}{%- capture s_htrack -%}{%- render 'scale-step', scale: 'heading_tracking', step: 'md' -%}{%- endcapture -%}{%- endif -%}
-{%- capture s_micro -%}{%- render 'scale-step', scale: 'micro', step: settings.micro -%}{%- endcapture -%}
-{%- if s_micro == blank -%}{%- capture s_micro -%}{%- render 'scale-step', scale: 'micro', step: 'md' -%}{%- endcapture -%}{%- endif -%}
 {%- capture s_radius -%}{%- render 'scale-step', scale: 'radius_base', step: settings.radius_base -%}{%- endcapture -%}
 {%- if s_radius == blank -%}{%- capture s_radius -%}{%- render 'scale-step', scale: 'radius_base', step: 'xs' -%}{%- endcapture -%}{%- endif -%}
 {%- capture s_arch -%}{%- render 'scale-step', scale: 'radius_arch', step: settings.radius_arch -%}{%- endcapture -%}
@@ -68,16 +49,6 @@
   assign root_px = 16.0
   assign vw_span = vw_max | minus: vw_min
 
-  assign t = s_type | split: ','
-  assign fs_min = t[0] | times: 1.0
-  assign fs_max = t[1] | times: 1.0
-  if fs_max < fs_min
-    assign fs_max = fs_min
-  endif
-
-  assign ratio_min = settings.type_ratio_min | times: 1.0
-  assign ratio_max = settings.type_ratio_max | times: 1.0
-
   assign sp = s_space | split: ','
   assign sp_min = sp[0] | times: 1.0
   assign sp_max = sp[1] | times: 1.0
@@ -92,112 +63,13 @@
     assign gut_max = gut_min
   endif
 
-  assign dsp = s_disp | split: ','
-  assign disp_min = dsp[0] | times: 1.0
-  assign disp_grow = dsp[1] | times: 1.0
-  assign disp_max = dsp[2] | times: 1.0
-
-  assign mic = s_micro | split: ','
   assign btn = s_btnsize | split: ','
-
-  assign shd = s_head | split: ','
-  assign head_min = shd[0] | times: 1.0
-  assign head_grow = shd[1] | times: 1.0
-  assign head_max = shd[2] | times: 1.0
-
-  assign fs_names = 'xs,sm,base,md,lg,xl,2xl,3xl,4xl' | split: ','
   assign sp_names = '3xs,2xs,xs,sm,md,lg,xl,2xl,3xl' | split: ','
   assign sp_mults = '0.25,0.5,0.75,1,1.5,2,3,4,6' | split: ','
 -%}
 
 <style>
-  {%- if settings.use_bundled_fonts -%}
-  @font-face {
-    font-family: 'Italiana';
-    font-style: normal;
-    font-weight: 400;
-    font-display: swap;
-    src: url({{ 'italiana-400-latin.woff2' | asset_url }}) format('woff2');
-  }
-  @font-face {
-    font-family: 'Karla';
-    font-style: normal;
-    font-weight: 400;
-    font-display: swap;
-    src: url({{ 'karla-400-latin.woff2' | asset_url }}) format('woff2');
-    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-  }
-  @font-face {
-    font-family: 'Karla';
-    font-style: normal;
-    font-weight: 400;
-    font-display: swap;
-    src: url({{ 'karla-400-latin-ext.woff2' | asset_url }}) format('woff2');
-    unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
-  }
-  @font-face {
-    font-family: 'Karla';
-    font-style: normal;
-    font-weight: 500;
-    font-display: swap;
-    src: url({{ 'karla-400-latin.woff2' | asset_url }}) format('woff2');
-    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-  }
-
-  {%- comment -%}
-    Metric-matched fallbacks. size-adjust keeps the substituted face on the same
-    footprint as the webfont, so swapping in does not shift the layout.
-  {%- endcomment -%}
-  @font-face {
-    font-family: 'Italiana Fallback';
-    src: local('Times New Roman'), local('Times'), local('Liberation Serif');
-    size-adjust: 100.4%;
-  }
-  @font-face {
-    font-family: 'Karla Fallback';
-    src: local('Arial'), local('Helvetica'), local('Liberation Sans');
-    size-adjust: 101.1%;
-  }
-  {%- endif -%}
-
   :root {
-    /* ---- Fluid type scale ------------------------------------------- */
-    {%- for name in fs_names -%}
-      {%- liquid
-        assign exp = forloop.index0 | minus: 2
-        assign lo = fs_min
-        assign hi = fs_max
-
-        if exp > 0
-          for i in (1..exp)
-            assign lo = lo | times: ratio_min
-            assign hi = hi | times: ratio_max
-          endfor
-        elsif exp < 0
-          assign steps_down = 0 | minus: exp
-          for i in (1..steps_down)
-            assign lo = lo | divided_by: ratio_min
-            assign hi = hi | divided_by: ratio_max
-          endfor
-        endif
-
-        comment
-          A larger wide-screen ratio than narrow-screen ratio inverts the
-          negative steps: the mobile value ends up above the desktop one and
-          clamp() collapses to a constant with a nonsense negative vw term.
-          Flatten it deliberately instead of emitting that.
-        endcomment
-        if hi < lo
-          assign hi = lo
-        endif
-
-        assign slope = hi | minus: lo | divided_by: vw_span
-        assign shift = slope | times: vw_min
-        assign intercept = lo | minus: shift
-      -%}
-    --fs-{{ name }}: clamp({{ lo | divided_by: root_px | round: 4 }}rem, {{ intercept | divided_by: root_px | round: 4 }}rem + {{ slope | times: 100 | round: 4 }}vw, {{ hi | divided_by: root_px | round: 4 }}rem);
-    {%- endfor %}
-
     /* ---- Fluid spacing scale ---------------------------------------- */
     {%- for name in sp_names -%}
       {%- liquid
@@ -210,17 +82,6 @@
       -%}
     --space-{{ name }}: clamp({{ lo | divided_by: root_px | round: 4 }}rem, {{ intercept | divided_by: root_px | round: 4 }}rem + {{ slope | times: 100 | round: 4 }}vw, {{ hi | divided_by: root_px | round: 4 }}rem);
     {%- endfor %}
-
-    /* ---- Display headings -------------------------------------------
-       Sized directly against the viewport so the wordmark-style titles
-       hold their edge-to-edge proportion at every width.                */
-    --fs-display: clamp({{ disp_min | divided_by: root_px | round: 4 }}rem, {{ disp_grow | divided_by: 10.0 }}vw, {{ disp_max | divided_by: root_px | round: 4 }}rem);
-    --display-leading: {{ s_dleading | times: 1.0 | divided_by: 100.0 }};
-    --display-tracking: {{ s_dtrack | times: 1.0 | divided_by: 1000.0 }}em;
-    --display-transform: {% if settings.display_uppercase %}uppercase{% else %}none{% endif %};
-
-    /* Section headings — the sentence-case titles inside sections. */
-    --fs-section: clamp({{ head_min | divided_by: root_px | round: 4 }}rem, {{ head_grow | divided_by: 10.0 }}vw, {{ head_max | divided_by: root_px | round: 4 }}rem);
 
     /* ---- Layout ------------------------------------------------------ */
     {%- liquid
@@ -244,84 +105,64 @@
 
     /* ---- Typography -------------------------------------------------- */
     {%- comment -%}
-      **Five font roles.** Heading and Body are the two this theme has always
-      had; Subheading, Accent and Price are new, and a shop that wants two faces
-      simply points several roles at the same one — which is exactly what the
-      bundled pair does.
-
-      `--font-heading` is the canonical name and `--font-display` is kept as an
-      alias, because `base.css` has said `--font-display` throughout since the
-      port and renaming it across the stylesheet would be a sweep with nothing
-      to show for it. The alias is not cosmetic: two blocks already asked for
-      `var(--font-heading)`, which was defined nowhere — so "Heading" on a text
-      block was invalid at computed-value time, the declaration was dropped, and
-      the setting silently did nothing.
+      Four merchant-selected font styles feed ten semantic text presets. A
+      block chooses a preset and may override only these same four roles, so a
+      local exception cannot introduce an untracked fifth font.
     {%- endcomment -%}
-    {%- if settings.use_bundled_fonts -%}
-    --font-heading: 'Italiana', 'Italiana Fallback', Georgia, serif;
-    --font-accent: 'Italiana', 'Italiana Fallback', Georgia, serif;
-    --font-body: 'Karla', 'Karla Fallback', system-ui, sans-serif;
-    --font-subheading: 'Karla', 'Karla Fallback', system-ui, sans-serif;
-    --font-price: 'Karla', 'Karla Fallback', system-ui, sans-serif;
-    --font-body-weight: 400;
-    --font-body-style: normal;
-    --font-display-style: normal;
-    --display-weight: 400;
-    {%- else -%}
-    --font-heading: {{ settings.font_heading.family }}, {{ settings.font_heading.fallback_families }};
-    --font-accent: {{ settings.font_accent.family }}, {{ settings.font_accent.fallback_families }};
-    --font-body: {{ settings.font_body.family }}, {{ settings.font_body.fallback_families }};
-    --font-subheading: {{ settings.font_subheading.family }}, {{ settings.font_subheading.fallback_families }};
-    --font-price: {{ settings.font_price.family }}, {{ settings.font_price.fallback_families }};
-    --font-body-weight: {{ settings.font_body.weight }};
-    --font-body-style: {{ settings.font_body.style }};
-    --font-display-style: {{ settings.font_heading.style }};
-    --display-weight: {{ settings.font_heading.weight }};
-    {%- endif %}
-    --font-display: var(--font-heading);
+    {%- assign font_roles = 'accent,body,subheading,heading' | split: ',' -%}
+    {%- for role in font_roles -%}
+      {%- assign font_key = 'font_' | append: role -%}
+    --font-{{ role }}: {{ settings[font_key].family }}, {{ settings[font_key].fallback_families }};
+    --font-{{ role }}-weight: {{ settings[font_key].weight }};
+    --font-{{ role }}-style: {{ settings[font_key].style }};
+    {%- endfor %}
 
-    {%- comment -%}
-      **The text presets.** Seven of them — Heading 1 to 6 and Paragraph — each
-      naming a font role, a rung of the type ladder, and how the letters sit.
-
-      Every one of the four resolves to a token rather than to a literal, so
-      this loop prints `var(--…)` and never a number: which faces exist is
-      `--font-*` above, which sizes exist is `--type-*` in `base.css`, and the
-      leading and tracking rungs are `--lead-*` and `--track-*` beside them.
-      That keeps the rungs in one place and makes an unrecognised stored value
-      fail loudly as an unresolved token rather than quietly as a wrong number.
-
-      `settings['h1_size']` is how a loop reaches a setting whose id it has
-      built, which is what lets seven presets share five lines instead of
-      thirty-five.
-    {%- endcomment -%}
-    {%- assign preset_keys = 'display,title,subtitle,lead,body,small,caption' | split: ',' -%}
+    {%- assign preset_keys = 'title,heading_1,heading_2,heading_3,heading_4,heading_5,subheading,paragraph,small,caption' | split: ',' -%}
     {%- for p in preset_keys -%}
-      {%- comment -%}
-        The ids are `text_`-prefixed, and that is not decoration: `display` and
-        `body` are style names *and* names the Typography group already used, so
-        `display_size` and `body_leading` collided outright — `theme check`'s
-        `UniqueSettingId` caught four of them. Two settings cannot share an id
-        whatever groups they sit in.
-      {%- endcomment -%}
       {%- assign k_font = 'text_' | append: p | append: '_font' -%}
       {%- assign k_size = 'text_' | append: p | append: '_size' -%}
       {%- assign k_lead = 'text_' | append: p | append: '_leading' -%}
       {%- assign k_track = 'text_' | append: p | append: '_tracking' -%}
       {%- assign k_case = 'text_' | append: p | append: '_case' -%}
+      {%- assign preset_font_role = settings[k_font] -%}
       {%- assign case_value = settings[k_case] -%}
       {%- if case_value == 'default' -%}{%- assign case_value = 'none' -%}{%- endif %}
-    --text-{{ p }}-font: var(--font-{{ settings[k_font] }});
+    --text-{{ p }}-font: var(--font-{{ preset_font_role }});
+    --text-{{ p }}-weight: var(--font-{{ preset_font_role }}-weight);
+    --text-{{ p }}-style: var(--font-{{ preset_font_role }}-style);
     --text-{{ p }}-size: var(--type-{{ settings[k_size] }});
     --text-{{ p }}-leading: var(--lead-{{ settings[k_lead] }});
     --text-{{ p }}-tracking: var(--track-{{ settings[k_track] }});
     --text-{{ p }}-case: {{ case_value }};
     {%- endfor %}
-    --heading-leading: {{ s_hleading | times: 1.0 | divided_by: 100.0 }};
-    --heading-tracking: {{ s_htrack | times: 1.0 | divided_by: 1000.0 }}em;
-    --body-leading: {{ s_bleading | times: 1.0 | divided_by: 100.0 }};
-    --micro-size: {{ mic[0] }}px;
-    --micro-tracking: {{ mic[1] | times: 1.0 | divided_by: 1000.0 }}em;
+
+    {%- comment -%}
+      Compatibility aliases keep the existing home-page components on the same
+      system while their markup is progressively converted to text presets.
+    {%- endcomment -%}
+    --font-display: var(--font-heading);
+    --font-display-style: var(--font-heading-style);
+    --display-weight: var(--font-heading-weight);
+    --font-price: var(--font-body);
+    --fs-xs: var(--type-xs);
+    --fs-sm: var(--type-sm);
+    --fs-base: var(--text-paragraph-size);
+    --fs-md: var(--type-lg);
+    --fs-lg: var(--type-xl);
+    --fs-xl: var(--type-2xl);
+    --fs-2xl: var(--type-3xl);
+    --fs-3xl: var(--type-4xl);
+    --fs-4xl: var(--type-5xl);
+    --fs-display: var(--text-title-size);
+    --fs-section: var(--text-heading_2-size);
+    --display-leading: var(--text-title-leading);
+    --display-tracking: var(--text-title-tracking);
+    --display-transform: var(--text-title-case);
+    --heading-leading: var(--text-heading_2-leading);
+    --heading-tracking: var(--text-heading_2-tracking);
+    --body-leading: var(--text-paragraph-leading);
+    --micro-size: var(--text-caption-size);
+    --micro-tracking: var(--text-caption-tracking);
 
     /* ---- Shape ------------------------------------------------------- */
     --radius: {{ s_radius }}px;

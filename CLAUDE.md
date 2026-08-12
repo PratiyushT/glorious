@@ -1825,8 +1825,8 @@ Six rungs is six.
   `calc()`, and `--hairline` and `--shadow-strength` inside `color-mix()`, where
   a keyword invalidates the declaration and silently drops every transition, or
   every hairline in all four schemes at once. Those must resolve to a **number**.
-  The shipped pattern for that is `type_ratio_min`/`type_ratio_max`: a `select`
-  whose values are numeric strings, coerced with `| times: 1.0`.
+  The shipped pattern is a named `select` resolved to a numeric string and
+  coerced with `| times: 1.0` before the value enters arithmetic.
 
 - **The recorded `range` audit one-liner is blind to a range and must not be
   trusted as written.** Its regex cannot cross a brace, and
@@ -1836,116 +1836,45 @@ Six rungs is six.
   block instead (`{%- schema -%}(.*?){%- endschema -%}` → `json.loads` →
   recursive walk); that form finds all of them. 51 ranges remain.
 
-### Font roles
+### Typography
 
-**Five, not two.** Heading and Body are the pair this theme was ported with;
-Subheading, Accent and **Price** join them. A shop using two faces points
-several roles at one, which is exactly what the bundled pair does — Italiana
-for Heading and Accent, Karla for Body, Subheading and Price — so the shipped
-theme is unchanged and every role is a departure a merchant can take.
+**One Theme settings → Typography group owns the system.** Merchants first
+choose four Shopify font-library roles — Accent, Body, Subheading and Heading —
+then define ten reusable presets: Title, Heading 1–5, Subheading, Paragraph,
+Small and Caption. There is no bundled-font switch and no fifth Price font;
+price remains a compatibility alias of Body.
 
-- **`--font-heading` is the canonical name; `--font-display` is an alias.**
-  `base.css` has said `--font-display` since the port and renaming it across the
-  stylesheet would be a sweep with nothing to show. The alias is not cosmetic:
-  `product-card-text` and `product-card-option-values` already offered "Heading"
-  and emitted `var(--font-heading)`, **which was defined nowhere** — so the
-  declaration was invalid at computed-value time, was dropped, and the setting
-  silently did nothing. Verified after: the alias resolves to the same family,
-  and the display heading is still Italiana.
+- Each preset chooses one of the four font roles, one fluid size from 3X small
+  through 8X large, Tight through Loose line height, Tighter through Wider
+  letter spacing, and As typed / Uppercase / Lowercase / Capitalize each word.
+- A preset is visual. The HTML heading level or text element remains a separate
+  semantic control wherever that decision belongs.
+- All setting ids retain the `text_` prefix and the Heading 1–5 keys use
+  `heading_1` … `heading_5`. `snippets/theme-tokens.liquid` loops over those
+  keys and publishes font family, weight, style, size, leading, tracking and
+  case variables for every preset.
 
-- **Price is a role because a figure is not body copy.** Some faces set numerals
-  better than others, and `.card__price` is the class every surface reuses —
-  card, cart page, blog, search, collection list — so one declaration reaches
-  all of them.
+**Every reusable text block selects one preset, then offers an `Override`
+group.** Overrides are deliberately bounded to the same system: font can only
+be Accent / Body / Subheading / Heading, size only 3X small … 8X large, line
+height Tight … Loose, letter spacing Tighter … Wider and case one of the named
+choices. Font colour is the only free picker. `Default` inherits the preset;
+`As typed` is a distinct case override that explicitly emits no transform.
 
-- **Three new `font_face` emissions** in `layout/theme.liquid`, only when the
-  bundled faces are off. Roles pointing at one family cost nothing extra:
-  Shopify emits the same `@font-face` once.
+**`snippets/text-style.liquid` is the one resolver.** It guards every stored
+value and prints inline declarations so a chosen preset or override wins over a
+component fallback class without depending on stylesheet order. It also maps
+the retired `display`, `subtitle`, `lead` and `body` values for saved blocks.
+Unknown values print nothing rather than an unresolved token.
 
-### Text styles
-
-**Seven styles — Display, Title, Subtitle, Lead, Body, Small, Caption — under
-Theme settings → Text styles.** Each names a font role, a rung of the type
-ladder, a line height, a letter spacing and a case.
-
-- **A style is a look and says nothing about which element to use.** They were
-  named Heading 1–6 and Paragraph for one commit, and that was wrong: it welds
-  appearance to semantics, so picking a size implies picking a tag. Whether
-  something is a top-level heading is a question about the page's outline — an
-  SEO decision — and belongs in a setting of its own. `blocks/heading.liquid`
-  had already learned this, where choosing "Small" gave the right look at the
-  wrong level. **Every block that offers a style offers all seven, and offers
-  the element separately.**
-
-- **The ids are `text_`-prefixed and that is load-bearing.** `display` and
-  `body` are style names *and* names the Typography group already used, so
-  `display_size` and `body_leading` collided outright — four duplicates, caught
-  by `theme check`'s `UniqueSettingId`. Two settings cannot share an id whatever
-  groups they sit in.
-
-Verified at 1280: all seven resolve and descend — 71.3 / 45.6 / 29.1 / 19.6 /
-16.7 / 14.7 / 12.9 — Display, Title and Subtitle in Italiana, the rest in Karla,
-Caption uppercase at wide tracking, and Display at 0.95 leading.
-
-**`snippets/text-style.liquid` is the one place a style is spent.** Every block
-offering text renders it, and it prints **inline declarations rather than a
-class name** — deliberately: `.text-caption` and `.card__meta` are both one
-class of specificity and `.card__meta` is declared later, so a class would lose
-to the very rule it is meant to override, silently, with the markup looking
-right. Inline wins outright and needs no ordering contract between two distant
-parts of the stylesheet.
-
-It replaced roughly **5,100 characters of identical ladder** duplicated across
-`product-card-text` and `product-card-option-values` — measured, not estimated:
-four shared runs of 3066, 949, 673 and 452 characters.
-
-- **An untouched style prints nothing**, so the block keeps `.card__meta`'s own
-  caption until a merchant chooses otherwise. The control is additive, which is
-  the rule the fallback-in-CSS idiom exists for.
-- **Colour is one picker and empty means inherit.** It was a select of
-  inherit / muted / faint / custom with a picker behind the last — four options
-  and a conditional field to say one thing. The cost is that a picked colour is
-  absolute where `muted` followed the scheme; a shop using one style across a
-  light and a dark scheme picks a colour that works on both, or leaves it empty.
-- **The `suffix` setting is gone.** It appended a unit to a bound value, which
-  is a second text block's job in a theme where the caption is already composed
-  from four of them.
-
-Verified against the live card: the declarations the snippet emits resolve end
-to end — Caption 12.85px Karla uppercase at 0.64px tracking, Subtitle 29.11px
-Italiana, Display 71.26px, a picked colour applied — and clearing them restores
-the card's own 12px caption. **Two rows moved and it is the ladder's retirement,
-not a fault:** "Available in" was 11.5px at ink 50% from the old `card_note`
-size and `faint` colour, and is the caption's 12px at 72% now. A merchant wanting
-the quieter line picks Caption and a colour.
-
-- **No pixel field anywhere in it.** A merchant picks a rung and it scales. The
-  ladder is `--type-3xs` … `--type-8xl` in `base.css`, fourteen fluid clamps
-  between 360px and 1440px, and the leading and tracking rungs sit beside it as
-  `--lead-*` and `--track-*`. Naming both means a merchant chooses "Snug", not
-  1.1.
-
-- **Every setting resolves to a token, never to a number.** `theme-tokens`
-  prints `var(--type-{{ … }})`, so an unrecognised stored value fails loudly as
-  an unresolved token instead of quietly as a wrong figure — and which rungs
-  exist stays in one place.
-
-- **`settings['h1_size']` is how the loop reaches a setting whose id it built**,
-  which is what lets seven presets share five lines of Liquid instead of
-  thirty-five.
-
-- **The classes are `.preset-h1` … `.preset-paragraph`, and they do not yet
-  drive `.display`, `.h2`, `.h3` or `.h4`.** Those still take their sizes from
-  the modular scale. Pointing them here is a conversion that has to be
-  *measured* against what they render today rather than assumed — the shape of
-  defect this file already records twice, where a resolver's fallback absorbed a
-  caller nobody converted and reported nothing. The presets are consumable now;
-  that migration is its own pass, and `.display` stays untouched.
-
-Verified at 1280: all seven resolve, sizes descend 71.3 / 45.6 / 36.5 / 29.1 /
-23.4 / 19.6 with Paragraph at 16.7, H1 in Italiana at 0.95 leading and −0.01em
-tracking, Paragraph in Karla at 1.5. Nothing on the page moved, since nothing
-wears the classes yet.
+- Font picker faces are emitted in `layout/theme.liquid` with regular, bold,
+  italic and bold-italic variants using Shopify's `font_modify` / `font_face`
+  path. Matching role selections are signature-deduplicated before emission.
+- The fluid size ladder is `--type-3xs` … `--type-8xl` in `base.css`; leading
+  and tracking use the adjacent named `--lead-*` and `--track-*` ladders.
+- `.display` and the legacy `--fs-*` variables remain compatibility consumers,
+  but their values now point at Title, Heading 2, Paragraph and Caption preset
+  tokens instead of a second typography system.
 
 ### Fluid scales
 
@@ -2034,8 +1963,8 @@ durations, by how often it uses each: 250 / **350** / 500 / 700 / 900ms.
   `clamp()`. `--duration` is read as `calc(var(--duration) * 2)` at
   `base.css:3337` and `:6245`, so a keyword there is invalid at
   computed-value time and drops the transition outright rather than falling
-  back to anything. `type_ratio_min`/`type_ratio_max` are the shipped
-  precedent — selects of numeric strings coerced with `| times: 1.0`.
+  back to anything. Named step selects resolved to numeric strings and coerced
+  with `| times: 1.0` are the shipped precedent.
 - `base` is 350ms, which is the range's own former default, and the setting has
   no stored value — so the conversion changed no pixel and no millisecond.
 

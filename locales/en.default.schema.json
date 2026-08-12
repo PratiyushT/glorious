@@ -61,140 +61,36 @@
     },
     "typography": {
       "name": "Typography",
-      "paragraph": "The theme ships with Italiana and Karla self-hosted. Turn the bundled fonts off to pick from Shopify's library instead.",
-      "use_bundled_fonts": {
-        "label": "Use the bundled theme fonts",
-        "info": "Italiana for display, Karla for body."
-      },
-      "font_heading": {
-        "label": "Display font",
-        "info": "Only used when the bundled fonts are turned off."
+      "paragraph": "Choose four font styles first, then define the ten presets used by text blocks throughout the theme.",
+      "font_styles_header": "Font styles",
+      "font_accent": {
+        "label": "Accent",
+        "info": "Used by presets that need a distinctive editorial voice."
       },
       "font_body": {
-        "label": "Body font",
-        "info": "Only used when the bundled fonts are turned off."
+        "label": "Body",
+        "info": "Used for readable paragraphs and interface copy."
       },
       "font_subheading": {
-        "label": "Subheading font",
-        "info": "Point it at the same face as Body for a shop that uses two. Only used when the bundled fonts are turned off."
+        "label": "Subheading",
+        "info": "Used for labels, eyebrows, and supporting headings."
       },
-      "font_accent": {
-        "label": "Accent font",
-        "info": "For the small emphatic text a shop wants set apart. Only used when the bundled fonts are turned off."
+      "font_heading": {
+        "label": "Heading",
+        "info": "Used for titles and the heading hierarchy."
       },
-      "font_price": {
-        "label": "Price font",
-        "info": "A figure is not body copy, and some faces set numerals better than others. Only used when the bundled fonts are turned off."
-      },
-      "body_header": "Body text",
-      "type_ratio_min": {
-        "label": "Type scale (narrow screens)"
-      },
-      "type_ratio_max": {
-        "label": "Type scale (wide screens)"
-      },
-      "body_leading": {
-        "label": "Body line spacing",
-        "info": "How much air between lines of body copy.",
-        "options__xs": "Tightest",
-        "options__sm": "Tight",
-        "options__md": "Normal",
-        "options__lg": "Loose",
-        "options__xl": "Loosest"
-      },
-      "display_header": "Display headings",
-      "display_paragraph": "The oversized section titles that run edge to edge. These scale with the viewport rather than stepping at breakpoints.",
-      "display_leading": {
-        "label": "Display line spacing",
-        "info": "Leading for the large edge-to-edge titles.",
-        "options__xs": "Tightest",
-        "options__sm": "Tight",
-        "options__md": "Normal",
-        "options__lg": "Loose",
-        "options__xl": "Loosest"
-      },
-      "display_tracking": {
-        "label": "Display letter spacing",
-        "options__xs": "Tightest",
-        "options__sm": "Tight",
-        "options__md": "Normal",
-        "options__lg": "Loose",
-        "options__xl": "Loosest"
-      },
-      "display_uppercase": {
-        "label": "Uppercase display headings"
-      },
-      "section_header": "Section headings",
-      "headings_header": "Headings",
-      "heading_leading": {
-        "label": "Heading line spacing",
-        "options__xs": "Tightest",
-        "options__sm": "Tight",
-        "options__md": "Normal",
-        "options__lg": "Loose",
-        "options__xl": "Loosest"
-      },
-      "heading_tracking": {
-        "label": "Heading letter spacing",
-        "options__xs": "Tightest",
-        "options__sm": "Tight",
-        "options__md": "Normal",
-        "options__lg": "Loose",
-        "options__xl": "Loosest"
-      },
-      "micro_header": "Micro labels",
-      "micro_paragraph": "The small uppercase eyebrow text above section headings and inside cards.",
-      "type_base": {
-        "label": "Body text size",
-        "info": "Sets the whole type scale — every other size is derived from it.",
-        "options__xs": "Extra small",
-        "options__sm": "Small",
-        "options__md": "Medium",
-        "options__lg": "Large",
-        "options__xl": "Extra large"
-      },
-      "display_size": {
-        "label": "Display heading size",
-        "info": "The large edge-to-edge titles. One step moves its floor, growth and ceiling together.",
-        "options__xs": "Extra small",
-        "options__sm": "Small",
-        "options__md": "Medium",
-        "options__lg": "Large",
-        "options__xl": "Extra large"
-      },
-      "section_heading_size": {
-        "label": "Section heading size",
-        "info": "The sentence-case titles inside sections.",
-        "options__xs": "Extra small",
-        "options__sm": "Small",
-        "options__md": "Medium",
-        "options__lg": "Large",
-        "options__xl": "Extra large"
-      },
-      "micro": {
-        "label": "Micro label size",
-        "info": "The small uppercase labels. Sets size and letter spacing together.",
-        "options__xs": "Extra small",
-        "options__sm": "Small",
-        "options__md": "Medium",
-        "options__lg": "Large",
-        "options__xl": "Extra large"
-      }
-    },
-    "text_styles": {
-      "name": "Text styles",
-      "paragraph_note": "Seven styles, used everywhere text is set. A style is a look — which font, which rung of the fluid scale, how the letters sit — and says nothing about which HTML element to use. That is chosen separately, because whether something is a top-level heading is a question about the page's outline and not about its size.",
-      "label_font": "Font",
-      "label_size": "Size",
+      "presets_header": "Text presets",
+      "presets_paragraph": "Each preset combines a font style, fluid size, line height, letter spacing, and case. Text blocks inherit these values unless an override is selected.",
+      "label_font": "Font style",
+      "label_size": "Font size",
       "label_leading": "Line height",
       "label_tracking": "Letter spacing",
       "label_case": "Case",
-      "role": {
-        "heading": "Heading",
+      "roles": {
         "accent": "Accent",
-        "subheading": "Subheading",
         "body": "Body",
-        "price": "Price"
+        "subheading": "Subheading",
+        "heading": "Heading"
       },
       "scale": {
         "3xs": "3X small",
@@ -228,30 +124,41 @@
       },
       "case": {
         "default": "As typed",
-        "uppercase": "UPPERCASE",
-        "lowercase": "lowercase",
-        "capitalize": "Capitalise Each Word"
+        "uppercase": "Uppercase",
+        "lowercase": "Lowercase",
+        "capitalize": "Capitalize each word"
       },
-      "display": {
-        "header": "Display"
-      },
-      "title": {
-        "header": "Title"
-      },
-      "subtitle": {
-        "header": "Subtitle"
-      },
-      "lead": {
-        "header": "Lead"
-      },
-      "body": {
-        "header": "Body"
-      },
-      "small": {
-        "header": "Small"
-      },
-      "caption": {
-        "header": "Caption"
+      "presets": {
+        "title": {
+          "header": "Title"
+        },
+        "heading_1": {
+          "header": "Heading 1"
+        },
+        "heading_2": {
+          "header": "Heading 2"
+        },
+        "heading_3": {
+          "header": "Heading 3"
+        },
+        "heading_4": {
+          "header": "Heading 4"
+        },
+        "heading_5": {
+          "header": "Heading 5"
+        },
+        "subheading": {
+          "header": "Subheading"
+        },
+        "paragraph": {
+          "header": "Paragraph"
+        },
+        "small": {
+          "header": "Small"
+        },
+        "caption": {
+          "header": "Caption"
+        }
       }
     },
     "spacing": {
@@ -630,9 +537,25 @@
         "xlarge": "Extra large"
       },
       "text_header": "Text",
-      "text_style": {
-        "label": "Style",
-        "info": "A look from Theme settings → Text styles. Leave it as it is to keep the card's own caption."
+      "text_preset": {
+        "label": "Text preset",
+        "info": "Uses a preset from Theme settings → Typography."
+      },
+      "override_header": "Override",
+      "override_font": {
+        "label": "Font style"
+      },
+      "override_size": {
+        "label": "Font size"
+      },
+      "override_leading": {
+        "label": "Line height"
+      },
+      "override_tracking": {
+        "label": "Letter spacing"
+      },
+      "override_case": {
+        "label": "Case"
       },
       "text_element": {
         "label": "Element",
@@ -647,11 +570,11 @@
         "h6": "Heading 6"
       },
       "text_color": {
-        "label": "Colour",
-        "info": "Leave it empty to follow the scheme the card is in. A picked colour is fixed, so choose one that works on every scheme this card appears on."
+        "label": "Font color",
+        "info": "Leave empty to inherit the current color scheme."
       },
       "inherit": {
-        "label": "Leave as it is"
+        "label": "Default"
       }
     },
     "title": {

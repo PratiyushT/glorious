@@ -11,9 +11,8 @@
   resolved to a keyword would make those declarations invalid at
   computed-value time and silently drop the transition rather than fall back.
   Every step setting whose token reaches calc(), color-mix() or clamp() has to
-  resolve to a number this way; the shipped precedent is type_ratio_min and
-  type_ratio_max, which are selects of numeric strings coerced with
-  `| times: 1.0`.
+  resolve to a number this way; layout scale settings use the same guarded
+  resolution pattern before their values enter arithmetic.
 
   The rungs are the reference design's own transition durations, by how often
   it uses each:

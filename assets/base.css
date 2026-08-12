@@ -1670,80 +1670,114 @@ a {
   --track-wider: 0.12em;
 }
 
-/* ---- Text styles -----------------------------------------------------
-   Seven looks, from Theme settings → Text styles, each reading the five
-   properties `theme-tokens.liquid` publishes for it.
+/* ---- Text presets ----------------------------------------------------
+   Ten reusable looks from Theme settings → Typography. Each preset combines
+   one of four merchant-selected font styles with size, line height, letter
+   spacing and case. The HTML element remains a separate semantic decision. */
 
-   **A style says nothing about which element to use.** Whether a thing is an
-   `<h1>` is a question about the page's outline — an SEO decision — and not
-   about how big it is, so every block that offers a style offers the element
-   separately. Naming these after heading levels welded the two together and
-   was the reason they were renamed; `blocks/heading.liquid` had already learned
-   the same lesson, where choosing "Small" gave the right look at the wrong
-   level.
-
-   **They do not yet drive `.display`, `.h2`, `.h3` or `.h4`.** Those still take
-   their sizes from the modular scale, and pointing them here is a conversion
-   that has to be measured against what they render today rather than assumed —
-   the shape of defect this theme has paid for before, where a resolver's
-   fallback absorbed a caller nobody converted and reported nothing.        */
-
-.text-display,
 .text-title,
-.text-subtitle,
-.text-lead,
-.text-body,
+.text-heading-1,
+.text-heading-2,
+.text-heading-3,
+.text-heading-4,
+.text-heading-5,
+.text-subheading,
+.text-paragraph,
 .text-small,
 .text-caption {
   font-family: var(--text-font);
+  font-weight: var(--text-weight);
+  font-style: var(--text-style);
   font-size: var(--text-size);
   line-height: var(--text-leading);
   letter-spacing: var(--text-tracking);
   text-transform: var(--text-case);
 }
 
-.text-display {
-  --text-font: var(--text-display-font);
-  --text-size: var(--text-display-size);
-  --text-leading: var(--text-display-leading);
-  --text-tracking: var(--text-display-tracking);
-  --text-case: var(--text-display-case);
-}
-
 .text-title {
   --text-font: var(--text-title-font);
+  --text-weight: var(--text-title-weight);
+  --text-style: var(--text-title-style);
   --text-size: var(--text-title-size);
   --text-leading: var(--text-title-leading);
   --text-tracking: var(--text-title-tracking);
   --text-case: var(--text-title-case);
 }
 
-.text-subtitle {
-  --text-font: var(--text-subtitle-font);
-  --text-size: var(--text-subtitle-size);
-  --text-leading: var(--text-subtitle-leading);
-  --text-tracking: var(--text-subtitle-tracking);
-  --text-case: var(--text-subtitle-case);
+.text-heading-1 {
+  --text-font: var(--text-heading_1-font);
+  --text-weight: var(--text-heading_1-weight);
+  --text-style: var(--text-heading_1-style);
+  --text-size: var(--text-heading_1-size);
+  --text-leading: var(--text-heading_1-leading);
+  --text-tracking: var(--text-heading_1-tracking);
+  --text-case: var(--text-heading_1-case);
 }
 
-.text-lead {
-  --text-font: var(--text-lead-font);
-  --text-size: var(--text-lead-size);
-  --text-leading: var(--text-lead-leading);
-  --text-tracking: var(--text-lead-tracking);
-  --text-case: var(--text-lead-case);
+.text-heading-2 {
+  --text-font: var(--text-heading_2-font);
+  --text-weight: var(--text-heading_2-weight);
+  --text-style: var(--text-heading_2-style);
+  --text-size: var(--text-heading_2-size);
+  --text-leading: var(--text-heading_2-leading);
+  --text-tracking: var(--text-heading_2-tracking);
+  --text-case: var(--text-heading_2-case);
 }
 
-.text-body {
-  --text-font: var(--text-body-font);
-  --text-size: var(--text-body-size);
-  --text-leading: var(--text-body-leading);
-  --text-tracking: var(--text-body-tracking);
-  --text-case: var(--text-body-case);
+.text-heading-3 {
+  --text-font: var(--text-heading_3-font);
+  --text-weight: var(--text-heading_3-weight);
+  --text-style: var(--text-heading_3-style);
+  --text-size: var(--text-heading_3-size);
+  --text-leading: var(--text-heading_3-leading);
+  --text-tracking: var(--text-heading_3-tracking);
+  --text-case: var(--text-heading_3-case);
+}
+
+.text-heading-4 {
+  --text-font: var(--text-heading_4-font);
+  --text-weight: var(--text-heading_4-weight);
+  --text-style: var(--text-heading_4-style);
+  --text-size: var(--text-heading_4-size);
+  --text-leading: var(--text-heading_4-leading);
+  --text-tracking: var(--text-heading_4-tracking);
+  --text-case: var(--text-heading_4-case);
+}
+
+.text-heading-5 {
+  --text-font: var(--text-heading_5-font);
+  --text-weight: var(--text-heading_5-weight);
+  --text-style: var(--text-heading_5-style);
+  --text-size: var(--text-heading_5-size);
+  --text-leading: var(--text-heading_5-leading);
+  --text-tracking: var(--text-heading_5-tracking);
+  --text-case: var(--text-heading_5-case);
+}
+
+.text-subheading {
+  --text-font: var(--text-subheading-font);
+  --text-weight: var(--text-subheading-weight);
+  --text-style: var(--text-subheading-style);
+  --text-size: var(--text-subheading-size);
+  --text-leading: var(--text-subheading-leading);
+  --text-tracking: var(--text-subheading-tracking);
+  --text-case: var(--text-subheading-case);
+}
+
+.text-paragraph {
+  --text-font: var(--text-paragraph-font);
+  --text-weight: var(--text-paragraph-weight);
+  --text-style: var(--text-paragraph-style);
+  --text-size: var(--text-paragraph-size);
+  --text-leading: var(--text-paragraph-leading);
+  --text-tracking: var(--text-paragraph-tracking);
+  --text-case: var(--text-paragraph-case);
 }
 
 .text-small {
   --text-font: var(--text-small-font);
+  --text-weight: var(--text-small-weight);
+  --text-style: var(--text-small-style);
   --text-size: var(--text-small-size);
   --text-leading: var(--text-small-leading);
   --text-tracking: var(--text-small-tracking);
@@ -1752,6 +1786,8 @@ a {
 
 .text-caption {
   --text-font: var(--text-caption-font);
+  --text-weight: var(--text-caption-weight);
+  --text-style: var(--text-caption-style);
   --text-size: var(--text-caption-size);
   --text-leading: var(--text-caption-leading);
   --text-tracking: var(--text-caption-tracking);
