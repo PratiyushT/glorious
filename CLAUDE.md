@@ -392,6 +392,62 @@ If the Lighthouse score does need work, the lever is what blocks rendering and
 what shifts layout, not file size — `base.css` is a render-blocking
 `stylesheet_tag` in `<head>`, while `theme.js` is already `defer`.
 
+### Duplicate ids
+
+**The home page had six elements sharing an id, and every one was generated
+rather than typed.** The accessibility requirement is a Lighthouse score of 90,
+and a duplicate id is both a scored failure and a real defect — a `url(#x)` or
+an `aria-labelledby` binds to whichever came first.
+
+- **`<mask id="gj-bag-plus">`, four times.** `snippets/icon.liquid` builds
+  `bag-plus` from a mask, and the lookbook renders it four times. All four bags
+  were being punched by the *first* icon's mask; it looked right only because
+  the masks were identical, and removing that first icon from the DOM — a cart
+  re-render, a scene swap — would have broken the other three.
+
+  **`{% increment %}` is the obvious fix and does not work.** `{% render %}`
+  isolates increment counters exactly as it isolates `assign`, so the snippet
+  counted 0 every time and produced four identical ids again. Measured, not
+  assumed: the same tag emits `[0][1][2]` from inside a section and `[0][1]`
+  through a `capture` there, and `0` every time from inside the snippet.
+  **Anything needing a per-render token in a snippet must be handed one.**
+
+  So `icon.liquid` takes a `uid`, and the two call sites build one from their
+  loop indices. Verified on the page: four distinct ids, and each path's
+  `url(#…)` resolving to a mask **inside its own `<svg>`** — which is the check
+  worth making, not merely that it resolves.
+
+- **`product_form_<id>`, twice over.** Shopify derives a product form's id from
+  the product, and the lookbook renders a form for the same piece on its card
+  *and* in its list row. `{% form %}` takes an `id`, so both now pass one.
+
+**`.lookbook__scene` claimed `role="tabpanel"` with no tablist in the
+document.** The rail is rendered `{% if scenes.size > 1 %}`, so a single-scene
+lookbook — which is what the home page has — had a tabpanel labelled by a tab
+id that existed nowhere. Both the role and the `aria-labelledby` are now
+conditional on there being more than one scene. One scene is not a tabbed
+interface.
+
+Verified after: **zero duplicate ids on the home page**, no dangling ARIA
+reference, and no theme `<img>` without an `alt`.
+
+**Two of the audit's findings were the audit's own fault, and both are worth
+knowing** before trusting a sweep like it:
+
+- `<input name="id">` inside a form makes `form.id` return *the input element*,
+  not the string — DOM clobbering. A duplicate-id scan collecting `el.id` gets
+  `[object HTMLInputElement]` eleven times and reports a duplicate that is not
+  there. Use `getAttribute('id')`.
+- `aria-hidden="true"` around a focusable control is only a defect if the
+  control is actually focusable. The video LQIP facade's Play button is
+  `hidden` and `display: none` until it is needed, so it is not — the theme was
+  right and the check was naive.
+
+And **R12 reproduced R08's original mistake on its first run**: it read the
+`{% comment %}` block *documenting* the mask id as a branch that declares one,
+and flagged the innocent `nav-bag` above it. `strip_comments` first. A rule must
+ignore prose about itself; this repo has now made that error twice.
+
 ### App blocks
 
 **`@app` is *not* a theme block for the purposes of that rule, and this is the
@@ -738,6 +794,7 @@ diligent, and this theme has already paid for that twice — see the footer unde
 | R09 | no literal shop address, telephone, email or map URL outside `config/` |
 | R10 | every `<img>` declares `data-image-lqip` (warning; `"off"` for a logo) |
 | R11 | `assets/*.js` stays ES5 — ES6 stops Shopify auto-minifying the file |
+| R12 | an icon whose SVG declares an id is rendered with a `uid` |
 
 **R05 is the one written from a scar.** `section-style.liquid` stopped
 understanding numbers when padding became a step, the footer kept its range, and

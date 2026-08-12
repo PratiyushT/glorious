@@ -482,6 +482,55 @@ def R11_theme_js_stays_es5():
                     '%s — ES6 here stops Shopify minifying the whole file' % what)
 
 
+def R12_icon_uid():
+    """An icon whose SVG declares an id is rendered with a uid.
+
+    `snippets/icon.liquid` builds `bag-plus` from a `<mask>`, and a mask needs
+    an id. The icon renders four times on the home page, so a fixed id put four
+    identical ids in one document — invalid HTML, and every `url(#...)` binds
+    to whichever came first, so removing that one silently breaks the rest.
+
+    `{% increment %}` cannot solve it from inside the snippet: `{% render %}`
+    isolates increment counters the same way it isolates `assign`, so the
+    snippet counts 0 every time. The caller has to pass the token, which makes
+    this a convention — and conventions in this repo get a rule.
+    """
+    # strip_comments first, or this reads the prose *about* ids as ids. The
+    # documentation for `bag-plus` sits between two `when` branches and quotes
+    # `<mask id="...">`, which made the branch before it look like it declared
+    # one. Same mistake R08 made on its first run against this repo's own
+    # comments explaining why href="#" is banned.
+    src = strip_comments(read(os.path.join(ROOT, 'snippets', 'icon.liquid')))
+    icons = re.findall(r"{%-?\s*when\s+'([a-z0-9-]+)'", src)
+    needs = set()
+    for name in icons:
+        # The branch body runs to the next `when`; only a declared id matters.
+        # Built by concatenation, not %-formatting — the pattern is full of
+        # literal % characters and `'...%s...' % x` chokes on the first `%}`.
+        pat = (r"{%-?\s*when\s+'" + re.escape(name)
+               + r"'\s*-?%}(.*?)(?={%-?\s*when\s|{%-?\s*endcase)")
+        m = re.search(pat, src, re.S)
+        if m and re.search(r'\sid="', m.group(1)):
+            needs.add(name)
+    if not needs:
+        return
+    call = re.compile(r"{%-?\s*render\s+'icon'\s*,([^%]*?)-?%}", re.S)
+    for sub in ('sections', 'blocks', 'snippets', 'layout', 'templates'):
+        for p in walk_files(sub, '.liquid'):
+            src = strip_inert(strip_comments(read(p)))
+            for m in call.finditer(src):
+                args = m.group(1)
+                got = re.search(r"icon:\s*'([a-z0-9-]+)'", args)
+                if not got or got.group(1) not in needs:
+                    continue
+                if re.search(r'\buid:', args):
+                    continue
+                line = src.count('\n', 0, m.start()) + 1
+                err('R12', '%s:%d' % (rel(p), line),
+                    "render 'icon', icon: '%s' without uid: — its SVG declares "
+                    'an id and would duplicate' % got.group(1))
+
+
 RULES = OrderedDict([
     ('R01', (R01_range_steps, 'range steps are legal (Shopify validates server-side)')),
     ('R02', (R02_select_defaults, "a select's default is one of its options")),
@@ -494,6 +543,7 @@ RULES = OrderedDict([
     ('R09', (R09_shop_data, 'no literal shop data outside config/')),
     ('R10', (R10_image_lqip, 'every <img> declares data-image-lqip')),
     ('R11', (R11_theme_js_stays_es5, 'assets/*.js stays ES5 so Shopify minifies it')),
+    ('R12', (R12_icon_uid, 'an icon declaring an SVG id is rendered with a uid')),
 ])
 
 

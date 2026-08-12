@@ -87,11 +87,23 @@
           <div class="lookbook__stage" data-look-stage>
             {%- for block in scenes -%}
               {%- assign scene_index = forloop.index0 -%}
+              {%- comment -%}
+                The tab roles only exist when there is a rail to carry them.
+                The rail is rendered `{% if scenes.size > 1 %}`, so with a
+                single scene there were no tabs — and the panel still claimed
+                `role="tabpanel"` and pointed `aria-labelledby` at a tab id that
+                was in no document. That is a tabpanel with no tablist and a
+                dangling ARIA reference, which is exactly what the accessibility
+                audit flags. One scene is not a tabbed interface; it is a
+                picture.
+              {%- endcomment -%}
               <div
                 class="lookbook__scene"
                 id="look-panel-{{ section.id }}-{{ scene_index }}"
-                role="tabpanel"
-                aria-labelledby="look-tab-{{ section.id }}-{{ scene_index }}"
+                {%- if scenes.size > 1 %}
+                  role="tabpanel"
+                  aria-labelledby="look-tab-{{ section.id }}-{{ scene_index }}"
+                {%- endif %}
                 data-look-scene="{{ scene_index }}"
                 {% unless forloop.first %}hidden{% endunless %}
               >
@@ -247,7 +259,16 @@
                           {{ 'lookbook.details' | t }}
                         </a>
                         {%- if pin_product.available -%}
-                          {%- form 'product', pin_product, class: 'lookbook-card__add-form', data-cart-add: '' -%}
+                          {%- comment -%}
+                            Shopify derives a product form's id from the
+                            product, and the lookbook renders a form for the
+                            same piece twice — once on its card and once in the
+                            list row. Left alone that is two `product_form_<id>`
+                            elements sharing an id, which is invalid and is what
+                            the label/aria machinery would resolve against.
+                          {%- endcomment -%}
+                          {%- assign card_form_id = 'lookbook-card-' | append: scene_index | append: '-' | append: i | append: '-' | append: pin_product.id -%}
+                          {%- form 'product', pin_product, id: card_form_id, class: 'lookbook-card__add-form', data-cart-add: '' -%}
                             <input type="hidden" name="id" value="{{ variant.id }}">
                             <button
                               class="lookbook-card__add"
@@ -255,7 +276,14 @@
                               name="add"
                               aria-label="{{ 'lookbook.add' | t: title: pin_product.title }}"
                             >
-                              {% render 'icon', icon: 'bag-plus' %}
+                              {%- comment -%}
+                                The icon carries an SVG mask id, so every render
+                                of it on a page needs its own. A filter cannot
+                                be used on a render argument, so it is built
+                                here — see snippets/icon.liquid.
+                              {%- endcomment -%}
+                              {%- assign add_uid = 'lbcard-' | append: scene_index | append: '-' | append: i -%}
+                              {% render 'icon', icon: 'bag-plus', uid: add_uid %}
                             </button>
                           {%- endform -%}
                         {%- endif -%}
@@ -370,7 +398,8 @@
                         </button>
 
                         {%- if pin_product.available -%}
-                          {%- form 'product', pin_product, class: 'lookbook-row__add-form', data-cart-add: '' -%}
+                          {%- assign row_form_id = 'lookbook-row-' | append: scene_index | append: '-' | append: i | append: '-' | append: pin_product.id -%}
+                          {%- form 'product', pin_product, id: row_form_id, class: 'lookbook-row__add-form', data-cart-add: '' -%}
                             <input type="hidden" name="id" value="{{ row_variant.id }}">
                             <button
                               class="lookbook-row__add"
@@ -378,7 +407,8 @@
                               name="add"
                               aria-label="{{ 'lookbook.add' | t: title: pin_product.title }}"
                             >
-                              {% render 'icon', icon: 'bag-plus' %}
+                              {%- assign row_uid = 'lbrow-' | append: scene_index | append: '-' | append: i -%}
+                              {% render 'icon', icon: 'bag-plus', uid: row_uid %}
                             </button>
                           {%- endform -%}
                         {%- endif -%}
