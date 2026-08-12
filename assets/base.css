@@ -5273,7 +5273,11 @@ a.nav-menu__address:hover {
   background: var(--c-veil);
 }
 
-.modal__media img {
+/* The placeholder is an <svg>, not an <img>, so it needs naming here or it
+   would not match and would size to an indefinite 100% height inside a
+   min-height parent. It fills the media box exactly as a photograph does. */
+.modal__media img,
+.modal__media .placeholder-svg {
   position: absolute;
   inset: 0;
   width: 100%;

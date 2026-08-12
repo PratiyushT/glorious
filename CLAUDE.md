@@ -308,6 +308,55 @@ was *re-read as a theme-block section* because any did — and then reported the
 one type that had no file. The error naming an innocent block is that
 reclassification, not a quirk.
 
+### Weight
+
+**`assets/` was 1.69 MB and is 409.8 KB.** What went was not compressed or
+optimised — it was **unreferenced**, and the scan is the part worth keeping:
+take every file in `assets/` except `base.css`, `theme.js` and the licence,
+and grep the whole of `sections/ snippets/ templates/ layout/ config/ locales/
+blocks/ bin/` for its filename. A theme asset is reachable only through
+`asset_url`, so a name that appears nowhere is dead by construction.
+
+**12 files, 1003 KB, reached by nothing:**
+
+- `cat-rings`, `cat-earrings`, `cat-bracelets` (993 KB of the total). The
+  collection card stopped having a per-card image picker when it became a
+  static theme block — it takes the photograph from the collection itself.
+- the eight `metal-*.webp`, already recorded as unreferenced under "Product
+  card": the swatch paints from the option value's own Color metafield and the
+  same images are served from `/cdn/shop/files/`.
+- `icon-bag-plus.svg`, which duplicates an inline icon in `snippets/icon.liquid`.
+
+**Do not read a block key as a reference.** `header-group.json` has blocks keyed
+`cat-rings`, `cat-earrings`, `cat-bracelets`, `cat-necklaces` and
+`templates/index.json` has `metal-white` and `metal-yellow` — every one of them
+a *key* carrying a label and a url, matching an asset filename by coincidence of
+naming. A plain grep for those strings finds them and reads as a live
+reference. Grep for the **filename with its extension**, or scan `asset_url`
+call sites.
+
+**The newsletter popup's fallback photograph is gone too**, which is the other
+318 KB. The section already had an `image_picker`; the demo photograph was only
+what showed when a merchant had not chosen one. It is
+`{{ 'lifestyle-1' | placeholder_svg_tag }}` now, as craft and the lookbook
+already do. Two reasons beyond the weight: it was the original shop's
+photography and not cleared for redistribution, and a theme for sale should
+ship a placeholder rather than one shop's necklaces.
+
+`.modal__media .placeholder-svg` had to join `.modal__media img` in the
+stylesheet. The placeholder is an `<svg>`, so it never matched the `img` rule,
+and `height: 100%` inside a `min-height` parent is indefinite — it would not
+have filled the box. Verified: 433×533 for both the media box and the
+placeholder.
+
+**Still outstanding, and structural:** `theme.js` is 153.5 KB raw / **37.6 KB
+gzipped** and `base.css` 202.2 KB raw / **51.1 KB gzipped**, both on every
+template. That is the real Theme Store performance risk and it is not solved by
+deleting files. Note the tension before starting: closing it usually means
+minifying or splitting, and this theme states **no build step** as a
+convention — so that convention has to be revisited deliberately rather than
+quietly broken.
+
 ### App blocks
 
 **`@app` is *not* a theme block for the purposes of that rule, and this is the
