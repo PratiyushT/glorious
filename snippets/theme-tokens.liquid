@@ -279,6 +279,39 @@
     --display-weight: {{ settings.font_heading.weight }};
     {%- endif %}
     --font-display: var(--font-heading);
+
+    {%- comment -%}
+      **The text presets.** Seven of them — Heading 1 to 6 and Paragraph — each
+      naming a font role, a rung of the type ladder, and how the letters sit.
+
+      Every one of the four resolves to a token rather than to a literal, so
+      this loop prints `var(--…)` and never a number: which faces exist is
+      `--font-*` above, which sizes exist is `--type-*` in `base.css`, and the
+      leading and tracking rungs are `--lead-*` and `--track-*` beside them.
+      That keeps the rungs in one place and makes an unrecognised stored value
+      fail loudly as an unresolved token rather than quietly as a wrong number.
+
+      `settings['h1_size']` is how a loop reaches a setting whose id it has
+      built, which is what lets seven presets share five lines instead of
+      thirty-five.
+    {%- endcomment -%}
+    {%- assign preset_keys = 'h1,h2,h3,h4,h5,h6' | split: ',' -%}
+    {%- for p in preset_keys -%}
+      {%- assign k_font = p | append: '_font' -%}
+      {%- assign k_size = p | append: '_size' -%}
+      {%- assign k_lead = p | append: '_leading' -%}
+      {%- assign k_track = p | append: '_tracking' -%}
+      {%- assign k_case = p | append: '_case' -%}
+      {%- assign case_value = settings[k_case] -%}
+      {%- if case_value == 'default' -%}{%- assign case_value = 'none' -%}{%- endif %}
+    --{{ p }}-font: var(--font-{{ settings[k_font] }});
+    --{{ p }}-size: var(--type-{{ settings[k_size] }});
+    --{{ p }}-leading: var(--lead-{{ settings[k_lead] }});
+    --{{ p }}-tracking: var(--track-{{ settings[k_track] }});
+    --{{ p }}-case: {{ case_value }};
+    {%- endfor %}
+    --paragraph-size: var(--type-{{ settings.paragraph_size }});
+    --paragraph-leading: var(--lead-{{ settings.paragraph_leading }});
     --heading-leading: {{ s_hleading | times: 1.0 | divided_by: 100.0 }};
     --heading-tracking: {{ s_htrack | times: 1.0 | divided_by: 1000.0 }}em;
     --body-leading: {{ s_bleading | times: 1.0 | divided_by: 100.0 }};

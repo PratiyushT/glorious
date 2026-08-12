@@ -181,6 +181,79 @@
         "options__xl": "Extra large"
       }
     },
+    "text_presets": {
+      "name": "Text presets",
+      "paragraph_note": "Every size here is a rung of the theme's own fluid scale, not a pixel value — each one grows and shrinks with the screen on its own. A preset says which font, which rung, and how the letters sit.",
+      "label_font": "Font",
+      "label_size": "Size",
+      "label_leading": "Line height",
+      "label_tracking": "Letter spacing",
+      "label_case": "Case",
+      "role": {
+        "heading": "Heading",
+        "accent": "Accent",
+        "subheading": "Subheading",
+        "body": "Body",
+        "price": "Price"
+      },
+      "scale": {
+        "3xs": "3X small",
+        "2xs": "2X small",
+        "xs": "Extra small",
+        "sm": "Small",
+        "md": "Medium",
+        "lg": "Large",
+        "xl": "Extra large",
+        "2xl": "2X large",
+        "3xl": "3X large",
+        "4xl": "4X large",
+        "5xl": "5X large",
+        "6xl": "6X large",
+        "7xl": "7X large",
+        "8xl": "8X large"
+      },
+      "leading": {
+        "tight": "Tight",
+        "snug": "Snug",
+        "normal": "Normal",
+        "relaxed": "Relaxed",
+        "loose": "Loose"
+      },
+      "tracking": {
+        "tighter": "Tighter",
+        "tight": "Tight",
+        "normal": "Normal",
+        "wide": "Wide",
+        "wider": "Wider"
+      },
+      "case": {
+        "default": "As typed",
+        "uppercase": "UPPERCASE",
+        "lowercase": "lowercase",
+        "capitalize": "Capitalise Each Word"
+      },
+      "h1": {
+        "header": "Heading 1"
+      },
+      "h2": {
+        "header": "Heading 2"
+      },
+      "h3": {
+        "header": "Heading 3"
+      },
+      "h4": {
+        "header": "Heading 4"
+      },
+      "h5": {
+        "header": "Heading 5"
+      },
+      "h6": {
+        "header": "Heading 6"
+      },
+      "paragraph": {
+        "header": "Paragraph"
+      }
+    },
     "spacing": {
       "name": "Spacing",
       "section_padding_default": {

@@ -1862,9 +1862,40 @@ theme is unchanged and every role is a departure a merchant can take.
   bundled faces are off. Roles pointing at one family cost nothing extra:
   Shopify emits the same `@font-face` once.
 
-The text presets that pick between these roles — Paragraph and Heading 1–6,
-each with a named responsive size step rather than a px — are the next pass.
-`.display` is deliberately untouched.
+### Text presets
+
+**Seven presets — Heading 1 to 6 and Paragraph — under Theme settings → Text
+presets.** Each names a font role, a rung of the type ladder, a line height, a
+letter spacing and a case; Paragraph carries only size and leading, running text
+being the body face by definition.
+
+- **No pixel field anywhere in it.** A merchant picks a rung and it scales. The
+  ladder is `--type-3xs` … `--type-8xl` in `base.css`, fourteen fluid clamps
+  between 360px and 1440px, and the leading and tracking rungs sit beside it as
+  `--lead-*` and `--track-*`. Naming both means a merchant chooses "Snug", not
+  1.1.
+
+- **Every setting resolves to a token, never to a number.** `theme-tokens`
+  prints `var(--type-{{ … }})`, so an unrecognised stored value fails loudly as
+  an unresolved token instead of quietly as a wrong figure — and which rungs
+  exist stays in one place.
+
+- **`settings['h1_size']` is how the loop reaches a setting whose id it built**,
+  which is what lets seven presets share five lines of Liquid instead of
+  thirty-five.
+
+- **The classes are `.preset-h1` … `.preset-paragraph`, and they do not yet
+  drive `.display`, `.h2`, `.h3` or `.h4`.** Those still take their sizes from
+  the modular scale. Pointing them here is a conversion that has to be
+  *measured* against what they render today rather than assumed — the shape of
+  defect this file already records twice, where a resolver's fallback absorbed a
+  caller nobody converted and reported nothing. The presets are consumable now;
+  that migration is its own pass, and `.display` stays untouched.
+
+Verified at 1280: all seven resolve, sizes descend 71.3 / 45.6 / 36.5 / 29.1 /
+23.4 / 19.6 with Paragraph at 16.7, H1 in Italiana at 0.95 leading and −0.01em
+tracking, Paragraph in Karla at 1.5. Nothing on the page moved, since nothing
+wears the classes yet.
 
 ### Fluid scales
 

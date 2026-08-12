@@ -1654,6 +1654,103 @@ a {
   --type-6xl: clamp(2.75rem, 2.963vw + 2.0833rem, 4.75rem);
   --type-7xl: clamp(3.125rem, 4.2593vw + 2.1667rem, 6rem);
   --type-8xl: clamp(3.5rem, 5.9259vw + 2.1667rem, 7.5rem);
+
+  /* The other two rungs a preset stands on. Named rather than typed, for the
+     same reason the sizes are: a merchant chooses "Snug", not 1.1. */
+  --lead-tight: 0.95;
+  --lead-snug: 1.1;
+  --lead-normal: 1.3;
+  --lead-relaxed: 1.5;
+  --lead-loose: 1.7;
+
+  --track-tighter: -0.02em;
+  --track-tight: -0.01em;
+  --track-normal: 0em;
+  --track-wide: 0.05em;
+  --track-wider: 0.12em;
+}
+
+/* ---- The text presets -----------------------------------------------
+   Seven classes, each reading the five properties `theme-tokens.liquid`
+   publishes for it from Theme settings → Text presets. Anything that wants to
+   be "a Heading 3" says so by class and follows the shop's own decision about
+   what that means.
+
+   **They do not yet drive `.display`, `.h2`, `.h3` or `.h4`.** Those still take
+   their sizes from the modular scale, and pointing them here is a conversion
+   that has to be measured against what they render today rather than assumed —
+   the shape of defect this theme has paid for before, where a resolver's
+   fallback absorbed a caller nobody converted and reported nothing. The presets
+   are consumable now; that migration is its own pass.                       */
+
+.preset-h1,
+.preset-h2,
+.preset-h3,
+.preset-h4,
+.preset-h5,
+.preset-h6 {
+  font-family: var(--preset-font);
+  font-size: var(--preset-size);
+  line-height: var(--preset-leading);
+  letter-spacing: var(--preset-tracking);
+  text-transform: var(--preset-case);
+}
+
+.preset-h1 {
+  --preset-font: var(--h1-font);
+  --preset-size: var(--h1-size);
+  --preset-leading: var(--h1-leading);
+  --preset-tracking: var(--h1-tracking);
+  --preset-case: var(--h1-case);
+}
+
+.preset-h2 {
+  --preset-font: var(--h2-font);
+  --preset-size: var(--h2-size);
+  --preset-leading: var(--h2-leading);
+  --preset-tracking: var(--h2-tracking);
+  --preset-case: var(--h2-case);
+}
+
+.preset-h3 {
+  --preset-font: var(--h3-font);
+  --preset-size: var(--h3-size);
+  --preset-leading: var(--h3-leading);
+  --preset-tracking: var(--h3-tracking);
+  --preset-case: var(--h3-case);
+}
+
+.preset-h4 {
+  --preset-font: var(--h4-font);
+  --preset-size: var(--h4-size);
+  --preset-leading: var(--h4-leading);
+  --preset-tracking: var(--h4-tracking);
+  --preset-case: var(--h4-case);
+}
+
+.preset-h5 {
+  --preset-font: var(--h5-font);
+  --preset-size: var(--h5-size);
+  --preset-leading: var(--h5-leading);
+  --preset-tracking: var(--h5-tracking);
+  --preset-case: var(--h5-case);
+}
+
+.preset-h6 {
+  --preset-font: var(--h6-font);
+  --preset-size: var(--h6-size);
+  --preset-leading: var(--h6-leading);
+  --preset-tracking: var(--h6-tracking);
+  --preset-case: var(--h6-case);
+}
+
+/* Paragraph carries no font, tracking or case of its own — running text is the
+   body face by definition, and a shop that wants it otherwise is describing a
+   heading. Size and leading are the two decisions it has. */
+.preset-paragraph {
+  font-family: var(--font-body);
+  font-size: var(--paragraph-size);
+  line-height: var(--paragraph-leading);
 }
 
 :root {
