@@ -447,6 +447,41 @@ def R10_image_lqip():
                      '<img> without data-image-lqip (use "off" for a logo)')
 
 
+def R11_theme_js_stays_es5():
+    """assets/*.js stays ES5, because that is what makes Shopify minify it.
+
+    "Shopify automatically minifies CSS files, as well as JavaScript files that
+    use ES5 syntax or lower, when they're requested by the storefront." A theme
+    may not ship minified sources of its own, so this auto-minification is the
+    only minification the theme gets — and one arrow function silently forfeits
+    it for the whole file. Measured on theme.js: ~24 KB gzipped served minified
+    against ~37.5 KB as authored.
+
+    Strings and comments are removed first, or `script.async = true` reads as
+    the `async` keyword — which is exactly what a first pass here did.
+    """
+    checks = (
+        (r'=>', 'an arrow function'),
+        (r'\bconst\b', 'const'),
+        (r'\blet\b', 'let'),
+        (r'\bclass\s+\w', 'a class'),
+        (r'`', 'a template literal'),
+        (r'\.\.\.', 'spread/rest'),
+        (r'(?<![.\w])(?:async\s+function|await\s+)', 'async/await'),
+        (r'\bfor\s*\(\s*(?:var|let|const)?\s*\w+\s+of\b', 'for...of'),
+    )
+    for p in walk_files('assets', '.js'):
+        src = read(p)
+        src = re.sub(r'/\*.*?\*/', '', src, flags=re.S)
+        src = re.sub(r'(?m)^\s*//.*$', '', src)
+        src = re.sub(r'(?<!\\)([\'"])(?:\\.|(?!\1).)*\1', 'STR', src)
+        for pat, what in checks:
+            for m in re.finditer(pat, src):
+                line = src.count('\n', 0, m.start()) + 1
+                err('R11', '%s:%d' % (rel(p), line),
+                    '%s — ES6 here stops Shopify minifying the whole file' % what)
+
+
 RULES = OrderedDict([
     ('R01', (R01_range_steps, 'range steps are legal (Shopify validates server-side)')),
     ('R02', (R02_select_defaults, "a select's default is one of its options")),
@@ -458,6 +493,7 @@ RULES = OrderedDict([
     ('R08', (R08_no_dead_buttons, 'no href="#"')),
     ('R09', (R09_shop_data, 'no literal shop data outside config/')),
     ('R10', (R10_image_lqip, 'every <img> declares data-image-lqip')),
+    ('R11', (R11_theme_js_stays_es5, 'assets/*.js stays ES5 so Shopify minifies it')),
 ])
 
 

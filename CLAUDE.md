@@ -349,13 +349,48 @@ and `height: 100%` inside a `min-height` parent is indefinite — it would not
 have filled the box. Verified: 433×533 for both the media box and the
 placeholder.
 
-**Still outstanding, and structural:** `theme.js` is 153.5 KB raw / **37.6 KB
-gzipped** and `base.css` 202.2 KB raw / **51.1 KB gzipped**, both on every
-template. That is the real Theme Store performance risk and it is not solved by
-deleting files. Note the tension before starting: closing it usually means
-minifying or splitting, and this theme states **no build step** as a
-convention — so that convention has to be revisited deliberately rather than
-quietly broken.
+**The remaining two files are not the problem they look like, and this is worth
+reading before anyone "fixes" them.** `theme.js` is 153.5 KB on disk / 37.6 KB
+gzipped, `base.css` 202.2 KB / 51.1 KB. Both figures are real and neither is
+what a shopper downloads.
+
+Three facts from the Theme Store requirements, quoted rather than remembered:
+
+- **"Themes must not include minified `.css` or `.js` files, with the exception
+  of ES6 and third-party libraries."** Minifying is *forbidden*, not required.
+  The **no build step** convention is aligned with the requirements, not in
+  tension with them.
+- **"Shopify automatically minifies CSS files, as well as JavaScript files that
+  use ES5 syntax or lower, when they're requested by the storefront."** The
+  minification happens at serve time, for free.
+- The performance requirement is **a Lighthouse score of 60**, averaged across
+  the product, collection and home pages on desktop and mobile — with
+  accessibility at **90**. It is not a byte budget. Any figure of the form "a
+  ~16 KB JS budget" is not from the requirements.
+
+**`theme.js` qualifies, and that was checked rather than assumed**: zero arrow
+functions, zero `const`/`let`, zero classes, zero template literals, zero
+spread, 529 `var`s. The only two `async` matches are `script.async = true`, the
+DOM property — a first pass read them as the keyword and got the answer
+backwards. `base.css` qualifies for being CSS at all.
+
+What that is worth, measured by stripping comments as a stand-in for what
+Shopify's minifier does: `base.css` **50.5 → 18.7 KB** gzipped (41% of its
+bytes are comments), `theme.js` **37.5 → 23.8 KB** (22%). So the comments this
+theme is written in cost the shopper nothing, and removing them to save weight
+would be both pointless and a submission failure.
+
+**This is fragile in one specific way, so it is checked.** One arrow function
+anywhere in `assets/*.js` silently forfeits auto-minification for the whole
+file — about 14 KB gzipped, with nothing to see in the source and no error
+anywhere. `veylin-lint`'s **R11** fails on any ES6 construct there. Note the
+dev server is no help in confirming any of this: `shopify theme dev` serves the
+raw file, comments and all, so the served size only tells you about production
+on a real storefront.
+
+If the Lighthouse score does need work, the lever is what blocks rendering and
+what shifts layout, not file size — `base.css` is a render-blocking
+`stylesheet_tag` in `<head>`, while `theme.js` is already `defer`.
 
 ### App blocks
 
@@ -702,6 +737,7 @@ diligent, and this theme has already paid for that twice — see the footer unde
 | R08 | no `href="#"` |
 | R09 | no literal shop address, telephone, email or map URL outside `config/` |
 | R10 | every `<img>` declares `data-image-lqip` (warning; `"off"` for a logo) |
+| R11 | `assets/*.js` stays ES5 — ES6 stops Shopify auto-minifying the file |
 
 **R05 is the one written from a scar.** `section-style.liquid` stopped
 understanding numbers when padding became a step, the footer kept its range, and
