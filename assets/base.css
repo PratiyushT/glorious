@@ -3253,10 +3253,47 @@ a.card__title::after {
 }
 
 .promises__grid {
+  --promise-stagger: 80ms;
+
   display: grid;
   gap: var(--grid-gap);
   grid-template-columns: repeat(2, 1fr);
+  counter-reset: promise;
 }
+
+/* ---- The ordinal, and the entrance stagger --------------------------
+   Both used to be printed by the section from `forloop`. The card is a
+   theme block now, and a theme block cannot know its place among its
+   siblings: `content_for 'blocks'` renders the set as one flat flow with
+   no index. Only the parent can count, so the parent counts.
+
+   The counter renumbers on reorder exactly as the loop did, and gets a
+   set past nine right where the old `prepend: '0' | slice: -2, 2` printed
+   "00" at 100.
+
+   The stagger cannot use it — a counter is not a number `calc()` can
+   read — so it is a ladder. Ten rungs and then held: past that the last
+   card would be waiting most of a second to arrive, which is a delay
+   nobody reads as choreography. The design ships five. */
+
+.promise-card {
+  counter-increment: promise;
+}
+
+.promise-card__num::before {
+  content: counter(promise, decimal-leading-zero);
+}
+
+.promises__grid > :nth-child(1) { --reveal-delay: 0ms; }
+.promises__grid > :nth-child(2) { --reveal-delay: calc(var(--promise-stagger) * 1); }
+.promises__grid > :nth-child(3) { --reveal-delay: calc(var(--promise-stagger) * 2); }
+.promises__grid > :nth-child(4) { --reveal-delay: calc(var(--promise-stagger) * 3); }
+.promises__grid > :nth-child(5) { --reveal-delay: calc(var(--promise-stagger) * 4); }
+.promises__grid > :nth-child(6) { --reveal-delay: calc(var(--promise-stagger) * 5); }
+.promises__grid > :nth-child(7) { --reveal-delay: calc(var(--promise-stagger) * 6); }
+.promises__grid > :nth-child(8) { --reveal-delay: calc(var(--promise-stagger) * 7); }
+.promises__grid > :nth-child(9) { --reveal-delay: calc(var(--promise-stagger) * 8); }
+.promises__grid > :nth-child(n + 10) { --reveal-delay: calc(var(--promise-stagger) * 9); }
 
 /* An odd number of cards leaves the last one alone: give it the full row
    rather than half of one. */

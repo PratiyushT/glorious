@@ -102,6 +102,48 @@ sibling flow: made into blocks they would fall onto two rows. Converting it
 means either keeping that row as section settings or giving the section a
 static block, as the collection list does for its card.
 
+**`promises` cost its `forloop`, and that is the whole conversion.** Its one
+local type became `blocks/promise.liquid` keeping the name `promise`, so the
+five stored instances carried over untouched — verified on the page: five
+distinct titles, five distinct texts, five different icons, nothing fallen back
+to a schema default.
+
+- **A theme block has no index, and this section printed two things from one.**
+  `{% content_for 'blocks' %}` renders the set as one flat flow — `forloop`
+  exists only out in the section, which no longer loops. The card's ordinal was
+  `{{ forloop.index | prepend: '0' | slice: -2, 2 }}` and its entrance was
+  `--reveal-delay: {{ forloop.index0 | times: 80 }}ms`. Only the parent can
+  count, so both moved to `.promises__grid` in `base.css`.
+
+  The ordinal is a **CSS counter** — `counter-reset` on the grid,
+  `counter-increment` on the card, `content: counter(promise,
+  decimal-leading-zero)` on an empty `.promise-card__num`. It renumbers on
+  reorder and on removal exactly as the loop did (verified by moving a card to
+  the front and by deleting one), and it gets a set past nine right where the
+  old `slice: -2, 2` printed "00" at 100.
+
+  **The stagger could not follow it**, because a counter is not a number
+  `calc()` can read — so it is a short `:nth-child` ladder, ten rungs and then
+  held. Measured: `transition-delay` resolves to 0 / .08 / .16 / .24 / .32s
+  across the five, which is what the `forloop` emitted.
+
+  `.promise-card__num` is therefore **deliberately empty in the markup**. Do not
+  put a number back into it; the block has no way to know which number it is.
+
+- **The heading and the subheading stay section settings**, and this is
+  `featured-products`' constraint arriving from the other side. There the header
+  cannot become blocks because two of its parts share one row; here because the
+  only flow the section has to place blocks in *is* `.promises__grid`, so a
+  title block would land inside the grid as a card-shaped cell.
+
+- **`"tag": null` on the card is load-bearing.** The card has to *be* the grid
+  item. A generated wrapper would take `.promises__grid > *`'s column span while
+  the card inside sized to its own content, and a row would stop being level.
+  Verified across all three tiers: five columns at 1280, six columns at 1000
+  with the orphan pair centred by `:has(> :nth-child(5):last-child)` (x = 191
+  and 505 against 33 above), and two columns at 600 with the odd last card
+  spanning the full 542.
+
 ### Announcements
 
 **Adding to the bag changed a number in the corner and said nothing.** The

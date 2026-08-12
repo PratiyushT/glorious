@@ -6,11 +6,21 @@
 -%}
 {%- comment -%}
   Promises. Numbering is generated from block order, so reordering or removing
-  a promise in the editor renumbers the set automatically.
+  a promise in the editor renumbers the set automatically — it is a CSS counter
+  on `.promises__grid` now rather than `forloop`, because the card is a theme
+  block and a theme block has no index. See `blocks/promise.liquid`.
 
   There is deliberately no column setting: the design art-directs this grid to
   a fixed shape at each tier — including centring the orphan row of five — so a
   column count would have nothing to act on. The arrangement lives in base.css.
+
+  **The heading and the subheading stay section settings, and cannot become
+  `title` and `subheading` blocks.** Merchant-added blocks render as one flat
+  sibling flow, and the flow this section has to place them in is
+  `.promises__grid` — so a heading block would land *inside* the grid as a
+  card-shaped cell. This is `featured-products`' constraint arriving from the
+  other direction: there the header cannot be blocks because two of its parts
+  share one row, here because the only flow available is the grid itself.
 {%- endcomment -%}
 
 <section
@@ -35,34 +45,7 @@
     {%- endcomment -%}
     <div class="promises">
       <div class="promises__grid">
-      {%- for block in section.blocks -%}
-        <div
-          class="promise-card reveal"
-          style="--reveal-delay: {{ forloop.index0 | times: 80 }}ms;"
-          {{ block.shopify_attributes }}
-        >
-          <div class="promise-card__top">
-            {%- if block.settings.icon != 'none' -%}
-              <span class="promise-card__emblem">
-                {% render 'icon', icon: block.settings.icon %}
-              </span>
-            {%- endif -%}
-            <span class="promise-card__num">{{ forloop.index | prepend: '0' | slice: -2, 2 }}</span>
-          </div>
-
-          <span class="promise-card__rule" aria-hidden="true"></span>
-
-          {%- if block.settings.heading != blank -%}
-            <h3 class="promise-card__title">{{ block.settings.heading }}</h3>
-          {%- endif -%}
-
-          {%- if block.settings.text != blank -%}
-            <p class="promise-card__text">{{ block.settings.text }}</p>
-          {%- endif -%}
-
-          <span class="promise-card__corner" aria-hidden="true"></span>
-        </div>
-      {%- endfor -%}
+        {% content_for 'blocks' %}
       </div>
     </div>
   </div>
@@ -155,36 +138,7 @@
   ],
   "blocks": [
     {
-      "type": "promise",
-      "name": "t:sections.promises.blocks.promise.name",
-      "settings": [
-        {
-          "type": "select",
-          "id": "icon",
-          "label": "t:sections.promises.blocks.promise.icon.label",
-          "options": [
-            { "value": "shipping", "label": "t:sections.promises.icons.shipping" },
-            { "value": "support", "label": "t:sections.promises.icons.support" },
-            { "value": "secure", "label": "t:sections.promises.icons.secure" },
-            { "value": "handcraft", "label": "t:sections.promises.icons.handcraft" },
-            { "value": "certified", "label": "t:sections.promises.icons.certified" },
-            { "value": "none", "label": "t:sections.promises.icons.none" }
-          ],
-          "default": "shipping"
-        },
-        {
-          "type": "text",
-          "id": "heading",
-          "label": "t:sections.promises.blocks.promise.heading.label",
-          "default": "Insured Shipping"
-        },
-        {
-          "type": "text",
-          "id": "text",
-          "label": "t:sections.promises.blocks.promise.text.label",
-          "default": "Every order travels fully insured, door to door, at no cost to you."
-        }
-      ]
+      "type": "promise"
     }
   ],
   "presets": [

@@ -622,6 +622,26 @@
       "link": {
         "label": "Link"
       }
+    },
+    "promise": {
+      "name": "Promise",
+      "icon": {
+        "label": "Icon"
+      },
+      "heading": {
+        "label": "Heading"
+      },
+      "text": {
+        "label": "Text"
+      },
+      "icons": {
+        "shipping": "Insured shipping",
+        "support": "Personal assistance",
+        "secure": "Secure payment",
+        "handcraft": "Handcrafted",
+        "certified": "Certified quality",
+        "none": "None"
+      }
     }
   },
   "sections": {
@@ -1034,29 +1054,7 @@
       }
     },
     "promises": {
-      "name": "Promises",
-      "blocks": {
-        "promise": {
-          "name": "Promise",
-          "icon": {
-            "label": "Icon"
-          },
-          "heading": {
-            "label": "Heading"
-          },
-          "text": {
-            "label": "Text"
-          }
-        }
-      },
-      "icons": {
-        "shipping": "Insured shipping",
-        "support": "Personal assistance",
-        "secure": "Secure payment",
-        "handcraft": "Handcrafted",
-        "certified": "Certified quality",
-        "none": "None"
-      }
+      "name": "Promises"
     },
     "craft": {
       "name": "The craft",
