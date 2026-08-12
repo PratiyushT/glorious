@@ -45,18 +45,43 @@
     assign direction = 'column'
   endif
 
-  case block.settings.distribute
-    when 'center'
-      assign justify = 'center'
-    when 'end'
-      assign justify = 'flex-end'
-    when 'between'
-      assign justify = 'space-between'
-    else
-      assign justify = 'flex-start'
-  endcase
+  comment
+    **`distribute` is a row's setting only, and that is a fact about height.**
+    It sets `justify-content`, the *main* axis — vertical in a column — and the
+    group is only ever as tall as its contents, so there is no free space there
+    to distribute and every value behaves identically. It is hidden in a column
+    and pinned to the start rather than left to a stored value that does
+    nothing.
 
-  case block.settings.align
+    Strictly it can act on a column that has been *stretched* taller than its
+    contents, which needs the group nested in a row aligning `stretch`. That is
+    rare, invisible when it is not happening, and not worth a control that does
+    nothing the rest of the time.
+  endcomment
+  assign justify = 'flex-start'
+  unless block.settings.direction == 'vertical'
+    case block.settings.distribute
+      when 'center'
+        assign justify = 'center'
+      when 'end'
+        assign justify = 'flex-end'
+      when 'between'
+        assign justify = 'space-between'
+    endcase
+  endunless
+
+  comment
+    Two align settings, one per direction, because a select cannot hide an
+    individual option and `baseline` is not one a column can honour — in a
+    column the cross axis is horizontal, and baseline alignment there falls back
+    to start. Offering it was offering a choice that silently did nothing.
+  endcomment
+  assign align_choice = block.settings.align
+  if block.settings.direction == 'vertical'
+    assign align_choice = block.settings.align_vertical
+  endif
+
+  case align_choice
     when 'center'
       assign align = 'center'
     when 'end'
@@ -157,7 +182,8 @@
         { "value": "end", "label": "t:blocks.group.distribute.end" },
         { "value": "between", "label": "t:blocks.group.distribute.between" }
       ],
-      "default": "between"
+      "default": "between",
+      "visible_if": "{{ block.settings.direction == 'horizontal' }}"
     },
     {
       "type": "select",
@@ -171,7 +197,22 @@
         { "value": "end", "label": "t:blocks.group.align.end" },
         { "value": "stretch", "label": "t:blocks.group.align.stretch" }
       ],
-      "default": "baseline"
+      "default": "baseline",
+      "visible_if": "{{ block.settings.direction == 'horizontal' }}"
+    },
+    {
+      "type": "select",
+      "id": "align_vertical",
+      "label": "t:blocks.group.align.label",
+      "info": "t:blocks.group.align.info_vertical",
+      "options": [
+        { "value": "start", "label": "t:blocks.group.align.start" },
+        { "value": "center", "label": "t:blocks.group.align.center" },
+        { "value": "end", "label": "t:blocks.group.align.end" },
+        { "value": "stretch", "label": "t:blocks.group.align.stretch" }
+      ],
+      "default": "start",
+      "visible_if": "{{ block.settings.direction == 'vertical' }}"
     },
     {
       "type": "checkbox",

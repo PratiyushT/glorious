@@ -649,6 +649,7 @@
       "align": {
         "label": "Align",
         "info": "How the blocks line up across the group. Baseline aligns the text itself rather than the boxes.",
+        "info_vertical": "How the blocks line up across the group. Stretch makes each one the full width.",
         "baseline": "Text baseline",
         "start": "Start",
         "center": "Centre",
