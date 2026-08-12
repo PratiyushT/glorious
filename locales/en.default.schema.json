@@ -181,9 +181,9 @@
         "options__xl": "Extra large"
       }
     },
-    "text_presets": {
-      "name": "Text presets",
-      "paragraph_note": "Every size here is a rung of the theme's own fluid scale, not a pixel value — each one grows and shrinks with the screen on its own. A preset says which font, which rung, and how the letters sit.",
+    "text_styles": {
+      "name": "Text styles",
+      "paragraph_note": "Seven styles, used everywhere text is set. A style is a look — which font, which rung of the fluid scale, how the letters sit — and says nothing about which HTML element to use. That is chosen separately, because whether something is a top-level heading is a question about the page's outline and not about its size.",
       "label_font": "Font",
       "label_size": "Size",
       "label_leading": "Line height",
@@ -232,26 +232,26 @@
         "lowercase": "lowercase",
         "capitalize": "Capitalise Each Word"
       },
-      "h1": {
-        "header": "Heading 1"
+      "display": {
+        "header": "Display"
       },
-      "h2": {
-        "header": "Heading 2"
+      "title": {
+        "header": "Title"
       },
-      "h3": {
-        "header": "Heading 3"
+      "subtitle": {
+        "header": "Subtitle"
       },
-      "h4": {
-        "header": "Heading 4"
+      "lead": {
+        "header": "Lead"
       },
-      "h5": {
-        "header": "Heading 5"
+      "body": {
+        "header": "Body"
       },
-      "h6": {
-        "header": "Heading 6"
+      "small": {
+        "header": "Small"
       },
-      "paragraph": {
-        "header": "Paragraph"
+      "caption": {
+        "header": "Caption"
       }
     },
     "spacing": {

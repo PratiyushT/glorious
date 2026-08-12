@@ -1670,88 +1670,94 @@ a {
   --track-wider: 0.12em;
 }
 
-/* ---- The text presets -----------------------------------------------
-   Seven classes, each reading the five properties `theme-tokens.liquid`
-   publishes for it from Theme settings → Text presets. Anything that wants to
-   be "a Heading 3" says so by class and follows the shop's own decision about
-   what that means.
+/* ---- Text styles -----------------------------------------------------
+   Seven looks, from Theme settings → Text styles, each reading the five
+   properties `theme-tokens.liquid` publishes for it.
+
+   **A style says nothing about which element to use.** Whether a thing is an
+   `<h1>` is a question about the page's outline — an SEO decision — and not
+   about how big it is, so every block that offers a style offers the element
+   separately. Naming these after heading levels welded the two together and
+   was the reason they were renamed; `blocks/heading.liquid` had already learned
+   the same lesson, where choosing "Small" gave the right look at the wrong
+   level.
 
    **They do not yet drive `.display`, `.h2`, `.h3` or `.h4`.** Those still take
    their sizes from the modular scale, and pointing them here is a conversion
    that has to be measured against what they render today rather than assumed —
    the shape of defect this theme has paid for before, where a resolver's
-   fallback absorbed a caller nobody converted and reported nothing. The presets
-   are consumable now; that migration is its own pass.                       */
+   fallback absorbed a caller nobody converted and reported nothing.        */
 
-.preset-h1,
-.preset-h2,
-.preset-h3,
-.preset-h4,
-.preset-h5,
-.preset-h6 {
-  font-family: var(--preset-font);
-  font-size: var(--preset-size);
-  line-height: var(--preset-leading);
-  letter-spacing: var(--preset-tracking);
-  text-transform: var(--preset-case);
+.text-display,
+.text-title,
+.text-subtitle,
+.text-lead,
+.text-body,
+.text-small,
+.text-caption {
+  font-family: var(--text-font);
+  font-size: var(--text-size);
+  line-height: var(--text-leading);
+  letter-spacing: var(--text-tracking);
+  text-transform: var(--text-case);
 }
 
-.preset-h1 {
-  --preset-font: var(--h1-font);
-  --preset-size: var(--h1-size);
-  --preset-leading: var(--h1-leading);
-  --preset-tracking: var(--h1-tracking);
-  --preset-case: var(--h1-case);
+.text-display {
+  --text-font: var(--text-display-font);
+  --text-size: var(--text-display-size);
+  --text-leading: var(--text-display-leading);
+  --text-tracking: var(--text-display-tracking);
+  --text-case: var(--text-display-case);
 }
 
-.preset-h2 {
-  --preset-font: var(--h2-font);
-  --preset-size: var(--h2-size);
-  --preset-leading: var(--h2-leading);
-  --preset-tracking: var(--h2-tracking);
-  --preset-case: var(--h2-case);
+.text-title {
+  --text-font: var(--text-title-font);
+  --text-size: var(--text-title-size);
+  --text-leading: var(--text-title-leading);
+  --text-tracking: var(--text-title-tracking);
+  --text-case: var(--text-title-case);
 }
 
-.preset-h3 {
-  --preset-font: var(--h3-font);
-  --preset-size: var(--h3-size);
-  --preset-leading: var(--h3-leading);
-  --preset-tracking: var(--h3-tracking);
-  --preset-case: var(--h3-case);
+.text-subtitle {
+  --text-font: var(--text-subtitle-font);
+  --text-size: var(--text-subtitle-size);
+  --text-leading: var(--text-subtitle-leading);
+  --text-tracking: var(--text-subtitle-tracking);
+  --text-case: var(--text-subtitle-case);
 }
 
-.preset-h4 {
-  --preset-font: var(--h4-font);
-  --preset-size: var(--h4-size);
-  --preset-leading: var(--h4-leading);
-  --preset-tracking: var(--h4-tracking);
-  --preset-case: var(--h4-case);
+.text-lead {
+  --text-font: var(--text-lead-font);
+  --text-size: var(--text-lead-size);
+  --text-leading: var(--text-lead-leading);
+  --text-tracking: var(--text-lead-tracking);
+  --text-case: var(--text-lead-case);
 }
 
-.preset-h5 {
-  --preset-font: var(--h5-font);
-  --preset-size: var(--h5-size);
-  --preset-leading: var(--h5-leading);
-  --preset-tracking: var(--h5-tracking);
-  --preset-case: var(--h5-case);
+.text-body {
+  --text-font: var(--text-body-font);
+  --text-size: var(--text-body-size);
+  --text-leading: var(--text-body-leading);
+  --text-tracking: var(--text-body-tracking);
+  --text-case: var(--text-body-case);
 }
 
-.preset-h6 {
-  --preset-font: var(--h6-font);
-  --preset-size: var(--h6-size);
-  --preset-leading: var(--h6-leading);
-  --preset-tracking: var(--h6-tracking);
-  --preset-case: var(--h6-case);
+.text-small {
+  --text-font: var(--text-small-font);
+  --text-size: var(--text-small-size);
+  --text-leading: var(--text-small-leading);
+  --text-tracking: var(--text-small-tracking);
+  --text-case: var(--text-small-case);
 }
 
-/* Paragraph carries no font, tracking or case of its own — running text is the
-   body face by definition, and a shop that wants it otherwise is describing a
-   heading. Size and leading are the two decisions it has. */
-.preset-paragraph {
-  font-family: var(--font-body);
-  font-size: var(--paragraph-size);
-  line-height: var(--paragraph-leading);
+.text-caption {
+  --text-font: var(--text-caption-font);
+  --text-size: var(--text-caption-size);
+  --text-leading: var(--text-caption-leading);
+  --text-tracking: var(--text-caption-tracking);
+  --text-case: var(--text-caption-case);
 }
+
 
 :root {
   --step-none: 0px;

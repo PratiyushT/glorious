@@ -1862,12 +1862,31 @@ theme is unchanged and every role is a departure a merchant can take.
   bundled faces are off. Roles pointing at one family cost nothing extra:
   Shopify emits the same `@font-face` once.
 
-### Text presets
+### Text styles
 
-**Seven presets — Heading 1 to 6 and Paragraph — under Theme settings → Text
-presets.** Each names a font role, a rung of the type ladder, a line height, a
-letter spacing and a case; Paragraph carries only size and leading, running text
-being the body face by definition.
+**Seven styles — Display, Title, Subtitle, Lead, Body, Small, Caption — under
+Theme settings → Text styles.** Each names a font role, a rung of the type
+ladder, a line height, a letter spacing and a case.
+
+- **A style is a look and says nothing about which element to use.** They were
+  named Heading 1–6 and Paragraph for one commit, and that was wrong: it welds
+  appearance to semantics, so picking a size implies picking a tag. Whether
+  something is a top-level heading is a question about the page's outline — an
+  SEO decision — and belongs in a setting of its own. `blocks/heading.liquid`
+  had already learned this, where choosing "Small" gave the right look at the
+  wrong level. **Every block that offers a style offers all seven, and offers
+  the element separately.**
+
+- **The ids are `text_`-prefixed and that is load-bearing.** `display` and
+  `body` are style names *and* names the Typography group already used, so
+  `display_size` and `body_leading` collided outright — four duplicates, caught
+  by `theme check`'s `UniqueSettingId`. Two settings cannot share an id whatever
+  groups they sit in.
+
+Verified at 1280: all seven resolve and descend — 71.3 / 45.6 / 29.1 / 19.6 /
+16.7 / 14.7 / 12.9 — Display, Title and Subtitle in Italiana, the rest in Karla,
+Caption uppercase at wide tracking, and Display at 0.95 leading. Nothing on the
+page moved, since nothing wears the classes yet.
 
 - **No pixel field anywhere in it.** A merchant picks a rung and it scales. The
   ladder is `--type-3xs` … `--type-8xl` in `base.css`, fourteen fluid clamps

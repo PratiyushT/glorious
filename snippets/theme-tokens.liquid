@@ -295,23 +295,28 @@
       built, which is what lets seven presets share five lines instead of
       thirty-five.
     {%- endcomment -%}
-    {%- assign preset_keys = 'h1,h2,h3,h4,h5,h6' | split: ',' -%}
+    {%- assign preset_keys = 'display,title,subtitle,lead,body,small,caption' | split: ',' -%}
     {%- for p in preset_keys -%}
-      {%- assign k_font = p | append: '_font' -%}
-      {%- assign k_size = p | append: '_size' -%}
-      {%- assign k_lead = p | append: '_leading' -%}
-      {%- assign k_track = p | append: '_tracking' -%}
-      {%- assign k_case = p | append: '_case' -%}
+      {%- comment -%}
+        The ids are `text_`-prefixed, and that is not decoration: `display` and
+        `body` are style names *and* names the Typography group already used, so
+        `display_size` and `body_leading` collided outright — `theme check`'s
+        `UniqueSettingId` caught four of them. Two settings cannot share an id
+        whatever groups they sit in.
+      {%- endcomment -%}
+      {%- assign k_font = 'text_' | append: p | append: '_font' -%}
+      {%- assign k_size = 'text_' | append: p | append: '_size' -%}
+      {%- assign k_lead = 'text_' | append: p | append: '_leading' -%}
+      {%- assign k_track = 'text_' | append: p | append: '_tracking' -%}
+      {%- assign k_case = 'text_' | append: p | append: '_case' -%}
       {%- assign case_value = settings[k_case] -%}
       {%- if case_value == 'default' -%}{%- assign case_value = 'none' -%}{%- endif %}
-    --{{ p }}-font: var(--font-{{ settings[k_font] }});
-    --{{ p }}-size: var(--type-{{ settings[k_size] }});
-    --{{ p }}-leading: var(--lead-{{ settings[k_lead] }});
-    --{{ p }}-tracking: var(--track-{{ settings[k_track] }});
-    --{{ p }}-case: {{ case_value }};
+    --text-{{ p }}-font: var(--font-{{ settings[k_font] }});
+    --text-{{ p }}-size: var(--type-{{ settings[k_size] }});
+    --text-{{ p }}-leading: var(--lead-{{ settings[k_lead] }});
+    --text-{{ p }}-tracking: var(--track-{{ settings[k_track] }});
+    --text-{{ p }}-case: {{ case_value }};
     {%- endfor %}
-    --paragraph-size: var(--type-{{ settings.paragraph_size }});
-    --paragraph-leading: var(--lead-{{ settings.paragraph_leading }});
     --heading-leading: {{ s_hleading | times: 1.0 | divided_by: 100.0 }};
     --heading-tracking: {{ s_htrack | times: 1.0 | divided_by: 1000.0 }}em;
     --body-leading: {{ s_bleading | times: 1.0 | divided_by: 100.0 }};
