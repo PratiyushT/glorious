@@ -41,7 +41,10 @@
 {%- endcomment -%}
 
 {%- liquid
-  assign product = block.settings.product | default: closest.product
+  assign product = closest.product
+  if block.settings.product != blank
+    assign product = block.settings.product
+  endif
 
   assign img_loading = 'lazy'
   assign img_sizes = '(max-width: 700px) 70vw, 460px'

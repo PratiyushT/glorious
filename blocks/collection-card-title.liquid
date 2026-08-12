@@ -10,7 +10,12 @@
   collection's own title is the source.
 {%- endcomment -%}
 
-{%- assign collection = block.settings.collection | default: closest.collection -%}
+{%- liquid
+  assign collection = closest.collection
+  if block.settings.collection != blank
+    assign collection = block.settings.collection
+  endif
+-%}
 
 <span class="cat-card__title" {{ block.shopify_attributes }}>
   {{- collection.title | default: block.settings.fallback -}}

@@ -20,7 +20,10 @@
 {%- endcomment -%}
 
 {%- liquid
-  assign product = block.settings.product | default: closest.product
+  assign product = closest.product
+  if block.settings.product != blank
+    assign product = block.settings.product
+  endif
 
   assign chosen = blank
   if product != blank

@@ -1,0 +1,86 @@
+{%- comment -%}
+  Shared layout values for the Group block and Group section.
+
+  Both components expose the same direction, distribution, alignment, wrap,
+  and gap contract. Keeping the translation from editor values to CSS custom
+  properties here prevents the section and block from drifting into two
+  components that merely share a name.
+{%- endcomment -%}
+
+{%- liquid
+  assign direction = 'row'
+  if layout_settings.direction == 'vertical'
+    assign direction = 'column'
+  endif
+  if layout_settings.reverse
+    assign direction = direction | append: '-reverse'
+  endif
+
+  assign stack_direction = 'column'
+  if layout_settings.reverse
+    assign stack_direction = 'column-reverse'
+  endif
+
+  assign justify = 'flex-start'
+  unless layout_settings.direction == 'vertical'
+    case layout_settings.distribute
+      when 'center'
+        assign justify = 'center'
+      when 'end'
+        assign justify = 'flex-end'
+      when 'between'
+        assign justify = 'space-between'
+    endcase
+  endunless
+
+  assign align_choice = layout_settings.align
+  if layout_settings.direction == 'vertical'
+    assign align_choice = layout_settings.align_vertical
+  endif
+
+  case align_choice
+    when 'center'
+      assign align = 'center'
+    when 'end'
+      assign align = 'flex-end'
+    when 'stretch'
+      assign align = 'stretch'
+    when 'start'
+      assign align = 'flex-start'
+    else
+      assign align = 'baseline'
+  endcase
+
+  assign wrap = 'wrap'
+  unless layout_settings.wrap
+    assign wrap = 'nowrap'
+  endunless
+
+  assign gap_steps = 'minimal,tiny,small,medium,large,xlarge,maximum' | split: ','
+  assign gap_css = ''
+  if layout_settings.gap == 'none'
+    assign gap_css = '--group-gap: 0;'
+  elsif gap_steps contains layout_settings.gap
+    assign gap_css = '--group-gap: var(--step-' | append: layout_settings.gap | append: ');'
+  endif
+
+  assign row_gap_css = ''
+  if layout_settings.direction == 'vertical'
+    if layout_settings.vertical_gap == 'none'
+      assign row_gap_css = '--group-row-gap: 0;'
+    elsif gap_steps contains layout_settings.vertical_gap
+      assign row_gap_css = '--group-row-gap: var(--step-' | append: layout_settings.vertical_gap | append: ');'
+    endif
+  endif
+
+  assign item_min = layout_settings.min_item_width | default: 0
+-%}
+
+--group-direction: {{ direction }};
+--group-stack-direction: {{ stack_direction }};
+--group-justify: {{ justify }};
+--group-align: {{ align }};
+--group-wrap: {{ wrap }};
+--group-item-min: {{ item_min }}rem;
+{{- gap_css -}}
+{{- row_gap_css -}}

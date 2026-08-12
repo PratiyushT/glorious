@@ -17,7 +17,10 @@
 {%- endcomment -%}
 
 {%- liquid
-  assign collection = block.settings.collection | default: closest.collection
+  assign collection = closest.collection
+  if block.settings.collection != blank
+    assign collection = block.settings.collection
+  endif
   assign image = collection.featured_image
   assign alt = image.alt | default: collection.title | escape
 -%}

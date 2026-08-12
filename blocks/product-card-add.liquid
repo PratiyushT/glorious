@@ -33,7 +33,10 @@
 {%- endcomment -%}
 
 {%- liquid
-  assign product = block.settings.product | default: closest.product
+  assign product = closest.product
+  if block.settings.product != blank
+    assign product = block.settings.product
+  endif
   assign label = block.settings.label | default: 'Add to Bag'
   assign sold_out_label = 'products.sold_out' | t
 

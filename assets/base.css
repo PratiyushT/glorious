@@ -548,7 +548,7 @@ a {
      section's value for everything inside the group and there would be nothing
      left to inherit. */
   column-gap: var(--group-gap, var(--step-medium));
-  row-gap: var(--block-gap, var(--step-large));
+  row-gap: var(--group-row-gap, var(--block-gap, var(--step-large)));
 }
 
 /* **Two classes deep, and that is not cosmetic.** `.section-eyebrow` carries
@@ -561,6 +561,22 @@ a {
   margin-block: 0;
 }
 
+/* Equal items are opt-in. Natural width remains the Group block's default so
+   existing header rows and compact control groups do not suddenly become
+   columns; the Group section uses equal items for its two-column compositions. */
+.layout-group[data-items="equal"] > .layout-group__inner > * {
+  flex: 1 1 var(--group-item-min, 0rem);
+  min-width: 0;
+}
+
+/* A nested horizontal group needs a definite inline size before its vertical
+   flex parent measures intrinsic height. Without this, portrait media is
+   measured at the full parent width first and leaves a large empty flex box
+   after the row resolves into columns. */
+.layout-group[data-direction="vertical"] > .layout-group__inner > .layout-group {
+  width: 100%;
+}
+
 /* Stacking. A container query on the group's own width, not the viewport, so a
    group in a half-width column stacks on a desktop exactly as it would on a
    phone — the block's width is the thing that decides whether a row still fits.
@@ -571,18 +587,39 @@ a {
 
 @container (max-width: 30rem) {
   .layout-group[data-stack="mobile"] > .layout-group__inner {
-    flex-direction: column;
+    flex-direction: var(--group-stack-direction, column);
     align-items: flex-start;
     justify-content: flex-start;
+  }
+
+  .layout-group[data-items="equal"][data-stack="mobile"] > .layout-group__inner > * {
+    flex: 0 1 auto;
+    width: 100%;
   }
 }
 
 @container (max-width: 48rem) {
   .layout-group[data-stack="tablet"] > .layout-group__inner {
-    flex-direction: column;
+    flex-direction: var(--group-stack-direction, column);
     align-items: flex-start;
     justify-content: flex-start;
   }
+
+  .layout-group[data-items="equal"][data-stack="tablet"] > .layout-group__inner > * {
+    flex: 0 1 auto;
+    width: 100%;
+  }
+}
+
+/* Width choices unique to the section wrapper. `page-width` already supplies
+   the ordinary, narrow, and reading measures; these are its two deliberately
+   less constrained variants. */
+.group-section__width--full {
+  max-width: none;
+}
+
+.group-section__width--edge {
+  width: 100%;
 }
 
 /* A group is a flex item wherever it sits. Left to shrink-wrap it would hug
@@ -877,9 +914,12 @@ a {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: var(--media-position, 50% 50%);
 }
 
-.media--contain > img {
+.media--contain > img,
+.media--contain > video,
+.media--contain > svg {
   object-fit: contain;
 }
 
@@ -1016,6 +1056,40 @@ a {
   text-transform: uppercase;
   color: var(--c-muted);
 }
+
+.media-block {
+  min-width: 0;
+  width: 100%;
+  padding: var(--block-padding, 0);
+}
+
+/* ---- Border block ------------------------------------------------ */
+
+.border-block {
+  width: 100%;
+  padding-block: var(--border-space-before, 0) var(--border-space-after, 0);
+}
+
+/* Full line width controls the line inside the block. This option controls the
+   block itself: in a horizontal Group it claims a complete row instead of
+   sharing the row or shrinking beside another block. */
+.layout-group > .layout-group__inner > .border-block--full-container,
+.border-block--full-container {
+  flex: 1 0 100%;
+  width: 100%;
+}
+
+.border-block__line {
+  display: block;
+  width: var(--border-line-width, 100%);
+  border-top: var(--border-line-size, var(--border-width))
+    var(--border-line-style, solid)
+    var(--border-line-color, var(--c-hairline));
+}
+
+.border-block--left .border-block__line { margin-inline: 0 auto; }
+.border-block--center .border-block__line { margin-inline: auto; }
+.border-block--right .border-block__line { margin-inline: auto 0; }
 
 /* ---- Hero ---------------------------------------------------------
    A 1:1 rebuild of the design's hero. Every number here is the design's
@@ -1809,6 +1883,7 @@ a {
   --step-medium: var(--space-md);     /* 21 – 33px */
   --step-large: var(--space-lg);      /* 28 – 44px */
   --step-xlarge: var(--space-xl);     /* 42 – 66px */
+  --step-maximum: var(--space-2xl);   /* 56 – 88px */
 }
 
 /* ---- Product card ---------------------------------------------------

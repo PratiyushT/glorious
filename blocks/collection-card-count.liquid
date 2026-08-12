@@ -7,7 +7,12 @@
   empty slot never leaves a stray zero beside a title.
 {%- endcomment -%}
 
-{%- assign collection = block.settings.collection | default: closest.collection -%}
+{%- liquid
+  assign collection = closest.collection
+  if block.settings.collection != blank
+    assign collection = block.settings.collection
+  endif
+-%}
 
 {%- if collection != blank -%}
   <span class="cat-card__count" {{ block.shopify_attributes }}>

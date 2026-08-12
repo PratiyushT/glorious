@@ -73,7 +73,7 @@ The homepage blocks fall into four contracts:
 
 - **Global composition blocks** are public and require no resource context:
   `title`, `heading`, `subheading`, `paragraph`, `prose`, `buttons`, `detail`,
-  `group`, `promise`, and `quote`. Promise numbering is added only by
+  `border`, `media`, `group`, `promise`, and `quote`. Promise numbering is added only by
   `.promises__grid`; Quote hiding and overlap are added only by `.quotes`.
   Standalone instances remain visible and complete.
 - **Resource-aware public blocks** inherit the nearest resource but also expose
@@ -103,9 +103,9 @@ the nearest source or choose one directly.
 
 ### Section conversions
 
-`about` is the first body section on theme blocks. It lists `prose`, `buttons`,
-`paragraph`, `title` and `subheading`, and renders them with
-`{% content_for 'blocks' %}`.
+`about` was the first body section converted to theme blocks. It has since
+become an instance of the general `group` section along with Craft and Visit;
+the history below explains the block contracts that migration preserved.
 
 - **Both of its local types converted in one commit**, because a section holds
   either its own blocks or theme blocks and never both. That is the constraint
@@ -127,10 +127,10 @@ the nearest source or choose one directly.
   into something the CSS no longer matches. Verified after conversion: three
   `.rte.measure` blocks, no `p p` on the page.
 
-- **The three duplicate `buttons` schemas are what this collapses.** The markup
+- **The three duplicate `buttons` schemas are what this collapsed.** The markup
   was already shared through `snippets/button.liquid`, but a schema cannot be
   shared between sections, so the ten settings stayed written out three times.
-  craft and visit still carry theirs and adopt the block when they convert.
+  Craft, About, and Visit now all consume the same public block.
 
 **`featured-products` is not the cheap first conversion the block audit
 suggested.** It has no local blocks, so there is nothing to collapse — and its
@@ -824,6 +824,14 @@ merchant's business. Groups nest.
   has hit that trap twice before, on `.row-carousel__frame` and
   `.quick-view__frame`, where putting both on one element parsed, uploaded and
   silently never fired.
+- **Direction is both data and style.** `--group-direction` drives flex layout,
+  while `data-direction` scopes the intrinsic-size safeguards for nested groups.
+  Omitting the attribute still made the row look correct, but a horizontal group
+  inside a vertical group was measured once at the portrait media's full width
+  and then laid out at its final two-column width. The outer flex item kept that
+  first, much taller measurement, leaving hundreds of empty pixels below About
+  and Visit. A nested group takes `width: 100%` before the vertical parent
+  measures it; measured after the fix, both outer and inner boxes are 721px tall.
 - **Stacking is a container query, not a media query**, so a group stacks when
   *it* is narrow — in a half-width column on a desktop exactly as on a phone.
   `stack_below` offers never / tablet (48rem) / phone (30rem). Stacking also
@@ -838,6 +846,32 @@ Verified on the page: the group resolves `container-type: inline-size`, its
 inner row `space-between` / `baseline` with the eyebrow at x=32 and the button
 at x=811 across an 868px group; and at a 381px group width the query fires,
 giving `column` / `flex-start` with both children at x=19.
+
+**`sections/group.liquid` is the same primitive at section scale.** It accepts
+every public theme block and app block; its own settings stop at colour scheme,
+content measure, anchor, height, section padding, text alignment, and the same
+direction/distribution/alignment/wrap/gap contract as the block. Both call
+`snippets/layout-group-style.liquid`, so editor values cannot drift between two
+Liquid implementations.
+
+- Craft, About, and Visit are three stored instances of `type: "group"`, not
+  three section files. Their content is composed from nested Group blocks,
+  Media, Border, text, Detail rows, and Buttons.
+- `items_width` is the one addition the two-column migration needed. Natural is
+  the Group block's backward-compatible default; Equal makes direct row
+  children share the available width. When the container stacks, equal-width
+  children return to full-width natural-height rows. `min_item_width` is a flex
+  basis and wrapping preference, not a hard minimum, so the composition remains
+  fluid. Reverse order and an independent vertical gap preserve the old
+  editorial layouts without section-specific CSS.
+- **Media is global.** A Shopify-hosted video wins over an image without
+  deleting it; both paths keep LQIP, ratio, cover/contain, arch, offset frame,
+  captions, and scroll reveal. About's arched portrait, Craft's framed video,
+  and Visit's arched salon photograph are settings on this one block.
+- **Border is global.** Style, weight, colour, width, alignment, and named
+  before/after spacing live on the divider. Its spacing is padding so Group's
+  deliberate child-margin reset cannot erase it. Visit's old section-level
+  `show_rule` is now a removable Border block.
 
 **"View All" is a `buttons` block now, not a bespoke link.** `buttons` gained a
 `collection` link source — "This section's collection" — which reads
@@ -1662,8 +1696,8 @@ as on the design's homepage.
 ### Homepage sections
 
 `hero`, `featured-products` (Most Loved), `collection-list` (Our Products),
-`lookbook` (Shop the look), `promises`, `craft`, `about`, `testimonials`,
-`visit` — plus `header`,
+`lookbook` (Shop the look), `promises`, three `group` instances (Craft, About,
+Visit), and `testimonials` — plus `header`,
 `announcement-bar`, `cart-drawer`, `newsletter-popup`, `cookie-banner` in the
 header group, `footer` in the footer group, and general-purpose `rich-text`
 and `newsletter`. `predictive-search` and `quick-view` are sections with **no

@@ -22,7 +22,10 @@
 {%- endcomment -%}
 
 {%- liquid
-  assign row_collection = block.settings.collection | default: closest.collection
+  assign row_collection = closest.collection
+  if block.settings.collection != blank
+    assign row_collection = block.settings.collection
+  endif
   if row_collection == blank
     assign row_collection = collections[section.settings.collection]
   endif

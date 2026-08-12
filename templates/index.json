@@ -111,6 +111,7 @@
             "photograph": {
               "type": "product-card-image",
               "settings": {
+                "product": "{{ closest.product }}",
                 "image_ratio": "1/1",
                 "image_fit": "contain",
                 "zoom": "{{ closest.product.metafields.custom.card_zoom.value }}"
@@ -118,30 +119,37 @@
             },
             "name": {
               "type": "product-card-title",
-              "settings": {}
+              "settings": {
+                "product": "{{ closest.product }}"
+              }
             },
             "caption": {
               "type": "group",
               "blocks": {
                 "option": {
                   "type": "product-card-option-name",
-                  "settings": {}
+                  "settings": {
+                    "product": "{{ closest.product }}"
+                  }
                 },
                 "dot": {
                   "type": "product-card-text",
                   "settings": {
+                    "product": "{{ closest.product }}",
                     "text": "·"
                   }
                 },
                 "carat": {
                   "type": "product-card-text",
                   "settings": {
+                    "product": "{{ closest.product }}",
                     "text": "{{ closest.product.metafields.custom.total_carat_weight.value }}"
                   }
                 },
                 "unit": {
                   "type": "product-card-text",
                   "settings": {
+                    "product": "{{ closest.product }}",
                     "text": "ct"
                   }
                 }
@@ -164,6 +172,7 @@
             "metal": {
               "type": "product-card-variants",
               "settings": {
+                "product": "{{ closest.product }}",
                 "control": "swatches",
                 "swatch_shape": "round"
               }
@@ -174,12 +183,14 @@
                 "label": {
                   "type": "product-card-text",
                   "settings": {
+                    "product": "{{ closest.product }}",
                     "text": "Available in"
                   }
                 },
                 "values": {
                   "type": "product-card-option-values",
                   "settings": {
+                    "product": "{{ closest.product }}",
                     "option_name": "Karat",
                     "separator": ", "
                   }
@@ -203,7 +214,9 @@
               "blocks": {
                 "price": {
                   "type": "product-card-price",
-                  "settings": {}
+                  "settings": {
+                    "product": "{{ closest.product }}"
+                  }
                 }
               },
               "block_order": [
@@ -221,6 +234,7 @@
             "add": {
               "type": "product-card-add",
               "settings": {
+                "product": "{{ closest.product }}",
                 "label": "Add to Bag"
               }
             }
@@ -314,20 +328,25 @@
         "collection-card": {
           "type": "_collection-card",
           "static": true,
+          "settings": {},
           "blocks": {
             "name": {
               "type": "collection-card-title",
               "settings": {
+                "collection": "{{ closest.collection }}",
                 "fallback": "Category"
               }
             },
             "count": {
               "type": "collection-card-count",
-              "settings": {}
+              "settings": {
+                "collection": "{{ closest.collection }}"
+              }
             },
             "photograph": {
               "type": "collection-card-image",
               "settings": {
+                "collection": "{{ closest.collection }}",
                 "image_ratio": "4 / 5"
               }
             },
@@ -423,118 +442,243 @@
       }
     },
     "craft": {
-      "type": "craft",
+      "type": "group",
       "blocks": {
-        "metal": {
-          "type": "detail",
+        "media": {
+          "type": "media",
           "settings": {
-            "label": "Metal",
-            "value": "18-karat gold"
+            "video": "shopify://files/videos/video.mp4",
+            "autoplay": true,
+            "loop": true,
+            "ratio": "4 / 5",
+            "fit": "cover",
+            "arch": false,
+            "frame": true,
+            "reveal": true,
+            "reveal_delay": 0,
+            "caption_left": "",
+            "caption_right": "",
+            "padding": "none"
           }
         },
-        "clarity": {
-          "type": "detail",
+        "content": {
+          "type": "group",
+          "blocks": {
+            "eyebrow": {
+              "type": "subheading",
+              "settings": {
+                "text": "The Craft"
+              }
+            },
+            "heading": {
+              "type": "heading",
+              "settings": {
+                "text": "Cut, set, and finished by hand.",
+                "style": "heading_2",
+                "heading_level": "h2"
+              }
+            },
+            "intro": {
+              "type": "prose",
+              "settings": {
+                "text": "<p>Heritage techniques from Indian goldsmithing, held to modern standards. Stones are chosen for brilliance and certified independently, so what you wear is exactly what was promised.</p>"
+              }
+            },
+            "metal": {
+              "type": "detail",
+              "settings": {
+                "label": "Metal",
+                "value": "18-karat gold"
+              }
+            },
+            "clarity": {
+              "type": "detail",
+              "settings": {
+                "label": "Clarity",
+                "value": "VVS and above"
+              }
+            },
+            "colour": {
+              "type": "detail",
+              "settings": {
+                "label": "Colour",
+                "value": "F and above"
+              }
+            },
+            "certification": {
+              "type": "detail",
+              "settings": {
+                "label": "Certification",
+                "value": "IGI"
+              }
+            },
+            "buttons": {
+              "type": "buttons",
+              "settings": {
+                "button_label": "Bespoke Commissions",
+                "button_link": "/#visit",
+                "button_label_2": "Old Gold, Renewed",
+                "button_link_2": "/#visit",
+                "button_style": "outline",
+                "button_style_2": "link"
+              }
+            }
+          },
+          "block_order": [
+            "eyebrow",
+            "heading",
+            "intro",
+            "metal",
+            "clarity",
+            "colour",
+            "certification",
+            "buttons"
+          ],
           "settings": {
-            "label": "Clarity",
-            "value": "VVS and above"
-          }
-        },
-        "colour": {
-          "type": "detail",
-          "settings": {
-            "label": "Colour",
-            "value": "F and above"
-          }
-        },
-        "certification": {
-          "type": "detail",
-          "settings": {
-            "label": "Certification",
-            "value": "IGI"
-          }
-        },
-        "buttons": {
-          "type": "buttons",
-          "settings": {
-            "button_label": "Bespoke Commissions",
-            "button_link": "/#visit",
-            "button_label_2": "Old Gold, Renewed",
-            "button_link_2": "/#visit",
-            "button_style": "outline",
-            "button_style_2": "link"
+            "direction": "vertical",
+            "reverse": false,
+            "align_vertical": "start",
+            "items_width": "natural",
+            "gap": "small",
+            "vertical_gap": "small"
           }
         }
       },
       "block_order": [
-        "metal",
-        "clarity",
-        "colour",
-        "certification",
-        "buttons"
+        "media",
+        "content"
       ],
       "settings": {
         "color_scheme": "scheme_2",
-        "subheading": "The Craft",
-        "heading": "Cut, set, and finished by hand.",
-        "text": "<p>Heritage techniques from Indian goldsmithing, held to modern standards. Stones are chosen for brilliance and certified independently, so what you wear is exactly what was promised.</p>",
-        "layout": "image_first",
+        "content_width": "narrow",
         "full_height": false,
         "anchor": "craft",
-        "video": "shopify://files/videos/video.mp4",
-        "image_ratio": "4 / 5",
-        "show_frame": true,
+        "direction": "horizontal",
+        "reverse": false,
+        "distribute": "start",
+        "align": "center",
+        "wrap": true,
+        "items_width": "equal",
+        "min_item_width": 21,
+        "stack_below": "never",
+        "gap": "maximum",
+        "content_alignment": "left",
+        "block_gap": "small",
         "padding_top": "md",
         "padding_bottom": "md"
       }
     },
     "about": {
-      "type": "about",
+      "type": "group",
       "blocks": {
-        "p1": {
-          "type": "prose",
+        "heading": {
+          "type": "title",
           "settings": {
-            "text": "<p>Tell the story behind the shop here — where it began, what it makes, and who it is for. Two or three sentences carry further than a page of them.</p>"
+            "text": "About Us",
+            "heading_level": "h2"
           }
         },
-        "p2": {
-          "type": "prose",
+        "layout": {
+          "type": "group",
+          "blocks": {
+            "content": {
+              "type": "group",
+              "blocks": {
+                "p1": {
+                  "type": "prose",
+                  "settings": {
+                    "text": "<p>Tell the story behind the shop here — where it began, what it makes, and who it is for. Two or three sentences carry further than a page of them.</p>"
+                  }
+                },
+                "p2": {
+                  "type": "prose",
+                  "settings": {
+                    "text": "<p>Every piece is handcrafted by master artisans who bring decades of skill to each cut, setting, and polish. Designs are guided by heritage and made for real lives — jewelry that becomes a treasured heirloom.</p>"
+                  }
+                },
+                "p3": {
+                  "type": "prose",
+                  "settings": {
+                    "text": "<p>From your first sparkle to your forever keepsake, generations trust us not just for what we create, but for how it makes them feel.</p>"
+                  }
+                },
+                "buttons": {
+                  "type": "buttons",
+                  "settings": {
+                    "button_label": "Our Full Story",
+                    "button_link": "/pages/about",
+                    "button_label_2": "The Craft",
+                    "button_link_2": "/#craft",
+                    "button_style": "filled",
+                    "button_style_2": "link"
+                  }
+                }
+              },
+              "block_order": [
+                "p1",
+                "p2",
+                "p3",
+                "buttons"
+              ],
+              "settings": {
+                "direction": "vertical",
+                "reverse": false,
+                "align_vertical": "start",
+                "items_width": "natural",
+                "gap": "small",
+                "vertical_gap": "small"
+              }
+            },
+            "media": {
+              "type": "media",
+              "settings": {
+                "image": "shopify://shop_images/about.webp",
+                "autoplay": true,
+                "loop": true,
+                "ratio": "4 / 5",
+                "fit": "cover",
+                "arch": true,
+                "frame": false,
+                "reveal": true,
+                "reveal_delay": 120,
+                "caption_left": "Who it is for",
+                "caption_right": "Est. City, State",
+                "padding": "none"
+              }
+            }
+          },
+          "block_order": [
+            "media",
+            "content"
+          ],
           "settings": {
-            "text": "<p>Every piece is handcrafted by master artisans who bring decades of skill to each cut, setting, and polish. Designs are guided by heritage and made for real lives — jewelry that becomes a treasured heirloom.</p>"
-          }
-        },
-        "p3": {
-          "type": "prose",
-          "settings": {
-            "text": "<p>From your first sparkle to your forever keepsake, generations trust us not just for what we create, but for how it makes them feel.</p>"
-          }
-        },
-        "buttons": {
-          "type": "buttons",
-          "settings": {
-            "button_label": "Our Full Story",
-            "button_link": "/pages/about",
-            "button_label_2": "The Craft",
-            "button_link_2": "/#craft",
-            "button_style": "filled",
-            "button_style_2": "link"
+            "direction": "horizontal",
+            "reverse": true,
+            "distribute": "start",
+            "align": "center",
+            "wrap": true,
+            "items_width": "equal",
+            "min_item_width": 22,
+            "stack_below": "never",
+            "gap": "maximum"
           }
         }
       },
       "block_order": [
-        "p1",
-        "p2",
-        "p3",
-        "buttons"
+        "heading",
+        "layout"
       ],
       "settings": {
         "color_scheme": "scheme_1",
-        "heading": "About Us",
-        "layout": "text_first",
-        "image": "shopify://shop_images/about.webp",
-        "image_ratio": "4 / 5",
-        "arch": true,
-        "caption_left": "Who it is for",
-        "caption_right": "Est. City, State",
+        "content_width": "page",
+        "full_height": false,
+        "anchor": "",
+        "direction": "vertical",
+        "reverse": false,
+        "align_vertical": "stretch",
+        "items_width": "natural",
+        "content_alignment": "left",
+        "block_gap": "small",
         "padding_top": "lg",
         "padding_bottom": "max"
       }
@@ -587,58 +731,145 @@
       }
     },
     "visit": {
-      "type": "visit",
+      "type": "group",
       "blocks": {
-        "address": {
-          "type": "detail",
+        "border": {
+          "type": "border",
           "settings": {
-            "label": "Address",
-            "source": "address",
-            "value": "",
-            "link": ""
+            "style": "solid",
+            "weight": "hairline",
+            "width": "full",
+            "full_container_width": true,
+            "alignment": "center",
+            "space_before": "none",
+            "space_after": "xlarge"
           }
         },
-        "hours": {
-          "type": "detail",
+        "layout": {
+          "type": "group",
+          "blocks": {
+            "media": {
+              "type": "media",
+              "settings": {
+                "image": "shopify://shop_images/salon.webp",
+                "autoplay": true,
+                "loop": true,
+                "ratio": "4 / 5",
+                "fit": "cover",
+                "arch": true,
+                "frame": false,
+                "reveal": true,
+                "reveal_delay": 130,
+                "caption_left": "The salon",
+                "caption_right": "By appointment or walk-in",
+                "padding": "none"
+              }
+            },
+            "content": {
+              "type": "group",
+              "blocks": {
+                "eyebrow": {
+                  "type": "subheading",
+                  "settings": {
+                    "text": "Visit"
+                  }
+                },
+                "heading": {
+                  "type": "heading",
+                  "settings": {
+                    "text": "Visit the salon.",
+                    "style": "heading_2",
+                    "heading_level": "h2"
+                  }
+                },
+                "intro": {
+                  "type": "prose",
+                  "settings": {
+                    "text": "<p>Come in for a private viewing — sizing, bespoke consultations, and old-gold appraisals happen at the counter, unhurried.</p>"
+                  }
+                },
+                "address": {
+                  "type": "detail",
+                  "settings": {
+                    "label": "Address",
+                    "source": "address",
+                    "value": "",
+                    "link": ""
+                  }
+                },
+                "hours": {
+                  "type": "detail",
+                  "settings": {
+                    "label": "Hours",
+                    "source": "custom",
+                    "value": "Tue–Sat 11–7 · Sun 11–4 · Mon closed",
+                    "link": ""
+                  }
+                },
+                "buttons": {
+                  "type": "buttons",
+                  "settings": {
+                    "button_label": "Get Directions",
+                    "button_link": "",
+                    "button_label_2": "Contact Us",
+                    "button_link_2": "",
+                    "button_style": "filled",
+                    "button_style_2": "link",
+                    "button_link_source": "address",
+                    "button_link_source_2": "email"
+                  }
+                }
+              },
+              "block_order": [
+                "eyebrow",
+                "heading",
+                "intro",
+                "address",
+                "hours",
+                "buttons"
+              ],
+              "settings": {
+                "direction": "vertical",
+                "reverse": false,
+                "align_vertical": "start",
+                "items_width": "natural",
+                "gap": "small",
+                "vertical_gap": "small"
+              }
+            }
+          },
+          "block_order": [
+            "media",
+            "content"
+          ],
           "settings": {
-            "label": "Hours",
-            "source": "custom",
-            "value": "Tue–Sat 11–7 · Sun 11–4 · Mon closed",
-            "link": ""
-          }
-        },
-        "buttons": {
-          "type": "buttons",
-          "settings": {
-            "button_label": "Get Directions",
-            "button_link": "",
-            "button_label_2": "Contact Us",
-            "button_link_2": "",
-            "button_style": "filled",
-            "button_style_2": "link",
-            "button_link_source": "address",
-            "button_link_source_2": "email"
+            "direction": "horizontal",
+            "reverse": false,
+            "distribute": "start",
+            "align": "center",
+            "wrap": true,
+            "items_width": "equal",
+            "min_item_width": 22,
+            "stack_below": "never",
+            "gap": "maximum"
           }
         }
       },
       "block_order": [
-        "address",
-        "hours",
-        "buttons"
+        "border",
+        "layout"
       ],
       "settings": {
         "color_scheme": "scheme_1",
-        "subheading": "Visit",
-        "heading": "Visit the salon.",
-        "text": "<p>Come in for a private viewing — sizing, bespoke consultations, and old-gold appraisals happen at the counter, unhurried.</p>",
-        "layout": "image_first",
-        "show_rule": true,
+        "content_width": "narrow",
+        "full_height": false,
         "anchor": "visit",
-        "image": "shopify://shop_images/salon.webp",
-        "image_ratio": "4 / 5",
-        "arch": true,
-        "caption_left": "The salon",
-        "caption_right": "By appointment or walk-in",
+        "direction": "vertical",
+        "reverse": false,
+        "align_vertical": "stretch",
+        "items_width": "natural",
+        "content_alignment": "left",
+        "block_gap": "none",
         "padding_top": "md",
         "padding_bottom": "max"
       }

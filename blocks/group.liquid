@@ -39,95 +39,6 @@
   else, which is why this is done here rather than at the source.
 {%- endcomment -%}
 
-{%- liquid
-  assign direction = 'row'
-  if block.settings.direction == 'vertical'
-    assign direction = 'column'
-  endif
-
-  comment
-    **`distribute` is a row's setting only, and that is a fact about height.**
-    It sets `justify-content`, the *main* axis — vertical in a column — and the
-    group is only ever as tall as its contents, so there is no free space there
-    to distribute and every value behaves identically. It is hidden in a column
-    and pinned to the start rather than left to a stored value that does
-    nothing.
-
-    Strictly it can act on a column that has been *stretched* taller than its
-    contents, which needs the group nested in a row aligning `stretch`. That is
-    rare, invisible when it is not happening, and not worth a control that does
-    nothing the rest of the time.
-  endcomment
-  assign justify = 'flex-start'
-  unless block.settings.direction == 'vertical'
-    case block.settings.distribute
-      when 'center'
-        assign justify = 'center'
-      when 'end'
-        assign justify = 'flex-end'
-      when 'between'
-        assign justify = 'space-between'
-    endcase
-  endunless
-
-  comment
-    Two align settings, one per direction, because a select cannot hide an
-    individual option and `baseline` is not one a column can honour — in a
-    column the cross axis is horizontal, and baseline alignment there falls back
-    to start. Offering it was offering a choice that silently did nothing.
-  endcomment
-  assign align_choice = block.settings.align
-  if block.settings.direction == 'vertical'
-    assign align_choice = block.settings.align_vertical
-  endif
-
-  case align_choice
-    when 'center'
-      assign align = 'center'
-    when 'end'
-      assign align = 'flex-end'
-    when 'stretch'
-      assign align = 'stretch'
-    when 'start'
-      assign align = 'flex-start'
-    else
-      assign align = 'baseline'
-  endcase
-
-  assign wrap = 'wrap'
-  unless block.settings.wrap
-    assign wrap = 'nowrap'
-  endunless
-
-  comment
-    **The gap is emitted as `--group-gap`, deliberately not as `--block-gap`.**
-
-    `block-spacing` writes `--block-gap`, and the section wrapper above writes
-    the same property to state its own vertical rhythm. Custom properties
-    inherit, so a group writing `--block-gap` *shadows the section's* for
-    everything inside it — which is how a stacked group ended up spacing its
-    children by its own horizontal setting instead of the section's rhythm, and
-    sat visibly out of step with the gap above it.
-
-    Under its own name the section's value survives inheritance, and the
-    stylesheet can spend each on the axis it belongs to: this on `column-gap`,
-    the section's on `row-gap`. So the setting is horizontal only, and a group
-    that stacks — by choice or because the container query fired — falls back
-    into the section's rhythm with nothing to configure.
-
-    The step guard is `block-spacing`'s own: an unrecognised value prints
-    nothing rather than `var(--step-)`, which would be invalid and take the
-    whole declaration with it. `none` prints `0`.
-  endcomment
-  assign gap_steps = 'minimal,tiny,small,medium,large,xlarge' | split: ','
-  assign gap_css = ''
-  if block.settings.gap == 'none'
-    assign gap_css = '--group-gap: 0;'
-  elsif gap_steps contains block.settings.gap
-    assign gap_css = '--group-gap: var(--step-' | append: block.settings.gap | append: ');'
-  endif
--%}
-
 {%- comment -%}
   **Two elements, and that is not a wrapper for its own sake.** The group has
   to answer a question about its own width — "am I narrow enough to stack?" —
@@ -143,12 +54,14 @@
 {%- endcomment -%}
 <div
   class="layout-group"
+  data-direction="{{ block.settings.direction }}"
   data-stack="{{ block.settings.stack_below }}"
+  data-items="{{ block.settings.items_width }}"
   {{ block.shopify_attributes }}
 >
   <div
     class="layout-group__inner"
-    style="--group-direction: {{ direction }}; --group-justify: {{ justify }}; --group-align: {{ align }}; --group-wrap: {{ wrap }};{{ gap_css }}"
+    style="{% render 'layout-group-style', layout_settings: block.settings %}"
   >
     {% content_for 'blocks' %}
   </div>
@@ -170,6 +83,13 @@
         { "value": "vertical", "label": "t:blocks.group.direction.vertical" }
       ],
       "default": "horizontal"
+    },
+    {
+      "type": "checkbox",
+      "id": "reverse",
+      "label": "t:blocks.group.reverse.label",
+      "info": "t:blocks.group.reverse.info",
+      "default": false
     },
     {
       "type": "select",
@@ -224,6 +144,30 @@
     },
     {
       "type": "select",
+      "id": "items_width",
+      "label": "t:blocks.group.items_width.label",
+      "info": "t:blocks.group.items_width.info",
+      "options": [
+        { "value": "natural", "label": "t:blocks.group.items_width.natural" },
+        { "value": "equal", "label": "t:blocks.group.items_width.equal" }
+      ],
+      "default": "natural",
+      "visible_if": "{{ block.settings.direction == 'horizontal' }}"
+    },
+    {
+      "type": "range",
+      "id": "min_item_width",
+      "label": "t:blocks.group.min_item_width.label",
+      "info": "t:blocks.group.min_item_width.info",
+      "min": 0,
+      "max": 40,
+      "step": 1,
+      "unit": "rem",
+      "default": 0,
+      "visible_if": "{{ block.settings.direction == 'horizontal' and block.settings.items_width == 'equal' }}"
+    },
+    {
+      "type": "select",
       "id": "stack_below",
       "label": "t:blocks.group.stack_below.label",
       "info": "t:blocks.group.stack_below.info",
@@ -253,9 +197,29 @@
         { "value": "small", "label": "t:blocks.all.step.small" },
         { "value": "medium", "label": "t:blocks.all.step.medium" },
         { "value": "large", "label": "t:blocks.all.step.large" },
-        { "value": "xlarge", "label": "t:blocks.all.step.xlarge" }
+        { "value": "xlarge", "label": "t:blocks.all.step.xlarge" },
+        { "value": "maximum", "label": "t:blocks.all.step.maximum" }
       ],
       "default": "medium"
+    },
+    {
+      "type": "select",
+      "id": "vertical_gap",
+      "label": "t:blocks.group.vertical_gap.label",
+      "info": "t:blocks.group.vertical_gap.info",
+      "visible_if": "{{ block.settings.direction == 'vertical' }}",
+      "options": [
+        { "value": "inherit", "label": "t:blocks.group.vertical_gap.inherit" },
+        { "value": "none", "label": "t:blocks.all.step.none" },
+        { "value": "minimal", "label": "t:blocks.all.step.minimal" },
+        { "value": "tiny", "label": "t:blocks.all.step.tiny" },
+        { "value": "small", "label": "t:blocks.all.step.small" },
+        { "value": "medium", "label": "t:blocks.all.step.medium" },
+        { "value": "large", "label": "t:blocks.all.step.large" },
+        { "value": "xlarge", "label": "t:blocks.all.step.xlarge" },
+        { "value": "maximum", "label": "t:blocks.all.step.maximum" }
+      ],
+      "default": "inherit"
     }
   ],
   "presets": [
@@ -263,11 +227,15 @@
       "name": "t:blocks.group.name",
       "settings": {
         "direction": "horizontal",
+        "reverse": false,
         "distribute": "between",
         "align": "baseline",
         "wrap": true,
+        "items_width": "natural",
+        "min_item_width": 0,
         "stack_below": "mobile",
-        "gap": "medium"
+        "gap": "medium",
+        "vertical_gap": "inherit"
       }
     }
   ]

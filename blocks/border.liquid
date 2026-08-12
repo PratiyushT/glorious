@@ -1,0 +1,166 @@
+{%- comment -%}
+  A horizontal divider that belongs to no section.
+
+  The block owns only the line and the space around it. Content remains in
+  neighbouring blocks, so a merchant can place a Border above a detail row,
+  between groups, or at the beginning of a section without inheriting a
+  section-specific class.
+
+  Before and after spacing use the same named block scale as every other
+  composable primitive. Padding rather than margin is deliberate: Group owns
+  its children's margins to prevent double spacing, while a divider's breathing
+  room is part of the divider and must survive inside a Group.
+{%- endcomment -%}
+
+{%- liquid
+  assign spacing_steps = 'minimal,tiny,small,medium,large,xlarge' | split: ','
+  assign before_css = '0'
+  if spacing_steps contains block.settings.space_before
+    assign before_css = 'var(--step-' | append: block.settings.space_before | append: ')'
+  endif
+  assign after_css = '0'
+  if spacing_steps contains block.settings.space_after
+    assign after_css = 'var(--step-' | append: block.settings.space_after | append: ')'
+  endif
+
+  assign line_width = '100%'
+  case block.settings.width
+    when 'quarter'
+      assign line_width = '25%'
+    when 'half'
+      assign line_width = '50%'
+    when 'three_quarters'
+      assign line_width = '75%'
+  endcase
+
+  assign line_size = 'var(--border-width)'
+  if block.settings.weight == 'thin'
+    assign line_size = '2px'
+  elsif block.settings.weight == 'bold'
+    assign line_size = '3px'
+  endif
+-%}
+
+<div
+  class="border-block border-block--{{ block.settings.alignment }}{% if block.settings.full_container_width %} border-block--full-container{% endif %}"
+  style="--border-space-before: {{ before_css }}; --border-space-after: {{ after_css }}; --border-line-width: {{ line_width }}; --border-line-size: {{ line_size }}; --border-line-style: {{ block.settings.style }};{% if block.settings.color != blank %} --border-line-color: {{ block.settings.color }};{% endif %}"
+  role="separator"
+  {{ block.shopify_attributes }}
+>
+  <span class="border-block__line" aria-hidden="true"></span>
+</div>
+
+{% schema %}
+{
+  "name": "t:blocks.border.name",
+  "tag": null,
+  "settings": [
+    {
+      "type": "select",
+      "id": "style",
+      "label": "t:blocks.border.style.label",
+      "options": [
+        { "value": "solid", "label": "t:blocks.border.style.solid" },
+        { "value": "dashed", "label": "t:blocks.border.style.dashed" },
+        { "value": "dotted", "label": "t:blocks.border.style.dotted" }
+      ],
+      "default": "solid"
+    },
+    {
+      "type": "select",
+      "id": "weight",
+      "label": "t:blocks.border.weight.label",
+      "options": [
+        { "value": "hairline", "label": "t:blocks.border.weight.hairline" },
+        { "value": "thin", "label": "t:blocks.border.weight.thin" },
+        { "value": "bold", "label": "t:blocks.border.weight.bold" }
+      ],
+      "default": "hairline"
+    },
+    {
+      "type": "color",
+      "id": "color",
+      "label": "t:blocks.border.color.label",
+      "info": "t:blocks.border.color.info"
+    },
+    {
+      "type": "select",
+      "id": "width",
+      "label": "t:blocks.border.width.label",
+      "options": [
+        { "value": "full", "label": "t:blocks.border.width.full" },
+        { "value": "three_quarters", "label": "t:blocks.border.width.three_quarters" },
+        { "value": "half", "label": "t:blocks.border.width.half" },
+        { "value": "quarter", "label": "t:blocks.border.width.quarter" }
+      ],
+      "default": "full"
+    },
+    {
+      "type": "checkbox",
+      "id": "full_container_width",
+      "label": "t:blocks.border.full_container_width.label",
+      "info": "t:blocks.border.full_container_width.info",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "alignment",
+      "label": "t:sections.all.content_alignment.label",
+      "options": [
+        { "value": "left", "label": "t:settings_schema.options.left" },
+        { "value": "center", "label": "t:settings_schema.options.center" },
+        { "value": "right", "label": "t:settings_schema.options.right" }
+      ],
+      "default": "center",
+      "visible_if": "{{ block.settings.width != 'full' }}"
+    },
+    {
+      "type": "header",
+      "content": "t:blocks.all.spacing_header"
+    },
+    {
+      "type": "select",
+      "id": "space_before",
+      "label": "t:blocks.border.space_before.label",
+      "options": [
+        { "value": "none", "label": "t:blocks.all.step.none" },
+        { "value": "minimal", "label": "t:blocks.all.step.minimal" },
+        { "value": "tiny", "label": "t:blocks.all.step.tiny" },
+        { "value": "small", "label": "t:blocks.all.step.small" },
+        { "value": "medium", "label": "t:blocks.all.step.medium" },
+        { "value": "large", "label": "t:blocks.all.step.large" },
+        { "value": "xlarge", "label": "t:blocks.all.step.xlarge" }
+      ],
+      "default": "none"
+    },
+    {
+      "type": "select",
+      "id": "space_after",
+      "label": "t:blocks.border.space_after.label",
+      "options": [
+        { "value": "none", "label": "t:blocks.all.step.none" },
+        { "value": "minimal", "label": "t:blocks.all.step.minimal" },
+        { "value": "tiny", "label": "t:blocks.all.step.tiny" },
+        { "value": "small", "label": "t:blocks.all.step.small" },
+        { "value": "medium", "label": "t:blocks.all.step.medium" },
+        { "value": "large", "label": "t:blocks.all.step.large" },
+        { "value": "xlarge", "label": "t:blocks.all.step.xlarge" }
+      ],
+      "default": "none"
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:blocks.border.name",
+      "settings": {
+        "style": "solid",
+        "weight": "hairline",
+        "width": "full",
+        "full_container_width": true,
+        "space_before": "none",
+        "space_after": "none"
+      }
+    }
+  ]
+}
+{% endschema %}

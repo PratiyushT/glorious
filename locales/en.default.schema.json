@@ -543,7 +543,8 @@
         "small": "Small",
         "medium": "Medium",
         "large": "Large",
-        "xlarge": "Extra large"
+        "xlarge": "Extra large",
+        "maximum": "Maximum"
       },
       "text_header": "Text",
       "text_preset": {
@@ -758,6 +759,81 @@
         "label": "Size"
       }
     },
+    "border": {
+      "name": "Border",
+      "style": {
+        "label": "Line style",
+        "solid": "Solid",
+        "dashed": "Dashed",
+        "dotted": "Dotted"
+      },
+      "weight": {
+        "label": "Line weight",
+        "hairline": "Hairline",
+        "thin": "Thin",
+        "bold": "Bold"
+      },
+      "color": {
+        "label": "Line color",
+        "info": "Leave empty to inherit the current color scheme's border color."
+      },
+      "width": {
+        "label": "Line width",
+        "full": "Full width",
+        "three_quarters": "Three quarters",
+        "half": "Half",
+        "quarter": "Quarter"
+      },
+      "full_container_width": {
+        "label": "Take full container width",
+        "info": "Gives the Border its own full row inside a horizontal Group."
+      },
+      "space_before": {
+        "label": "Space before"
+      },
+      "space_after": {
+        "label": "Space after"
+      }
+    },
+    "media": {
+      "name": "Media",
+      "video": {
+        "label": "Video",
+        "info": "Shown instead of the image when selected."
+      },
+      "image": {
+        "info": "Shown when no video is selected."
+      },
+      "autoplay": {
+        "label": "Autoplay video",
+        "info": "Autoplay videos are muted. Turn this off to show video controls."
+      },
+      "loop": {
+        "label": "Loop video"
+      },
+      "fit": {
+        "label": "Media fit"
+      },
+      "arch": {
+        "label": "Arch the top"
+      },
+      "frame": {
+        "label": "Show offset frame"
+      },
+      "reveal": {
+        "label": "Reveal on scroll"
+      },
+      "reveal_delay": {
+        "label": "Reveal delay",
+        "info": "Wait before the media enters after it reaches the viewport."
+      },
+      "caption_left": {
+        "label": "Left caption"
+      },
+      "caption_right": {
+        "label": "Right caption"
+      }
+    },
     "group": {
       "name": "Layout group",
       "direction": {
@@ -765,6 +841,10 @@
         "info": "Side by side is what a group is for. Stacked is how blocks already behave without one.",
         "horizontal": "Side by side",
         "vertical": "Stacked"
+      },
+      "reverse": {
+        "label": "Reverse block order",
+        "info": "Starts with the last block while preserving the editor order."
       },
       "distribute": {
         "label": "Position along the row",
@@ -793,9 +873,24 @@
         "label": "Allow a second row",
         "info": "Off keeps every block on one row however narrow it gets, so they squeeze instead of wrapping."
       },
+      "items_width": {
+        "label": "Block widths",
+        "info": "Natural keeps each block at the width its content needs. Equal divides the available row evenly.",
+        "natural": "Natural",
+        "equal": "Equal"
+      },
+      "min_item_width": {
+        "label": "Minimum block width",
+        "info": "Equal blocks wrap only when they would become narrower than this. Zero lets them remain on one row at any width."
+      },
       "gap": {
         "label": "Space between blocks",
         "info": "Applies while the blocks sit side by side. Stacked, the space comes from the section so the rhythm matches everything above and below."
+      },
+      "vertical_gap": {
+        "label": "Vertical spacing",
+        "info": "Override the section's block spacing for this stacked Group.",
+        "inherit": "Use section spacing"
       },
       "stack_below": {
         "label": "Stack when narrow",
@@ -1250,6 +1345,22 @@
     },
     "promises": {
       "name": "Promises"
+    },
+    "group": {
+      "name": "Group",
+      "layout_header": "Layout",
+      "content_width": {
+        "label": "Content width",
+        "page": "Page width",
+        "narrow": "Narrow",
+        "reading": "Reading width",
+        "full": "Full page width",
+        "edge": "Edge to edge"
+      },
+      "block_gap": {
+        "label": "Vertical block spacing",
+        "info": "Used between stacked blocks and whenever a row stacks on a narrow container."
+      }
     },
     "craft": {
       "name": "The craft",
