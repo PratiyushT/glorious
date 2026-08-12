@@ -11,9 +11,10 @@
   ladder. Reordering or removing a promise in the editor still renumbers the
   set, which is the behaviour that had to survive the move.
 
-  So `.promise-card__num` is deliberately empty — the counter supplies its
-  text. Do not "fix" it by putting a number back in the markup: a block has no
-  way to know which number it is.
+  So `.promise-card__num` is deliberately empty — the Promises grid supplies
+  its text. Outside that grid the public block remains a complete card without
+  an invented ordinal. Do not "fix" it by putting a number back in the markup:
+  a block has no way to know which number it is.
 
   `"tag": null` because the card *is* the grid item. A generated wrapper would
   take `.promises__grid > *`'s column span, and the card inside it would size

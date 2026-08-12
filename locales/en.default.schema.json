@@ -519,6 +519,15 @@
   },
   "blocks": {
     "all": {
+      "content_source_header": "Content source",
+      "product_source": {
+        "label": "Product",
+        "info": "Inherits the nearest product when one is available. Choose a product to use this block anywhere else."
+      },
+      "collection_source": {
+        "label": "Collection",
+        "info": "Inherits the nearest collection when one is available. Choose a collection to use this block anywhere else."
+      },
       "spacing_header": "Spacing",
       "padding": {
         "label": "Padding"
@@ -590,20 +599,20 @@
       "name": "Collection card"
     },
     "collection_card_image": {
-      "name": "Image"
+      "name": "Collection — Image"
     },
     "collection_card_title": {
-      "name": "Collection title",
+      "name": "Collection — Title",
       "fallback": {
         "label": "Fallback name",
         "info": "Shown only where a slot has no collection to name."
       }
     },
     "collection_card_count": {
-      "name": "Product count"
+      "name": "Collection — Card count"
     },
     "collection_card_reveal": {
-      "name": "Hover reveal",
+      "name": "Collection — Hover reveal",
       "label": {
         "label": "Label"
       }
@@ -654,7 +663,7 @@
       }
     },
     "product_card_image": {
-      "name": "Media",
+      "name": "Product — Media",
       "image_fit": {
         "label": "Image fit",
         "info": "Fit shows the whole product against the card. Fill crops it to the frame."
@@ -665,23 +674,23 @@
       }
     },
     "product_card_title": {
-      "name": "Product title"
+      "name": "Product — Title"
     },
     "product_card_price": {
-      "name": "Price"
+      "name": "Product — Price"
     },
     "product_card_option_name": {
-      "name": "Chosen option"
+      "name": "Product — Chosen option"
     },
     "product_card_text": {
-      "name": "Text",
+      "name": "Product — Text",
       "text": {
         "label": "Text",
         "info": "Type a line, or connect it to a product metafield with the dynamic-source button. A single character works too — a \"·\" between two blocks inside a group."
       }
     },
     "product_card_option_values": {
-      "name": "Option values",
+      "name": "Product — Option values",
       "option_name": {
         "label": "Option name",
         "info": "Which of the product's options to list — \"Karat\", \"Size\", \"Length\". Matched on the name, so it finds the right one whether it is first or third on a given product, and prints nothing on a product that has no such option. The words around the list are a Text block beside this one."
@@ -691,7 +700,7 @@
       }
     },
     "product_card_variants": {
-      "name": "Option control",
+      "name": "Product — Option control",
       "control": {
         "label": "Shown as",
         "info": "Swatches paint from the option value's own colour in admin and clip to the card's width. Written values wrap instead.",
@@ -705,7 +714,7 @@
       }
     },
     "product_card_add": {
-      "name": "Add to Bag",
+      "name": "Product — Add to Bag",
       "label": {
         "label": "Label"
       }
@@ -797,8 +806,8 @@
       }
     },
     "product_count": {
-      "name": "Product count",
-      "info": "Counts the collection chosen for this section. Shows nothing when no collection is set."
+      "name": "Collection — Count label",
+      "info": "Inherits the nearest collection, then the collection chosen for this section. Choose a collection to use the block anywhere else."
     },
     "quote": {
       "name": "Quote",

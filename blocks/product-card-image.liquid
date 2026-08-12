@@ -41,7 +41,7 @@
 {%- endcomment -%}
 
 {%- liquid
-  assign product = closest.product
+  assign product = block.settings.product | default: closest.product
 
   assign img_loading = 'lazy'
   assign img_sizes = '(max-width: 700px) 70vw, 460px'
@@ -217,6 +217,16 @@
   "tag": null,
   "settings": [
     {
+      "type": "header",
+      "content": "t:blocks.all.content_source_header"
+    },
+    {
+      "type": "product",
+      "id": "product",
+      "label": "t:blocks.all.product_source.label",
+      "info": "t:blocks.all.product_source.info"
+    },
+    {
       "type": "select",
       "id": "image_ratio",
       "label": "t:sections.all.image_ratio.label",
@@ -249,7 +259,10 @@
   ],
   "presets": [
     {
-      "name": "t:blocks.product_card_image.name"
+      "name": "t:blocks.product_card_image.name",
+      "settings": {
+        "product": "{{ closest.product }}"
+      }
     }
   ]
 }

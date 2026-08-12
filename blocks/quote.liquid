@@ -13,6 +13,10 @@
   quote the script returns early and sets `is-active` on nothing, so the lone
   quote would have been left at opacity 0.
 
+  **The hidden state belongs to `.quotes`, not to this public block.** A Quote
+  placed in an unrestricted Group is visible normally; only quotes inside the
+  testimonial carousel overlap and cross-fade.
+
   `"tag": null` because the figure has to *be* the grid item. `.quotes` stacks
   every quote in `grid-area: 1 / 1` and cross-fades between them; a generated
   wrapper would take that cell and the quotes inside would stack vertically

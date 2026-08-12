@@ -62,6 +62,45 @@ separate instances of it in this one change:
 The remedy for both is the one already recorded: push `blocks/*` first, then
 templates, or restart `shopify theme dev`, which does both in one pass.
 
+### Homepage block catalogue
+
+**`group` is deliberately unrestricted.** Its schema accepts `@theme` and
+`@app`, including another Group. Do not narrow that list to protect a
+contextual block: composition is the product here, and the contextual block is
+responsible for being safe wherever a merchant can add it.
+
+The homepage blocks fall into four contracts:
+
+- **Global composition blocks** are public and require no resource context:
+  `title`, `heading`, `subheading`, `paragraph`, `prose`, `buttons`, `detail`,
+  `group`, `promise`, and `quote`. Promise numbering is added only by
+  `.promises__grid`; Quote hiding and overlap are added only by `.quotes`.
+  Standalone instances remain visible and complete.
+- **Resource-aware public blocks** inherit the nearest resource but also expose
+  a source picker, so the same block works in an unrestricted Group elsewhere.
+  Product: `product-card-image`, `product-card-title`, `product-card-option-name`,
+  `product-card-option-values`, `product-card-variants`, `product-card-text`,
+  `product-card-price`, and `product-card-add`. Collection:
+  `collection-card-image`, `collection-card-title`, `collection-card-count`,
+  and `product-count`. Presets connect the picker to `{{ closest.product }}` or
+  `{{ closest.collection }}`; Liquid keeps a closest context fallback so
+  existing stored blocks migrate without new settings. `collection-card-reveal`
+  carries no collection data, but belongs to the same editor family and is
+  visible as a standalone band rather than relying on a card hover to appear.
+- **Private composition shells** begin with an underscore and are rendered
+  statically by their sections: `_product-card` and `_collection-card`. They
+  establish the card grid, link, quick-view, and interaction context, but are
+  implementation structure rather than merchant-addable blocks.
+- **Section-local blocks** exist only where their layout gives them meaning:
+  Hero's `text`, `hero_detail`, `metal`, and `hero_cta`, plus Lookbook's
+  `scene`. They are not candidates for a public block with the same type name;
+  see the global-name collision above.
+
+The editor makes the resource-aware family explicit by prefixing its public
+names with `Product —` or `Collection —`. That label is guidance, not a
+restriction: a merchant can still add any of them to Group and either inherit
+the nearest source or choose one directly.
+
 ### Section conversions
 
 `about` is the first body section on theme blocks. It lists `prose`, `buttons`,

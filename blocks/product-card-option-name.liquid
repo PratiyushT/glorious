@@ -28,7 +28,7 @@
 {%- endcomment -%}
 
 {%- liquid
-  assign product = closest.product
+  assign product = block.settings.product | default: closest.product
 
   capture card_option_raw
     render 'card-option', product: product
@@ -52,10 +52,24 @@
 {
   "name": "t:blocks.product_card_option_name.name",
   "tag": null,
-  "settings": [],
+  "settings": [
+    {
+      "type": "header",
+      "content": "t:blocks.all.content_source_header"
+    },
+    {
+      "type": "product",
+      "id": "product",
+      "label": "t:blocks.all.product_source.label",
+      "info": "t:blocks.all.product_source.info"
+    }
+  ],
   "presets": [
     {
-      "name": "t:blocks.product_card_option_name.name"
+      "name": "t:blocks.product_card_option_name.name",
+      "settings": {
+        "product": "{{ closest.product }}"
+      }
     }
   ]
 }

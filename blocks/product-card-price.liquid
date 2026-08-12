@@ -20,7 +20,7 @@
 {%- endcomment -%}
 
 {%- liquid
-  assign product = closest.product
+  assign product = block.settings.product | default: closest.product
 
   assign chosen = blank
   if product != blank
@@ -53,10 +53,24 @@
 {
   "name": "t:blocks.product_card_price.name",
   "tag": null,
-  "settings": [],
+  "settings": [
+    {
+      "type": "header",
+      "content": "t:blocks.all.content_source_header"
+    },
+    {
+      "type": "product",
+      "id": "product",
+      "label": "t:blocks.all.product_source.label",
+      "info": "t:blocks.all.product_source.info"
+    }
+  ],
   "presets": [
     {
-      "name": "t:blocks.product_card_price.name"
+      "name": "t:blocks.product_card_price.name",
+      "settings": {
+        "product": "{{ closest.product }}"
+      }
     }
   ]
 }

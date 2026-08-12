@@ -31,7 +31,7 @@
 {%- endcomment -%}
 
 {%- liquid
-  assign product = closest.product
+  assign product = block.settings.product | default: closest.product
   assign wanted = block.settings.option_name | downcase | strip
 
   assign values_option = blank
@@ -78,6 +78,16 @@
   "name": "t:blocks.product_card_option_values.name",
   "tag": null,
   "settings": [
+    {
+      "type": "header",
+      "content": "t:blocks.all.content_source_header"
+    },
+    {
+      "type": "product",
+      "id": "product",
+      "label": "t:blocks.all.product_source.label",
+      "info": "t:blocks.all.product_source.info"
+    },
     {
       "type": "text",
       "id": "option_name",
@@ -220,7 +230,10 @@
   ],
   "presets": [
     {
-      "name": "t:blocks.product_card_option_values.name"
+      "name": "t:blocks.product_card_option_values.name",
+      "settings": {
+        "product": "{{ closest.product }}"
+      }
     }
   ]
 }

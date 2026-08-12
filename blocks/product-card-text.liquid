@@ -16,8 +16,9 @@
 
   **The text is a dynamic source, not a metafield picker.** Shopify has no
   metafield setting type for a block schema; what it has is the dynamic-source
-  connector on a `text` setting, and inside this static card it binds against
-  `closest.product` — the same context every other block here reads.
+  connector on a `text` setting. The Product source inherits
+  `closest.product` inside a card and can be chosen directly elsewhere, so the
+  same metafield connection survives either composition.
 
   **Preset and element are two settings, because they are two questions.** The
   preset is a look from Theme settings → Typography; the element is what the
@@ -58,6 +59,16 @@
   "name": "t:blocks.product_card_text.name",
   "tag": null,
   "settings": [
+    {
+      "type": "header",
+      "content": "t:blocks.all.content_source_header"
+    },
+    {
+      "type": "product",
+      "id": "product",
+      "label": "t:blocks.all.product_source.label",
+      "info": "t:blocks.all.product_source.info"
+    },
     {
       "type": "text",
       "id": "text",
@@ -196,6 +207,7 @@
     {
       "name": "t:blocks.product_card_text.name",
       "settings": {
+        "product": "{{ closest.product }}",
         "text": "Text"
       }
     }

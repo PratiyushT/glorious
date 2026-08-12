@@ -2158,9 +2158,10 @@ a {
   text-decoration: none;
 }
 
-/* The card-wide link. Qualified to the anchor so the onboarding placeholder,
-   whose title is a span, does not get an invisible layer over it. */
-a.card__title::after {
+/* The card-wide link. Scoped to a card so a public Product — Title block in an
+   unrestricted Group stays an ordinary link, and qualified to the anchor so
+   the onboarding placeholder, whose title is a span, gets no invisible layer. */
+.card a.card__title::after {
   content: "";
   position: absolute;
   inset: 0;
@@ -2197,11 +2198,11 @@ a.card__title::after {
   /* left | center | right are all valid justify-content values, so the row
      follows the card's own alignment. An engine that rejects them drops the
      declaration and the row stays start-packed, which is the design's case. */
-  justify-content: var(--card-align);
+  justify-content: var(--card-align, flex-start);
   flex-wrap: nowrap;
   overflow: hidden;
-  margin: 0 calc(var(--card-swatch-bleed) * -1);
-  min-height: var(--card-swatch-hit);
+  margin: 0 calc(var(--card-swatch-bleed, 0rem) * -1);
+  min-height: var(--card-swatch-hit, 2.75rem);
 }
 
 /* Narrower than it is tall, on request — the dots read as a set rather than as
@@ -2211,8 +2212,8 @@ a.card__title::after {
   position: relative;
   z-index: 2;
   flex: 0 0 auto;
-  width: var(--card-swatch-pitch);
-  height: var(--card-swatch-hit);
+  width: var(--card-swatch-pitch, 2.25rem);
+  height: var(--card-swatch-hit, 2.75rem);
   display: grid;
   place-items: center;
   padding: 0;
@@ -2223,8 +2224,8 @@ a.card__title::after {
 }
 
 .card__swatch .swatch-dot {
-  width: var(--card-swatch-size);
-  height: var(--card-swatch-size);
+  width: var(--card-swatch-size, 1.25rem);
+  height: var(--card-swatch-size, 1.25rem);
 }
 
 .card__swatch[hidden],
@@ -2295,7 +2296,7 @@ a.card__title::after {
 .card__swatch-more {
   flex: 0 0 auto;
   margin-inline-start: 0.125rem;
-  font-size: var(--card-note-size);
+  font-size: var(--card-note-size, 0.719rem);
   letter-spacing: 0.1em;
   line-height: var(--product-line);
   color: color-mix(in srgb, var(--c-text) 50%, transparent);
@@ -2315,7 +2316,7 @@ a.card__title::after {
 .card__pills {
   display: flex;
   flex-wrap: wrap;
-  justify-content: var(--card-align);
+  justify-content: var(--card-align, flex-start);
   gap: 0.375rem;
   margin-top: var(--card-meta-gap);
 }
@@ -2326,13 +2327,13 @@ a.card__title::after {
   flex: 0 1 auto;
   display: inline-flex;
   align-items: center;
-  min-height: var(--card-swatch-hit);
+  min-height: var(--card-swatch-hit, 2.75rem);
   padding: 0.5rem 0.688rem;
-  border: var(--border-width) solid var(--card-swatch-edge);
+  border: var(--border-width) solid var(--card-swatch-edge, color-mix(in srgb, currentColor 22%, transparent));
   background: none;
   color: var(--c-text);
   font-family: var(--font-body);
-  font-size: var(--card-note-size);
+  font-size: var(--card-note-size, 0.719rem);
   letter-spacing: 0.1em;
   text-transform: uppercase;
   text-decoration: none;
@@ -2355,7 +2356,7 @@ a.card__title::after {
 /* The design's karat note — the axes the card states but does not control. */
 .card__note {
   margin-top: var(--card-note-gap);
-  font-size: var(--card-note-size);
+  font-size: var(--card-note-size, 0.719rem);
   letter-spacing: 0.13em;
   text-transform: uppercase;
   line-height: var(--product-line);
@@ -3003,9 +3004,17 @@ a.card__title::after {
     color-mix(in srgb, var(--c-noir) 0%, transparent) 35%,
     color-mix(in srgb, var(--c-noir) 62%, transparent) 100%
   );
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.55s ease, transform 0.65s var(--ease);
+}
+
+/* The reveal is a public theme block, so outside a collection card it is a
+   visible content band rather than an invisible element. Only its intended
+   card composition starts hidden and waits for the card interaction. */
+.cat-card > .cat-card__reveal {
   opacity: 0;
   transform: translateY(10px);
-  transition: opacity 0.55s ease, transform 0.65s var(--ease);
 }
 
 .cat-card:hover .cat-card__reveal,
@@ -3801,11 +3810,11 @@ a.card__title::after {
    card would be waiting most of a second to arrive, which is a delay
    nobody reads as choreography. The design ships five. */
 
-.promise-card {
+.promises__grid .promise-card {
   counter-increment: promise;
 }
 
-.promise-card__num::before {
+.promises__grid .promise-card__num::before {
   content: counter(promise, decimal-leading-zero);
 }
 
@@ -4013,21 +4022,30 @@ a.card__title::after {
 }
 
 .quote {
-  grid-area: 1 / 1;
   display: flex;
   flex-direction: column;
   justify-content: center;
   gap: var(--space-sm);
-  opacity: 0;
-  transform: translateY(8px);
+  opacity: 1;
+  transform: translateY(0);
   transition: opacity calc(var(--duration) * 2) var(--ease),
               transform calc(var(--duration) * 2) var(--ease);
+}
+
+/* A Quote is public and can sit in any unrestricted Group. Carousel-only
+   stacking and hiding therefore belong to the carousel parent, not the block
+   itself. */
+.quotes .quote {
+  grid-area: 1 / 1;
+  opacity: 0;
+  transform: translateY(8px);
   pointer-events: none;
 }
 
-.quote.is-active {
+.quotes .quote.is-active {
   opacity: 1;
   transform: translateY(0);
+  pointer-events: auto;
 }
 
 /* The opening quote, before anything has been chosen.
@@ -4048,6 +4066,7 @@ a.card__title::after {
 .quotes:not(:has(.quote.is-active)) .quote:first-child {
   opacity: 1;
   transform: translateY(0);
+  pointer-events: auto;
 }
 
 .quote__text {

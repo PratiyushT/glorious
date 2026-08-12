@@ -7,9 +7,11 @@
   empty slot never leaves a stray zero beside a title.
 {%- endcomment -%}
 
-{%- if closest.collection != blank -%}
+{%- assign collection = block.settings.collection | default: closest.collection -%}
+
+{%- if collection != blank -%}
   <span class="cat-card__count" {{ block.shopify_attributes }}>
-    {{- closest.collection.all_products_count -}}
+    {{- collection.all_products_count -}}
   </span>
 {%- endif -%}
 
@@ -17,10 +19,24 @@
 {
   "name": "t:blocks.collection_card_count.name",
   "tag": null,
-  "settings": [],
+  "settings": [
+    {
+      "type": "header",
+      "content": "t:blocks.all.content_source_header"
+    },
+    {
+      "type": "collection",
+      "id": "collection",
+      "label": "t:blocks.all.collection_source.label",
+      "info": "t:blocks.all.collection_source.info"
+    }
+  ],
   "presets": [
     {
-      "name": "t:blocks.collection_card_count.name"
+      "name": "t:blocks.collection_card_count.name",
+      "settings": {
+        "collection": "{{ closest.collection }}"
+      }
     }
   ]
 }
