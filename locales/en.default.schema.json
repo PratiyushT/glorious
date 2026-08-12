@@ -558,6 +558,10 @@
         "medium": "Medium",
         "large": "Large",
         "xlarge": "Extra large"
+      },
+      "inherit": {
+        "label": "Use theme setting",
+        "info": "Leave this to follow Theme settings → Product cards, so every grid in the shop stays consistent."
       }
     },
     "title": {
@@ -590,6 +594,63 @@
       "label": {
         "label": "Label"
       }
+    },
+    "product_card": {
+      "name": "Product card"
+    },
+    "product_card_image": {
+      "name": "Photograph"
+    },
+    "product_card_title": {
+      "name": "Product title"
+    },
+    "product_card_price": {
+      "name": "Price"
+    },
+    "product_card_tax_note": {
+      "name": "Price note",
+      "text": {
+        "label": "Text",
+        "info": "Shown beside the price on this card only. It does not follow Theme settings → Pricing, so clear it — or remove the block — if the shop stops pricing tax-inclusively."
+      }
+    },
+    "product_card_variants": {
+      "name": "Option control",
+      "control": {
+        "label": "Shown as",
+        "info": "Swatches paint from the option value's own colour in admin and clip to the card's width. Written values wrap instead.",
+        "swatches": "Swatches",
+        "pills": "Written values"
+      },
+      "show_name": {
+        "label": "Name the chosen value",
+        "info": "Adds a caption above the control — \"White Gold\" — that follows what the customer picks."
+      }
+    },
+    "product_card_available": {
+      "name": "Available in",
+      "info": "Lists every karat the piece comes in. Shown only where it has a purity or karat option."
+    },
+    "product_card_meta": {
+      "name": "Caption line",
+      "text": {
+        "label": "Text",
+        "info": "Connect this to a product metafield with the dynamic-source button, or type one line to say the same thing on every card."
+      },
+      "suffix": {
+        "label": "Suffix",
+        "info": "Appended unless the value already ends with it — e.g. \"ct\" for a carat weight stored as a bare number."
+      }
+    },
+    "product_card_add": {
+      "name": "Add to Bag",
+      "label": {
+        "label": "Label",
+        "info": "Leave empty to follow Theme settings → Product cards."
+      }
+    },
+    "product_card_quick_view": {
+      "name": "Quick view"
     },
     "prose": {
       "name": "Paragraph (rich text)"

@@ -100,6 +100,75 @@
             "stack_below": "mobile",
             "gap": "medium"
           }
+        },
+        "product-card": {
+          "type": "_product-card",
+          "static": true,
+          "blocks": {
+            "photograph": {
+              "type": "product-card-image",
+              "settings": {
+                "image_ratio": "inherit",
+                "image_fit": "inherit"
+              }
+            },
+            "name": {
+              "type": "product-card-title",
+              "settings": {}
+            },
+            "metal": {
+              "type": "product-card-variants",
+              "settings": {
+                "control": "swatches",
+                "show_name": true
+              }
+            },
+            "karats": {
+              "type": "product-card-available",
+              "settings": {}
+            },
+            "price-row": {
+              "type": "group",
+              "blocks": {
+                "price": {
+                  "type": "product-card-price",
+                  "settings": {}
+                },
+                "tax": {
+                  "type": "product-card-tax-note",
+                  "settings": {
+                    "text": "inc. all taxes"
+                  }
+                }
+              },
+              "block_order": ["price", "tax"],
+              "settings": {
+                "direction": "horizontal",
+                "distribute": "start",
+                "align": "baseline",
+                "wrap": true,
+                "stack_below": "never",
+                "gap": "none"
+              }
+            },
+            "add": {
+              "type": "product-card-add",
+              "settings": {}
+            },
+            "quick-view": {
+              "type": "product-card-quick-view",
+              "settings": {}
+            }
+          },
+          "block_order": [
+            "photograph",
+            "name",
+            "metal",
+            "karats",
+            "price-row",
+            "add",
+            "quick-view"
+          ]
         }
       },
       "block_order": ["heading", "row"],

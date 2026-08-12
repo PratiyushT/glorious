@@ -1,0 +1,63 @@
+{%- comment -%}
+  Product card — the price.
+
+  **The figure is the price of the variant the button posts**, which is what
+  `snippets/card-option.liquid` resolves: the dearest available variant in the
+  metal the card currently stands on. It used to read "From <cheapest>"
+  whenever the metal's variants differed, which became a trap the moment the
+  button started posting the dearest — one figure on the card, another in the
+  bag. The karats the piece comes in are said in words by the "Available in"
+  block instead, which is what that note is for.
+
+  **The tax note is a sibling, not part of this element**, and that is the
+  reason it can be a block at all. `theme.js` replaces this element's whole
+  `innerHTML` on a metal pick, so anything rendered inside it is wiped by the
+  first swatch click — which is exactly why `snippets/product-card.liquid` has
+  to capture the note *inside* the price markup. Out here it is never touched,
+  which is the arrangement the quick view already uses: "the note is a sibling
+  of the figure, so a pick rewrites the figure's own text node and the note is
+  never touched."
+{%- endcomment -%}
+
+{%- liquid
+  assign product = closest.product
+
+  assign chosen = blank
+  if product != blank
+    capture card_option_raw
+      render 'card-option', product: product
+    endcapture
+    assign card_option = card_option_raw | strip | split: '||'
+    assign chosen_id = card_option | last | plus: 0
+    for variant in product.variants
+      if variant.id == chosen_id
+        assign chosen = variant
+        break
+      endif
+    endfor
+  endif
+-%}
+
+<span class="card__price" data-card-price {{ block.shopify_attributes }}>
+  {%- if product == blank -%}
+    {{- 1999 | money -}}
+  {%- else -%}
+    {%- if chosen.compare_at_price > chosen.price -%}
+      <s>{{ chosen.compare_at_price | money }}</s>
+    {%- endif -%}
+    {{- chosen.price | money -}}
+  {%- endif -%}
+</span>
+
+{% schema %}
+{
+  "name": "t:blocks.product_card_price.name",
+  "tag": null,
+  "settings": [],
+  "presets": [
+    {
+      "name": "t:blocks.product_card_price.name"
+    }
+  ]
+}
+{% endschema %}

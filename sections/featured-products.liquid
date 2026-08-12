@@ -121,33 +121,50 @@
     {%- endcapture -%}
 
     {%- comment -%}
-      The cards themselves are identical in both layouts. In the grid each one
-      carries its own `.reveal` and the design's 60ms stagger; in the carousel
-      the component reveals as a whole and the cards' entrance is `gj-card`,
-      staggered by their place in the visible page — the hero's own idiom, and
-      the one that has to be replayed on every change in fade mode.
-    {%- endcomment -%}
-    {%- capture cards -%}
-      {%- if collection.products.size > 0 -%}
-        {%- for product in collection.products limit: limit -%}
-          <div
-            {% if is_carousel %}class="row-carousel__cell" data-row-cell{% else %}class="reveal" style="--reveal-delay: {{ forloop.index0 | times: 60 }}ms;"{% endif %}
-          >
-            {% render 'product-card', product: product %}
-          </div>
-        {%- endfor -%}
-      {%- else -%}
-        {%- for i in (1..limit) -%}
-          <div
-            {% if is_carousel %}class="row-carousel__cell" data-row-cell{% else %}class="reveal" style="--reveal-delay: {{ forloop.index0 | times: 60 }}ms;"{% endif %}
-          >
-            {% render 'product-card' %}
-          </div>
-        {%- endfor -%}
-      {%- endif -%}
-    {%- endcapture -%}
+      **The card is one block, not one per product**, exactly as the collection
+      list's is. `_product-card` is a *static* block rendered once per piece
+      inside this loop, handed the piece it is for through `closest.product`.
+      Eight pieces show eight cards from one set of settings, and the theme
+      editor lists the card once with the repeat mark.
 
+      That is also what lets this section keep the carousel. Merchant-added
+      blocks render as one flat sibling flow, so a header block and a moving
+      track could never share a section — but the section is doing the looping
+      here, so it can still wrap each card in the cell the carousel needs.
+
+      The cards are identical in both layouts. In the grid each one carries its
+      own `.reveal` and the design's 60ms stagger; in the carousel the component
+      reveals as a whole and the cards' entrance is `gj-card`, staggered by
+      their place in the visible page.
+
+      **The loop is written twice, deliberately**, as the collection list's is:
+      the carousel takes its cells as markup and so has to capture them, and the
+      grid — the default — must not depend on `{% content_for %}` surviving a
+      capture. Keep the two the same.
+    {%- endcomment -%}
+    {%- comment -%}
+      **One render site per layout, and that is a rule rather than a tidy-up.**
+      `theme check`'s `UniqueStaticBlockId` fails a section that names the same
+      static block id twice in the same branch, so the real cards and the
+      onboarding placeholders cannot be two loops as they were when this
+      section rendered a snippet.
+
+      They do not need to be. `card_count` is already `min(products, limit)`
+      where there are products and `limit` where there are none, so one loop
+      over it produces exactly what the two did: a card per piece, or a row of
+      placeholders. Indexing past the end hands the block a nil product, which
+      is the placeholder every card block already renders.
+    {%- endcomment -%}
     {%- if is_carousel -%}
+      {%- capture cards -%}
+        {%- for i in (1..card_count) -%}
+          {%- assign card_product = collection.products[forloop.index0] -%}
+          <div class="row-carousel__cell" data-row-cell>
+            {% content_for 'block', type: '_product-card', id: 'product-card', closest.product: card_product %}
+          </div>
+        {%- endfor -%}
+      {%- endcapture -%}
+
       {%- render 'row-carousel',
         cells: cards,
         count: card_count,
@@ -159,7 +176,12 @@
       -%}
     {%- else -%}
       <div class="grid-auto grid-auto--products" style="{{ grid_vars | strip }}">
-        {{ cards }}
+        {%- for i in (1..card_count) -%}
+          {%- assign card_product = collection.products[forloop.index0] -%}
+          <div class="reveal" style="--reveal-delay: {{ forloop.index0 | times: 60 }}ms;">
+            {% content_for 'block', type: '_product-card', id: 'product-card', closest.product: card_product %}
+          </div>
+        {%- endfor -%}
       </div>
     {%- endif -%}
   </div>
@@ -354,6 +376,34 @@
                 "button_label_2": ""
               }
             }
+          ]
+        },
+        {
+          "type": "_product-card",
+          "static": true,
+          "id": "product-card",
+          "blocks": [
+            { "type": "product-card-image" },
+            { "type": "product-card-title" },
+            { "type": "product-card-variants" },
+            { "type": "product-card-available" },
+            {
+              "type": "group",
+              "settings": {
+                "direction": "horizontal",
+                "distribute": "start",
+                "align": "baseline",
+                "wrap": true,
+                "stack_below": "never",
+                "gap": "none"
+              },
+              "blocks": [
+                { "type": "product-card-price" },
+                { "type": "product-card-tax-note" }
+              ]
+            },
+            { "type": "product-card-add" },
+            { "type": "product-card-quick-view" }
           ]
         }
       ]

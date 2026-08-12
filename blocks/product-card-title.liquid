@@ -1,0 +1,101 @@
+{%- comment -%}
+  Product card — the piece's name, and the only link on the card.
+
+  **The card-wide link lives here.** The design's card is a single `<a>` with
+  buttons nested inside it, which is neither valid HTML nor navigable; the
+  theme reaches the same behaviour with `a.card__title::after` covering the
+  whole card, so the photograph and the caption open the piece while the
+  controls sit above that layer on their own `z-index`. Remove this block and
+  the card stops being clickable as a whole — every control still works, and
+  the piece is then reachable only through the quick view or a swatch.
+
+  **Two balanced lines, split where the halves come closest in length.** That
+  is the design's own rule, and it is what holds a row of cards level: both
+  lines keep their row whether or not there is a word in them. Ties fall to the
+  later split, as the design's do.
+{%- endcomment -%}
+
+{%- liquid
+  assign product = closest.product
+
+  assign title_text = product.title
+  if product == blank
+    assign title_text = 'onboarding.product_title' | t
+  endif
+
+  assign title_line_1 = title_text
+  assign title_line_2 = ''
+  assign words = title_text | strip | split: ' '
+  if words.size > 1
+    assign best_at = 1
+    assign best_gap = 99999
+    assign last_k = words.size | minus: 1
+
+    for k in (1..last_k)
+      assign left_len = 0
+      assign right_len = 0
+      for word in words
+        if forloop.index0 < k
+          assign left_len = left_len | plus: word.size | plus: 1
+        else
+          assign right_len = right_len | plus: word.size | plus: 1
+        endif
+      endfor
+      assign gap = left_len | minus: right_len
+      if gap < 0
+        assign gap = 0 | minus: gap
+      endif
+      if gap <= best_gap
+        assign best_gap = gap
+        assign best_at = k
+      endif
+    endfor
+
+    assign title_line_1 = ''
+    assign title_line_2 = ''
+    for word in words
+      if forloop.index0 < best_at
+        assign title_line_1 = title_line_1 | append: ' ' | append: word
+      else
+        assign title_line_2 = title_line_2 | append: ' ' | append: word
+      endif
+    endfor
+    assign title_line_1 = title_line_1 | strip
+    assign title_line_2 = title_line_2 | strip
+  endif
+-%}
+
+{%- comment -%}
+  The placeholder's title is a `span`, deliberately: `a.card__title::after` is
+  qualified to the anchor so an onboarding card does not get an invisible layer
+  over it with nowhere to go. Same rule as `snippets/product-card.liquid`.
+{%- endcomment -%}
+{%- if product == blank -%}
+  <span class="card__title" {{ block.shopify_attributes }}>
+    <span class="card__title-line">{{ title_line_1 }}</span>
+    <span class="card__title-line">{{ title_line_2 }}</span>
+  </span>
+{%- else -%}
+  <a
+    class="card__title"
+    href="{{ product.url }}"
+    aria-label="{{ product.title | escape }}"
+    {{ block.shopify_attributes }}
+  >
+    <span class="card__title-line">{{ title_line_1 }}</span>
+    <span class="card__title-line">{{ title_line_2 }}</span>
+  </a>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "t:blocks.product_card_title.name",
+  "tag": null,
+  "settings": [],
+  "presets": [
+    {
+      "name": "t:blocks.product_card_title.name"
+    }
+  ]
+}
+{% endschema %}

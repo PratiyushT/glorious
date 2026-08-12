@@ -1,0 +1,130 @@
+{%- comment -%}
+  The one place a composed product card decides *which* option it is standing
+  on and *which variant* it therefore prices, adds and links to.
+
+  **Three blocks need the same answer and cannot share a variable.** A theme
+  block is an isolated render scope — `blocks/product-card-price`,
+  `-add` and `-variants` each start from nothing but `closest.product`. In
+  `snippets/product-card.liquid` all three live in one Liquid scope, so the
+  swatch loop works the variant out once and the price and the button read it.
+  Split into blocks, that loop would have to be written three times, and three
+  copies of "the dearest available variant in the chosen metal" is three
+  chances for the figure on the card to stop agreeing with what the button
+  posts. That is the exact trap CLAUDE.md records under "Product card": one
+  price shown, another in the bag.
+
+  A snippet cannot hand a value back, so it **prints** and the caller captures
+  and splits — the same shape as `metal-order.liquid` and `space-step.liquid`.
+
+      {%- capture card_option_raw -%}
+        {% render 'card-option', product: product, source: block.settings.option %}
+      {%- endcapture -%}
+      {%- assign card_option = card_option_raw | strip | split: '||' -%}
+      {%- assign opt_index = card_option[0] | plus: 0 -%}
+
+  Prints `index||value||variant_id`:
+
+    index      the option's position in `product.options_with_values`, or -1
+               where the card stands on no option at all.
+    value      the value that position currently carries, or empty.
+    variant_id the variant the card prices and adds.
+
+  **The variant is the dearest available one carrying that value**, which is
+  the rule already recorded for the card: the card offers no karat or size
+  control, so adding has to choose, and it chooses the dearest — available
+  first, because a sold-out variant cannot be bought. Where the whole value is
+  sold out the dearest overall stands in and the button says Sold out.
+
+  **Every card block calls it with the default, and that is a constraint rather
+  than a habit.** A block cannot read its parent's settings and cannot read a
+  sibling's, so there is no place a merchant-set "which option" could live that
+  the price, the button and the control would all see. Nominating the option on
+  `product-card-variants` alone would let the row mark one value selected while
+  the price beside it quoted a variant chosen on another — with nothing on
+  screen to say why. So the option is **derived**, identically, everywhere, and
+  `product-card-variants` offers no option picker. That is the same rule the
+  quick view's axes are written to: "Which control an axis gets is derived, not
+  tabled."
+
+  The parameter stays for a caller outside the card that genuinely knows which
+  option it means and renders the whole card itself.
+
+  Accepts:
+    product - product object.
+    source  - 'auto' (default) or a 1-based option position as a string.
+{%- endcomment -%}
+
+{%- liquid
+  assign opt_index = -1
+  assign opt = blank
+
+  comment
+    A nominated position is taken as given. `auto` is the design's own rule for
+    the card — the metal, matched on the option's name — because "Colour is
+    chosen on the card itself: the name, the price and what goes in the bag all
+    follow it." Matching on the name rather than on a table of metals is the
+    same rule `metal-swatch.liquid` is written to.
+  endcomment
+  if source != blank and source != 'auto'
+    assign want = source | plus: 0 | minus: 1
+    for option in product.options_with_values
+      if forloop.index0 == want
+        assign opt = option
+        assign opt_index = want
+        break
+      endif
+    endfor
+  else
+    for option in product.options_with_values
+      assign option_down = option.name | downcase
+      if option_down contains 'metal'
+        assign opt = option
+        assign opt_index = forloop.index0
+        break
+      endif
+    endfor
+  endif
+
+  if opt.values.size < 1
+    assign opt = blank
+    assign opt_index = -1
+  endif
+
+  assign current = product.selected_or_first_available_variant
+  assign value = ''
+  if opt_index >= 0
+    assign value = current.options[opt_index]
+  endif
+
+  comment
+    Dearest available, then dearest overall. Where the card stands on no option
+    the whole variant list is the group, which is the answer for a piece with
+    nothing to choose.
+  endcomment
+  assign chosen = blank
+  assign dearest_any = blank
+  for variant in product.variants
+    assign in_group = true
+    if opt_index >= 0
+      unless variant.options[opt_index] == value
+        assign in_group = false
+      endunless
+    endif
+
+    if in_group
+      if dearest_any == blank or variant.price > dearest_any.price
+        assign dearest_any = variant
+      endif
+      if variant.available
+        if chosen == blank or variant.price > chosen.price
+          assign chosen = variant
+        endif
+      endif
+    endif
+  endfor
+
+  if chosen == blank
+    assign chosen = dearest_any
+  endif
+-%}
+{{- opt_index }}||{{ value }}||{{ chosen.id -}}

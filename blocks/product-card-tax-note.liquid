@@ -1,0 +1,61 @@
+{%- comment -%}
+  Product card — the aside beside the price.
+
+  **This block carries its own words and does not obey
+  `settings.show_tax_note`**, which reverses a rule CLAUDE.md states plainly:
+  "One switch, and it is `settings.show_tax_note`. Every surface obeys it and
+  none can override it, so 'is it on?' has exactly one answer." That rule was
+  written after three section-level toggles made the shop-wide one hard to
+  trust, and it still governs `snippets/tax-note.liquid` and every surface that
+  renders it — the collection grid, the search rows, the quick view, the bag
+  drawer and the cart page.
+
+  The reversal is deliberate and its scope is exactly one section's card, on
+  request. What changes with it: a merchant who turns the shop-wide note off
+  now has to remove this block as well, or Most Loved will still carry a note
+  the rest of the shop has dropped. That is the cost, and it is the cost the
+  rule was written to prevent — so it is worth being able to see it here rather
+  than discovering it on the storefront.
+
+  **Do not reintroduce a section-level toggle**, which is a different thing and
+  still banned: a checkbox that ANDs with the shop-wide switch gives "is it
+  on?" two answers. A block is present or it is not.
+
+  It renders nothing when its text is cleared, so emptying the setting is how
+  the note is turned off without removing the block.
+{%- endcomment -%}
+
+{%- comment -%}
+  The leading space is real, and it is the same one `tax-note.liquid` emits: on
+  screen the gap comes from the layout group's own `column-gap`, but a block
+  dropped straight into the caption sits inline with the price, and without it
+  the markup reads `$19.99inc. all taxes` to a screen reader and to anything
+  that copies the text.
+{%- endcomment -%}
+{%- if block.settings.text != blank -%}
+  <small class="price-tax" {{ block.shopify_attributes }}> {{ block.settings.text }}</small>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "t:blocks.product_card_tax_note.name",
+  "tag": null,
+  "settings": [
+    {
+      "type": "text",
+      "id": "text",
+      "label": "t:blocks.product_card_tax_note.text.label",
+      "info": "t:blocks.product_card_tax_note.text.info",
+      "default": "inc. all taxes"
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:blocks.product_card_tax_note.name",
+      "settings": {
+        "text": "inc. all taxes"
+      }
+    }
+  ]
+}
+{% endschema %}

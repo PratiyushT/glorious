@@ -1,0 +1,295 @@
+{%- comment -%}
+  Product card — the option control the design puts on the card itself.
+
+  Picking a value moves the caption, the price and what goes in the bag — and
+  deliberately *not* the photograph, which is the design's own rule: "Colour is
+  chosen on the card itself: the name, the price and what goes in the bag all
+  follow it. The photograph does not — we shoot one metal."
+
+  Every control is a **real link** to the piece at that value, so a pick works
+  without scripting — it simply navigates — and each value's caption and price
+  markup is rendered onto the link by Liquid, so a pick costs no request and no
+  arithmetic in the browser. (The design uses a `<button>`; a button without
+  script does nothing, and the theme's rule is that nothing is load-bearing
+  without scripting.)
+
+  **There is no option picker here, and that is a structural finding rather
+  than a simplification.** A theme block cannot read its parent's settings and
+  cannot read a sibling's, so a merchant-set "which option" would be visible to
+  this block alone — the price and the button resolve their variant
+  independently, and would go on answering for the option they derive. The row
+  would mark one value selected while the price beside it quoted another, with
+  nothing on screen to say why. So all three derive the option identically
+  through `snippets/card-option.liquid`. Same rule the quick view's axes are
+  written to: "Which control an axis gets is derived, not tabled."
+
+  What *is* a setting here is presentation, which nothing else depends on: how
+  the values are drawn, and whether the chosen one is named above them.
+
+  **Swatches paint from the option value's own Color metafield and from nowhere
+  else.** `snippets/metal-swatch.liquid` is the single place the theme decides
+  what a metal looks like, shared with the quick view and the product page. A
+  value with no swatch configured paints nothing and keeps its hairline and its
+  accessible name, so it stays pickable and announced — that is the connection
+  missing in admin, not a theme fault. Never hardcode a table of metals here.
+
+  The order is `snippets/metal-order.liquid`'s: the design's own metal table,
+  not the order the option happens to carry, with anything it does not
+  recognise appended rather than dropped. That is what makes it safe on an
+  option that is not a metal at all — every value is unmatched, so the merchant's
+  own order survives intact.
+{%- endcomment -%}
+
+{%- liquid
+  assign product = closest.product
+
+  capture card_option_raw
+    render 'card-option', product: product
+  endcapture
+  assign card_option = card_option_raw | strip | split: '||'
+  assign opt_index = card_option[0] | plus: 0
+  assign selected_value = ''
+  if card_option.size > 2
+    assign selected_value = card_option[1]
+  endif
+
+  assign card_option_drop = blank
+  if opt_index >= 0
+    for option in product.options_with_values
+      if forloop.index0 == opt_index
+        assign card_option_drop = option
+        break
+      endif
+    endfor
+  endif
+
+  capture ordered_values_raw
+    render 'metal-order', option: card_option_drop
+  endcapture
+  assign ordered_values = ordered_values_raw | strip | split: '||'
+
+  assign is_pills = false
+  if block.settings.control == 'pills'
+    assign is_pills = true
+  endif
+
+  comment
+    **The caption is the design's own — "White Gold · 1.0 ct" — and the carat
+    half belongs here rather than to a `product-card-meta` block.** It reads
+    like a second fact and is not one: the design states the caption as
+    `metalName(sel) + ' · ' + carat`, one line describing the piece *as
+    configured*, and only this block knows what was picked. Split onto a line of
+    its own the carat stops following the caption it qualifies, and Most Loved
+    would say less than the same card says on a collection page.
+
+    `product-card-meta` is for what the piece is regardless of the pick, which
+    is why it is additive rather than where this lives.
+
+    No karat prefix. It read "22K White Gold · 1.0 ct" once, which said the
+    karat twice — the "Available in" block already lists every karat the piece
+    comes in, and the card cannot choose one anyway.
+  endcomment
+  assign carat_label = product.metafields.custom.total_carat_weight.value | append: ''
+  if carat_label != blank
+    unless carat_label contains 'ct'
+      assign carat_label = carat_label | append: ' ct'
+    endunless
+  endif
+
+  comment
+    **Joined with `append`, not inside a `capture`.** Written as a capture, the
+    separator sits between two whitespace-stripping tag delimiters, and those
+    dashes eat the spaces either side of it: the caption came out
+    "Yellow Gold·1.5 ct", while the identical string built for the swatch links
+    read correctly because those tags happened not to strip. Either half can be
+    missing and "· 1.5 ct" with nothing before it is not a caption, so the join
+    is conditional. Same idiom `snippets/product-card.liquid` uses.
+  endcomment
+  assign selected_caption = selected_value
+  if carat_label != blank
+    if selected_caption != blank
+      assign selected_caption = selected_caption | append: ' · ' | append: carat_label
+    else
+      assign selected_caption = carat_label
+    endif
+  endif
+-%}
+
+{%- comment -%}
+  The chosen value's name. Without a control it is a fixed string and says so
+  with `data-card-meta-fixed`, which is what stops `theme.js` rewriting an
+  element nothing can change — the same marker the metafield-fed caption
+  carries in `snippets/product-card.liquid`.
+{%- endcomment -%}
+{%- if block.settings.show_name -%}
+  <span
+    class="card__meta"
+    data-card-meta
+    {% if card_option_drop == blank %}data-card-meta-fixed{% endif %}
+    {% if card_option_drop == blank %}{{ block.shopify_attributes }}{% endif %}
+  >{{ selected_caption }}</span>
+{%- endif -%}
+
+{%- if card_option_drop != blank -%}
+  <div
+    class="{% if is_pills %}card__pills{% else %}card__swatches{% endif %}"
+    {% unless is_pills %}data-card-swatches{% endunless %}
+    {{ block.shopify_attributes }}
+  >
+    {%- for value in ordered_values -%}
+      {%- liquid
+        comment
+          The card offers no karat or size control, so a pick has to choose a
+          variant on the customer's behalf: the dearest *available* one carrying
+          this value. A sold-out variant cannot be bought, so preferring it
+          would post something that fails at checkout; where the whole value is
+          sold out the dearest overall stands in and the button says Sold out.
+
+          This is `card-option.liquid`'s rule applied per value rather than to
+          the selected one, which is why it is written out here — the snippet
+          answers for the card's current state, and the row has to answer for
+          every state the card could be put into.
+        endcomment
+        assign chosen = blank
+        assign dearest_any = blank
+        for variant in product.variants
+          if variant.options[opt_index] == value
+            if dearest_any == blank or variant.price > dearest_any.price
+              assign dearest_any = variant
+            endif
+            if variant.available
+              if chosen == blank or variant.price > chosen.price
+                assign chosen = variant
+              endif
+            endif
+          endif
+        endfor
+        if chosen == blank
+          assign chosen = dearest_any
+        endif
+
+        assign is_selected = false
+        if value == selected_value
+          assign is_selected = true
+        endif
+
+        comment
+          `ordered_values` came back through `split`, so `value` is a plain
+          string and no longer the product_option_value drop. The drop is what
+          carries a merchant's native Shopify swatch, so it is looked up again
+          here — without this the swatch snippet's first and most specific
+          branch is silently unreachable.
+        endcomment
+        assign value_drop = blank
+        for candidate in card_option_drop.values
+          if candidate == value
+            assign value_drop = candidate
+            break
+          endif
+        endfor
+
+        comment
+          The caption this value would give, rendered onto the link so a pick
+          needs no string in JavaScript. Same composition as the selected one,
+          and built the same way for the same reason.
+        endcomment
+        assign value_caption = value
+        if carat_label != blank
+          assign value_caption = value_caption | append: ' · ' | append: carat_label
+        endif
+      -%}
+
+      {%- comment -%}
+        The price markup a pick writes into `[data-card-price]`. It carries the
+        figure and nothing else: `theme.js` replaces that element's whole
+        `innerHTML`, and the tax note is a sibling block out of its reach — see
+        `blocks/product-card-price.liquid`.
+      {%- endcomment -%}
+      {%- capture value_price_html -%}
+        {%- if chosen.compare_at_price > chosen.price -%}
+          <s>{{ chosen.compare_at_price | money }}</s>
+        {%- endif -%}
+        {{- chosen.price | money -}}
+      {%- endcapture -%}
+
+      <a
+        class="{% if is_pills %}card__pill{% else %}card__swatch{% endif %}{% if is_selected %} is-selected{% endif %}"
+        href="{{ product.url }}?variant={{ chosen.id }}"
+        data-card-metal
+        data-metal-value="{{ value | escape }}"
+        data-metal-id="{{ chosen.id }}"
+        data-metal-available="{{ chosen.available }}"
+        data-metal-meta="{{ value_caption | escape }}"
+        data-metal-price="{{ value_price_html | escape }}"
+        {% unless is_pills %}data-tip="{{ value | escape }}"{% endunless %}
+        aria-label="{{ value | escape }}"
+        aria-current="{% if is_selected %}true{% else %}false{% endif %}"
+        {% if is_pills == false and forloop.index0 >= 3 %}hidden{% endif %}
+      >
+        {%- comment -%}
+          `selected` is deliberately not passed to the dot. The wrapping link
+          carries the state and `.card__swatch.is-selected .swatch-dot` draws
+          the ring from it, so there is one source of truth. Marking the dot as
+          well left two rings after a pick: the script moves the class on the
+          link and never on the dot.
+        {%- endcomment -%}
+        {%- if is_pills -%}
+          {{- value -}}
+        {%- else -%}
+          {% render 'metal-swatch', option_value: value_drop, size: 80 %}
+        {%- endif -%}
+      </a>
+    {%- endfor -%}
+
+    {%- comment -%}
+      The design's "+N". Before a width is known it shows three —
+      `else if (!avail) n = Math.min(keys.length, 3)` — so that is what Liquid
+      renders, and the script re-fits once it can measure. Pills wrap instead of
+      clipping, so they need none of it.
+    {%- endcomment -%}
+    {%- unless is_pills -%}
+      {%- assign value_total = ordered_values.size -%}
+      <span
+        class="card__swatch-more"
+        data-card-swatch-more
+        {% if value_total <= 3 %}hidden{% endif %}
+      >{% if value_total > 3 %}+{{ value_total | minus: 3 }}{% endif %}</span>
+    {%- endunless -%}
+  </div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "t:blocks.product_card_variants.name",
+  "tag": null,
+  "settings": [
+    {
+      "type": "select",
+      "id": "control",
+      "label": "t:blocks.product_card_variants.control.label",
+      "info": "t:blocks.product_card_variants.control.info",
+      "options": [
+        { "value": "swatches", "label": "t:blocks.product_card_variants.control.swatches" },
+        { "value": "pills", "label": "t:blocks.product_card_variants.control.pills" }
+      ],
+      "default": "swatches"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_name",
+      "label": "t:blocks.product_card_variants.show_name.label",
+      "info": "t:blocks.product_card_variants.show_name.info",
+      "default": true
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:blocks.product_card_variants.name",
+      "settings": {
+        "control": "swatches",
+        "show_name": true
+      }
+    }
+  ]
+}
+{% endschema %}

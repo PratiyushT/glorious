@@ -1,0 +1,80 @@
+{%- comment -%}
+  Product card — one template, rendered once per product.
+
+  **This is a single block, not one per product**, exactly as
+  `_collection-card` is. The section holds the collection and renders this
+  static block inside its own loop, handing each pass the piece it is for:
+
+      {% content_for 'block', type: '_product-card', id: 'product-card',
+                     closest.product: product %}
+
+  So eight pieces show eight cards from one set of settings, and the theme
+  editor lists it once with the repeat mark. Anything that would have to differ
+  per card therefore has no place here; it comes from the product itself.
+
+  Its name is underscored because it is **private**: a merchant never adds it,
+  the section places it. Only its children are in an "Add block" list.
+
+  **The children are placed by CSS, not by their order in the tree**, again as
+  the collection card's are. `.card--composed` names one grid row `media`, so
+  the photograph and the quick-view disc claim it whatever order they are
+  dragged into and every other child flows underneath in the order the merchant
+  chose. That is what keeps the disc over the photograph while the two remain
+  siblings either of which can be removed on its own.
+
+  **`snippets/product-card.liquid` is untouched and stays the card everywhere
+  else.** The collection and search templates still render it, so the theme
+  carries one card built two ways for as long as those templates are what they
+  are. The class names and every `data-card-*` hook are identical between them
+  — that is the contract `theme.js` binds to, and it reads them all from the
+  `[data-card]` root rather than by walking the tree, which is what lets the
+  markup be rearranged like this at all.
+
+  The card root keeps three things that belong to no one child:
+
+    - `data-card-multi`, the no-JavaScript hover swap, gated on the photograph
+      count rather than the slide count for the reason recorded in CLAUDE.md.
+    - both button labels, so a metal pick can swap between them without a
+      translation string in JavaScript.
+
+  It states them itself rather than taking them from the image or the add
+  block, because either can be removed and the attributes would go with it.
+{%- endcomment -%}
+
+{%- liquid
+  assign product = closest.product
+  assign card_photos = product.media | where: 'media_type', 'image'
+  assign add_label = settings.card_add_label | default: 'Add to Bag'
+  assign sold_out_label = 'products.sold_out' | t
+-%}
+
+<div
+  class="card card--composed"
+  data-card
+  {% if card_photos.size > 1 %}data-card-multi{% endif %}
+  data-add-label="{{ add_label | escape }}"
+  data-sold-out-label="{{ sold_out_label | escape }}"
+  {{ block.shopify_attributes }}
+>
+  {% content_for 'blocks' %}
+</div>
+
+{% schema %}
+{
+  "name": "t:blocks.product_card.name",
+  "tag": null,
+  "blocks": [
+    { "type": "product-card-image" },
+    { "type": "product-card-title" },
+    { "type": "product-card-variants" },
+    { "type": "product-card-meta" },
+    { "type": "product-card-available" },
+    { "type": "product-card-price" },
+    { "type": "product-card-tax-note" },
+    { "type": "product-card-add" },
+    { "type": "product-card-quick-view" },
+    { "type": "group" }
+  ],
+  "settings": []
+}
+{% endschema %}

@@ -308,6 +308,113 @@ was *re-read as a theme-block section* because any did — and then reported the
 one type that had no file. The error naming an innocent block is that
 reclassification, not a quirk.
 
+### The product card as blocks
+
+**`featured-products` is the first section whose *card* became blocks**, and
+that is a different job from every conversion above, which moved a section's
+header. `blocks/_product-card.liquid` is a static block rendered once per piece
+inside the section's own loop, handed the piece through `closest.product` —
+`_collection-card`'s shape exactly, and for the same reasons: one set of
+settings for eight cards, and the section keeps its carousel because it is
+still the thing doing the looping.
+
+**`snippets/product-card.liquid` is untouched and still serves the collection
+and search templates.** The theme carries one card built two ways until those
+templates are rebuilt. That is affordable only because `theme.js` reads every
+hook off the `[data-card]` root — `card.querySelector('.card__add')`,
+`[data-card-price]`, `[data-card-meta]`, `[data-card-add-id]` — rather than by
+walking the tree. Nothing in it traverses `.card__body`, so the markup could be
+rearranged without touching a line of script. **Keep it that way**: a handler
+that reaches for a parent would tie the two cards' structures together again.
+
+- **There is no `.card__body`, and there cannot be.** Blocks render as one flat
+  sibling flow, so the element carrying the caption's padding would have to be
+  a block that swallowed its siblings. The padding moves onto the children
+  (`.card--composed > *`) and the photograph opts out, which is what makes it
+  full-bleed.
+
+- **One named grid row, `media`, is the whole layout.** It pins the photograph
+  to the top whatever order the blocks are dragged into, and lets the
+  quick-view disc claim the same row so it lies over the photograph while
+  staying a sibling either of which can be removed alone — `_collection-card`'s
+  hover band again. Everything else auto-places into implicit rows underneath,
+  in the merchant's order.
+
+  **Only the disc can be split out that way.** `.card__arrow` is `top: 50%`
+  against its containing block, so out in the card it would centre itself on
+  the whole card and land over the price. The arrows, the spin badge and the
+  sold-out badge stay inside the image block.
+
+- **A theme block cannot read its parent's settings or a sibling's, and that
+  fact designs this card.** The price, the button and the option control all
+  have to agree on one variant, and in `snippets/product-card.liquid` they do
+  because the swatch loop works it out once and the other two read the
+  variable. Split into blocks there is no such place — so a merchant-set "which
+  option" would be visible to the control alone, and the row would mark one
+  value selected while the price beside it quoted a variant chosen on another,
+  with nothing on screen to say why.
+
+  So the option is **derived, identically, in all three**, through
+  `snippets/card-option.liquid` — which prints `index||value||variant_id` and
+  is captured and split, the same shape as `metal-order.liquid`.
+  `product-card-variants` therefore offers **no option picker**, only how the
+  values are drawn and whether the chosen one is named. Same rule the quick
+  view's axes are written to: *which control an axis gets is derived, not
+  tabled.*
+
+- **The carat weight stays in the control's caption and is not a
+  `product-card-meta` block.** The design states the caption as
+  `metalName(sel) + ' · ' + carat` — one line describing the piece *as
+  configured* — and only that block knows what was picked. On its own row the
+  carat stops following the caption it qualifies. Caught by measurement, not by
+  reading: the composed card read "Yellow Gold" where the same piece on
+  `/collections/all` read "Yellow Gold · 9.878 ct". `product-card-meta` is for
+  what the piece is regardless of the pick, and is additive.
+
+- **The tax note is a sibling block, and that is what makes it possible at
+  all.** `theme.js` replaces `[data-card-price]`'s whole `innerHTML` on a metal
+  pick, which is why the snippet card has to capture the note *inside* the
+  price markup. Out here it is never touched — the arrangement the quick view
+  already uses. The price and the note share a row through a `group`.
+
+  **It carries its own words and does not obey `settings.show_tax_note`**,
+  which reverses this file's own rule that every surface obeys that one switch
+  and none may override it. The reversal is deliberate, on request, and its
+  scope is this one section's card. The cost is the one the rule was written to
+  prevent and should be stated rather than discovered: a merchant who turns the
+  shop-wide note off still has Most Loved saying "inc. all taxes" until the
+  block is removed or its text cleared. **A section-level toggle is still
+  banned** — a checkbox ANDed with the shop-wide switch gives "is it on?" two
+  answers. A block is present or it is not.
+
+- **`.price-tax` had to restate its size.** It is deliberately `0.75em` of
+  whatever price it follows, which works while it is inside the price element;
+  as a sibling its `em` resolved against the caption's size and it rendered
+  11.9px against the 11.26px the same note has on a collection page.
+  `.card--composed .price-tax` states the price's size as its base.
+
+- **`UniqueStaticBlockId` fails a section that names the same static block id
+  twice in one branch**, which the real-cards / placeholder-cards pair did.
+  They collapse into one loop over `card_count`, which is already
+  `min(products, limit)` where there are products and `limit` where there are
+  none; indexing past the end hands the block a nil product, which is the
+  placeholder every card block already renders. The carousel and the grid are
+  still written out separately, because the grid must not depend on
+  `{% content_for %}` surviving a `capture`.
+
+**Verified against `snippets/product-card.liquid` on `/collections/all`, which
+is the whole point of leaving it in place.** Every gap in the caption stack is
+identical — media→title **15.9**, title→caption **6**, caption→swatches **0**,
+swatches→note **3**, note→price **7**, price→button **13** — with the caption
+box **18px**, the tax note **11.256px**, and all seven cards level at **635**.
+A metal pick moves the caption, the price, the posted variant, the card's own
+link and the quick view's, and **leaves the tax note standing**. Two of four
+slides carry a real `src`, so the deferral contract holds. Zero duplicate ids
+on the page, and the add form carries `card_form_<id>` of its own rather than
+Shopify's derived one. At 375px: one column, price and note still on one row,
+44px button, no horizontal overflow. The carousel layout renders the same seven
+composed cards at `--row-per: 3`.
+
 ### Weight
 
 **`assets/` was 1.69 MB and is 409.8 KB.** What went was not compressed or
@@ -3044,6 +3151,25 @@ the quick-view disc, `--card-zoom`, the edge colour).
   rather than a price.
 
 ### Things that cost time once
+
+- **A tag delimiter inside a `{% liquid %}` block closes it — inside a
+  `comment` too.** The block's body is scanned for its own closing delimiter
+  before anything in it is parsed as tags, so a comment *quoting* Liquid ends
+  the tag at the first `%}` it contains. Everything after is emitted as markup
+  and the `comment` is never closed, which is what the error says:
+
+  ```
+  blocks/product-card-variants.liquid
+  Liquid syntax error (line 99): 'comment' tag was never closed
+  ```
+
+  Line 99 is where the comment opened, not where the damage was — the quoted
+  delimiter was three lines below it. This is the same shape as the two traps
+  already recorded about prose: R08 flagging the comments that explain R08, and
+  the `range` regex that could not cross the brace in `visible_if: "{{ … }}"`.
+  **Describe a tag in words inside a `{% liquid %}` comment; never quote one.**
+  A `{% comment %}` block out in the markup is not affected and can quote
+  freely — every other note in this theme that shows Liquid is one.
 
 - **The ring-builder app steals every internal link, in the capture phase.**
   `key-common-global.js` runs

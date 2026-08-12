@@ -1787,6 +1787,83 @@ a {
   padding: var(--card-pad) var(--card-pad) var(--card-pad-bottom);
 }
 
+/* ---- The composed card -----------------------------------------------
+   `blocks/_product-card.liquid` — the same card built from theme blocks, so a
+   merchant can drop a part, reorder the caption, or put the price and its tax
+   note on one row. Every class and every `data-card-*` hook is the one
+   `snippets/product-card.liquid` emits; only the arrangement differs, which is
+   what `theme.js` can afford because it reads them all from the `[data-card]`
+   root rather than by walking the tree.
+
+   **There is no `.card__body` here, and there cannot be.** Blocks render as
+   one flat sibling flow, so the caption's wrapper — the element carrying the
+   padding — would have to be a block that swallowed its siblings, which no
+   block can do. The padding moves onto the children instead and the photograph
+   opts out of it, which is what makes it full-bleed.
+
+   **One named row, `media`, is the whole layout trick.** It pins the
+   photograph to the top whatever order the blocks are dragged into, and lets
+   the quick-view disc claim the same row so it lies over the photograph while
+   remaining a sibling either of which can be removed on its own — the same
+   arrangement `_collection-card` uses for its hover band, and for the same
+   reason. Everything else auto-places into implicit rows underneath, in the
+   merchant's order.
+
+   Only the disc can be split out that way. The arrows are `top: 50%` against
+   their containing block, so out here they would centre themselves on the
+   whole card and land over the price; they stay inside the image block. */
+
+.card--composed {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas: "media";
+  align-content: start;
+  padding-block-end: var(--card-pad-bottom);
+}
+
+.card--composed > * {
+  padding-inline: var(--card-pad);
+}
+
+.card--composed > .card__media {
+  grid-area: media;
+  margin-block-end: var(--card-pad);
+}
+
+.card--composed > .card__quick {
+  grid-area: media;
+}
+
+/* The photograph bleeds to the card's edges, and the disc is a fixed 34px box
+   that would grow by the caption's padding on both sides. */
+.card--composed > .card__media,
+.card--composed > .card__quick {
+  padding-inline: 0;
+}
+
+/* `.price-tax` is deliberately sized as a fraction of the price it follows —
+   "a fraction of whatever price it follows rather than a fixed step on the
+   scale" — which works while it is *inside* the price element. Out here it is a
+   sibling by design, because that is what keeps a metal pick from wiping it
+   (`theme.js` replaces `[data-card-price]`'s whole innerHTML), so its `em`
+   would resolve against the caption's size instead and it rendered a step
+   larger than the same note on a collection page: an 11.9px note against
+   11.26px. It restates the price's size as its base and the `0.75em` does the
+   rest. */
+.card--composed .price-tax {
+  font-size: calc(var(--product-price-size) * 0.75);
+}
+
+/* A group zeroes its children's block margins — a gap and a margin add, so a
+   block carrying both would space itself twice. The price is the one child
+   whose top margin is load-bearing rather than decorative (`--card-price-top`,
+   the design's 7px above the figure), so the group takes it on instead. Any
+   other group in a card inherits the same 7px, which is small enough to read
+   as the caption's own rhythm rather than as a rule about price rows. */
+.card--composed > .layout-group {
+  margin-block-start: var(--card-price-top);
+}
+
 .card__vendor {
   display: block;
   margin-bottom: var(--card-meta-gap);
@@ -1945,6 +2022,57 @@ a.card__title::after {
   letter-spacing: 0.1em;
   line-height: var(--product-line);
   color: color-mix(in srgb, var(--c-text) 50%, transparent);
+}
+
+/* The other control `blocks/product-card-variants.liquid` offers: the values
+   written out rather than painted. It is the quick view's own pill, brought
+   down to a card's type scale and given the 44px minimum height every control
+   in this theme carries. Unlike the swatch row it **wraps rather than clips**,
+   so there is no "+N" and nothing to measure — a value that has to be read
+   cannot be hidden behind a count.
+
+   `z-index` for the same reason every clickable thing in a card needs one: the
+   title's ::after covers the card, and a static element paints below a
+   positioned one whatever the document order. */
+
+.card__pills {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: var(--card-align);
+  gap: 0.375rem;
+  margin-top: var(--card-meta-gap);
+}
+
+.card__pill {
+  position: relative;
+  z-index: 2;
+  flex: 0 1 auto;
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--card-swatch-hit);
+  padding: 0.5rem 0.688rem;
+  border: var(--border-width) solid var(--card-swatch-edge);
+  background: none;
+  color: var(--c-text);
+  font-family: var(--font-body);
+  font-size: var(--card-note-size);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-decoration: none;
+  /* One line per pill, as the design keeps them: a long value is clipped
+     rather than allowed to make one pill taller than the rest of the row. */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: background var(--duration) var(--ease-ui),
+              border-color var(--duration) var(--ease-ui),
+              color var(--duration) var(--ease-ui);
+}
+
+.card__pill.is-selected {
+  border-color: var(--c-heading);
+  background: var(--c-heading);
+  color: var(--c-bg);
 }
 
 /* The design's karat note — the axes the card states but does not control. */

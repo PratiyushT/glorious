@@ -1,0 +1,255 @@
+{%- comment -%}
+  Product card — the photograph.
+
+  Every photograph the piece has is a slide, however many that is, and only the
+  first two are fetched up front. That is `snippets/card-slide.liquid`'s rule
+  and the reason a slide is `opacity: 0` rather than `display: none`; see
+  "Product card" in CLAUDE.md before changing anything here.
+
+  The arrows, the spin badge and the sold-out/sale badge stay **inside** this
+  block rather than becoming blocks of their own, and that is structural rather
+  than a judgement about how much a merchant should be able to remove:
+  `.card__arrow` is `position: absolute; top: 50%`, so its containing block has
+  to be `.card__media`. Lifted out to be a sibling it would centre itself on
+  the whole card — the caption included — and sit over the price.
+
+  The frame is this block's setting for the same reason the collection card's
+  is on its image block: the frame belongs to the photograph. Both settings
+  default to `inherit`, which is the theme's own sentinel for "leave it to the
+  theme setting" — so a card built from blocks starts identical to every other
+  grid in the shop and the control is a departure rather than a migration.
+
+  The order is the product's own. The metal control deliberately does not touch
+  it: "Colour is chosen on the card itself: the name, the price and what goes
+  in the bag all follow it. The photograph does not — we shoot one metal."
+{%- endcomment -%}
+
+{%- liquid
+  assign product = closest.product
+
+  assign img_loading = 'lazy'
+  assign img_sizes = '(max-width: 700px) 70vw, 460px'
+
+  comment
+    `inherit` falls through to the theme setting, so an untouched block renders
+    byte-identically to `snippets/product-card.liquid`.
+
+    Every value has to do what it says, `adapt` included — it fell through to
+    the same 3/4 box once, so choosing it changed nothing at all. Adapt takes
+    the shape from the first photograph the card actually shows; a card with no
+    photograph keeps 3/4, there being nothing to adapt to.
+  endcomment
+  assign ratio_setting = block.settings.image_ratio
+  if ratio_setting == blank or ratio_setting == 'inherit'
+    assign ratio_setting = settings.card_image_ratio
+  endif
+
+  assign ratio_value = '3 / 4'
+  if ratio_setting == 'adapt'
+    assign ratio_media = product.media | where: 'media_type', 'image' | first
+    if ratio_media.width > 0 and ratio_media.height > 0
+      assign ratio_value = ratio_media.width | append: ' / ' | append: ratio_media.height
+    endif
+  else
+    assign ratio_value = ratio_setting | replace: '/', ' / '
+  endif
+
+  assign fit_value = block.settings.image_fit
+  if fit_value == 'inherit'
+    assign fit_value = blank
+  endif
+
+  comment
+    The design's framing correction. Its photographs are shot on white with
+    margins that differ by category, so each needs a different amount cropped
+    away for the piece to fill the frame. Matched on type then title, earrings
+    before rings because "earrings" contains "ring". A custom.card_zoom
+    metafield overrides it per piece; the theme setting turns it off.
+  endcomment
+  assign card_zoom = blank
+  if settings.card_image_zoom
+    assign card_zoom = product.metafields.custom.card_zoom.value
+    if card_zoom == blank
+      assign zoom_match = product.type | append: ' ' | append: product.title | downcase
+      assign card_zoom = 1.15
+      if zoom_match contains 'bracelet'
+        assign card_zoom = 1.05
+      elsif zoom_match contains 'earring'
+        assign card_zoom = 1.39
+      elsif zoom_match contains 'ring'
+        assign card_zoom = 1.32
+      endif
+    endif
+  endif
+
+  assign card_images = product.media | where: 'media_type', 'image'
+  assign photo_count = card_images.size
+
+  comment
+    The spin counts only once an mp4 rendition is known to exist. Counting the
+    video itself put the arrows and the badge on a card whose video has none —
+    controls for a slide that is never rendered, because the slide is guarded
+    on the rendition and the count was not.
+  endcomment
+  assign card_video = blank
+  assign card_mp4 = blank
+  if settings.card_show_video
+    assign product_videos = product.media | where: 'media_type', 'video'
+    assign first_video = product_videos.first
+    if first_video != blank
+      assign mp4_sources = first_video.sources | where: 'format', 'mp4'
+      assign card_mp4 = mp4_sources.last
+      if card_mp4 != blank
+        assign card_video = first_video
+      endif
+    endif
+  endif
+
+  assign slide_count = photo_count
+  if card_video != blank
+    assign slide_count = slide_count | plus: 1
+  endif
+
+  comment
+    Slide 0 is what the card shows and slide 1 is what hover previews. Those
+    two are the whole of it without scripting, so those two are what the
+    browser fetches.
+  endcomment
+  assign eager_slides = 2
+-%}
+
+<div
+  class="card__media"
+  style="aspect-ratio: {{ ratio_value }};{% if card_zoom != blank %} --card-zoom: {{ card_zoom }};{% endif %}{% if fit_value != blank %} --card-fit: {{ fit_value }};{% endif %}"
+  {{ block.shopify_attributes }}
+>
+  {%- if product == blank -%}
+    {{ 'product-1' | placeholder_svg_tag: 'placeholder-svg' }}
+  {%- elsif slide_count > 0 -%}
+    {%- assign slide_i = 0 -%}
+
+    {%- for media in card_images -%}
+      {%- assign slide_eager = false -%}
+      {%- if slide_i < eager_slides -%}
+        {%- assign slide_eager = true -%}
+      {%- endif -%}
+      {% render 'card-slide',
+        media: media,
+        index: slide_i,
+        eager: slide_eager,
+        product: product,
+        sizes: img_sizes,
+        loading: img_loading
+      %}
+      {%- assign slide_i = slide_i | plus: 1 -%}
+    {%- endfor -%}
+
+    {%- if card_video != blank -%}
+      {%- assign card_video_lqip = card_video.preview_image | image_url: width: 40 -%}
+      <span
+        class="card__slide{% if photo_count == 0 %} is-on{% endif %}"
+        data-card-slide="{{ photo_count }}"
+        data-card-spin
+      >
+        <video
+          class="card__img card__video"
+          data-src="{{ card_mp4.url }}"
+          poster="{{ card_video.preview_image | image_url: width: 600 }}"
+          width="{{ card_video.preview_image.width | default: 1240 }}"
+          height="{{ card_video.preview_image.height | default: 827 }}"
+          muted
+          loop
+          playsinline
+          preload="none"
+          aria-label="{{ 'products.spin_view' | t }}"
+          data-video-lqip="{{ card_video_lqip }}"
+        ></video>
+        {% render 'video-lqip-frame', lqip: card_video_lqip %}
+      </span>
+    {%- endif -%}
+  {%- else -%}
+    <span class="card__slide is-on">
+      {{ 'product-1' | placeholder_svg_tag: 'placeholder-svg' }}
+    </span>
+  {%- endif -%}
+
+  {%- if card_video != blank -%}
+    <span class="card__spin" data-card-spin-label{% if photo_count > 0 %} hidden{% endif %}>
+      {{- 'products.spin_badge' | t -}}
+    </span>
+  {%- endif -%}
+
+  {%- if slide_count > 1 -%}
+    <button
+      class="card__arrow card__arrow--prev"
+      type="button"
+      data-card-step="-1"
+      data-tip="{{ 'products.previous_view' | t }}"
+      aria-label="{{ 'products.previous_view' | t }}"
+    >
+      <svg width="10" height="20" viewBox="0 0 12 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+        <path d="M10 2L2 12l8 10" />
+      </svg>
+    </button>
+    <button
+      class="card__arrow card__arrow--next"
+      type="button"
+      data-card-step="1"
+      data-tip="{{ 'products.next_view' | t }}"
+      aria-label="{{ 'products.next_view' | t }}"
+    >
+      <svg width="10" height="20" viewBox="0 0 12 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+        <path d="M2 2l8 10-8 10" />
+      </svg>
+    </button>
+  {%- endif -%}
+
+  {%- if product != blank -%}
+    {%- if product.available == false -%}
+      <span class="badge">{{ 'products.sold_out' | t }}</span>
+    {%- elsif product.compare_at_price > product.price -%}
+      <span class="badge">{{ 'products.on_sale' | t }}</span>
+    {%- endif -%}
+  {%- endif -%}
+</div>
+
+{% schema %}
+{
+  "name": "t:blocks.product_card_image.name",
+  "tag": null,
+  "settings": [
+    {
+      "type": "select",
+      "id": "image_ratio",
+      "label": "t:sections.all.image_ratio.label",
+      "info": "t:blocks.all.inherit.info",
+      "options": [
+        { "value": "inherit", "label": "t:blocks.all.inherit.label" },
+        { "value": "adapt", "label": "t:settings_schema.options.adapt" },
+        { "value": "1/1", "label": "t:settings_schema.options.square" },
+        { "value": "4/5", "label": "t:settings_schema.options.portrait" },
+        { "value": "3/4", "label": "t:settings_schema.options.tall_portrait" },
+        { "value": "4/3", "label": "t:settings_schema.options.landscape" }
+      ],
+      "default": "inherit"
+    },
+    {
+      "type": "select",
+      "id": "image_fit",
+      "label": "t:settings_schema.product_cards.card_image_fit.label",
+      "info": "t:blocks.all.inherit.info",
+      "options": [
+        { "value": "inherit", "label": "t:blocks.all.inherit.label" },
+        { "value": "contain", "label": "t:settings_schema.options.contain" },
+        { "value": "cover", "label": "t:settings_schema.options.cover" }
+      ],
+      "default": "inherit"
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:blocks.product_card_image.name"
+    }
+  ]
+}
+{% endschema %}
