@@ -589,6 +589,20 @@
         "label": "Show all images in a carousel",
         "info": "Off, the card is a single photograph and costs one image to load. On, it carries every image the product has — the hover preview, the arrows, a swipe on touch, and the video if there is one."
       },
+      "arrows_wide": {
+        "label": "Arrows on desktop",
+        "info": "A pointer can hover, so the arrows can wait for one."
+      },
+      "arrows_compact": {
+        "label": "Arrows on mobile and tablet",
+        "info": "There is no hover here and a swipe already steps through the images, so the arrows can wait for that gesture instead."
+      },
+      "arrows": {
+        "always": "Always show arrows",
+        "hover": "Show arrows on hover",
+        "swipe": "Show arrows on swipe",
+        "never": "Never show arrows"
+      },
       "hover_next": {
         "label": "Show the next image on hover",
         "info": "Previews the second image while the pointer is over the card."
@@ -597,13 +611,9 @@
         "label": "Include the product video",
         "info": "Adds a product video to the card as a final view."
       },
-      "show_video_label": {
-        "label": "Show the video label",
-        "info": "The chip that names the video while it is the view on screen."
-      },
       "video_badge": {
         "label": "Video label",
-        "info": "\"360°\", \"On the model\", whatever the footage is."
+        "info": "The chip that names the video while it is the view on screen — \"360°\", \"On the model\", whatever the footage is. Leave it empty to show no chip."
       },
       "quick_view_header": "Quick view",
       "quick_view_desktop": {

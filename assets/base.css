@@ -1821,10 +1821,46 @@ a {
 .card__arrow--prev { inset-inline-start: 0.25rem; }
 .card__arrow--next { inset-inline-end: 0.25rem; }
 
-.card:hover .card__arrow,
-.card:focus-within .card__arrow {
+/* The snippet card carries no Views attributes and keeps the design's own
+   behaviour: the arrows exist while the card is under the pointer. */
+.card:not([data-card-arrows-wide]):hover .card__arrow,
+.card:not([data-card-arrows-wide]):focus-within .card__arrow {
   opacity: 1;
   pointer-events: auto;
+}
+
+/* ---- When the arrows are shown ---------------------------------------
+   Two settings on the card, because the answer differs by input and not by
+   width: a pointer can hover and a finger cannot, so "on hover" is meaningless
+   on a phone and "on swipe" is meaningless on a desktop. Media queries rather
+   than container queries for that reason — the question is what kind of device
+   is being used, which the card's own width cannot answer. 48rem is the
+   theme's own tablet threshold, the one `blocks/group.liquid` stacks on.
+
+   `:focus-within` rides along with every "always" and "hover" case: a keyboard
+   visitor who tabs to an arrow must be able to see the one they are on. */
+
+@media (min-width: 48rem) {
+  .card[data-card-arrows-wide="always"] .card__arrow,
+  .card[data-card-arrows-wide="hover"]:hover .card__arrow,
+  .card[data-card-arrows-wide="hover"]:focus-within .card__arrow,
+  .card[data-card-arrows-wide="never"]:focus-within .card__arrow {
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+
+@media (max-width: 47.9375rem) {
+  /* `data-card-swiped` is set by `theme.js` when a touch lands on the media and
+     cleared a few seconds later — the arrows arrive with the gesture that
+     implies them and leave again rather than sitting over the photograph. */
+  .card[data-card-arrows-compact="always"] .card__arrow,
+  .card[data-card-arrows-compact="swipe"][data-card-swiped] .card__arrow,
+  .card[data-card-arrows-compact="swipe"]:focus-within .card__arrow,
+  .card[data-card-arrows-compact="never"]:focus-within .card__arrow {
+    opacity: 1;
+    pointer-events: auto;
+  }
 }
 
 .card__arrow:hover {

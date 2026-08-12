@@ -94,19 +94,18 @@
     already draws the quick-view disc.
   endcomment
   assign video_label = block.settings.video_badge
-  if video_label == blank
-    assign video_label = 'products.video_view' | t
-  endif
 
   comment
-    The chip is gated on the whole chain it depends on: there is no video view
-    without the carousel, no chip without the video, and a chip the merchant has
-    switched off is not drawn whatever its words say. The editor hides each
-    control the same way, so a setting that could not act is never offered.
+    The chip is gated on the chain it depends on — there is no video view
+    without the carousel and no chip without the video — and on having something
+    to say. **Clearing the words is how it is turned off**, rather than a
+    checkbox beside a text field that would only ever mean the same thing. The
+    editor hides each control the same way, so a setting that could not act is
+    never offered.
   endcomment
   assign card_videos = product.media | where: 'media_type', 'video'
   assign card_has_video = false
-  if block.settings.show_carousel and block.settings.show_video and block.settings.show_video_label and card_videos.first != blank
+  if block.settings.show_carousel and block.settings.show_video and block.settings.video_badge != blank and card_videos.first != blank
     assign card_mp4 = card_videos.first.sources | where: 'format', 'mp4'
     if card_mp4.last != blank
       assign card_has_video = true
@@ -119,6 +118,8 @@
   data-card
   {% if card_photos.size > 1 %}data-card-multi{% endif %}
   {% unless block.settings.show_carousel %}data-card-carousel="off"{% endunless %}
+  data-card-arrows-wide="{{ block.settings.arrows_wide }}"
+  data-card-arrows-compact="{{ block.settings.arrows_compact }}"
   {% unless block.settings.hover_next %}data-card-hover="off"{% endunless %}
   {% unless block.settings.show_video %}data-card-video="off"{% endunless %}
   style="--card-align: {{ block.settings.text_align }};"
@@ -202,6 +203,32 @@
       "default": true
     },
     {
+      "type": "select",
+      "id": "arrows_wide",
+      "label": "t:blocks.product_card.arrows_wide.label",
+      "info": "t:blocks.product_card.arrows_wide.info",
+      "visible_if": "{{ block.settings.show_carousel }}",
+      "options": [
+        { "value": "always", "label": "t:blocks.product_card.arrows.always" },
+        { "value": "hover", "label": "t:blocks.product_card.arrows.hover" },
+        { "value": "never", "label": "t:blocks.product_card.arrows.never" }
+      ],
+      "default": "hover"
+    },
+    {
+      "type": "select",
+      "id": "arrows_compact",
+      "label": "t:blocks.product_card.arrows_compact.label",
+      "info": "t:blocks.product_card.arrows_compact.info",
+      "visible_if": "{{ block.settings.show_carousel }}",
+      "options": [
+        { "value": "always", "label": "t:blocks.product_card.arrows.always" },
+        { "value": "swipe", "label": "t:blocks.product_card.arrows.swipe" },
+        { "value": "never", "label": "t:blocks.product_card.arrows.never" }
+      ],
+      "default": "swipe"
+    },
+    {
       "type": "checkbox",
       "id": "hover_next",
       "label": "t:blocks.product_card.hover_next.label",
@@ -218,19 +245,11 @@
       "default": true
     },
     {
-      "type": "checkbox",
-      "id": "show_video_label",
-      "label": "t:blocks.product_card.show_video_label.label",
-      "info": "t:blocks.product_card.show_video_label.info",
-      "visible_if": "{{ block.settings.show_carousel and block.settings.show_video }}",
-      "default": true
-    },
-    {
       "type": "text",
       "id": "video_badge",
       "label": "t:blocks.product_card.video_badge.label",
       "info": "t:blocks.product_card.video_badge.info",
-      "visible_if": "{{ block.settings.show_carousel and block.settings.show_video and block.settings.show_video_label }}",
+      "visible_if": "{{ block.settings.show_carousel and block.settings.show_video }}",
       "default": "Video"
     },
     {

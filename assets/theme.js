@@ -2580,9 +2580,25 @@
                touch.clientY >= box.top && touch.clientY <= box.bottom;
       }
 
+      /* "Show arrows on swipe" — the arrows arrive with the gesture that
+         implies them and leave again, rather than sitting over the photograph
+         on a screen where the swipe is already doing the job. The stylesheet
+         reads this attribute; it is set for any touch on the media, since the
+         touch that starts a swipe and the one that does not are the same event
+         until it ends. */
+      var swipeHint = null;
+
       card.addEventListener('touchstart', function (event) {
         var touch = event.touches && event.touches[0];
         swipe = touch && inMedia(touch) ? { x: touch.clientX, y: touch.clientY } : null;
+        if (!swipe) return;
+
+        card.setAttribute('data-card-swiped', '');
+        if (swipeHint) clearTimeout(swipeHint);
+        swipeHint = setTimeout(function () {
+          card.removeAttribute('data-card-swiped');
+          swipeHint = null;
+        }, 3000);
       }, { passive: true });
 
       card.addEventListener('touchend', function (event) {

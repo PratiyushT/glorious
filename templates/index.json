@@ -228,9 +228,10 @@
           "settings": {
             "text_align": "left",
             "show_carousel": true,
+            "arrows_wide": "hover",
+            "arrows_compact": "swipe",
             "hover_next": true,
             "show_video": true,
-            "show_video_label": true,
             "video_badge": "360°",
             "quick_view_desktop": true,
             "quick_view_compact": true

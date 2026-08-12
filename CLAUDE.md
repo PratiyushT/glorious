@@ -480,6 +480,40 @@ that reaches for a parent would tie the two cards' structures together again.
 
   It was "Show arrows", which named one symptom of the thing it governs.
 
+  **When the arrows show is two settings, split by input rather than by width.**
+  A pointer can hover and a finger cannot, so "on hover" is meaningless on a
+  phone and "on swipe" is meaningless on a desktop — the two tiers offer
+  different middle options for that reason, not as a convenience:
+
+  | | |
+  | --- | --- |
+  | Desktop | Always / **On hover** / Never |
+  | Mobile and tablet | Always / **On swipe** / Never |
+
+  Media queries at the theme's own 48rem, because the question is what kind of
+  device is being used and a container query cannot ask it. "On swipe" is
+  `data-card-swiped`, set by `theme.js` on any touch landing on the media and
+  cleared three seconds later — the arrows arrive with the gesture that implies
+  them and leave again, rather than sitting over the photograph on a screen
+  where the swipe already does the job. It is set on `touchstart` rather than on
+  a completed swipe because the touch that starts one and the touch that does
+  not are the same event until it ends.
+
+  **`:focus-within` rides along with every case, "Never" included.** A keyboard
+  visitor who tabs to an arrow has to be able to see the one they are on; an
+  arrow that is reachable and invisible is worse than one that is neither.
+
+  **The snippet card carries none of these attributes and keeps the design's own
+  behaviour**, which is why the base rule is `.card:not([data-card-arrows-wide])`.
+
+  Verified by probing `pointer-events` rather than `opacity`, and that choice is
+  the point: the arrows' opacity is transitioned, and **a browser pane that is
+  not displayed never advances a transition** — it reads 0 in every state and
+  looks like a broken rule. `pointer-events` is not transitioned, so it flips on
+  the same frame the rule matches. All six states came back right, the desktop
+  setting does not leak into the mobile tier, and a real `touchstart` on the
+  media sets the attribute and reveals the arrows.
+
   **Which makes the isolation rule bite from the other side, and the answer is
   worth keeping.** A block cannot read its parent's settings, so the Media block
   cannot be *told* to draw fewer arrows or skip the video. So it renders
