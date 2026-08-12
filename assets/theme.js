@@ -2453,13 +2453,21 @@
 
       var spinLabel = card.querySelector('[data-card-spin-label]');
 
-      /* The card's Views. All three are settings on the card and stated on its
-         own root, because a block cannot read its parent's settings — the image
+      /* The card's Views. They are settings on the card and stated on its own
+         root, because a block cannot read its parent's settings — the image
          block renders every slide and every arrow, and the card says which of
-         them count. The stylesheet hides what this drops. */
+         them count. The stylesheet hides what this drops.
+
+         The carousel is the master switch: with it off the card is a single
+         photograph, so there is nothing to preview, step to, or play. Cutting
+         the list to one slide is enough to turn all of that off at once, since
+         everything below counts from it. */
       var hoverPreview = card.getAttribute('data-card-hover') !== 'off';
 
-      if (card.getAttribute('data-card-video') === 'off') {
+      if (card.getAttribute('data-card-carousel') === 'off') {
+        slides = slides.slice(0, 1);
+        hoverPreview = false;
+      } else if (card.getAttribute('data-card-video') === 'off') {
         slides = slides.filter(function (slide) {
           return !slide.hasAttribute('data-card-spin');
         });

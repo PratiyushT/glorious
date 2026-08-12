@@ -585,21 +585,25 @@
         "label": "Text alignment"
       },
       "views_header": "Views",
+      "show_carousel": {
+        "label": "Show all images in a carousel",
+        "info": "Off, the card is a single photograph and costs one image to load. On, it carries every image the product has — the hover preview, the arrows, a swipe on touch, and the video if there is one."
+      },
       "hover_next": {
         "label": "Show the next image on hover",
         "info": "Previews the second image while the pointer is over the card."
-      },
-      "show_arrows": {
-        "label": "Show arrows",
-        "info": "Steps through every image on the card. A swipe does the same on touch and is not affected by this."
       },
       "show_video": {
         "label": "Include the product video",
         "info": "Adds a product video to the card as a final view."
       },
+      "show_video_label": {
+        "label": "Show the video label",
+        "info": "The chip that names the video while it is the view on screen."
+      },
       "video_badge": {
         "label": "Video label",
-        "info": "The chip shown while the video is the view on screen — \"360°\", \"On the model\", whatever the footage is."
+        "info": "\"360°\", \"On the model\", whatever the footage is."
       },
       "quick_view_header": "Quick view",
       "quick_view_desktop": {

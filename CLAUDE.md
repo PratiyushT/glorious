@@ -470,10 +470,15 @@ that reaches for a parent would tie the two cards' structures together again.
   it is the theme's decision rather than the merchant's. The image block and
   the card each publish their own, which is what overrides them.
 
-- **The Views are the *card's* settings, not the Media block's**: preview the
-  next image on hover, show the arrows, include the product video, and the
-  video's label. They describe how the card behaves rather than what the
-  photograph is, and they sit under "Views" on `_product-card`.
+- **The Views are the *card's* settings, not the Media block's**, and
+  **"Show all images in a carousel" is the master switch the rest hang off.**
+  Off, the card is a single photograph: nothing to preview on hover, nothing to
+  step through, no arrows, no video. So the editor hides the other four —
+  hover, video, video label, the label's words — behind `visible_if`, because a
+  control that cannot act should not be offered. The chain is stated in Liquid
+  too, so the chip is not drawn when any link in it is off.
+
+  It was "Show arrows", which named one symptom of the thing it governs.
 
   **Which makes the isolation rule bite from the other side, and the answer is
   worth keeping.** A block cannot read its parent's settings, so the Media block
@@ -482,9 +487,26 @@ that reaches for a parent would tie the two cards' structures together again.
 
   | | |
   | --- | --- |
+  | `data-card-carousel="off"` | CSS takes out every slide but the first, the arrows and the chip; `theme.js` cuts its slide list to one |
   | `data-card-hover="off"` | the stylesheet's no-JavaScript swap and `theme.js`'s `shown()` both test it |
-  | `data-card-arrows="off"` | CSS hides `.card__arrow` |
   | `data-card-video="off"` | CSS hides the spin slide, **and `theme.js` drops it from the slide list** |
+
+  **The carousel's fetch saving is the one claim here not measured, and it is
+  worth being exact about why.** Slides 2 and up are deferred behind `data-src`
+  and the script never promotes them once its list is cut to one, so those cost
+  nothing by construction. Slide 1 is different: it carries a real `src`
+  because it is what the no-JavaScript hover swap reveals. With the carousel off
+  it is `display: none`, and a `display: none` image with `loading="lazy"` is
+  not fetched — but that is an engine behaviour, not a fact about the markup,
+  and it **could not be measured here**: the browser pane is not displayed, so
+  `document.visibilityState` is `hidden` and *no* lazy image loads, including
+  the one that should. Measured anyway and recorded for the next pass: with the
+  carousel off, 14 of 25 card images still carry a real `src` — two per card.
+
+  Making it a fact of the markup means the slides being rendered by something
+  that can read the setting, which is the card. That is a real refactor — the
+  Media block would keep the frame and give up the pictures — and it is not
+  done.
 
   The video needs both halves. Hiding it alone would leave the script stepping
   to something invisible, so `initCards` filters it out before it counts — and

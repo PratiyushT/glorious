@@ -98,9 +98,15 @@
     assign video_label = 'products.video_view' | t
   endif
 
+  comment
+    The chip is gated on the whole chain it depends on: there is no video view
+    without the carousel, no chip without the video, and a chip the merchant has
+    switched off is not drawn whatever its words say. The editor hides each
+    control the same way, so a setting that could not act is never offered.
+  endcomment
   assign card_videos = product.media | where: 'media_type', 'video'
   assign card_has_video = false
-  if block.settings.show_video and card_videos.first != blank
+  if block.settings.show_carousel and block.settings.show_video and block.settings.show_video_label and card_videos.first != blank
     assign card_mp4 = card_videos.first.sources | where: 'format', 'mp4'
     if card_mp4.last != blank
       assign card_has_video = true
@@ -112,8 +118,8 @@
   class="card card--composed"
   data-card
   {% if card_photos.size > 1 %}data-card-multi{% endif %}
+  {% unless block.settings.show_carousel %}data-card-carousel="off"{% endunless %}
   {% unless block.settings.hover_next %}data-card-hover="off"{% endunless %}
-  {% unless block.settings.show_arrows %}data-card-arrows="off"{% endunless %}
   {% unless block.settings.show_video %}data-card-video="off"{% endunless %}
   style="--card-align: {{ block.settings.text_align }};"
   {{ block.shopify_attributes }}
@@ -190,16 +196,17 @@
     },
     {
       "type": "checkbox",
-      "id": "hover_next",
-      "label": "t:blocks.product_card.hover_next.label",
-      "info": "t:blocks.product_card.hover_next.info",
+      "id": "show_carousel",
+      "label": "t:blocks.product_card.show_carousel.label",
+      "info": "t:blocks.product_card.show_carousel.info",
       "default": true
     },
     {
       "type": "checkbox",
-      "id": "show_arrows",
-      "label": "t:blocks.product_card.show_arrows.label",
-      "info": "t:blocks.product_card.show_arrows.info",
+      "id": "hover_next",
+      "label": "t:blocks.product_card.hover_next.label",
+      "info": "t:blocks.product_card.hover_next.info",
+      "visible_if": "{{ block.settings.show_carousel }}",
       "default": true
     },
     {
@@ -207,6 +214,15 @@
       "id": "show_video",
       "label": "t:blocks.product_card.show_video.label",
       "info": "t:blocks.product_card.show_video.info",
+      "visible_if": "{{ block.settings.show_carousel }}",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_video_label",
+      "label": "t:blocks.product_card.show_video_label.label",
+      "info": "t:blocks.product_card.show_video_label.info",
+      "visible_if": "{{ block.settings.show_carousel and block.settings.show_video }}",
       "default": true
     },
     {
@@ -214,7 +230,7 @@
       "id": "video_badge",
       "label": "t:blocks.product_card.video_badge.label",
       "info": "t:blocks.product_card.video_badge.info",
-      "visible_if": "{{ block.settings.show_video }}",
+      "visible_if": "{{ block.settings.show_carousel and block.settings.show_video and block.settings.show_video_label }}",
       "default": "Video"
     },
     {

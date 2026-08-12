@@ -1726,18 +1726,27 @@ a {
 }
 
 /* ---- The card's Views ------------------------------------------------
-   Three settings on `blocks/_product-card.liquid` — preview the next image on
-   hover, show the arrows, include the video. They are the *card's* decisions
+   Settings on `blocks/_product-card.liquid`. They are the *card's* decisions
    rather than the photograph block's, so the card states them on its own root
    and the rules below act from there. That is also the only place they can be
    stated: a block cannot read its parent's settings, so the image block cannot
-   be told to draw fewer arrows, and the card cannot reach into it. It renders
+   be told to draw fewer slides, and the card cannot reach into it. It renders
    everything and the card says what counts.
 
-   The video is hidden rather than not rendered, and `theme.js` drops the same
-   slide from its list, so the card never steps to something invisible. */
+   **The carousel is the master switch and the others hang off it.** With it off
+   the card is one photograph: no second view to preview on hover, nothing to
+   step through, no arrows, no video. So the editor hides the rest, and these
+   rules leave slide 0 alone and take everything else out.
 
-.card[data-card-arrows="off"] .card__arrow {
+   `display: none` rather than `opacity: 0`, and that is deliberate. A slide is
+   normally opacity 0 precisely *because* the browser must still fetch it —
+   that is what makes the hover swap instant. Here the opposite is wanted: a
+   card showing one photograph should cost one photograph, and a `display: none`
+   image with `loading="lazy"` is never fetched. */
+
+.card[data-card-carousel="off"] .card__slide:not([data-card-slide="0"]),
+.card[data-card-carousel="off"] .card__arrow,
+.card[data-card-carousel="off"] .card__spin {
   display: none;
 }
 
