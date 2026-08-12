@@ -623,6 +623,12 @@
         "label": "Link"
       }
     },
+    "heading": {
+      "name": "Heading",
+      "size": {
+        "label": "Size"
+      }
+    },
     "quote": {
       "name": "Quote",
       "text": {
@@ -1124,27 +1130,7 @@
       }
     },
     "rich_text": {
-      "name": "Rich text",
-      "blocks": {
-        "heading": {
-          "name": "Heading",
-          "size": {
-            "label": "Size"
-          }
-        },
-        "text": {
-          "name": "Text"
-        },
-        "button": {
-          "name": "Button",
-          "label": {
-            "label": "Label"
-          },
-          "style": {
-            "label": "Style"
-          }
-        }
-      }
+      "name": "Rich text"
     },
     "newsletter": {
       "name": "Newsletter",

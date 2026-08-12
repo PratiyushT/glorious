@@ -1,0 +1,106 @@
+{%- comment -%}
+  An ordinary heading, at one of the theme's three heading sizes.
+
+  **Not `title`, and the difference is the face.** `title` is `.display` — the
+  oversized edge-to-edge section title, one fixed size, with its own gap rule
+  against whatever follows it. This is `.h2` / `.h3` / `.h4`, the heading scale
+  used *inside* a column of prose. A section wanting the big one lists `title`;
+  a section wanting a heading in running text lists this.
+
+  **Size and level are two decisions, not one.** The size is a look and the
+  level is the document's outline, and conflating them is how a page ends up
+  with an `<h2>` wherever a large heading was wanted. rich-text's local block
+  emitted `<h2>` whatever size was chosen, so picking "Small" gave
+  `<h2 class="h4">` — the right look at the wrong level, or the reverse. Both
+  are settings here, and `h2` is the default so the markup is unchanged for
+  anyone who does not touch it. Same split, and the same Liquid guard against
+  an arbitrary tag name, as `blocks/title.liquid`.
+
+  `"tag": null` because the block owns its element, as every text block here
+  does — a generated wrapper would become the flex item in a `.stack` and the
+  heading would stop being a sibling of the paragraphs it belongs with.
+{%- endcomment -%}
+
+{%- liquid
+  assign heading_tag = block.settings.heading_level | default: 'h2'
+  unless heading_tag == 'h1' or heading_tag == 'h2' or heading_tag == 'h3' or heading_tag == 'div'
+    assign heading_tag = 'h2'
+  endunless
+
+  assign size_class = block.settings.size | default: 'h2'
+  unless size_class == 'h2' or size_class == 'h3' or size_class == 'h4'
+    assign size_class = 'h2'
+  endunless
+
+  assign align_class = ''
+  if block.settings.alignment != blank and block.settings.alignment != 'inherit'
+    assign align_class = ' align-' | append: block.settings.alignment
+  endif
+-%}
+
+{%- if block.settings.text != blank -%}
+  <{{ heading_tag }} class="{{ size_class }}{{ align_class }}" {{ block.shopify_attributes }}>
+    {{- block.settings.text -}}
+  </{{ heading_tag }}>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "t:blocks.heading.name",
+  "tag": null,
+  "settings": [
+    {
+      "type": "inline_richtext",
+      "id": "text",
+      "label": "t:sections.all.heading.label",
+      "default": "Say something that matters"
+    },
+    {
+      "type": "select",
+      "id": "size",
+      "label": "t:blocks.heading.size.label",
+      "options": [
+        { "value": "h4", "label": "t:settings_schema.options.small" },
+        { "value": "h3", "label": "t:settings_schema.options.medium" },
+        { "value": "h2", "label": "t:settings_schema.options.large" }
+      ],
+      "default": "h2"
+    },
+    {
+      "type": "select",
+      "id": "heading_level",
+      "label": "t:sections.all.heading_level.label",
+      "info": "t:sections.all.heading_level.info",
+      "options": [
+        { "value": "h1", "label": "t:settings_schema.heading_level.h1" },
+        { "value": "h2", "label": "t:settings_schema.heading_level.h2" },
+        { "value": "h3", "label": "t:settings_schema.heading_level.h3" },
+        { "value": "div", "label": "t:settings_schema.heading_level.div" }
+      ],
+      "default": "h2"
+    },
+    {
+      "type": "select",
+      "id": "alignment",
+      "label": "t:sections.all.content_alignment.label",
+      "info": "t:sections.all.content_alignment.info",
+      "options": [
+        { "value": "inherit", "label": "t:settings_schema.options.inherit" },
+        { "value": "left", "label": "t:settings_schema.options.left" },
+        { "value": "center", "label": "t:settings_schema.options.center" },
+        { "value": "right", "label": "t:settings_schema.options.right" }
+      ],
+      "default": "inherit"
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:blocks.heading.name",
+      "settings": {
+        "text": "Say something that matters",
+        "size": "h2"
+      }
+    }
+  ]
+}
+{% endschema %}

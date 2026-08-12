@@ -197,6 +197,47 @@ active quote and the selected dot agreeing.
   in `grid-area: 1 / 1` to cross-fade them; a generated wrapper would take that
   cell and the quotes inside it would stack vertically instead of overlapping.
 
+**`rich-text` had three local types and needed one new file.** `text` was a
+`richtext` in a `.rte`, which is `prose`. `button` was one button, which
+`buttons` already renders — and renders better, offering the design's six
+variants, a size, a radius and a second button against the three styles this
+section knew. Only `heading` had no equivalent.
+
+- **`blocks/text.liquid` was the obvious name and would have broken the
+  homepage.** `hero` still declares a *local* block called `text`, and a theme
+  block's name is global: the moment that file existed the hero would have been
+  read as a theme-block section and failed on the local types it has left —
+  naming an innocent one, as it did last time. Mapping to `prose` avoids the
+  name entirely.
+
+  `heading` and `button` were checked the same way and were safe, because the
+  only local blocks of those names are rich-text's own and they go in the same
+  commit. **Check before creating any `blocks/<name>.liquid`**: parse each
+  section's schema and list the types that carry their own `name`/`settings` —
+  a grep for `"type": "x"` is useless here, because setting types and block
+  types are spelled identically.
+
+- **`heading` is not `title`, and the split is size against level.** `title` is
+  `.display`, the oversized edge-to-edge section title. `heading` is
+  `.h2`/`.h3`/`.h4`, the scale used inside running text. The local block emitted
+  an `<h2>` element whatever size was chosen, so "Small" gave
+  `<h2 class="h4">` — the right look at the wrong level. Size and level are
+  separate settings now, `h2` default on both, so the untouched render is
+  byte-identical.
+
+  Verified against a scratch template: a default heading block comes out
+  `<h2 class="h2">` exactly as before, a configured one `<h3 class="h3">`, at
+  51.2px and 37.9px — `--fs-section` and `--fs-2xl`. `prose` lands as
+  `.rte.measure`, nesting a `max-width` inside the same `max-width`, which is a
+  no-op. Both buttons render at 53.6px, above the 44px floor.
+
+- **Nothing stores a rich-text block**, so this is the one conversion in the
+  phase with no data contract to honour and the type names were free. That is
+  also why it has no rendered surface to check: it is in no template. The
+  measurements above came from a `templates/page.<name>.json` stood up against
+  `/pages/contact?view=<name>` and deleted afterwards — the way to verify a
+  section the homepage does not carry.
+
 ### Announcements
 
 **Adding to the bag changed a number in the corner and said nothing.** The

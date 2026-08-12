@@ -1,6 +1,24 @@
 {%- comment -%}
   Rich text. Constrained to the reading width so paragraphs never stretch past
   a comfortable line length, however wide the screen gets.
+
+  On theme blocks. Its three local types were `heading`, `text` and `button`,
+  and only one of them needed to be built:
+
+  - `text` was a `richtext` in a `.rte`, which is exactly `prose`.
+  - `button` was one button, which `buttons` already renders — and renders
+    better, since it offers the design's six variants and a second button
+    rather than the three styles this section knew about.
+  - `heading` had no equivalent. `title` is `.display`, a different face for a
+    different job, so `blocks/heading.liquid` is new.
+
+  **`blocks/text.liquid` was the obvious name for the second one and would have
+  broken the homepage.** `hero` still declares a *local* block called `text`,
+  and a theme block's name is global: the moment the file existed the hero
+  would have been read as a theme-block section and failed on the local types
+  it has left. Mapping to `prose` avoids the name entirely. `heading` and
+  `button` were safe to take only because the sole local blocks of those names
+  are this section's own, and they go in this same commit.
 {%- endcomment -%}
 
 <section
@@ -9,29 +27,7 @@
 >
   <div class="page-width">
     <div class="stack measure {% if section.settings.alignment == 'center' %}measure--center align-center{% elsif section.settings.alignment == 'right' %}align-right{% endif %}">
-      {%- for block in section.blocks -%}
-        {%- case block.type -%}
-          {%- when 'heading' -%}
-            <h2 class="{{ block.settings.size }}" {{ block.shopify_attributes }}>
-              {{ block.settings.text }}
-            </h2>
-
-          {%- when 'text' -%}
-            <div class="rte" {{ block.shopify_attributes }}>{{ block.settings.text }}</div>
-
-          {%- when 'button' -%}
-            {%- comment -%}
-              A label without a link renders nothing — see about.liquid.
-            {%- endcomment -%}
-            {%- if block.settings.label != blank and block.settings.link != blank -%}
-              <div class="btn-row" {{ block.shopify_attributes }}>
-                <a href="{{ block.settings.link }}" class="btn btn--{{ block.settings.style }}">
-                  {{ block.settings.label }}
-                </a>
-              </div>
-            {%- endif -%}
-        {%- endcase -%}
-      {%- endfor -%}
+      {% content_for 'blocks' %}
     </div>
   </div>
 </section>
@@ -96,74 +92,17 @@
     }
   ],
   "blocks": [
-    {
-      "type": "heading",
-      "name": "t:sections.rich_text.blocks.heading.name",
-      "settings": [
-        {
-          "type": "inline_richtext",
-          "id": "text",
-          "label": "t:sections.all.heading.label",
-          "default": "Say something that matters"
-        },
-        {
-          "type": "select",
-          "id": "size",
-          "label": "t:sections.rich_text.blocks.heading.size.label",
-          "options": [
-            { "value": "h4", "label": "t:settings_schema.options.small" },
-            { "value": "h3", "label": "t:settings_schema.options.medium" },
-            { "value": "h2", "label": "t:settings_schema.options.large" }
-          ],
-          "default": "h2"
-        }
-      ]
-    },
-    {
-      "type": "text",
-      "name": "t:sections.rich_text.blocks.text.name",
-      "settings": [
-        {
-          "type": "richtext",
-          "id": "text",
-          "label": "t:sections.all.text.label",
-          "default": "<p>Use this space for the story behind the collection, the shipping promise, or whatever a first-time visitor needs to hear.</p>"
-        }
-      ]
-    },
-    {
-      "type": "button",
-      "name": "t:sections.rich_text.blocks.button.name",
-      "settings": [
-        {
-          "type": "text",
-          "id": "label",
-          "label": "t:sections.rich_text.blocks.button.label.label",
-          "default": "Learn more"
-        },
-        {
-          "type": "url",
-          "id": "link",
-          "label": "t:sections.all.link.label"
-        },
-        {
-          "type": "select",
-          "id": "style",
-          "label": "t:sections.rich_text.blocks.button.style.label",
-          "options": [
-            { "value": "primary", "label": "t:settings_schema.options.solid" },
-            { "value": "outline", "label": "t:settings_schema.options.outline" },
-            { "value": "link", "label": "t:settings_schema.options.text_link" }
-          ],
-          "default": "primary"
-        }
-      ]
-    }
+    { "type": "heading" },
+    { "type": "prose" },
+    { "type": "buttons" },
+    { "type": "title" },
+    { "type": "subheading" },
+    { "type": "paragraph" }
   ],
   "presets": [
     {
       "name": "t:sections.rich_text.name",
-      "blocks": [{ "type": "heading" }, { "type": "text" }, { "type": "button" }]
+      "blocks": [{ "type": "heading" }, { "type": "prose" }, { "type": "buttons" }]
     }
   ]
 }
