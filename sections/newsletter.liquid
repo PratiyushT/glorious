@@ -1,6 +1,20 @@
 {%- comment -%}
   Standalone newsletter section. Posts to Shopify's customer form, so it works
   without JavaScript and without a third-party app.
+
+  **This one had no local blocks, so nothing was collapsed — composability was
+  added.** That makes it a different job from the rest of the phase, and worth
+  saying out loud: `featured-products` is in the same position and is still
+  *not* convertible, because its two header parts share one `space-between`
+  row. This section's header is a plain vertical stack with nothing sharing a
+  row, so blocks drop straight in.
+
+  **The form stays the section's own and always comes last.** It is what the
+  section is for, it is not a thing a merchant should be able to remove or
+  reorder, and `content_for 'blocks'` can only render one flat flow — so the
+  blocks are the copy above it and the form follows them. `button_label` stays
+  a section setting for the same reason: it labels the form's submit, not a
+  block.
 {%- endcomment -%}
 
 <section
@@ -9,17 +23,7 @@
 >
   <div class="page-width page-width--reading">
     <div class="stack stack--center">
-      {%- if section.settings.subheading != blank -%}
-        <span class="micro">{{ section.settings.subheading }}</span>
-      {%- endif -%}
-
-      {%- if section.settings.heading != blank -%}
-        <h2 class="h2">{{ section.settings.heading }}</h2>
-      {%- endif -%}
-
-      {%- if section.settings.text != blank -%}
-        <div class="rte">{{ section.settings.text }}</div>
-      {%- endif -%}
+      {% content_for 'blocks' %}
 
       {%- form 'customer', class: 'stack stack--tight stack--center' -%}
         <input type="hidden" name="contact[tags]" value="newsletter">
@@ -64,23 +68,6 @@
     },
     {
       "type": "text",
-      "id": "subheading",
-      "label": "t:sections.all.subheading.label"
-    },
-    {
-      "type": "text",
-      "id": "heading",
-      "label": "t:sections.all.heading.label",
-      "default": "Stay in touch"
-    },
-    {
-      "type": "richtext",
-      "id": "text",
-      "label": "t:sections.all.text.label",
-      "default": "<p>Occasional email about new arrivals. No noise.</p>"
-    },
-    {
-      "type": "text",
       "id": "button_label",
       "label": "t:sections.newsletter.button_label.label",
       "default": "Subscribe"
@@ -122,6 +109,27 @@
       "default": "lg"
     }
   ],
-  "presets": [{ "name": "t:sections.newsletter.name" }]
+  "blocks": [
+    { "type": "heading" },
+    { "type": "prose" },
+    { "type": "subheading" },
+    { "type": "paragraph" },
+    { "type": "title" }
+  ],
+  "presets": [
+    {
+      "name": "t:sections.newsletter.name",
+      "blocks": [
+        {
+          "type": "heading",
+          "settings": { "text": "Stay in touch", "size": "h2" }
+        },
+        {
+          "type": "prose",
+          "settings": { "text": "<p>Occasional email about new arrivals. No noise.</p>" }
+        }
+      ]
+    }
+  ]
 }
 {% endschema %}

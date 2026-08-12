@@ -236,7 +236,28 @@ section knew. Only `heading` had no equivalent.
   also why it has no rendered surface to check: it is in no template. The
   measurements above came from a `templates/page.<name>.json` stood up against
   `/pages/contact?view=<name>` and deleted afterwards — the way to verify a
-  section the homepage does not carry.
+  section the homepage does not carry. `/pages/contact` is the one page handle
+  this store actually has; about, cookies and disclaimer are all 404.
+
+**`newsletter` had no local blocks either, and converting it added
+composability rather than collapsing anything.** That makes it a different job
+from the rest of the phase and it is worth being explicit, because
+`featured-products` is in the same position and is still *not* convertible —
+its two header parts share one `space-between` row. This section's header was a
+plain vertical stack with nothing sharing a row, so `subheading`, `heading`,
+`prose`, `paragraph` and `title` drop straight in and three section settings go.
+
+- **The form stays the section's own and always comes last.** It is what the
+  section is *for*, a merchant should not be able to remove or reorder it, and
+  `content_for 'blocks'` renders one flat flow — so the blocks are the copy
+  above it and the form follows. `button_label` stays a section setting for the
+  same reason: it labels the form's submit, not a block.
+- Verified: eyebrow / h2 / prose / form in that order with the form last, the
+  `.section-eyebrow` box **18px** (the standing check that its `display: flex`
+  fix holds), `label[for]` matching the input id, `contact[tags]=newsletter`
+  still posted, and the submit at 67.3px. With **every block removed** the
+  stack holds nothing but the form and it still works — which is the case worth
+  checking, since the copy is now optional in a way it never was.
 
 ### Announcements
 
