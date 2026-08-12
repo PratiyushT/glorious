@@ -74,6 +74,18 @@
         "label": "Body font",
         "info": "Only used when the bundled fonts are turned off."
       },
+      "font_subheading": {
+        "label": "Subheading font",
+        "info": "Point it at the same face as Body for a shop that uses two. Only used when the bundled fonts are turned off."
+      },
+      "font_accent": {
+        "label": "Accent font",
+        "info": "For the small emphatic text a shop wants set apart. Only used when the bundled fonts are turned off."
+      },
+      "font_price": {
+        "label": "Price font",
+        "info": "A figure is not body copy, and some faces set numerals better than others. Only used when the bundled fonts are turned off."
+      },
       "body_header": "Body text",
       "type_ratio_min": {
         "label": "Type scale (narrow screens)"
@@ -654,7 +666,10 @@
       "font": {
         "label": "Font",
         "body": "Body",
-        "heading": "Heading"
+        "subheading": "Subheading",
+        "heading": "Heading",
+        "accent": "Accent",
+        "price": "Price"
       },
       "size": {
         "label": "Size",

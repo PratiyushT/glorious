@@ -53,6 +53,12 @@
       assign style = style | append: 'font-family: var(--font-body);'
     when 'heading'
       assign style = style | append: 'font-family: var(--font-heading);'
+    when 'subheading'
+      assign style = style | append: 'font-family: var(--font-subheading);'
+    when 'accent'
+      assign style = style | append: 'font-family: var(--font-accent);'
+    when 'price'
+      assign style = style | append: 'font-family: var(--font-price);'
   endcase
 
   case block.settings.size
@@ -132,7 +138,10 @@
       "options": [
         { "value": "inherit", "label": "t:blocks.all.inherit.label" },
         { "value": "body", "label": "t:blocks.product_card_text.font.body" },
-        { "value": "heading", "label": "t:blocks.product_card_text.font.heading" }
+        { "value": "subheading", "label": "t:blocks.product_card_text.font.subheading" },
+        { "value": "heading", "label": "t:blocks.product_card_text.font.heading" },
+        { "value": "accent", "label": "t:blocks.product_card_text.font.accent" },
+        { "value": "price", "label": "t:blocks.product_card_text.font.price" }
       ],
       "default": "inherit"
     },

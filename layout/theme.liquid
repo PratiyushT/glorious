@@ -51,6 +51,15 @@
         {{ body_italic | font_face: font_display: 'swap' }}
         {{ settings.font_heading | font_face: font_display: 'swap' }}
         {{ heading_bold | font_face: font_display: 'swap' }}
+        {%- comment -%}
+          The three roles added beside Heading and Body. A shop pointing several
+          of them at one face costs nothing extra — Shopify emits the same
+          `@font-face` once per family, and a role left on the default is simply
+          the same declaration again.
+        {%- endcomment -%}
+        {{ settings.font_subheading | font_face: font_display: 'swap' }}
+        {{ settings.font_accent | font_face: font_display: 'swap' }}
+        {{ settings.font_price | font_face: font_display: 'swap' }}
       {% endstyle %}
     {%- endunless -%}
 

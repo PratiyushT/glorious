@@ -1836,6 +1836,36 @@ Six rungs is six.
   block instead (`{%- schema -%}(.*?){%- endschema -%}` → `json.loads` →
   recursive walk); that form finds all of them. 51 ranges remain.
 
+### Font roles
+
+**Five, not two.** Heading and Body are the pair this theme was ported with;
+Subheading, Accent and **Price** join them. A shop using two faces points
+several roles at one, which is exactly what the bundled pair does — Italiana
+for Heading and Accent, Karla for Body, Subheading and Price — so the shipped
+theme is unchanged and every role is a departure a merchant can take.
+
+- **`--font-heading` is the canonical name; `--font-display` is an alias.**
+  `base.css` has said `--font-display` since the port and renaming it across the
+  stylesheet would be a sweep with nothing to show. The alias is not cosmetic:
+  `product-card-text` and `product-card-option-values` already offered "Heading"
+  and emitted `var(--font-heading)`, **which was defined nowhere** — so the
+  declaration was invalid at computed-value time, was dropped, and the setting
+  silently did nothing. Verified after: the alias resolves to the same family,
+  and the display heading is still Italiana.
+
+- **Price is a role because a figure is not body copy.** Some faces set numerals
+  better than others, and `.card__price` is the class every surface reuses —
+  card, cart page, blog, search, collection list — so one declaration reaches
+  all of them.
+
+- **Three new `font_face` emissions** in `layout/theme.liquid`, only when the
+  bundled faces are off. Roles pointing at one family cost nothing extra:
+  Shopify emits the same `@font-face` once.
+
+The text presets that pick between these roles — Paragraph and Heading 1–6,
+each with a named responsive size step rather than a px — are the next pass.
+`.display` is deliberately untouched.
+
 ### Fluid scales
 
 **A fluid scale is one decision, not two or three settings.** `--fs-display` is

@@ -2204,6 +2204,11 @@ a.card__title::after {
   display: block;
   margin-top: var(--card-price-top, 0);
   min-height: 1.5em;
+  /* The price role. It is a font of its own because a figure is not body copy —
+     a shop may want it in the heading face, or in something with lining figures
+     — and because `.card__price` is the class every surface reuses: the card,
+     the cart page, the blog, search and the collection list. */
+  font-family: var(--font-price);
   font-size: var(--product-price-size);
   letter-spacing: var(--product-price-tracking);
   line-height: var(--product-line);

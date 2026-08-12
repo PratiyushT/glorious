@@ -158,6 +158,27 @@
         "default": "assistant_n4"
       },
       {
+        "type": "font_picker",
+        "id": "font_subheading",
+        "label": "t:settings_schema.typography.font_subheading.label",
+        "info": "t:settings_schema.typography.font_subheading.info",
+        "default": "assistant_n4"
+      },
+      {
+        "type": "font_picker",
+        "id": "font_accent",
+        "label": "t:settings_schema.typography.font_accent.label",
+        "info": "t:settings_schema.typography.font_accent.info",
+        "default": "assistant_n4"
+      },
+      {
+        "type": "font_picker",
+        "id": "font_price",
+        "label": "t:settings_schema.typography.font_price.label",
+        "info": "t:settings_schema.typography.font_price.info",
+        "default": "assistant_n4"
+      },
+      {
         "type": "header",
         "content": "t:settings_schema.typography.body_header"
       },

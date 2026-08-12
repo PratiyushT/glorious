@@ -243,21 +243,42 @@
     --grid-min: {{ settings.grid_min_column }}px;
 
     /* ---- Typography -------------------------------------------------- */
+    {%- comment -%}
+      **Five font roles.** Heading and Body are the two this theme has always
+      had; Subheading, Accent and Price are new, and a shop that wants two faces
+      simply points several roles at the same one — which is exactly what the
+      bundled pair does.
+
+      `--font-heading` is the canonical name and `--font-display` is kept as an
+      alias, because `base.css` has said `--font-display` throughout since the
+      port and renaming it across the stylesheet would be a sweep with nothing
+      to show for it. The alias is not cosmetic: two blocks already asked for
+      `var(--font-heading)`, which was defined nowhere — so "Heading" on a text
+      block was invalid at computed-value time, the declaration was dropped, and
+      the setting silently did nothing.
+    {%- endcomment -%}
     {%- if settings.use_bundled_fonts -%}
-    --font-display: 'Italiana', 'Italiana Fallback', Georgia, serif;
+    --font-heading: 'Italiana', 'Italiana Fallback', Georgia, serif;
+    --font-accent: 'Italiana', 'Italiana Fallback', Georgia, serif;
     --font-body: 'Karla', 'Karla Fallback', system-ui, sans-serif;
+    --font-subheading: 'Karla', 'Karla Fallback', system-ui, sans-serif;
+    --font-price: 'Karla', 'Karla Fallback', system-ui, sans-serif;
     --font-body-weight: 400;
     --font-body-style: normal;
     --font-display-style: normal;
     --display-weight: 400;
     {%- else -%}
-    --font-display: {{ settings.font_heading.family }}, {{ settings.font_heading.fallback_families }};
+    --font-heading: {{ settings.font_heading.family }}, {{ settings.font_heading.fallback_families }};
+    --font-accent: {{ settings.font_accent.family }}, {{ settings.font_accent.fallback_families }};
     --font-body: {{ settings.font_body.family }}, {{ settings.font_body.fallback_families }};
+    --font-subheading: {{ settings.font_subheading.family }}, {{ settings.font_subheading.fallback_families }};
+    --font-price: {{ settings.font_price.family }}, {{ settings.font_price.fallback_families }};
     --font-body-weight: {{ settings.font_body.weight }};
     --font-body-style: {{ settings.font_body.style }};
     --font-display-style: {{ settings.font_heading.style }};
     --display-weight: {{ settings.font_heading.weight }};
     {%- endif %}
+    --font-display: var(--font-heading);
     --heading-leading: {{ s_hleading | times: 1.0 | divided_by: 100.0 }};
     --heading-tracking: {{ s_htrack | times: 1.0 | divided_by: 1000.0 }}em;
     --body-leading: {{ s_bleading | times: 1.0 | divided_by: 100.0 }};
