@@ -259,6 +259,45 @@ plain vertical stack with nothing sharing a row, so `subheading`, `heading`,
   stack holds nothing but the form and it still works — which is the case worth
   checking, since the copy is now optional in a way it never was.
 
+**`lookbook` cannot convert, and this is the one that closes the phase.** Its
+`scene` stays a local block. The reason is structural rather than awkward:
+
+- **The section renders each scene seven times, into seven different places.**
+  The tab into `.lookbook__rail`; the panel, the tag chip, the pins and the
+  cards into `.lookbook__stage`; the piece count into `.lookbook__list-head`;
+  the rows into `.lookbook__list-inner`. `content_for 'blocks'` renders a block
+  **once**, as one contiguous chunk in one flat flow. There is no arrangement
+  of it that puts a scene's tab in the rail and its pins over the stage.
+
+- **`section.blocks` cannot cover the other six**, which is what rules out the
+  obvious escape. It is a tally and nothing more — no settings at all — so the
+  section could not reach a scene's products, coordinates, image or video from
+  out there. The `has_video` pre-scan alone is impossible: it reads
+  `block.settings.video` before rendering anything.
+
+- **A static block does not help either.** `content_for 'block'` is
+  static-only, needs an id known when the section is written, and still renders
+  once in one place. Scenes are merchant-added, so there is no fixed list to
+  loop.
+
+- **And the header cannot convert on its own**, which is what settles it. A
+  section holds either its own blocks or theme blocks, never both — so while
+  `scene` is local, `subheading`/`title`/`paragraph` cannot be blocks here.
+
+**That constraint has a name, and it was confirmed rather than assumed.**
+Listing one theme block beside `scene` fails `theme check` with
+`ValidLocalBlocks` — *"Sections cannot use theme blocks together with locally
+scoped blocks."* The second error in the same run is the more useful one:
+`JSONMissingBlock: Theme block 'blocks/scene.liquid' does not exist`. One theme
+block in the array **reclassifies every block in the section as a theme
+block**, and the stored local types are then looked for in `blocks/`.
+
+That is the mechanism behind the hero collision recorded further down, stated
+exactly: the hero was not confused by two of its types resolving to files, it
+was *re-read as a theme-block section* because any did — and then reported the
+one type that had no file. The error naming an innocent block is that
+reclassification, not a quirk.
+
 ### Announcements
 
 **Adding to the bag changed a number in the corner and said nothing.** The
