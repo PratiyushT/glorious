@@ -16,6 +16,22 @@
   **Horizontal is the default, deliberately.** A vertical group adds nothing
   over simply placing the blocks one after another, which is what a flat flow
   already gives; the reason to reach for a group is to put things on one row.
+  Vertical earns its place only *nested inside a horizontal group* — a column
+  of two things sitting on a row — because inside a row that free stacking is
+  gone.
+
+  **Three settings are horizontal-only and say so with `visible_if`**, rather
+  than sitting in the panel doing nothing:
+
+    - `gap` resolves to `column-gap`, which a column never uses — a stacked
+      group takes its spacing from the section, by design.
+    - `wrap` is meaningless in a column: wrapping one needs a bounded height,
+      and nothing here gives it one.
+    - `stack_below` exists to turn a row into a column, so it has nothing to
+      say to a group that already is one.
+
+  `distribute` and `align` stay visible throughout: both axes are real in
+  either direction, and only which one they act on changes.
 
   The children's own vertical margins are zeroed, the same way
   `.collection-list__content` zeroes them: a gap and a margin add, so a block
@@ -162,7 +178,8 @@
       "id": "wrap",
       "label": "t:blocks.group.wrap.label",
       "info": "t:blocks.group.wrap.info",
-      "default": true
+      "default": true,
+      "visible_if": "{{ block.settings.direction == 'horizontal' }}"
     },
     {
       "type": "select",
@@ -174,17 +191,20 @@
         { "value": "tablet", "label": "t:blocks.group.stack_below.tablet" },
         { "value": "mobile", "label": "t:blocks.group.stack_below.mobile" }
       ],
-      "default": "mobile"
+      "default": "mobile",
+      "visible_if": "{{ block.settings.direction == 'horizontal' }}"
     },
     {
       "type": "header",
-      "content": "t:blocks.all.spacing_header"
+      "content": "t:blocks.all.spacing_header",
+      "visible_if": "{{ block.settings.direction == 'horizontal' }}"
     },
     {
       "type": "select",
       "id": "gap",
       "label": "t:blocks.group.gap.label",
       "info": "t:blocks.group.gap.info",
+      "visible_if": "{{ block.settings.direction == 'horizontal' }}",
       "options": [
         { "value": "none", "label": "t:blocks.all.step.none" },
         { "value": "tiny", "label": "t:blocks.all.step.tiny" },
