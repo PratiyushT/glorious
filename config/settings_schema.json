@@ -145,28 +145,28 @@
         "id": "font_accent",
         "label": "t:settings_schema.typography.font_accent.label",
         "info": "t:settings_schema.typography.font_accent.info",
-        "default": "italiana_n4"
+        "default": "assistant_n4"
       },
       {
         "type": "font_picker",
         "id": "font_body",
         "label": "t:settings_schema.typography.font_body.label",
         "info": "t:settings_schema.typography.font_body.info",
-        "default": "karla_n4"
+        "default": "assistant_n4"
       },
       {
         "type": "font_picker",
         "id": "font_subheading",
         "label": "t:settings_schema.typography.font_subheading.label",
         "info": "t:settings_schema.typography.font_subheading.info",
-        "default": "karla_n4"
+        "default": "assistant_n4"
       },
       {
         "type": "font_picker",
         "id": "font_heading",
         "label": "t:settings_schema.typography.font_heading.label",
         "info": "t:settings_schema.typography.font_heading.info",
-        "default": "italiana_n4"
+        "default": "assistant_n4"
       },
       {
         "type": "header",

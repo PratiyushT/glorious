@@ -1844,6 +1844,14 @@ then define ten reusable presets: Title, Heading 1–5, Subheading, Paragraph,
 Small and Caption. There is no bundled-font switch and no fifth Price font;
 price remains a compatibility alias of Body.
 
+All four font pickers default to Shopify's verified `assistant_n4` handle.
+Theme Check does not validate whether a non-deprecated handle exists in the
+store's font library: Shopify rejected `italiana_n4` only during upload and
+left the previous remote schema active, which then appeared as a page of
+missing translations after the locale file uploaded successfully. A new font
+default is not accepted until a strict push of `config/settings_schema.json`
+confirms it server-side.
+
 - Each preset chooses one of the four font roles, one fluid size from 3X small
   through 8X large, Tight through Loose line height, Tighter through Wider
   letter spacing, and As typed / Uppercase / Lowercase / Capitalize each word.
