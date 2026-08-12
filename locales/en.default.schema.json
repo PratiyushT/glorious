@@ -633,43 +633,48 @@
     "group": {
       "name": "Layout group",
       "direction": {
-        "label": "Direction",
-        "info": "Horizontal puts the blocks inside on one row. Vertical stacks them, which is what they do without a group.",
-        "horizontal": "Horizontal",
-        "vertical": "Vertical"
+        "label": "Arrange blocks",
+        "info": "Side by side is what a group is for. Stacked is how blocks already behave without one.",
+        "horizontal": "Side by side",
+        "vertical": "Stacked"
       },
       "distribute": {
-        "label": "Distribute",
-        "info": "How the space along the group is shared out.",
-        "start": "Together, at the start",
-        "center": "Together, centred",
-        "end": "Together, at the end",
-        "between": "Pushed apart"
+        "label": "Position along the row",
+        "info": "Where the blocks sit once they have been laid out.",
+        "start": "Left",
+        "center": "Centre",
+        "end": "Right",
+        "between": "Spread apart"
       },
       "align": {
-        "label": "Align",
-        "info": "How the blocks line up across the group. Baseline aligns the text itself rather than the boxes.",
-        "info_vertical": "How the blocks line up across the group. Stretch makes each one the full width.",
-        "baseline": "Text baseline",
-        "start": "Start",
-        "center": "Centre",
-        "end": "End",
-        "stretch": "Stretch"
+        "label_horizontal": "Vertical alignment",
+        "label_vertical": "Horizontal alignment",
+        "info_horizontal": "How the blocks line up against each other on the row. Line up the text matches the words themselves rather than the boxes around them, which is usually what you want for a label beside a button.",
+        "info_vertical": "Where each block sits across the group.",
+        "text": "Line up the text",
+        "top": "Top",
+        "middle": "Middle",
+        "bottom": "Bottom",
+        "equal_height": "Equal height",
+        "left": "Left",
+        "centre": "Centre",
+        "right": "Right",
+        "full_width": "Full width"
       },
       "wrap": {
-        "label": "Wrap onto more rows",
-        "info": "Off keeps everything on one row, however narrow it gets."
+        "label": "Allow a second row",
+        "info": "Off keeps every block on one row however narrow it gets, so they squeeze instead of wrapping."
       },
       "gap": {
-        "label": "Space along the row",
-        "info": "Only applies while the blocks sit side by side. Stacked, the space comes from the section's own gap so the rhythm matches everything above and below."
+        "label": "Space between blocks",
+        "info": "Applies while the blocks sit side by side. Stacked, the space comes from the section so the rhythm matches everything above and below."
       },
       "stack_below": {
         "label": "Stack when narrow",
-        "info": "Measured on the group's own width, not the screen, so a group in a narrow column stacks on a desktop too.",
+        "info": "Measured on the group's own width rather than the screen's, so a group in a narrow column stacks on a desktop too.",
         "never": "Never",
-        "tablet": "Below tablet width",
-        "mobile": "Below phone width"
+        "tablet": "On tablet and smaller",
+        "mobile": "On phone only"
       }
     },
     "product_count": {

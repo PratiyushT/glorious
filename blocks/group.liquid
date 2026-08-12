@@ -188,14 +188,14 @@
     {
       "type": "select",
       "id": "align",
-      "label": "t:blocks.group.align.label",
-      "info": "t:blocks.group.align.info",
+      "label": "t:blocks.group.align.label_horizontal",
+      "info": "t:blocks.group.align.info_horizontal",
       "options": [
-        { "value": "baseline", "label": "t:blocks.group.align.baseline" },
-        { "value": "start", "label": "t:blocks.group.align.start" },
-        { "value": "center", "label": "t:blocks.group.align.center" },
-        { "value": "end", "label": "t:blocks.group.align.end" },
-        { "value": "stretch", "label": "t:blocks.group.align.stretch" }
+        { "value": "baseline", "label": "t:blocks.group.align.text" },
+        { "value": "start", "label": "t:blocks.group.align.top" },
+        { "value": "center", "label": "t:blocks.group.align.middle" },
+        { "value": "end", "label": "t:blocks.group.align.bottom" },
+        { "value": "stretch", "label": "t:blocks.group.align.equal_height" }
       ],
       "default": "baseline",
       "visible_if": "{{ block.settings.direction == 'horizontal' }}"
@@ -203,13 +203,13 @@
     {
       "type": "select",
       "id": "align_vertical",
-      "label": "t:blocks.group.align.label",
+      "label": "t:blocks.group.align.label_vertical",
       "info": "t:blocks.group.align.info_vertical",
       "options": [
-        { "value": "start", "label": "t:blocks.group.align.start" },
-        { "value": "center", "label": "t:blocks.group.align.center" },
-        { "value": "end", "label": "t:blocks.group.align.end" },
-        { "value": "stretch", "label": "t:blocks.group.align.stretch" }
+        { "value": "start", "label": "t:blocks.group.align.left" },
+        { "value": "center", "label": "t:blocks.group.align.centre" },
+        { "value": "end", "label": "t:blocks.group.align.right" },
+        { "value": "stretch", "label": "t:blocks.group.align.full_width" }
       ],
       "default": "start",
       "visible_if": "{{ block.settings.direction == 'vertical' }}"
