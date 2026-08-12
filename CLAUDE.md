@@ -144,6 +144,59 @@ to a schema default.
   and 505 against 33 above), and two columns at 600 with the odd last card
   spanning the full 542.
 
+**`section.blocks` survives the conversion, but only as a tally.** This governs
+every remaining conversion, so it is worth stating exactly. A section that
+renders theme blocks still has a populated `section.blocks`:
+
+| | |
+| --- | --- |
+| `size` | the real instance count |
+| `id` | real, and it ends in the block's stored key |
+| `type` | **always `@theme`** — never the type you declared |
+| `settings` | **empty**, every one of them |
+| `shopify_attributes` | **empty** |
+
+Measured with a probe against the converted `promises`, not assumed: five
+blocks came back `size=5` with ids ending `__shipping`, `__support`, `__secure`,
+`__handcraft`, `__certified`, and every `type` reading `@theme` with no
+settings at all.
+
+So a section can **count and number** its blocks and cannot **read** them. That
+is enough for an index, a total, an `{% if size > 1 %}` guard or a row of
+controls beside the set — and it is nothing at all for anything that needs a
+block's content out in the section. Reach for `content_for 'blocks'` for the
+content and `section.blocks` only for the arithmetic.
+
+**`testimonials` is the section that needed exactly that.** It looped
+`section.blocks` twice — once for the quotes, once for the dots *outside* them
+— and merchant blocks render as one flat flow, so the dots could never be
+blocks. They stay a Liquid loop, because a dot needs only `forloop.index` for
+its label and the count for its existence. The two loops stay in step by
+position: both render in `block_order`, and `initQuotes` pairs quote to dot by
+index. Verified: four quotes, four dots, labels "Show review 1"–"4", and the
+active quote and the selected dot agreeing.
+
+- **`forloop.first` became a better rule than it was.** The opening quote was
+  marked `is-active` by Liquid so it showed at first paint and without
+  scripting. The block has no index, so `base.css` now says
+  `.quotes:not(:has(.quote.is-active)) .quote:first-child` — the first quote
+  shows exactly while *nothing* is active. `initQuotes` needed no change.
+
+  A plain `.quote:first-child` would have been the obvious move and is wrong:
+  once the set rotates, quote 1 would stay lit under quote 3. Verified in four
+  states with transitions disabled — nothing active → quote 1 lit; third
+  active → quote 1 dark and quote 3 lit; first active → **byte-identical** to
+  the nothing-active state (`opacity 1`, `matrix(1,0,0,1,0,0)`), which is what
+  makes the hand-over interpolate nothing.
+
+  It also fixes a case Liquid had been carrying by accident: `initQuotes`
+  returns early below two quotes and marks nothing, so a section with a single
+  testimonial would have sat at opacity 0. Verified — the lone quote now shows.
+
+- **`"tag": null` again, and again load-bearing.** `.quotes` stacks every quote
+  in `grid-area: 1 / 1` to cross-fade them; a generated wrapper would take that
+  cell and the quotes inside it would stack vertically instead of overlapping.
+
 ### Announcements
 
 **Adding to the bag changed a number in the corner and said nothing.** The

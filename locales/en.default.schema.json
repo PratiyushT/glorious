@@ -623,6 +623,15 @@
         "label": "Link"
       }
     },
+    "quote": {
+      "name": "Quote",
+      "text": {
+        "label": "Quote"
+      },
+      "author": {
+        "label": "Attribution"
+      }
+    },
     "promise": {
       "name": "Promise",
       "icon": {
@@ -1097,17 +1106,6 @@
       },
       "interval": {
         "label": "Seconds between quotes"
-      },
-      "blocks": {
-        "quote": {
-          "name": "Quote",
-          "text": {
-            "label": "Quote"
-          },
-          "author": {
-            "label": "Attribution"
-          }
-        }
       }
     },
     "visit": {

@@ -3505,6 +3505,26 @@ a.card__title::after {
   transform: translateY(0);
 }
 
+/* The opening quote, before anything has been chosen.
+
+   The section used to mark it with `forloop.first`. The quote is a theme block
+   now and has no index, so the condition moves here — and it is not "the first
+   one" but "the first one *while nothing is active*", which is a different and
+   better rule. It holds before theme.js runs, so there is no blank beat at
+   first paint; it stops holding the instant `show(0)` marks a quote, so it
+   cannot strand quote 1 on screen once the set starts rotating.
+
+   It also covers the single-quote case, which Liquid used to carry by
+   accident: `initQuotes` returns early below two quotes and marks nothing, so
+   without this a lone testimonial would sit at opacity 0.
+
+   Declared with the same values as `.is-active` so the hand-over interpolates
+   nothing. */
+.quotes:not(:has(.quote.is-active)) .quote:first-child {
+  opacity: 1;
+  transform: translateY(0);
+}
+
 .quote__text {
   font-family: var(--font-display);
   font-size: var(--fs-2xl);

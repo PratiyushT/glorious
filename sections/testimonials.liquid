@@ -2,6 +2,18 @@
   Testimonials. Quotes cross-fade in place; the dots are real buttons so the
   set is reachable by keyboard. With JavaScript off, the first quote shows and
   the rest follow it in the document rather than disappearing.
+
+  **The dots stay a Liquid loop while the quotes are theme blocks, and that is
+  only possible because of what `section.blocks` still holds.** A section that
+  renders theme blocks keeps a populated `section.blocks` — the real instance
+  count and a real `id` — but every entry reports `type: "@theme"` and carries
+  **no settings and no `shopify_attributes`**. So the section can count its
+  blocks and number them and cannot read them, which is exactly and only what a
+  row of dots needs. Measured, not assumed; see CLAUDE.md.
+
+  The two loops therefore stay in step by position: `content_for 'blocks'` and
+  `section.blocks` both render in `block_order`, and `initQuotes` pairs a quote
+  to a dot by index.
 {%- endcomment -%}
 
 <section
@@ -21,18 +33,7 @@
         data-interval="{{ section.settings.interval | times: 1000 }}"
         style="--reveal-delay: 100ms; margin-top: var(--space-md);"
       >
-        {%- for block in section.blocks -%}
-          <figure
-            class="quote{% if forloop.first %} is-active{% endif %}"
-            data-quote
-            {{ block.shopify_attributes }}
-          >
-            <blockquote class="quote__text">&ldquo;{{ block.settings.text }}&rdquo;</blockquote>
-            {%- if block.settings.author != blank -%}
-              <figcaption class="quote__author">{{ block.settings.author }}</figcaption>
-            {%- endif -%}
-          </figure>
-        {%- endfor -%}
+        {% content_for 'blocks' %}
       </div>
 
       {%- if section.blocks.size > 1 -%}
@@ -135,22 +136,7 @@
   ],
   "blocks": [
     {
-      "type": "quote",
-      "name": "t:sections.testimonials.blocks.quote.name",
-      "settings": [
-        {
-          "type": "text",
-          "id": "text",
-          "label": "t:sections.testimonials.blocks.quote.text.label",
-          "default": "The craftsmanship is extraordinary and the service even more so."
-        },
-        {
-          "type": "text",
-          "id": "author",
-          "label": "t:sections.testimonials.blocks.quote.author.label",
-          "default": "Manjit Kaur — Google Review"
-        }
-      ]
+      "type": "quote"
     }
   ],
   "presets": [
