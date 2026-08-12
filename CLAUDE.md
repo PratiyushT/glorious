@@ -308,6 +308,53 @@ was *re-read as a theme-block section* because any did — and then reported the
 one type that had no file. The error naming an innocent block is that
 reclassification, not a quirk.
 
+### App blocks
+
+**`@app` is *not* a theme block for the purposes of that rule, and this is the
+useful half of the finding.** `{ "type": "@app" }` sits in a `blocks` array
+beside locally scoped blocks without tripping `ValidLocalBlocks` — tested on
+`footer`, which has three local types: `theme check` returned `[]`, the server
+accepted it, and the footer rendered its social row and all four columns with
+no Liquid error.
+
+So **accepting apps never requires converting a section.** The two are
+independent, and a section that can never convert — `lookbook`, `hero`,
+`header`, `footer` — can still take app blocks. Anything read here that ties
+the two together is wrong.
+
+**The Theme Store's actual requirement is narrower than "every section".** It
+is app-block support in the **main product section and the featured product
+section** — both on the product template, which is not built. Everywhere else
+is encouraged rather than required. So this is not a submission blocker today;
+it becomes one when the product template is built, and that section must carry
+`@app` from the start.
+
+**Five sections carry it: `about`, `craft`, `visit`, `rich-text`,
+`newsletter`.** They are the ones whose `content_for 'blocks'` renders into a
+plain vertical flow, so an app block lands somewhere sane and needs no render
+path of its own — `content_for 'blocks'` renders whatever is stored.
+
+**Three theme-block sections deliberately do not**, and each for its own
+reason:
+
+- **`testimonials`** — `.quotes` stacks every child in `grid-area: 1 / 1` and
+  cross-fades them. An app block would be laid under a quote at opacity 0 and
+  never seen. This is the worst of the three: it would look like the app was
+  broken.
+- **`promises`** — the flow is `.promises__grid`, so an app block becomes a
+  cell in an art-directed grid built around card-shaped children and an orphan
+  rule keyed to `:nth-child`.
+- **`collection-list`** — its header blocks render straight into `.page-width`
+  with no wrapper, because `.display + .grid-auto`'s gap depends on that
+  adjacency. An app block between the title and the grid breaks the rule and
+  the heading loses its gap.
+
+A section with **local** blocks needs a render path as well as the schema
+entry — `{% when '@app' %}{% render block %}` inside its own loop. The footer's
+loops are filtered by type (`where: 'type', 'menu'`), so an `@app` block would
+match none of them and silently render nothing. Declaring the type without
+adding that case is how a merchant adds an app block and sees an empty space.
+
 ### Announcements
 
 **Adding to the bag changed a number in the corner and said nothing.** The
