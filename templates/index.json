@@ -201,18 +201,9 @@
                 "price": {
                   "type": "product-card-price",
                   "settings": {}
-                },
-                "tax": {
-                  "type": "product-card-text",
-                  "settings": {
-                    "text": "inc. all taxes",
-                    "size": "note",
-                    "text_transform": "none",
-                    "color_source": "muted"
-                  }
                 }
               },
-              "block_order": ["price", "tax"],
+              "block_order": ["price"],
               "settings": {
                 "direction": "horizontal",
                 "distribute": "start",

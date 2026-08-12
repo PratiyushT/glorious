@@ -759,14 +759,18 @@
     ]
   },
   {
-    "name": "t:settings_schema.pricing.name",
+    "name": "t:settings_schema.tax.name",
     "settings": [
       {
-        "type": "checkbox",
-        "id": "show_tax_note",
-        "label": "t:settings_schema.pricing.show_tax_note.label",
-        "info": "t:settings_schema.pricing.show_tax_note.info",
-        "default": true
+        "type": "paragraph",
+        "content": "t:settings_schema.tax.paragraph"
+      },
+      {
+        "type": "text",
+        "id": "tax_note_text",
+        "label": "t:settings_schema.tax.tax_note_text.label",
+        "info": "t:settings_schema.tax.tax_note_text.info",
+        "default": "inc. all taxes and fees"
       }
     ]
   },
@@ -800,6 +804,51 @@
         "label": "t:settings_schema.cart.cart_drawer_on_add.label",
         "info": "t:settings_schema.cart.cart_drawer_on_add.info",
         "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "show_tax_note",
+        "label": "t:settings_schema.cart.show_tax_note.label",
+        "info": "t:settings_schema.cart.show_tax_note.info",
+        "default": true
+      },
+      {
+        "type": "header",
+        "content": "t:settings_schema.cart.features_header"
+      },
+      {
+        "type": "checkbox",
+        "id": "cart_note",
+        "label": "t:settings_schema.cart.cart_note.label",
+        "info": "t:settings_schema.cart.cart_note.info",
+        "default": false
+      },
+      {
+        "type": "checkbox",
+        "id": "cart_discounts",
+        "label": "t:settings_schema.cart.cart_discounts.label",
+        "info": "t:settings_schema.cart.cart_discounts.info",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "cart_installments",
+        "label": "t:settings_schema.cart.cart_installments.label",
+        "info": "t:settings_schema.cart.cart_installments.info",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "cart_accelerated_checkout",
+        "label": "t:settings_schema.cart.cart_accelerated_checkout.label",
+        "info": "t:settings_schema.cart.cart_accelerated_checkout.info",
+        "default": true
+      },
+      {
+        "type": "url",
+        "id": "cart_empty_link",
+        "label": "t:settings_schema.cart.cart_empty_link.label",
+        "info": "t:settings_schema.cart.cart_empty_link.info"
       },
       {
         "type": "checkbox",

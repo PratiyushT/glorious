@@ -3304,19 +3304,80 @@ the quick-view disc, `--card-zoom`, the edge colour).
 
 ### The tax note
 
-"inc. tax" after every price, from `snippets/tax-note.liquid`.
+**It is the cart's, and only the cart's.** It used to follow every price in the
+theme — the product card, the quick view, the lookbook, the search rows, the
+product page — under one shop-wide switch. It is rendered by the bag drawer and
+the cart page and by nothing else, on request. A qualification repeated beside
+every figure in a grid of twenty-four is noise; the place it matters is the one
+where the customer is about to pay. Verified: **0 `.price-tax` elements** on the
+home page, and the cart reading "Subtotal: $4,376.70 inc. all taxes and fees".
 
-- **One switch, and it is `settings.show_tax_note`** (Theme settings → Pricing).
-  Every surface obeys it and none can override it, so "is it on?" has exactly
-  one answer. Verified both ways: off gives 0 notes across home, collection,
-  product, quick view, predictive search and the drawer; on restores them.
+**Two settings, in two groups, because they are two decisions.**
 
-  `featured-products`, `lookbook` and `cart-drawer` each carried a second
-  toggle ANDed with it, and `tax-note.liquid` took an `enabled` parameter.
-  All four were removed on request — a note qualifying a price is a statement
-  about how the shop prices, not a per-row style choice, and three extra
-  switches made the shop-wide one hard to trust. **Do not reintroduce a
-  section-level toggle.**
+| | |
+| --- | --- |
+| Theme settings → **Tax** | `tax_note_text` — the *words* |
+| Theme settings → **Cart** | `show_tax_note` — whether the bag says them |
+
+A shop states how it prices once, and that is a fact about the shop; whether
+the bag repeats it is a question about the bag, and the bag is where it is
+said. The old **Pricing** group held only that one checkbox and is gone.
+
+- **The wording moved out of `locales/en.default.json`, reversing what this
+  file used to say** — "changing 'inc. all taxes and fees' to 'inkl. MwSt.' is
+  a localisation, not a per-shop style choice". The reason it was wrong: the
+  sentence is not one of a fixed set the theme knows how to translate. A shop
+  pricing tax-exclusively needs to say something the theme never wrote, so it
+  has to be a setting. A shop needing it in a second language translates the
+  *setting*, which Shopify's own locale editor does.
+- **The `short` parameter went with the card.** There were two wordings because
+  a card's price line is one row beside the figure at 15px and the longer
+  sentence wrapped it. Nothing narrow renders this any more.
+- **A card can still say something beside its price** — a `product-card-text`
+  block in the price row, which is what carried "inc. all taxes" there for one
+  commit. That is the merchant composing a line, not the theme applying a
+  shop-wide rule, and it is the difference worth keeping in view: the setting
+  is about how the *shop* prices, the block is about what *this row* says.
+- **Do not reintroduce a section-level toggle.** `featured-products`,
+  `lookbook` and `cart-drawer` each carried one ANDed with the shop-wide
+  switch, which gave "is it on?" two answers.
+
+### Cart settings
+
+**The drawer and the cart page are alternatives, and every Cart setting acts on
+both.** A bag should not be able to do different things depending on which the
+shop has chosen, so each of these is the same setting reading the same object
+in `snippets/cart-drawer-contents.liquid` and in `templates/cart.liquid`.
+
+| | |
+| --- | --- |
+| `cart_type` | drawer or page — never both |
+| `cart_drawer_on_add` | the drawer opens on Add to Bag |
+| `show_tax_note` | the Tax note follows the subtotal |
+| `cart_note` | a message to the seller, submitted with the order |
+| `cart_discounts` | lists cart-level discounts above the subtotal |
+| `cart_installments` | `payment_terms` |
+| `cart_accelerated_checkout` | `payment_button` |
+| `cart_empty_link` | where an empty bag's button goes |
+
+- **The drawer's actions became `{% form 'cart', cart %}`, and that is what
+  makes three of these possible at all.** `payment_terms` and `payment_button`
+  are filters *on a form object*, so a hand-written `<form action="/cart">` —
+  which is what the drawer had — cannot have them. Shopify emits the same
+  action, method and hidden fields it was writing out by hand.
+- **The last two render nothing where the shop has not enabled them**, which is
+  Shopify's own behaviour: the setting decides whether to *offer* the feature,
+  not whether it appears. Measured on this store, which has no wallet enabled:
+  the setting is on and no payment button is in the DOM. That is correct, and
+  it is why the info text says so.
+- `cart_empty_link` is a `url` setting, so it carries no schema default —
+  Shopify's `url` type takes none. Both surfaces fall back to
+  `routes.all_products_collection_url` in Liquid rather than shipping a control
+  that looks live and goes nowhere.
+
+Verified with a line in the bag: the note field renders on both surfaces with
+`name="note"` and a matching `label[for]`, the drawer's form posts to `/cart`,
+the checkout button is intact, and the subtotal carries the note.
 - **In the card it goes inside the `metal_price_html` capture**, not after it.
   That capture is what the script writes into `[data-card-price]` on a metal
   pick, so a note left outside would vanish at the first swatch click.

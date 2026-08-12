@@ -63,7 +63,12 @@
     <div class="drawer-empty">
       <p class="drawer-empty__title">{{ 'cart.empty' | t }}</p>
       <p class="drawer-empty__text">{{ 'cart.empty_text' | t }}</p>
-      <a class="btn btn--primary" href="{{ routes.all_products_collection_url }}">
+      {%- comment -%}
+        Where an empty bag sends a shopper is the merchant's, and it falls back
+        to all products rather than to a fragment — this theme does not ship a
+        control that looks live and goes nowhere.
+      {%- endcomment -%}
+      <a class="btn btn--primary" href="{{ settings.cart_empty_link | default: routes.all_products_collection_url }}">
         {{ 'cart.browse' | t }}
       </a>
     </div>
@@ -209,6 +214,22 @@
   -%}
 
   <div class="drawer__foot">
+    {%- comment -%}
+      Cart-level discounts, which are the shop's own — an automatic discount or
+      a code already applied. They are stated above the subtotal because the
+      subtotal is what they have already come off.
+    {%- endcomment -%}
+    {%- if settings.cart_discounts and cart.cart_level_discount_applications.size > 0 -%}
+      <ul class="drawer__discounts">
+        {%- for discount in cart.cart_level_discount_applications -%}
+          <li class="drawer__discount">
+            <span>{{ discount.title }}</span>
+            <span>−{{ discount.total_allocated_amount | money }}</span>
+          </li>
+        {%- endfor -%}
+      </ul>
+    {%- endif -%}
+
     <div class="drawer__subtotal">
       {%- comment -%}
         Revision 14 moved the note off the figure and into the label —
@@ -253,16 +274,51 @@
       </div>
     {%- endif -%}
 
-    <form action="{{ routes.cart_url }}" method="post" class="drawer__actions">
+    {%- comment -%}
+      **`{% form 'cart' %}` rather than a hand-written `<form>`**, and that is
+      what makes three of the Cart settings possible at all: `payment_terms` and
+      `payment_button` are filters *on a form object*, so a form Liquid did not
+      build cannot have them. The action, method and hidden fields Shopify emits
+      are the same ones that were written out by hand here.
+
+      The three features are the cart page's too — they are settings under
+      Theme settings → Cart, and the drawer and the page are alternatives that
+      should not disagree about what a bag can do.
+    {%- endcomment -%}
+    {%- form 'cart', cart, class: 'drawer__actions' -%}
+      {%- if settings.cart_note -%}
+        <label class="drawer__note-label" for="drawer-cart-note">{{ 'cart.note' | t }}</label>
+        <textarea
+          class="drawer__note"
+          id="drawer-cart-note"
+          name="note"
+          rows="2"
+          data-cart-note
+        >{{ cart.note }}</textarea>
+      {%- endif -%}
+
       <button class="btn btn--primary drawer__checkout" type="submit" name="checkout">
         {{ 'cart.checkout' | t }}
       </button>
+
+      {%- comment -%}
+        Shopify renders these two itself and renders nothing when the shop has
+        not enabled them, so the settings decide whether to *offer* them rather
+        than whether they appear.
+      {%- endcomment -%}
+      {%- if settings.cart_accelerated_checkout -%}
+        <div class="drawer__accelerated">{{ form | payment_button }}</div>
+      {%- endif -%}
+
+      {%- if settings.cart_installments -%}
+        <div class="drawer__installments">{{ form | payment_terms }}</div>
+      {%- endif -%}
 
       {%- if section.settings.secondary_label != blank -%}
         <a class="btn btn--outline drawer__secondary" href="{{ section.settings.secondary_link | default: routes.root_url }}">
           {{ section.settings.secondary_label }}
         </a>
       {%- endif -%}
-    </form>
+    {%- endform -%}
   </div>
 {%- endif -%}

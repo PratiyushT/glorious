@@ -1,43 +1,40 @@
 {%- comment -%}
-  The "inc. tax" note that follows a price.
+  The note that follows a price in the cart.
 
-  **One switch, and it is `settings.show_tax_note`** (Theme settings →
-  Pricing). Every surface that shows a price obeys it and none can override it,
-  so "is it on?" has exactly one answer.
+  **It is the cart's, and only the cart's.** It used to follow every price in
+  the theme — the product card, the quick view, the lookbook, the search rows,
+  the product page — under one shop-wide switch. It is now rendered by the bag
+  drawer and the cart page and by nothing else, on request: a qualification
+  repeated beside every figure in a grid of twenty-four is noise, and the place
+  it actually matters is the one where the customer is about to pay.
 
-  Most Loved, the Lookbook and the bag drawer each carried a second toggle of
-  their own, ANDed with this one. They were removed on request: a note that
-  qualifies a price is a statement about how the shop prices, not a per-row
-  style choice, and three extra switches made the shop-wide one hard to trust.
+  Two settings, in two groups, because they are two different decisions:
 
-  The wording lives in `locales/en.default.json`, so it translates. It is not a
-  theme setting: changing "inc. all taxes and fees" to "inkl. MwSt." is a
-  localisation, not a per-shop style choice.
+    - **Theme settings → Tax** holds the *words*. A shop states how it prices
+      once — "inc. all taxes and fees", "inkl. MwSt.", "plus shipping" — and
+      that is a fact about the shop rather than about the cart.
+    - **Theme settings → Cart** holds *whether the cart says it*, because that
+      is a question about the cart, and the cart is where it is said.
 
-  There are two wordings, on request. Everywhere a price has room to be
-  qualified in full it reads `products.tax_note` — "inc. all taxes and fees".
-  The **product card** takes `short: true` and reads `products.tax_note_short`
-  — "inc. all taxes" — because a card's price line is a single row beside the
-  figure at 15px, and the longer sentence wraps it onto two.
+  The wording moved out of `locales/en.default.json` to get here. That is a
+  reversal of the note this file used to carry — "changing 'inc. all taxes and
+  fees' to 'inkl. MwSt.' is a localisation, not a per-shop style choice" — and
+  it is worth being plain about why: the sentence is not one of a fixed set the
+  theme knows how to translate. A shop that prices tax-exclusively needs to say
+  something the theme never wrote, so it has to be a setting. A shop that also
+  needs it in a second language translates the *setting*, which Shopify's own
+  locale editor does.
 
-  Accepts:
-    short - true for the card's shorter wording. Omit everywhere else.
+  The `short` parameter is gone with the card. There was a shorter wording
+  because a card's price line is one row beside the figure at 15px and the
+  longer sentence wrapped it; nothing narrow renders this any more.
 {%- endcomment -%}
-
-{%- liquid
-  assign show = settings.show_tax_note
-
-  assign note_key = 'products.tax_note'
-  if short
-    assign note_key = 'products.tax_note_short'
-  endif
--%}
 
 {%- comment -%}
   The leading space is real, not decoration. Callers trim around the render, so
   without it the markup is `$19.99<small>inc. all taxes</small>` — spaced by the
   margin on screen, but run together as one word when read aloud or copied.
 {%- endcomment -%}
-{%- if show -%}
-  {{- ' ' -}}<small class="price-tax">{{ note_key | t }}</small>
+{%- if settings.show_tax_note and settings.tax_note_text != blank -%}
+  {{- ' ' -}}<small class="price-tax">{{ settings.tax_note_text }}</small>
 {%- endif -%}

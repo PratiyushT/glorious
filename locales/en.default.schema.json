@@ -371,16 +371,42 @@
         "label": "Certification"
       }
     },
-    "pricing": {
-      "name": "Pricing",
-      "show_tax_note": {
-        "label": "Show the tax note after prices",
-        "info": "The one switch for it. Every price in the theme obeys this — cards, the product page, the bag, the cart, quick view and search — and nothing can override it."
+    "tax": {
+      "name": "Tax",
+      "paragraph": "How this shop qualifies its prices. The words are stated once here; where they are shown is a Cart setting.",
+      "tax_note_text": {
+        "label": "Tax note",
+        "info": "Follows the subtotal in the bag and on the cart page — \"inc. all taxes and fees\", \"plus shipping\", whatever is true of this shop. Leave it empty to say nothing."
       }
     },
     "cart": {
       "name": "Cart",
-      "paragraph": "The drawer and the cart page are alternatives, not both — whichever is chosen here is where the bag action goes.",
+      "paragraph": "The drawer and the cart page are alternatives, not both — whichever is chosen here is where the bag action goes. Every setting below applies to both.",
+      "features_header": "Cart features",
+      "show_tax_note": {
+        "label": "Show the tax note",
+        "info": "Puts the Tax note after the subtotal. It used to follow every price in the theme; it is the bag's alone now."
+      },
+      "cart_note": {
+        "label": "Allow note to seller",
+        "info": "A message field submitted with the order."
+      },
+      "cart_discounts": {
+        "label": "Show discounts in cart",
+        "info": "Lists any automatic discount or applied code above the subtotal."
+      },
+      "cart_installments": {
+        "label": "Installments",
+        "info": "Shopify shows this only where the shop is eligible and has it enabled."
+      },
+      "cart_accelerated_checkout": {
+        "label": "Accelerated checkout buttons",
+        "info": "Lets buyers check out faster and can improve conversion. Shown only where the shop has enabled a wallet."
+      },
+      "cart_empty_link": {
+        "label": "Empty cart button link",
+        "info": "Where the button in an empty bag goes. Defaults to all products."
+      },
       "cart_type": {
         "label": "Opening the bag",
         "info": "Without JavaScript the bag always falls back to the cart page.",
@@ -568,7 +594,7 @@
       }
     },
     "product_card_image": {
-      "name": "Photograph",
+      "name": "Media",
       "views_header": "Views",
       "image_fit": {
         "label": "Image fit",

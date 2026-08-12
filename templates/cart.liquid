@@ -41,7 +41,7 @@
       ></span>
       <span id="direct">{% render 'metal-swatch', option_value: found, size: 80 %}</span>
       <div class="btn-row">
-        <a class="btn btn--primary" href="{{ routes.all_products_collection_url }}">
+        <a class="btn btn--primary" href="{{ settings.cart_empty_link | default: routes.all_products_collection_url }}">
           {{ 'general.continue_shopping' | t }}
         </a>
       </div>
@@ -94,6 +94,27 @@
           {%- endfor -%}
         </div>
 
+        {%- comment -%}
+          The Cart settings are shared with the drawer — they are alternatives,
+          and a bag should not be able to do different things depending on which
+          one the shop has chosen. Each of these is the same setting acting on
+          the same object here as it does in `snippets/cart-drawer-contents`.
+        {%- endcomment -%}
+        {%- if settings.cart_note -%}
+          <div class="stack stack--tight">
+            <label for="cart-note">{{ 'cart.note' | t }}</label>
+            <textarea id="cart-note" name="note" rows="3">{{ cart.note }}</textarea>
+          </div>
+        {%- endif -%}
+
+        {%- if settings.cart_discounts and cart.cart_level_discount_applications.size > 0 -%}
+          <ul class="stack stack--tight">
+            {%- for discount in cart.cart_level_discount_applications -%}
+              <li>{{ discount.title }} −{{ discount.total_allocated_amount | money }}</li>
+            {%- endfor -%}
+          </ul>
+        {%- endif -%}
+
         <div class="footer__bottom">
           <div class="stack stack--tight">
             <span class="h5">
@@ -107,6 +128,14 @@
             <button type="submit" name="checkout" class="btn btn--primary">{{ 'cart.checkout' | t }}</button>
           </div>
         </div>
+
+        {%- if settings.cart_accelerated_checkout -%}
+          {{ form | payment_button }}
+        {%- endif -%}
+
+        {%- if settings.cart_installments -%}
+          {{ form | payment_terms }}
+        {%- endif -%}
       {% endform %}
     {%- endif -%}
   </div>
