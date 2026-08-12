@@ -18,9 +18,13 @@
   Only those first two slides are fetched up front, whatever the count; the
   rest are deferred behind data-src and fetched as the card is stepped to them.
 
-  Shape, fit, alignment and which lines appear all come from the global
-  "Product cards" settings, so every grid in the theme stays consistent and a
-  merchant restyles them in one place.
+  **This is the card the collection and search templates draw, and it is not
+  the editable one.** `blocks/_product-card.liquid` is — its parts are theme
+  blocks, each with its own controls, and it is what Most Loved renders. There
+  is no "Product cards" theme settings group any more, so shape, fit and which
+  lines appear are this snippet's own defaults, fixed until those two templates
+  are rebuilt on the card block. Both cards share every class name and every
+  `data-card-*` hook, which is the contract `theme.js` binds to.
 
   Accepts:
     product - product object. Renders a placeholder when blank.
@@ -31,6 +35,28 @@
 {%- liquid
   assign img_loading = loading | default: 'lazy'
   assign img_sizes = sizes | default: '(max-width: 700px) 70vw, 460px'
+
+  comment
+    **This card's settings are its own, because there is no longer a "Product
+    cards" group in the theme settings.** A card is edited on the card, and the
+    card that can be edited is `blocks/_product-card.liquid` — its parts are
+    theme blocks with their own controls.
+
+    This snippet still draws the collection and search grids, which are not
+    built on blocks yet, so it carries the values that group used to hold as
+    its own defaults. They are what the shipped theme rendered, so nothing on
+    those two templates moved when the group went; but they are fixed now, and
+    the way to make them editable is to rebuild those templates on the card
+    block rather than to bring the settings back.
+  endcomment
+  assign card_image_ratio = '1/1'
+  assign card_show_vendor = false
+  assign card_show_metal = true
+  assign card_show_swatches = true
+  assign card_show_options_note = true
+  assign card_show_video = true
+  assign card_show_add = true
+  assign card_add_label = 'Add to Bag'
 
   comment
     The frame.
@@ -54,13 +80,13 @@
     A card with no photograph keeps 3/4, since there is nothing to adapt to.
   endcomment
   assign ratio_value = '3 / 4'
-  if settings.card_image_ratio == 'adapt'
+  if card_image_ratio == 'adapt'
     assign ratio_media = product.media | where: 'media_type', 'image' | first
     if ratio_media.width > 0 and ratio_media.height > 0
       assign ratio_value = ratio_media.width | append: ' / ' | append: ratio_media.height
     endif
   else
-    assign ratio_value = settings.card_image_ratio | replace: '/', ' / '
+    assign ratio_value = card_image_ratio | replace: '/', ' / '
   endif
 
   comment
@@ -172,7 +198,7 @@
     and says so, which is the single-metal piece it was written for.
   endcomment
   assign metal = blank
-  if settings.card_show_metal
+  if card_show_metal
     if metal_option != blank
       assign metal = card_variant.options[metal_index]
       if carat_label != blank
@@ -190,28 +216,21 @@
   endif
 
   comment
-    The design's own framing correction. Its photographs are shot on white with
-    generous margins, and each category needs a different amount of that margin
-    cropped away for the piece to fill the frame — a bracelet almost none, a
-    pair of earrings a great deal. Matched on type then title, earrings before
-    rings because "earrings" contains "ring". A custom.card_zoom metafield
-    overrides it per piece; the setting turns the whole correction off.
+    The framing correction, from the piece's own metafield and nothing else.
+
+    It used to be a table: "bracelet", "earring" and "ring" matched against the
+    product's type and title — earrings before rings, because "earrings"
+    contains "ring" — with `custom.card_zoom` in front of it and a theme setting
+    turning the whole thing off. One catalogue's categories written into a theme
+    that is meant to sell anything, so it went with the settings group.
+
+    `blocks/product-card-image.liquid` has the better answer: a setting that
+    takes a dynamic source, so which metafield holds the figure is the
+    merchant's choice. This snippet has nowhere to put one, so the name stays
+    hardcoded until these templates are rebuilt on the card block. A piece
+    without it gets no correction, where before it got its category's.
   endcomment
-  assign card_zoom = blank
-  if settings.card_image_zoom
-    assign card_zoom = product.metafields.custom.card_zoom.value
-    if card_zoom == blank
-      assign zoom_match = product.type | append: ' ' | append: product.title | downcase
-      assign card_zoom = 1.15
-      if zoom_match contains 'bracelet'
-        assign card_zoom = 1.05
-      elsif zoom_match contains 'earring'
-        assign card_zoom = 1.39
-      elsif zoom_match contains 'ring'
-        assign card_zoom = 1.32
-      endif
-    endif
-  endif
+  assign card_zoom = product.metafields.custom.card_zoom.value
 
   comment
     Two balanced lines, split where the halves come closest in length — the
@@ -289,7 +308,7 @@
     to the front rather than being dropped.
   endcomment
   assign options_note = ''
-  if settings.card_show_options_note
+  if card_show_options_note
     assign karat_option = blank
     for option in product.options_with_values
       assign option_down = option.name | downcase
@@ -358,7 +377,7 @@
   endcomment
   assign card_video = blank
   assign card_mp4 = blank
-  if settings.card_show_video
+  if card_show_video
     assign product_videos = product.media | where: 'media_type', 'video'
     assign first_video = product_videos.first
     if first_video != blank
@@ -396,16 +415,16 @@
         <span class="card__title-line">{{ 'onboarding.product_title' | t }}</span>
         <span class="card__title-line"></span>
       </span>
-      {%- if settings.card_show_metal -%}
+      {%- if card_show_metal -%}
         <span class="card__meta"></span>
       {%- endif -%}
       <span class="card__price">
         {{- 1999 | money -}}
         {% render 'tax-note', short: true %}
       </span>
-      {%- if settings.card_show_add -%}
+      {%- if card_show_add -%}
         <span class="btn btn--square card__add" aria-disabled="true">
-          {{ settings.card_add_label | default: 'Add to Bag' }}
+          {{ card_add_label | default: 'Add to Bag' }}
         </span>
       {%- endif -%}
     </div>
@@ -425,7 +444,7 @@
     without a translation string in JavaScript — a metal can be sold out while
     the one Liquid rendered was not.
   {%- endcomment -%}
-  {%- assign add_label = settings.card_add_label | default: 'Add to Bag' -%}
+  {%- assign add_label = card_add_label | default: 'Add to Bag' -%}
   {%- assign sold_out_label = 'products.sold_out' | t -%}
   <div
     class="card"
@@ -545,7 +564,7 @@
     </div>
 
     <div class="card__body">
-      {%- if settings.card_show_vendor and product.vendor != blank -%}
+      {%- if card_show_vendor and product.vendor != blank -%}
         <span class="card__vendor">{{ product.vendor }}</span>
       {%- endif -%}
 
@@ -558,7 +577,7 @@
         <span class="card__title-line">{{ title_line_2 }}</span>
       </a>
 
-      {%- if settings.card_show_metal -%}
+      {%- if card_show_metal -%}
         {%- comment -%}
           Without a metal control the caption is a fixed string — the metafield's,
           or a single option's — so it says so and the script leaves it alone.
@@ -747,7 +766,7 @@
           rule: a missing swatch beats an invented one, and the metal stays
           pickable and announced either way.
         {%- endcomment -%}
-        {%- if settings.card_show_swatches -%}
+        {%- if card_show_swatches -%}
           {{ metal_row }}
         {%- endif -%}
       {%- endif -%}
@@ -780,7 +799,7 @@
         {%- endif -%}
       </span>
 
-      {%- if settings.card_show_add -%}
+      {%- if card_show_add -%}
         {%- if product.available -%}
           {%- comment -%}
             A plain product form, so adding works without scripting. theme.js
@@ -795,7 +814,7 @@
               data-card-add-id
             >
             <button type="submit" name="add" class="btn btn--square card__add">
-              {{ settings.card_add_label | default: 'Add to Bag' }}
+              {{ card_add_label | default: 'Add to Bag' }}
             </button>
           {%- endform -%}
         {%- else -%}

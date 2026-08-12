@@ -2457,12 +2457,20 @@
         return !slide.hasAttribute('data-card-spin');
       }).length;
 
+      /* Previewing the next photograph on hover is a setting on the image
+         block, so the attribute is on the media rather than the card: a block
+         cannot write onto its parent. The stylesheet's no-JavaScript swap tests
+         for the same attribute in the same place. */
+      var hoverPreview = !media.hasAttribute('data-hover-off');
+
       var index = 0;
       var hovering = false;
       var manual = false;
 
       function shown() {
-        if (hovering && !manual && photos > 1 && index < photos) return (index + 1) % photos;
+        if (hoverPreview && hovering && !manual && photos > 1 && index < photos) {
+          return (index + 1) % photos;
+        }
         return index;
       }
 

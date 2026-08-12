@@ -30,7 +30,7 @@
   nothing takes the whole declaration with it.
 {%- endcomment -%}
 {%- liquid
-  assign steps = 'tiny,small,medium,large,xlarge' | split: ','
+  assign steps = 'minimal,tiny,small,medium,large,xlarge' | split: ','
 -%}
 {%- if margin == 'none' %}--block-margin: 0;{% elsif steps contains margin %}--block-margin: var(--step-{{ margin }});{% endif -%}
 {%- if padding == 'none' %}--block-padding: 0;{% elsif steps contains padding %}--block-padding: var(--step-{{ padding }});{% endif -%}

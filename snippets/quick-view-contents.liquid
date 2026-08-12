@@ -23,24 +23,22 @@
   endif
 
   comment
-    The design's framing correction, matched exactly as the card matches it —
-    earrings before rings, because "earrings" contains "ring".
+    The framing correction, from the piece's own metafield and nothing else.
+
+    It used to match "bracelet", "earring" and "ring" against the product's type
+    and title — earrings before rings, because "earrings" contains "ring" — and
+    was gated on a `settings.card_image_zoom` that no longer exists: a card is
+    edited on the card now, and there is no "Product cards" group in the theme
+    settings. The category table went with it, being one catalogue's vocabulary
+    written into the theme.
+
+    The card block took the better answer, a setting that accepts a dynamic
+    source so the metafield is the merchant's choice rather than the theme's.
+    This panel is not built on blocks and has nowhere to put one, so the
+    metafield name stays hardcoded here until the product template is built.
+    A piece without it simply gets no correction.
   endcomment
-  assign zoom_base = blank
-  if settings.card_image_zoom
-    assign zoom_base = product.metafields.custom.card_zoom.value
-    if zoom_base == blank
-      assign zoom_match = product.type | append: ' ' | append: product.title | downcase
-      assign zoom_base = 1.15
-      if zoom_match contains 'bracelet'
-        assign zoom_base = 1.05
-      elsif zoom_match contains 'earring'
-        assign zoom_base = 1.39
-      elsif zoom_match contains 'ring'
-        assign zoom_base = 1.32
-      endif
-    endif
-  endif
+  assign zoom_base = product.metafields.custom.card_zoom.value
 
   assign category = product.type
   if category == blank

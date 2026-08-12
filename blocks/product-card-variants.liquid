@@ -61,16 +61,21 @@
   endif
 
   comment
-    The order is `snippets/metal-order.liquid`'s: the design's own table, not
-    the order the option happens to carry, with anything it does not recognise
-    appended rather than dropped. That last part is what makes it safe on an
-    option it knows nothing about — every value is unmatched, so the merchant's
-    own order survives intact.
+    **The order is the merchant's own, and `metal-order.liquid` is deliberately
+    not called here.** That snippet carries the design's metal table — white,
+    yellow, rose, mixed, platinum, palladium, sterling, fine silver — and
+    reordering a shop's options against a list of metals is exactly the
+    assumption this card is being cleared of. Anything it does not recognise it
+    appends, so on a non-metal option it was already a no-op with a misleading
+    name attached; on a metal one it silently overrode what the merchant set in
+    admin. The values come straight off the option now, in the order they were
+    put there. The snippet stays for the quick view and the snippet card.
+
+    They stay `product_option_value` drops rather than being flattened to
+    strings, which is what carries a merchant's native Shopify swatch — the
+    round trip through `split` was why the swatch had to be looked up again.
   endcomment
-  capture ordered_values_raw
-    render 'metal-order', option: card_option_drop
-  endcapture
-  assign ordered_values = ordered_values_raw | strip | split: '||'
+  assign ordered_values = card_option_drop.values
 
   assign is_pills = false
   if block.settings.control == 'pills'
@@ -132,20 +137,6 @@
           assign is_selected = true
         endif
 
-        comment
-          `ordered_values` came back through `split`, so `value` is a plain
-          string and no longer the product_option_value drop. The drop is what
-          carries a merchant's native Shopify swatch, so it is looked up again
-          here — without this the swatch snippet's first and most specific
-          branch is silently unreachable.
-        endcomment
-        assign value_drop = blank
-        for candidate in card_option_drop.values
-          if candidate == value
-            assign value_drop = candidate
-            break
-          endif
-        endfor
       -%}
 
       {%- comment -%}
@@ -185,7 +176,7 @@
         {%- if is_pills -%}
           {{- value -}}
         {%- else -%}
-          {% render 'metal-swatch', option_value: value_drop, size: 80 %}
+          {% render 'metal-swatch', option_value: value, size: 80 %}
         {%- endif -%}
       </a>
     {%- endfor -%}

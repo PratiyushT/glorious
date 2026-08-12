@@ -1586,6 +1586,17 @@ a {
   --product-price-tracking: 0.08em;
   --product-meta-tracking: calc(var(--micro-tracking) * 0.64);
   --product-line: 1.5;
+
+  /* How a card frames and aligns, for any card that does not say. These were
+     compiled from `settings.card_image_fit` and `settings.card_text_align`
+     until there stopped being a "Product cards" group in the theme settings —
+     a card is edited on the card now. `blocks/product-card-image.liquid` and
+     `blocks/_product-card.liquid` each publish their own, which is what a
+     merchant's choice overrides these with; `snippets/product-card.liquid`
+     publishes neither and so takes them, which is what keeps the collection
+     and search grids rendering as they did. */
+  --card-fit: contain;
+  --card-align: left;
 }
 
 /* ---- Block spacing steps --------------------------------------------
@@ -1605,6 +1616,13 @@ a {
 
 :root {
   --step-none: 0px;
+  /* A word space, near enough — and `em` rather than a rung of the spacing
+     scale, deliberately. The steps below are lengths that belong to the page's
+     rhythm; this one is a fact about the text it separates, so it has to grow
+     and shrink with that text rather than with the section around it. It is
+     what a row of blocks wants when they are meant to read as one sentence:
+     "Available in" and "18K, 22K", or a value and its unit. */
+  --step-minimal: 0.25em;
   --step-tiny: var(--space-2xs);      /*  7 – 11px */
   --step-small: var(--space-sm);      /* 14 – 22px */
   --step-medium: var(--space-md);     /* 21 – 33px */
@@ -1697,12 +1715,13 @@ a {
    takes over it marks the card and drives every slide itself. Guarded to a
    second slide that is actually a photograph — a spin has nothing to show
    until its source is fetched. */
-.card[data-card-multi]:not([data-card-live]):hover .card__slide[data-card-slide="0"] {
+.card[data-card-multi]:not([data-card-live]):hover
+  .card__media:not([data-hover-off]) .card__slide[data-card-slide="0"] {
   opacity: 0;
 }
 
 .card[data-card-multi]:not([data-card-live]):hover
-  .card__slide[data-card-slide="1"]:not([data-card-spin]) {
+  .card__media:not([data-hover-off]) .card__slide[data-card-slide="1"]:not([data-card-spin]) {
   opacity: 1;
 }
 

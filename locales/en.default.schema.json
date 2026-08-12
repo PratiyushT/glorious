@@ -340,48 +340,6 @@
         "label": "Uppercase button text"
       }
     },
-    "product_cards": {
-      "name": "Product cards",
-      "card_image_ratio": {
-        "label": "Image shape"
-      },
-      "card_image_fit": {
-        "label": "Image fit",
-        "info": "The design shows jewellery uncropped against white."
-      },
-      "card_text_align": {
-        "label": "Text alignment"
-      },
-      "card_show_vendor": {
-        "label": "Show vendor"
-      },
-      "card_show_metal": {
-        "label": "Show metal line",
-        "info": "Reads the product's Metal option or metafield when present."
-      },
-      "card_show_swatches": {
-        "label": "Show metal swatches",
-        "info": "A row of metals on the card. Choosing one moves the caption, the price and what goes in the bag — never the photograph, which is shot in one metal."
-      },
-      "card_show_options_note": {
-        "label": "Show the options note",
-        "info": "The line under the swatches listing the piece's other choices, such as gold purity."
-      },
-      "card_show_video": {
-        "label": "Include the 360° spin",
-        "info": "Adds a product video to the card as a final view."
-      },
-      "card_image_zoom": {
-        "label": "Crop the photographer’s margin",
-        "info": "Scales each photograph so the piece fills the frame, by category. A custom.card_zoom metafield overrides it per piece."
-      },
-      "card_show_add": {
-        "label": "Show add to bag button"
-      },
-      "card_add_label": {
-        "label": "Add button label"
-      }
-    },
     "quick_view": {
       "name": "Quick view",
       "paragraph": "Opens over the grid from the eye on a product card, and is rendered from the product itself.",
@@ -553,6 +511,7 @@
       },
       "step": {
         "none": "None",
+        "minimal": "Minimal",
         "tiny": "Tiny",
         "small": "Small",
         "medium": "Medium",
@@ -596,6 +555,9 @@
     },
     "product_card": {
       "name": "Product card",
+      "text_align": {
+        "label": "Text alignment"
+      },
       "quick_view_header": "Quick view",
       "quick_view_desktop": {
         "label": "Show on desktop"
@@ -606,7 +568,32 @@
       }
     },
     "product_card_image": {
-      "name": "Photograph"
+      "name": "Photograph",
+      "views_header": "Views",
+      "image_fit": {
+        "label": "Image fit",
+        "info": "Fit shows the whole product against the card. Fill crops it to the frame."
+      },
+      "zoom": {
+        "label": "Scale the photograph",
+        "info": "A number — 1.15 enlarges by 15% — for photography shot with margin around the product. Connect it to a metafield with the dynamic-source button to give each product its own. Leave it empty for no correction."
+      },
+      "hover_next": {
+        "label": "Show the next image on hover",
+        "info": "Previews the second image while the pointer is over the card."
+      },
+      "show_arrows": {
+        "label": "Show arrows",
+        "info": "Steps through every image on the card. A swipe does the same on touch and is not affected by this."
+      },
+      "show_video": {
+        "label": "Include the product video",
+        "info": "Adds a product video to the card as a final view."
+      },
+      "video_badge": {
+        "label": "Video label",
+        "info": "The chip shown while the video is the view on screen — \"360°\", \"On the model\", whatever the footage is."
+      }
     },
     "product_card_title": {
       "name": "Product title"

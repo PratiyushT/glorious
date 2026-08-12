@@ -110,8 +110,11 @@
               "settings": {
                 "image_ratio": "1/1",
                 "image_fit": "contain",
-                "image_zoom": true,
-                "show_video": true
+                "zoom": "{{ closest.product.metafields.custom.card_zoom.value }}",
+                "hover_next": true,
+                "show_arrows": true,
+                "show_video": true,
+                "video_badge": "360°"
               }
             },
             "name": {

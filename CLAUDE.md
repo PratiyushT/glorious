@@ -450,18 +450,67 @@ that reaches for a parent would tie the two cards' structures together again.
   checkbox ANDed with the shop-wide switch gives "is it on?" two answers. A
   block is present or it is not.
 
-- **Everything under Theme settings → Product cards that is still a setting
-  lives on these blocks.** The frame, the fit, the framing correction and the
-  spin on the image block; the button's words on the button block; the
-  alignment and the quick view on the card. Everything else that was a
-  checkbox — the caption, the swatches, the note, the button — is now the
-  presence of a block, which is what a block is for.
+- **There is no "Product cards" group in the theme settings.** It is gone from
+  `config/settings_schema.json` entirely, and that is the rule: a card is
+  edited on the card. The frame, the fit, the scale, the views and the video on
+  the image block; the button's words on the button block; the alignment and
+  the quick view on the card itself. Everything that was a show/hide checkbox —
+  the caption, the swatches, the note, the button — is the presence of a block.
 
-  **The theme settings stay and are not fallbacks.** `snippets/product-card.
-  liquid` still draws the collection and search grids and still reads them;
-  nothing in a block consults them. So changing one moves those two grids and
-  leaves Most Loved alone. That is the price of one card built two ways, and it
-  ends when those templates are rebuilt.
+  **`snippets/product-card.liquid` carries those values as its own defaults
+  now.** It still draws the collection and search grids, which are not built on
+  blocks, so they render exactly as they did and are fixed until those
+  templates are rebuilt on the card block. The way to make them editable is to
+  rebuild them, not to bring the settings back.
+
+  `--card-fit` and `--card-align` were compiled into `:root` from those
+  settings by `theme-tokens.liquid`; they are literals in `base.css` beside the
+  `--product-*` properties now, for the reason recorded there — that snippet
+  compiles only *settings*, and a default that no longer has a setting behind
+  it is the theme's decision rather than the merchant's. The image block and
+  the card each publish their own, which is what overrides them.
+
+- **The photograph's views are three checkboxes**: preview the next image on
+  hover, show the arrows, include the product video. The first needed a hook in
+  two places at once — the stylesheet runs the hover swap on its own so a card
+  whose script never arrives still behaves — and it is `data-hover-off` on
+  `.card__media` rather than on the card root, because a block cannot write an
+  attribute onto its parent. `theme.js`'s `shown()` tests the same attribute in
+  the same place. A swipe is not affected by the arrows setting; it is the
+  touch equivalent and has no control of its own.
+
+  The video's chip is a text setting. The design's word is "360°", which is
+  true of its own footage and of nothing else — a shop whose video is a model
+  wearing the piece should not have a chip claiming a spin. `products.
+  video_view` is the fallback when it is cleared.
+
+- **The framing correction stopped being a table.** It matched "bracelet",
+  "earring" and "ring" against the product's type and title — earrings before
+  rings, because "earrings" contains "ring" — with `custom.card_zoom` in front
+  of it. One catalogue's categories and one shop's metafield, both written into
+  a theme meant to sell anything.
+
+  It is one text setting on the image block, and being a text setting it takes
+  a **dynamic source**: bind it to whatever metafield a shop keeps and every
+  piece gets its own figure, type a number and the row shares one, leave it and
+  there is no correction. It is coerced with `| plus: 0` and tested `> 0`
+  before it is printed, because a metafield one product is missing would
+  otherwise emit `--card-zoom: 0` and collapse the photograph to a point.
+
+  `snippets/product-card.liquid` and `snippets/quick-view-contents.liquid` lost
+  the table too and read `custom.card_zoom` alone. Neither is built on blocks,
+  so the metafield's name stays hardcoded in those two until they are.
+
+- **The swatch row is in the merchant's order.** `metal-order.liquid` — the
+  design's own table of white, yellow, rose, mixed, platinum, palladium,
+  sterling, fine silver — is no longer called by the card block. Reordering a
+  shop's option values against a list of metals is exactly the assumption being
+  cleared; on a non-metal option it was a no-op with a misleading name, and on
+  a metal one it silently overrode admin. The values come off the option
+  directly, and stay `product_option_value` drops rather than being flattened
+  through `split`, which is what carries a merchant's native swatch — so the
+  re-lookup that round trip needed is gone too. The snippet stays for the quick
+  view and the snippet card.
 
 - **The quick view is two settings on the card, not a block** — show on
   desktop, show on tablet and mobile. It is the one control here that is not
@@ -521,9 +570,29 @@ following and **the tax note left standing**. Two of four slides carry a real
 `src`, so the deferral contract holds. Zero duplicate ids, and the add form
 carries `card_form_<id>` of its own rather than Shopify's derived one. At 375px:
 one column, caption and price rows each still on one line, no horizontal
-overflow. Square swatches and the per-device quick view were both checked by
-flipping the stored settings and put back. The carousel layout renders the same
-seven composed cards at `--row-per: 3`.
+overflow. The carousel layout renders the same seven composed cards at
+`--row-per: 3`.
+
+Every control was checked by flipping the stored setting and putting it back:
+square swatches (radius 0, dot still 20×20, ring still drawn), the per-device
+quick view (hidden at 375, shown at 800), **hover preview off** (`data-hover-off`
+present and the slide no longer changes under the pointer) and **arrows off**
+(none rendered). The scale setting resolves `--card-zoom: 1.15` to
+`matrix(1.15, …)`, the fit to `contain`, the alignment to `left`, and the video
+chip to the merchant's own "360°".
+
+**The category table turned out to be dead code on this catalogue**, which is
+worth knowing before anyone mourns it: all 12 products carry
+`custom.card_zoom`, and the metafield was checked *first*, so the table decided
+nothing. Measured across `/collections/all` after removing it — 12 of 12 still
+scale, at 1.05 / 1.15 / 1.22 / 1.39, and 1.22 is a figure the table could never
+produce. The stored card binds the same metafield through the new setting's
+dynamic source, so Most Loved gets each piece's own figure rather than a row-
+wide one.
+
+**One thing this shop does see change**, and it is the assumption leaving
+rather than a fault: the swatches are in admin order now — Yellow Gold then
+White Gold, where the design's table put White first.
 
 ### Weight
 
@@ -1819,16 +1888,27 @@ it needs the same per-declaration care rather than a sweep.
 
 ### Block spacing
 
-Five presets — Tiny, Small, Medium, Large, Extra large — offered by a theme
-block for its margin, padding and gap, from `snippets/block-spacing.liquid`:
+Six presets — Minimal, Tiny, Small, Medium, Large, Extra large — offered by a
+theme block for its margin, padding and gap, from
+`snippets/block-spacing.liquid`:
 
 ```liquid
 style="{% render 'block-spacing', margin: block.settings.margin, padding: block.settings.padding %}"
 ```
 
-- **The steps are aliases, not new numbers.** `--step-tiny` … `--step-xlarge`
-  at `:root` resolve to `--space-2xs / sm / md / lg / xl`, so a block cannot
-  introduce a gap the theme's own scale does not already contain. They are
+- **`--step-minimal` is the one rung that is not on the spacing scale, and
+  deliberately.** It is `0.25em` — a word space, near enough — because it
+  exists for blocks that are meant to read as one sentence: "Available in" and
+  "18K, 22K" on a row, a value and its unit, a name and a separator. Those want
+  the space between words, which is a fact about the *text* and has to grow and
+  shrink with it; every rung below is a length belonging to the page's rhythm
+  and would sit visibly wrong between two halves of a phrase. It is the default
+  gap for nothing — a group still opens on Medium — and it is offered wherever
+  the other steps are.
+
+- **The rest of the steps are aliases, not new numbers.** `--step-tiny` …
+  `--step-xlarge` at `:root` resolve to `--space-2xs / sm / md / lg / xl`, so a
+  block cannot introduce a gap the theme's own scale does not already contain. They are
   literals at `:root` beside the `--product-*` properties for the same reason:
   `theme-tokens.liquid` compiles only *settings*, and which rung "Large" means
   is the theme's decision rather than the merchant's.

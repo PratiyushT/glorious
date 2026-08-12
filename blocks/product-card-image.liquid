@@ -6,32 +6,32 @@
   and the reason a slide is `opacity: 0` rather than `display: none`; see
   "Product card" in CLAUDE.md before changing anything here.
 
-  The arrows, the spin badge and the sold-out/sale badge stay **inside** this
-  block rather than becoming blocks of their own, and that is structural rather
-  than a judgement about how much a merchant should be able to remove:
-  `.card__arrow` is `position: absolute; top: 50%`, so its containing block has
-  to be `.card__media`. Lifted out to be a sibling it would centre itself on
-  the whole card — the caption included — and sit over the price.
+  The arrows and the badge stay **inside** this block rather than becoming
+  blocks of their own, and that is structural rather than a judgement about how
+  much a merchant should be able to remove: `.card__arrow` is
+  `position: absolute; top: 50%`, so its containing block has to be
+  `.card__media`. Lifted out to be a sibling it would centre itself on the whole
+  card — the caption included — and sit over the price.
 
-  **Every setting the photograph obeys is this block's own** — the frame, the
-  fit, the framing correction and whether a spin counts as a slide. They were
-  `settings.card_*` under Theme settings → Product cards, read here through an
-  `inherit` sentinel; they are stated outright now, so the card is edited where
-  the card is rather than in two places.
+  **Every setting the photograph obeys is this block's own.** There is no
+  "Product cards" group in the theme settings any more; a card is edited where
+  the card is. `snippets/product-card.liquid` still draws the collection and
+  search grids and now carries its own defaults, so those two grids are fixed
+  until they are rebuilt on blocks — which is the honest state of a theme that
+  has one card built two ways.
 
-  The theme settings stay, because `snippets/product-card.liquid` still renders
-  the collection and search grids and still reads them. They are not a fallback
-  for this block: nothing here consults them, and changing one moves those two
-  grids and leaves Most Loved where it is. That is the price of one card built
-  two ways, and it ends when those templates are rebuilt on blocks.
+  **Nothing here knows what the shop sells.** The framing correction used to be
+  a table matching "bracelet", "earring" and "ring" against the product's type
+  and title, with a `custom.card_zoom` metafield in front of it — one
+  catalogue's categories and one shop's metafield, both written into the theme.
+  It is a single setting now, and because it is a text setting it takes a
+  dynamic source: bind it to whatever metafield a shop keeps and every piece
+  gets its own figure; type one and the whole row shares it; leave it and there
+  is no correction at all.
 
-  The shipped defaults are the theme settings' own, so the conversion moved no
-  pixel — Square and "Fit the whole piece", which is itself a documented
-  departure from the design's 3/4 frame.
-
-  The order is the product's own. The metal control deliberately does not touch
-  it: "Colour is chosen on the card itself: the name, the price and what goes
-  in the bag all follow it. The photograph does not — we shoot one metal."
+  The order of the slides is the product's own. The option control deliberately
+  does not touch it: "Colour is chosen on the card itself: the name, the price
+  and what goes in the bag all follow it. The photograph does not."
 {%- endcomment -%}
 
 {%- liquid
@@ -61,34 +61,24 @@
   assign fit_value = block.settings.image_fit
 
   comment
-    The design's framing correction. Its photographs are shot on white with
-    margins that differ by category, so each needs a different amount cropped
-    away for the piece to fill the frame. Matched on type then title, earrings
-    before rings because "earrings" contains "ring". A custom.card_zoom
-    metafield overrides it per piece; the theme setting turns it off.
+    The framing correction, as a number the merchant supplies rather than a
+    category the theme recognises. Coerced and tested rather than printed
+    blindly: a dynamic source bound to a metafield one product is missing
+    returns nothing, and `--card-zoom: 0` would collapse the photograph to a
+    point. Anything that is not a positive number simply means no correction.
   endcomment
   assign card_zoom = blank
-  if block.settings.image_zoom
-    assign card_zoom = product.metafields.custom.card_zoom.value
-    if card_zoom == blank
-      assign zoom_match = product.type | append: ' ' | append: product.title | downcase
-      assign card_zoom = 1.15
-      if zoom_match contains 'bracelet'
-        assign card_zoom = 1.05
-      elsif zoom_match contains 'earring'
-        assign card_zoom = 1.39
-      elsif zoom_match contains 'ring'
-        assign card_zoom = 1.32
-      endif
-    endif
+  assign zoom_number = block.settings.zoom | plus: 0
+  if zoom_number > 0
+    assign card_zoom = zoom_number
   endif
 
   assign card_images = product.media | where: 'media_type', 'image'
   assign photo_count = card_images.size
 
   comment
-    The spin counts only once an mp4 rendition is known to exist. Counting the
-    video itself put the arrows and the badge on a card whose video has none —
+    The video counts only once an mp4 rendition is known to exist. Counting the
+    media itself put the arrows and the badge on a card whose video has none —
     controls for a slide that is never rendered, because the slide is guarded
     on the rendition and the count was not.
   endcomment
@@ -112,6 +102,16 @@
   endif
 
   comment
+    The badge is the merchant's word. The design's is "360°", which is true of
+    its own footage and of nothing else — a shop whose video is a model wearing
+    the piece should not have a chip claiming a spin.
+  endcomment
+  assign video_label = block.settings.video_badge
+  if video_label == blank
+    assign video_label = 'products.video_view' | t
+  endif
+
+  comment
     Slide 0 is what the card shows and slide 1 is what hover previews. Those
     two are the whole of it without scripting, so those two are what the
     browser fetches.
@@ -119,9 +119,17 @@
   assign eager_slides = 2
 -%}
 
+{%- comment -%}
+  `data-hover-off` turns off the preview-the-next-photograph behaviour, and it
+  has to sit here rather than on the card root because it is this block's
+  setting — a block cannot write an attribute onto its parent. Both the
+  stylesheet's no-JavaScript swap and `theme.js`'s own hover state test for it
+  on `.card__media`.
+{%- endcomment -%}
 <div
   class="card__media"
   style="aspect-ratio: {{ ratio_value }};{% if card_zoom != blank %} --card-zoom: {{ card_zoom }};{% endif %} --card-fit: {{ fit_value }};"
+  {% unless block.settings.hover_next %}data-hover-off{% endunless %}
   {{ block.shopify_attributes }}
 >
   {%- if product == blank -%}
@@ -162,7 +170,7 @@
           loop
           playsinline
           preload="none"
-          aria-label="{{ 'products.spin_view' | t }}"
+          aria-label="{{ video_label | escape }}"
           data-video-lqip="{{ card_video_lqip }}"
         ></video>
         {% render 'video-lqip-frame', lqip: card_video_lqip %}
@@ -176,11 +184,11 @@
 
   {%- if card_video != blank -%}
     <span class="card__spin" data-card-spin-label{% if photo_count > 0 %} hidden{% endif %}>
-      {{- 'products.spin_badge' | t -}}
+      {{- video_label -}}
     </span>
   {%- endif -%}
 
-  {%- if slide_count > 1 -%}
+  {%- if block.settings.show_arrows and slide_count > 1 -%}
     <button
       class="card__arrow card__arrow--prev"
       type="button"
@@ -235,8 +243,8 @@
     {
       "type": "select",
       "id": "image_fit",
-      "label": "t:settings_schema.product_cards.card_image_fit.label",
-      "info": "t:settings_schema.product_cards.card_image_fit.info",
+      "label": "t:blocks.product_card_image.image_fit.label",
+      "info": "t:blocks.product_card_image.image_fit.info",
       "options": [
         { "value": "contain", "label": "t:settings_schema.options.contain" },
         { "value": "cover", "label": "t:settings_schema.options.cover" }
@@ -244,18 +252,43 @@
       "default": "contain"
     },
     {
+      "type": "text",
+      "id": "zoom",
+      "label": "t:blocks.product_card_image.zoom.label",
+      "info": "t:blocks.product_card_image.zoom.info"
+    },
+    {
+      "type": "header",
+      "content": "t:blocks.product_card_image.views_header"
+    },
+    {
       "type": "checkbox",
-      "id": "image_zoom",
-      "label": "t:settings_schema.product_cards.card_image_zoom.label",
-      "info": "t:settings_schema.product_cards.card_image_zoom.info",
+      "id": "hover_next",
+      "label": "t:blocks.product_card_image.hover_next.label",
+      "info": "t:blocks.product_card_image.hover_next.info",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_arrows",
+      "label": "t:blocks.product_card_image.show_arrows.label",
+      "info": "t:blocks.product_card_image.show_arrows.info",
       "default": true
     },
     {
       "type": "checkbox",
       "id": "show_video",
-      "label": "t:settings_schema.product_cards.card_show_video.label",
-      "info": "t:settings_schema.product_cards.card_show_video.info",
+      "label": "t:blocks.product_card_image.show_video.label",
+      "info": "t:blocks.product_card_image.show_video.info",
       "default": true
+    },
+    {
+      "type": "text",
+      "id": "video_badge",
+      "label": "t:blocks.product_card_image.video_badge.label",
+      "info": "t:blocks.product_card_image.video_badge.info",
+      "visible_if": "{{ block.settings.show_video }}",
+      "default": "Video"
     }
   ],
   "presets": [
