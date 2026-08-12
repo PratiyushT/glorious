@@ -243,8 +243,6 @@
         "color_scheme": "scheme_1",
         "collection": "featured-products-homepage",
         "products_to_show": 8,
-        "columns": 4,
-        "mobile_columns": "2",
         "full_height": true,
         "padding_top": "sm",
         "padding_bottom": "sm"
