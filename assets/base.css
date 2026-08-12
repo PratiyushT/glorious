@@ -1614,6 +1614,48 @@ a {
    theme-tokens.liquid compiles only *settings* into :root, and which step
    "Large" means is a decision of the theme's, not the merchant's.         */
 
+/* ---- The type ladder ------------------------------------------------
+   Fourteen named sizes, every one of them fluid, for the text presets to pick
+   from. **There are no pixel fields anywhere in this theme's typography**, on
+   request: a merchant chooses a rung and it scales, rather than typing a number
+   that is right on one screen and wrong on every other.
+
+   Each is a `clamp()` interpolated between 360px and 1440px — the same span
+   every other fluid value here uses — so the ladder is smooth rather than
+   stepped, and the rungs never cross: the smallest gap between two neighbours
+   at any width is a whole pixel at the bottom of the ladder, where the type is
+   small enough for one to read as a step.
+
+   Literals at `:root` beside `--step-*` and `--product-*`, for the reason
+   recorded there: `theme-tokens.liquid` compiles only *settings*, and which
+   size "Large" means is the theme's decision, not the merchant's. What the
+   merchant chooses is which rung a preset stands on.
+
+   | | 360 | 768 | 1440 |
+   | 3xs | 10 | 10.4 | 11 |
+   | sm  | 13 | 13.8 | 15 |
+   | lg  | 17 | 18.1 | 20 |
+   | 2xl | 24 | 26.3 | 30 |
+   | 5xl | 38 | 46.3 | 60 |
+   | 8xl | 56 | 80.2 | 120 |                                              */
+
+:root {
+  --type-3xs: clamp(0.625rem, 0.0926vw + 0.6042rem, 0.6875rem);
+  --type-2xs: clamp(0.6875rem, 0.0926vw + 0.6667rem, 0.75rem);
+  --type-xs: clamp(0.75rem, 0.0926vw + 0.7292rem, 0.8125rem);
+  --type-sm: clamp(0.8125rem, 0.1852vw + 0.7708rem, 0.9375rem);
+  --type-md: clamp(0.9375rem, 0.1852vw + 0.8958rem, 1.0625rem);
+  --type-lg: clamp(1.0625rem, 0.2778vw + 1rem, 1.25rem);
+  --type-xl: clamp(1.25rem, 0.3704vw + 1.1667rem, 1.5rem);
+  --type-2xl: clamp(1.5rem, 0.5556vw + 1.375rem, 1.875rem);
+  --type-3xl: clamp(1.75rem, 0.9259vw + 1.5417rem, 2.375rem);
+  --type-4xl: clamp(2rem, 1.4815vw + 1.6667rem, 3rem);
+  --type-5xl: clamp(2.375rem, 2.037vw + 1.9167rem, 3.75rem);
+  --type-6xl: clamp(2.75rem, 2.963vw + 2.0833rem, 4.75rem);
+  --type-7xl: clamp(3.125rem, 4.2593vw + 2.1667rem, 6rem);
+  --type-8xl: clamp(3.5rem, 5.9259vw + 2.1667rem, 7.5rem);
+}
+
 :root {
   --step-none: 0px;
   /* A word space, near enough — and `em` rather than a rung of the spacing
