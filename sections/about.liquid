@@ -43,33 +43,19 @@
       </div>
 
       <div class="stack reveal">
-        {%- for block in section.blocks -%}
-          {%- case block.type -%}
-            {%- when 'paragraph' -%}
-              <div class="rte measure" {{ block.shopify_attributes }}>{{ block.settings.text }}</div>
+        {%- comment -%}
 
-            {%- when 'buttons' -%}
-              {%- comment -%}
-                A button needs a destination to exist. `href="#"` is a control
-                that looks live and goes nowhere, so a label without a link
-                renders nothing at all.
-              {%- endcomment -%}
-              <div class="btn-row" {{ block.shopify_attributes }}>
-                {%- render 'button',
-                  label: block.settings.button_label,
-                  link: block.settings.button_link,
-                  style: block.settings.button_style,
-                  size: block.settings.button_size,
-                  radius: block.settings.button_radius -%}
-                {%- render 'button',
-                  label: block.settings.button_label_2,
-                  link: block.settings.button_link_2,
-                  style: block.settings.button_style_2,
-                  size: block.settings.button_size_2,
-                  radius: block.settings.button_radius_2 -%}
-              </div>
-          {%- endcase -%}
-        {%- endfor -%}
+          Theme blocks: the section declares which types belong here and the
+
+          merchant orders them. A section holds either its own blocks or theme
+
+          blocks and never both, which is why both of about's local types were
+
+          converted in one commit rather than one at a time.
+
+        {%- endcomment -%}
+
+        {% content_for 'blocks' %}
       </div>
     </div>
   </div>
@@ -86,10 +72,22 @@
       "label": "t:sections.all.heading_level.label",
       "info": "t:sections.all.heading_level.info",
       "options": [
-        { "value": "h1", "label": "t:settings_schema.heading_level.h1" },
-        { "value": "h2", "label": "t:settings_schema.heading_level.h2" },
-        { "value": "h3", "label": "t:settings_schema.heading_level.h3" },
-        { "value": "div", "label": "t:settings_schema.heading_level.div" }
+        {
+          "value": "h1",
+          "label": "t:settings_schema.heading_level.h1"
+        },
+        {
+          "value": "h2",
+          "label": "t:settings_schema.heading_level.h2"
+        },
+        {
+          "value": "h3",
+          "label": "t:settings_schema.heading_level.h3"
+        },
+        {
+          "value": "div",
+          "label": "t:settings_schema.heading_level.div"
+        }
       ],
       "default": "h2"
     },
@@ -110,8 +108,14 @@
       "id": "layout",
       "label": "t:sections.all.layout.label",
       "options": [
-        { "value": "image_first", "label": "t:sections.all.image_first" },
-        { "value": "text_first", "label": "t:sections.all.text_first" }
+        {
+          "value": "image_first",
+          "label": "t:sections.all.image_first"
+        },
+        {
+          "value": "text_first",
+          "label": "t:sections.all.text_first"
+        }
       ],
       "default": "text_first"
     },
@@ -129,10 +133,22 @@
       "id": "image_ratio",
       "label": "t:sections.all.image_ratio.label",
       "options": [
-        { "value": "1 / 1", "label": "t:settings_schema.options.square" },
-        { "value": "4 / 5", "label": "t:settings_schema.options.portrait" },
-        { "value": "3 / 4", "label": "t:settings_schema.options.tall_portrait" },
-        { "value": "4 / 3", "label": "t:settings_schema.options.landscape" }
+        {
+          "value": "1 / 1",
+          "label": "t:settings_schema.options.square"
+        },
+        {
+          "value": "4 / 5",
+          "label": "t:settings_schema.options.portrait"
+        },
+        {
+          "value": "3 / 4",
+          "label": "t:settings_schema.options.tall_portrait"
+        },
+        {
+          "value": "4 / 3",
+          "label": "t:settings_schema.options.landscape"
+        }
       ],
       "default": "4 / 5"
     },
@@ -163,14 +179,38 @@
       "id": "padding_top",
       "label": "t:sections.all.padding_top.label",
       "options": [
-        { "value": "none", "label": "t:sections.all.space_step.none" },
-        { "value": "2xs", "label": "t:sections.all.space_step.2xs" },
-        { "value": "xs", "label": "t:sections.all.space_step.xs" },
-        { "value": "sm", "label": "t:sections.all.space_step.sm" },
-        { "value": "md", "label": "t:sections.all.space_step.md" },
-        { "value": "lg", "label": "t:sections.all.space_step.lg" },
-        { "value": "xl", "label": "t:sections.all.space_step.xl" },
-        { "value": "max", "label": "t:sections.all.space_step.max" }
+        {
+          "value": "none",
+          "label": "t:sections.all.space_step.none"
+        },
+        {
+          "value": "2xs",
+          "label": "t:sections.all.space_step.2xs"
+        },
+        {
+          "value": "xs",
+          "label": "t:sections.all.space_step.xs"
+        },
+        {
+          "value": "sm",
+          "label": "t:sections.all.space_step.sm"
+        },
+        {
+          "value": "md",
+          "label": "t:sections.all.space_step.md"
+        },
+        {
+          "value": "lg",
+          "label": "t:sections.all.space_step.lg"
+        },
+        {
+          "value": "xl",
+          "label": "t:sections.all.space_step.xl"
+        },
+        {
+          "value": "max",
+          "label": "t:sections.all.space_step.max"
+        }
       ],
       "default": "lg"
     },
@@ -179,150 +219,75 @@
       "id": "padding_bottom",
       "label": "t:sections.all.padding_bottom.label",
       "options": [
-        { "value": "none", "label": "t:sections.all.space_step.none" },
-        { "value": "2xs", "label": "t:sections.all.space_step.2xs" },
-        { "value": "xs", "label": "t:sections.all.space_step.xs" },
-        { "value": "sm", "label": "t:sections.all.space_step.sm" },
-        { "value": "md", "label": "t:sections.all.space_step.md" },
-        { "value": "lg", "label": "t:sections.all.space_step.lg" },
-        { "value": "xl", "label": "t:sections.all.space_step.xl" },
-        { "value": "max", "label": "t:sections.all.space_step.max" }
+        {
+          "value": "none",
+          "label": "t:sections.all.space_step.none"
+        },
+        {
+          "value": "2xs",
+          "label": "t:sections.all.space_step.2xs"
+        },
+        {
+          "value": "xs",
+          "label": "t:sections.all.space_step.xs"
+        },
+        {
+          "value": "sm",
+          "label": "t:sections.all.space_step.sm"
+        },
+        {
+          "value": "md",
+          "label": "t:sections.all.space_step.md"
+        },
+        {
+          "value": "lg",
+          "label": "t:sections.all.space_step.lg"
+        },
+        {
+          "value": "xl",
+          "label": "t:sections.all.space_step.xl"
+        },
+        {
+          "value": "max",
+          "label": "t:sections.all.space_step.max"
+        }
       ],
       "default": "max"
     }
   ],
   "blocks": [
     {
-      "type": "paragraph",
-      "name": "t:sections.about.blocks.paragraph.name",
-      "settings": [
-        {
-          "type": "richtext",
-          "id": "text",
-          "label": "t:sections.all.text.label",
-          "default": "<p>Tell the story behind the shop — where it began, what it makes, and why someone should care. Two or three sentences is usually enough.</p>"
-        }
-      ]
+      "type": "prose"
     },
     {
-      "type": "buttons",
-      "name": "t:sections.about.blocks.buttons.name",
-      "limit": 1,
-      "settings": [
-    {
-      "type": "select",
-      "id": "button_style",
-      "label": "t:sections.all.button_style.label",
-      "options": [
-        { "value": "filled", "label": "t:settings_schema.button_style.filled" },
-        { "value": "outline", "label": "t:settings_schema.button_style.outline" },
-        { "value": "link", "label": "t:settings_schema.button_style.link" },
-        { "value": "quiet", "label": "t:settings_schema.button_style.quiet" },
-        { "value": "arrow", "label": "t:settings_schema.button_style.arrow" },
-        { "value": "arrow_outline", "label": "t:settings_schema.button_style.arrow_outline" }
-      ],
-      "default": "filled"
+      "type": "buttons"
     },
     {
-      "type": "select",
-      "id": "button_size",
-      "label": "t:sections.all.button_size.label",
-      "options": [
-        { "value": "inherit", "label": "t:settings_schema.button_size.inherit" },
-        { "value": "xs", "label": "t:settings_schema.button_size.xs" },
-        { "value": "sm", "label": "t:settings_schema.button_size.sm" },
-        { "value": "md", "label": "t:settings_schema.button_size.md" },
-        { "value": "lg", "label": "t:settings_schema.button_size.lg" },
-        { "value": "xl", "label": "t:settings_schema.button_size.xl" }
-      ],
-      "default": "inherit"
+      "type": "paragraph"
     },
     {
-      "type": "select",
-      "id": "button_radius",
-      "label": "t:sections.all.button_radius.label",
-      "options": [
-        { "value": "inherit", "label": "t:settings_schema.button_radius.inherit" },
-        { "value": "square", "label": "t:settings_schema.button_radius.square" },
-        { "value": "soft", "label": "t:settings_schema.button_radius.soft" },
-        { "value": "rounded", "label": "t:settings_schema.button_radius.rounded" },
-        { "value": "pill", "label": "t:settings_schema.button_radius.pill" }
-      ],
-      "default": "inherit"
+      "type": "title"
     },
     {
-      "type": "select",
-      "id": "button_style_2",
-      "label": "t:sections.all.button_style_2.label",
-      "options": [
-        { "value": "filled", "label": "t:settings_schema.button_style.filled" },
-        { "value": "outline", "label": "t:settings_schema.button_style.outline" },
-        { "value": "link", "label": "t:settings_schema.button_style.link" },
-        { "value": "quiet", "label": "t:settings_schema.button_style.quiet" },
-        { "value": "arrow", "label": "t:settings_schema.button_style.arrow" },
-        { "value": "arrow_outline", "label": "t:settings_schema.button_style.arrow_outline" }
-      ],
-      "default": "link"
-    },
-    {
-      "type": "select",
-      "id": "button_size_2",
-      "label": "t:sections.all.button_size_2.label",
-      "options": [
-        { "value": "inherit", "label": "t:settings_schema.button_size.inherit" },
-        { "value": "xs", "label": "t:settings_schema.button_size.xs" },
-        { "value": "sm", "label": "t:settings_schema.button_size.sm" },
-        { "value": "md", "label": "t:settings_schema.button_size.md" },
-        { "value": "lg", "label": "t:settings_schema.button_size.lg" },
-        { "value": "xl", "label": "t:settings_schema.button_size.xl" }
-      ],
-      "default": "inherit"
-    },
-    {
-      "type": "select",
-      "id": "button_radius_2",
-      "label": "t:sections.all.button_radius_2.label",
-      "options": [
-        { "value": "inherit", "label": "t:settings_schema.button_radius.inherit" },
-        { "value": "square", "label": "t:settings_schema.button_radius.square" },
-        { "value": "soft", "label": "t:settings_schema.button_radius.soft" },
-        { "value": "rounded", "label": "t:settings_schema.button_radius.rounded" },
-        { "value": "pill", "label": "t:settings_schema.button_radius.pill" }
-      ],
-      "default": "inherit"
-    },
-        {
-          "type": "text",
-          "id": "button_label",
-          "label": "t:sections.hero.blocks.buttons.button_label.label",
-          "default": "Our Full Story"
-        },
-        {
-          "type": "url",
-          "id": "button_link",
-          "label": "t:sections.hero.blocks.buttons.button_link.label"
-        },
-        {
-          "type": "text",
-          "id": "button_label_2",
-          "label": "t:sections.hero.blocks.buttons.button_label_2.label",
-          "default": "The Craft"
-        },
-        {
-          "type": "url",
-          "id": "button_link_2",
-          "label": "t:sections.hero.blocks.buttons.button_link_2.label"
-        }
-      ]
+      "type": "subheading"
     }
   ],
   "presets": [
     {
       "name": "t:sections.about.name",
       "blocks": [
-        { "type": "paragraph" },
-        { "type": "paragraph", "settings": { "text": "<p>Every piece is handcrafted by master artisans who bring decades of skill to each cut, setting, and polish. Designs are guided by heritage and made for real lives — jewelry that becomes a treasured heirloom.</p>" } },
-        { "type": "buttons" }
+        {
+          "type": "prose"
+        },
+        {
+          "type": "prose",
+          "settings": {
+            "text": "<p>Every piece is handcrafted by master artisans who bring decades of skill to each cut, setting, and polish. Designs are guided by heritage and made for real lives — jewelry that becomes a treasured heirloom.</p>"
+          }
+        },
+        {
+          "type": "buttons"
+        }
       ]
     }
   ]

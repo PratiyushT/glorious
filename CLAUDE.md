@@ -18,6 +18,46 @@ this file that explains a feature and the code that implements it must never
 arrive separately: the note is how the next pass learns why a number is what it
 is.
 
+### Section conversions
+
+`about` is the first body section on theme blocks. It lists `prose`, `buttons`,
+`paragraph`, `title` and `subheading`, and renders them with
+`{% content_for 'blocks' %}`.
+
+- **Both of its local types converted in one commit**, because a section holds
+  either its own blocks or theme blocks and never both. That is the constraint
+  that sets the whole phase's order, and it is why `promises` — one local type
+  — is not the cheap first conversion it looks like.
+
+- **`buttons` keeps its type name, and that is the migration.** A block type is
+  a data contract: every stored instance in `templates/index.json` says
+  `"type": "buttons"`, so a theme block of the same name adopts them silently.
+  Renaming would have discarded them.
+
+- **`prose` is a new type and had to be**, so its stored blocks are migrated in
+  the same commit. about's local `paragraph` was a `richtext` rendered into
+  `.rte.measure`; the shared `paragraph` block is a `textarea` rendered into
+  `.section-lede`. They are not the same component, and letting the stored
+  blocks land on the wrong one is not a styling difference — a `textarea`
+  prints its contents inside a `<p>`, so the `<p>…</p>` a richtext setting
+  stores becomes a paragraph nested in a paragraph, which the parser unnests
+  into something the CSS no longer matches. Verified after conversion: three
+  `.rte.measure` blocks, no `p p` on the page.
+
+- **The three duplicate `buttons` schemas are what this collapses.** The markup
+  was already shared through `snippets/button.liquid`, but a schema cannot be
+  shared between sections, so the ten settings stayed written out three times.
+  craft and visit still carry theirs and adopt the block when they convert.
+
+**`featured-products` is not the cheap first conversion the block audit
+suggested.** It has no local blocks, so there is nothing to collapse — and its
+header cannot become blocks without losing the design. Its subheading and its
+"view all" link share one `justify-content: space-between` row, which is the
+design's own arrangement, and merchant-added blocks can only render as one flat
+sibling flow: made into blocks they would fall onto two rows. Converting it
+means either keeping that row as section settings or giving the section a
+static block, as the collection list does for its card.
+
 ### Announcements
 
 **Adding to the bag changed a number in the corner and said nothing.** The

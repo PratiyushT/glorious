@@ -1,0 +1,68 @@
+{%- comment -%}
+  A paragraph of rich text, in the measure.
+
+  **Not the same block as `paragraph`, and the distinction is the reason this
+  exists.** `paragraph` is a *lede* — one plain-text sentence under a section
+  heading, set in `.section-lede`. This is body copy: a `richtext` setting with
+  the merchant's own emphasis and links, set in `.rte` and capped at the
+  reading measure.
+
+  Rendering one as the other is not a styling difference. `paragraph`'s
+  `textarea` holds plain text and prints it inside a `<p>`; hand it the
+  `<p>…</p>` a richtext setting stores and the output is a paragraph nested in
+  a paragraph, which the parser unnests into something the CSS no longer
+  matches.
+
+  `"tag": null` because the block owns its element — a wrapper would break the
+  `.section-lede + .grid-auto` family of adjacency rules the same way it would
+  for a heading.
+{%- endcomment -%}
+
+{%- liquid
+  assign align_class = ''
+  if block.settings.alignment != blank and block.settings.alignment != 'inherit'
+    assign align_class = ' align-' | append: block.settings.alignment
+  endif
+-%}
+
+{%- if block.settings.text != blank -%}
+  <div class="rte measure{{ align_class }}" {{ block.shopify_attributes }}>
+    {{- block.settings.text -}}
+  </div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "t:blocks.prose.name",
+  "tag": null,
+  "settings": [
+    {
+      "type": "select",
+      "id": "alignment",
+      "label": "t:sections.all.content_alignment.label",
+      "info": "t:sections.all.content_alignment.info",
+      "options": [
+        { "value": "inherit", "label": "t:settings_schema.options.inherit" },
+        { "value": "left", "label": "t:settings_schema.options.left" },
+        { "value": "center", "label": "t:settings_schema.options.center" },
+        { "value": "right", "label": "t:settings_schema.options.right" }
+      ],
+      "default": "inherit"
+    },
+    {
+      "type": "richtext",
+      "id": "text",
+      "label": "t:sections.all.text.label",
+      "default": "<p>Say what the shop is for, in a sentence or two. Body copy sits in the reading measure so a line never runs wider than the eye can follow.</p>"
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:blocks.prose.name",
+      "settings": {
+        "text": "<p>Say what the shop is for, in a sentence or two. Body copy sits in the reading measure so a line never runs wider than the eye can follow.</p>"
+      }
+    }
+  ]
+}
+{% endschema %}

@@ -590,6 +590,13 @@
       "label": {
         "label": "Label"
       }
+    },
+    "prose": {
+      "name": "Paragraph (rich text)"
+    },
+    "buttons": {
+      "name": "Buttons",
+      "second_header": "Second button"
     }
   },
   "sections": {
