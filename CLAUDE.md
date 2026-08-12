@@ -470,19 +470,47 @@ that reaches for a parent would tie the two cards' structures together again.
   it is the theme's decision rather than the merchant's. The image block and
   the card each publish their own, which is what overrides them.
 
-- **The photograph's views are three checkboxes**: preview the next image on
-  hover, show the arrows, include the product video. The first needed a hook in
-  two places at once — the stylesheet runs the hover swap on its own so a card
-  whose script never arrives still behaves — and it is `data-hover-off` on
-  `.card__media` rather than on the card root, because a block cannot write an
-  attribute onto its parent. `theme.js`'s `shown()` tests the same attribute in
-  the same place. A swipe is not affected by the arrows setting; it is the
-  touch equivalent and has no control of its own.
+- **The Views are the *card's* settings, not the Media block's**: preview the
+  next image on hover, show the arrows, include the product video, and the
+  video's label. They describe how the card behaves rather than what the
+  photograph is, and they sit under "Views" on `_product-card`.
 
-  The video's chip is a text setting. The design's word is "360°", which is
-  true of its own footage and of nothing else — a shop whose video is a model
-  wearing the piece should not have a chip claiming a spin. `products.
-  video_view` is the fallback when it is cleared.
+  **Which makes the isolation rule bite from the other side, and the answer is
+  worth keeping.** A block cannot read its parent's settings, so the Media block
+  cannot be *told* to draw fewer arrows or skip the video. So it renders
+  everything it can, and the card states the answer on its own root:
+
+  | | |
+  | --- | --- |
+  | `data-card-hover="off"` | the stylesheet's no-JavaScript swap and `theme.js`'s `shown()` both test it |
+  | `data-card-arrows="off"` | CSS hides `.card__arrow` |
+  | `data-card-video="off"` | CSS hides the spin slide, **and `theme.js` drops it from the slide list** |
+
+  The video needs both halves. Hiding it alone would leave the script stepping
+  to something invisible, so `initCards` filters it out before it counts — and
+  then hides the arrows if fewer than two views are left, since the Media block
+  rendered them before that was known. Verified by turning it off: the slide is
+  in the DOM at `display: none`, and stepping cycles **1 → 2 → 0 → 1 → 2 → 0**
+  without ever reaching slide 3.
+
+  **The video's chip is drawn by the card**, which is the one thing that had to
+  move rather than be gated: its wording is a setting here and there is no way
+  to hand a setting down to a child. `.card__spin` is absolutely positioned at
+  the top of the photograph, and `.card--composed` pins the photograph to the
+  `media` grid row — so the card draws it in that row exactly as it already
+  draws the quick-view disc. Measured after the move: 11px down, 53px in, 34px
+  tall, inside the media box and left of the disc — the geometry it had inside
+  `.card__media`.
+
+  The arrows could not follow it: `.card__arrow` is `top: 50%`, so its
+  containing block has to be `.card__media` or it centres on the whole card.
+  A swipe is unaffected by the arrows setting; it is the touch equivalent and
+  has no control of its own.
+
+  The design's chip reads "360°", which is true of its own footage and of
+  nothing else — a shop whose video is a model wearing the piece should not
+  have a chip claiming a spin. `products.video_view` is the fallback when the
+  setting is cleared.
 
 - **The framing correction stopped being a table.** It matched "bracelet",
   "earring" and "ring" against the product's type and title — earrings before

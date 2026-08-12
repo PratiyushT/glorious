@@ -76,12 +76,45 @@
   endif
 
   assign quick_view_label = 'products.quick_view_of' | t: title: product.title
+
+  comment
+    **The views are the card's, not the photograph block's**, and moving them
+    here cost one rearrangement worth understanding. A block cannot read its
+    parent's settings, so the image block cannot be *told* whether to draw the
+    arrows or count the video — but the card can state the answer on its own
+    root, where the stylesheet and `theme.js` both read it. The image block goes
+    on rendering the slides and the arrows; what changes is who decides they are
+    shown.
+
+    The video is the exception that had to move rather than be gated: its chip
+    carries the merchant's word, which is a setting here, and the image block
+    would have no way to receive it. `.card__spin` is absolutely positioned at
+    the top of the media box, and `.card--composed` pins the photograph to the
+    `media` grid row — so the card can draw it in that same row, exactly as it
+    already draws the quick-view disc.
+  endcomment
+  assign video_label = block.settings.video_badge
+  if video_label == blank
+    assign video_label = 'products.video_view' | t
+  endif
+
+  assign card_videos = product.media | where: 'media_type', 'video'
+  assign card_has_video = false
+  if block.settings.show_video and card_videos.first != blank
+    assign card_mp4 = card_videos.first.sources | where: 'format', 'mp4'
+    if card_mp4.last != blank
+      assign card_has_video = true
+    endif
+  endif
 -%}
 
 <div
   class="card card--composed"
   data-card
   {% if card_photos.size > 1 %}data-card-multi{% endif %}
+  {% unless block.settings.hover_next %}data-card-hover="off"{% endunless %}
+  {% unless block.settings.show_arrows %}data-card-arrows="off"{% endunless %}
+  {% unless block.settings.show_video %}data-card-video="off"{% endunless %}
   style="--card-align: {{ block.settings.text_align }};"
   {{ block.shopify_attributes }}
 >
@@ -111,6 +144,18 @@
       </svg>
     </a>
   {%- endif -%}
+
+  {%- comment -%}
+    The chip shown while the video is the view on screen. `theme.js` unhides it
+    when it steps to that slide, and it starts hidden wherever the card opens on
+    a photograph. It carries the merchant's word rather than the design's
+    "360°", which is true of that footage and of nothing else.
+  {%- endcomment -%}
+  {%- if card_has_video -%}
+    <span class="card__spin" data-card-spin-label{% if card_photos.size > 0 %} hidden{% endif %}>
+      {{- video_label -}}
+    </span>
+  {%- endif -%}
 </div>
 
 {% schema %}
@@ -138,6 +183,39 @@
         { "value": "center", "label": "t:settings_schema.options.center" }
       ],
       "default": "left"
+    },
+    {
+      "type": "header",
+      "content": "t:blocks.product_card.views_header"
+    },
+    {
+      "type": "checkbox",
+      "id": "hover_next",
+      "label": "t:blocks.product_card.hover_next.label",
+      "info": "t:blocks.product_card.hover_next.info",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_arrows",
+      "label": "t:blocks.product_card.show_arrows.label",
+      "info": "t:blocks.product_card.show_arrows.info",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_video",
+      "label": "t:blocks.product_card.show_video.label",
+      "info": "t:blocks.product_card.show_video.info",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "video_badge",
+      "label": "t:blocks.product_card.video_badge.label",
+      "info": "t:blocks.product_card.video_badge.info",
+      "visible_if": "{{ block.settings.show_video }}",
+      "default": "Video"
     },
     {
       "type": "header",

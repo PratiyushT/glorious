@@ -110,11 +110,7 @@
               "settings": {
                 "image_ratio": "1/1",
                 "image_fit": "contain",
-                "zoom": "{{ closest.product.metafields.custom.card_zoom.value }}",
-                "hover_next": true,
-                "show_arrows": true,
-                "show_video": true,
-                "video_badge": "360°"
+                "zoom": "{{ closest.product.metafields.custom.card_zoom.value }}"
               }
             },
             "name": {
@@ -231,6 +227,10 @@
           ],
           "settings": {
             "text_align": "left",
+            "hover_next": true,
+            "show_arrows": true,
+            "show_video": true,
+            "video_badge": "360°",
             "quick_view_desktop": true,
             "quick_view_compact": true
           }

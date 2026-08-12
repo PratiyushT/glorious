@@ -1715,14 +1715,34 @@ a {
    takes over it marks the card and drives every slide itself. Guarded to a
    second slide that is actually a photograph — a spin has nothing to show
    until its source is fetched. */
-.card[data-card-multi]:not([data-card-live]):hover
-  .card__media:not([data-hover-off]) .card__slide[data-card-slide="0"] {
+.card[data-card-multi]:not([data-card-live]):not([data-card-hover="off"]):hover
+  .card__slide[data-card-slide="0"] {
   opacity: 0;
 }
 
-.card[data-card-multi]:not([data-card-live]):hover
-  .card__media:not([data-hover-off]) .card__slide[data-card-slide="1"]:not([data-card-spin]) {
+.card[data-card-multi]:not([data-card-live]):not([data-card-hover="off"]):hover
+  .card__slide[data-card-slide="1"]:not([data-card-spin]) {
   opacity: 1;
+}
+
+/* ---- The card's Views ------------------------------------------------
+   Three settings on `blocks/_product-card.liquid` — preview the next image on
+   hover, show the arrows, include the video. They are the *card's* decisions
+   rather than the photograph block's, so the card states them on its own root
+   and the rules below act from there. That is also the only place they can be
+   stated: a block cannot read its parent's settings, so the image block cannot
+   be told to draw fewer arrows, and the card cannot reach into it. It renders
+   everything and the card says what counts.
+
+   The video is hidden rather than not rendered, and `theme.js` drops the same
+   slide from its list, so the card never steps to something invisible. */
+
+.card[data-card-arrows="off"] .card__arrow {
+  display: none;
+}
+
+.card[data-card-video="off"] .card__slide[data-card-spin] {
+  display: none;
 }
 
 .card__quick {
@@ -1849,14 +1869,21 @@ a {
   margin-block-end: var(--card-pad);
 }
 
-.card--composed > .card__quick {
+/* Both of these are drawn by the card rather than by the image block — the
+   disc because it is a setting rather than part of the flow, the video's chip
+   because its wording is a setting and there is no way to hand one down to a
+   child block. Each is absolutely positioned against the top of the photograph,
+   and the `media` row is where the photograph is. */
+.card--composed > .card__quick,
+.card--composed > .card__spin {
   grid-area: media;
 }
 
 /* The photograph bleeds to the card's edges, and the disc is a fixed 34px box
    that would grow by the caption's padding on both sides. */
 .card--composed > .card__media,
-.card--composed > .card__quick {
+.card--composed > .card__quick,
+.card--composed > .card__spin {
   padding-inline: 0;
 }
 

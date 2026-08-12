@@ -2452,16 +2452,33 @@
       if (!media || !slides.length) return;
 
       var spinLabel = card.querySelector('[data-card-spin-label]');
+
+      /* The card's Views. All three are settings on the card and stated on its
+         own root, because a block cannot read its parent's settings — the image
+         block renders every slide and every arrow, and the card says which of
+         them count. The stylesheet hides what this drops. */
+      var hoverPreview = card.getAttribute('data-card-hover') !== 'off';
+
+      if (card.getAttribute('data-card-video') === 'off') {
+        slides = slides.filter(function (slide) {
+          return !slide.hasAttribute('data-card-spin');
+        });
+        if (!slides.length) return;
+      }
+
       var count = slides.length;
       var photos = slides.filter(function (slide) {
         return !slide.hasAttribute('data-card-spin');
       }).length;
 
-      /* Previewing the next photograph on hover is a setting on the image
-         block, so the attribute is on the media rather than the card: a block
-         cannot write onto its parent. The stylesheet's no-JavaScript swap tests
-         for the same attribute in the same place. */
-      var hoverPreview = !media.hasAttribute('data-hover-off');
+      /* A card whose only extra view was the video it has just dropped has
+         nothing left to step through, and the arrows were rendered before that
+         was known. */
+      if (count < 2) {
+        card.querySelectorAll('[data-card-step]').forEach(function (arrow) {
+          arrow.hidden = true;
+        });
+      }
 
       var index = 0;
       var hovering = false;

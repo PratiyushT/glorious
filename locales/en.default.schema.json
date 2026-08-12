@@ -584,26 +584,7 @@
       "text_align": {
         "label": "Text alignment"
       },
-      "quick_view_header": "Quick view",
-      "quick_view_desktop": {
-        "label": "Show on desktop"
-      },
-      "quick_view_compact": {
-        "label": "Show on tablet and mobile",
-        "info": "The disc opens the piece in an overlay. With both off it is simply not shown — the card's own link still opens the product page."
-      }
-    },
-    "product_card_image": {
-      "name": "Media",
       "views_header": "Views",
-      "image_fit": {
-        "label": "Image fit",
-        "info": "Fit shows the whole product against the card. Fill crops it to the frame."
-      },
-      "zoom": {
-        "label": "Scale the photograph",
-        "info": "A number — 1.15 enlarges by 15% — for photography shot with margin around the product. Connect it to a metafield with the dynamic-source button to give each product its own. Leave it empty for no correction."
-      },
       "hover_next": {
         "label": "Show the next image on hover",
         "info": "Previews the second image while the pointer is over the card."
@@ -619,6 +600,25 @@
       "video_badge": {
         "label": "Video label",
         "info": "The chip shown while the video is the view on screen — \"360°\", \"On the model\", whatever the footage is."
+      },
+      "quick_view_header": "Quick view",
+      "quick_view_desktop": {
+        "label": "Show on desktop"
+      },
+      "quick_view_compact": {
+        "label": "Show on tablet and mobile",
+        "info": "The disc opens the piece in an overlay. With both off it is simply not shown — the card's own link still opens the product page."
+      }
+    },
+    "product_card_image": {
+      "name": "Media",
+      "image_fit": {
+        "label": "Image fit",
+        "info": "Fit shows the whole product against the card. Fill crops it to the frame."
+      },
+      "zoom": {
+        "label": "Scale the photograph",
+        "info": "A number — 1.15 enlarges by 15% — for photography shot with margin around the product. Connect it to a metafield with the dynamic-source button to give each product its own. Leave it empty for no correction."
       }
     },
     "product_card_title": {
