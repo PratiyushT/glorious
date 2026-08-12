@@ -1,0 +1,114 @@
+{%- comment -%}
+  A labelled row: a micro label, a display-face value, a hairline under it.
+
+  craft called this `spec` and visit called it `detail`, and they were the same
+  thing — `snippets/spec-row.liquid` already renders both. This is the schema
+  finally shared too, which a snippet cannot do.
+
+  **`source` is what visit needs and craft does not mind having.** A row either
+  states one of the shop's three facts — address, telephone, email — and takes
+  it from the theme settings, building its own `tel:` or `mailto:`; or it is
+  the merchant's own label and value. Only the label stays theirs in the first
+  case, so "Address" can still read "Find us".
+
+  That matters because the shop states those three facts once, as theme
+  settings: the same address appears in the menu overlay, the footer and here,
+  and a shop that moves should have one place to say so.
+
+  A row whose resolved value is blank renders nothing rather than an empty
+  rule — which is the point of the guard, since a merchant may not have set a
+  telephone at all.
+
+  The closing hairline is `.spec-row:not(:has(+ .spec-row))`, not
+  `:last-child`: these render in one flat sibling flow with whatever else the
+  section holds, and a trailing buttons block would otherwise take the group's
+  bottom rule with it.
+{%- endcomment -%}
+
+{%- liquid
+  assign row_value = block.settings.value
+  assign row_link = block.settings.link
+
+  case block.settings.source
+    when 'address'
+      assign row_value = settings.shop_address
+      assign row_link = settings.shop_address_link
+    when 'phone'
+      assign row_value = settings.shop_phone
+      assign row_link = ''
+      if settings.shop_phone != blank
+        assign row_link = settings.shop_phone | remove: ' ' | remove: '-' | remove: '(' | remove: ')' | prepend: 'tel:'
+      endif
+    when 'email'
+      assign row_value = settings.shop_email
+      assign row_link = ''
+      if settings.shop_email != blank
+        assign row_link = settings.shop_email | prepend: 'mailto:'
+      endif
+  endcase
+
+  comment
+    A filter cannot be used on a `render` argument, so the off-site test is
+    done here and handed over.
+  endcomment
+  assign row_external = false
+  if row_link contains '://'
+    assign row_external = true
+  endif
+-%}
+
+{%- render 'spec-row',
+  label: block.settings.label,
+  value: row_value,
+  link: row_link,
+  new_tab: row_external,
+  attributes: block.shopify_attributes -%}
+
+{% schema %}
+{
+  "name": "t:blocks.detail.name",
+  "tag": null,
+  "settings": [
+    {
+      "type": "text",
+      "id": "label",
+      "label": "t:blocks.detail.label.label",
+      "default": "Metal"
+    },
+    {
+      "type": "select",
+      "id": "source",
+      "label": "t:blocks.detail.source.label",
+      "info": "t:blocks.detail.source.info",
+      "options": [
+        { "value": "custom", "label": "t:blocks.detail.source.custom" },
+        { "value": "address", "label": "t:blocks.detail.source.address" },
+        { "value": "phone", "label": "t:blocks.detail.source.phone" },
+        { "value": "email", "label": "t:blocks.detail.source.email" }
+      ],
+      "default": "custom"
+    },
+    {
+      "type": "text",
+      "id": "value",
+      "label": "t:blocks.detail.value.label",
+      "info": "t:blocks.detail.value.info",
+      "default": "18-karat gold"
+    },
+    {
+      "type": "url",
+      "id": "link",
+      "label": "t:sections.all.link.label"
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:blocks.detail.name",
+      "settings": {
+        "label": "Metal",
+        "value": "18-karat gold"
+      }
+    }
+  ]
+}
+{% endschema %}

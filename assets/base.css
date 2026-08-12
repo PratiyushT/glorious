@@ -3413,7 +3413,13 @@ a.card__title::after {
   border-top: var(--border-width) solid var(--c-hairline);
 }
 
-.spec-row:last-child {
+/* The last row closes the group. `:not(:has(+ .spec-row))` rather than
+   `:last-child`, because as theme blocks these render in one flat sibling flow
+   with everything else the section holds — a trailing buttons block would take
+   `:last-child` from the rows, so the group would lose its closing rule and the
+   button row would gain one. This asks the question actually meant: is there
+   another row after this one. */
+.spec-row:not(:has(+ .spec-row)) {
   border-bottom: var(--border-width) solid var(--c-hairline);
 }
 

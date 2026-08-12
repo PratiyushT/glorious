@@ -58,39 +58,17 @@
           <div class="rte measure">{{ section.settings.text }}</div>
         {%- endif -%}
 
-        {%- assign spec_blocks = section.blocks | where: 'type', 'spec' -%}
-        {%- if spec_blocks.size > 0 -%}
-          <div class="measure">
-            {%- for block in spec_blocks -%}
-              {%- render 'spec-row',
-                label: block.settings.label,
-                value: block.settings.value,
-                attributes: block.shopify_attributes -%}
-            {%- endfor -%}
-          </div>
-        {%- endif -%}
+        {%- comment -%}
 
-        {%- for block in section.blocks -%}
-          {%- if block.type == 'buttons' -%}
-            {%- comment -%}
-              A label without a link renders nothing — see about.liquid.
-            {%- endcomment -%}
-            <div class="btn-row" {{ block.shopify_attributes }}>
-              {%- render 'button',
-                label: block.settings.button_label,
-                link: block.settings.button_link,
-                style: block.settings.button_style,
-                size: block.settings.button_size,
-                radius: block.settings.button_radius -%}
-              {%- render 'button',
-                label: block.settings.button_label_2,
-                link: block.settings.button_link_2,
-                style: block.settings.button_style_2,
-                size: block.settings.button_size_2,
-                radius: block.settings.button_radius_2 -%}
-            </div>
-          {%- endif -%}
-        {%- endfor -%}
+          Theme blocks. Both of this section's local types converted in one
+
+          commit, because a section holds either its own blocks or theme
+
+          blocks and never both.
+
+        {%- endcomment -%}
+
+        {% content_for 'blocks' %}
       </div>
     </div>
   </div>
@@ -130,8 +108,14 @@
       "id": "layout",
       "label": "t:sections.all.layout.label",
       "options": [
-        { "value": "image_first", "label": "t:sections.all.image_first" },
-        { "value": "text_first", "label": "t:sections.all.text_first" }
+        {
+          "value": "image_first",
+          "label": "t:sections.all.image_first"
+        },
+        {
+          "value": "text_first",
+          "label": "t:sections.all.text_first"
+        }
       ],
       "default": "image_first"
     },
@@ -168,10 +152,22 @@
       "id": "image_ratio",
       "label": "t:sections.all.image_ratio.label",
       "options": [
-        { "value": "1 / 1", "label": "t:settings_schema.options.square" },
-        { "value": "4 / 5", "label": "t:settings_schema.options.portrait" },
-        { "value": "3 / 4", "label": "t:settings_schema.options.tall_portrait" },
-        { "value": "4 / 3", "label": "t:settings_schema.options.landscape" }
+        {
+          "value": "1 / 1",
+          "label": "t:settings_schema.options.square"
+        },
+        {
+          "value": "4 / 5",
+          "label": "t:settings_schema.options.portrait"
+        },
+        {
+          "value": "3 / 4",
+          "label": "t:settings_schema.options.tall_portrait"
+        },
+        {
+          "value": "4 / 3",
+          "label": "t:settings_schema.options.landscape"
+        }
       ],
       "default": "4 / 5"
     },
@@ -190,14 +186,38 @@
       "id": "padding_top",
       "label": "t:sections.all.padding_top.label",
       "options": [
-        { "value": "none", "label": "t:sections.all.space_step.none" },
-        { "value": "2xs", "label": "t:sections.all.space_step.2xs" },
-        { "value": "xs", "label": "t:sections.all.space_step.xs" },
-        { "value": "sm", "label": "t:sections.all.space_step.sm" },
-        { "value": "md", "label": "t:sections.all.space_step.md" },
-        { "value": "lg", "label": "t:sections.all.space_step.lg" },
-        { "value": "xl", "label": "t:sections.all.space_step.xl" },
-        { "value": "max", "label": "t:sections.all.space_step.max" }
+        {
+          "value": "none",
+          "label": "t:sections.all.space_step.none"
+        },
+        {
+          "value": "2xs",
+          "label": "t:sections.all.space_step.2xs"
+        },
+        {
+          "value": "xs",
+          "label": "t:sections.all.space_step.xs"
+        },
+        {
+          "value": "sm",
+          "label": "t:sections.all.space_step.sm"
+        },
+        {
+          "value": "md",
+          "label": "t:sections.all.space_step.md"
+        },
+        {
+          "value": "lg",
+          "label": "t:sections.all.space_step.lg"
+        },
+        {
+          "value": "xl",
+          "label": "t:sections.all.space_step.xl"
+        },
+        {
+          "value": "max",
+          "label": "t:sections.all.space_step.max"
+        }
       ],
       "default": "md"
     },
@@ -206,158 +226,93 @@
       "id": "padding_bottom",
       "label": "t:sections.all.padding_bottom.label",
       "options": [
-        { "value": "none", "label": "t:sections.all.space_step.none" },
-        { "value": "2xs", "label": "t:sections.all.space_step.2xs" },
-        { "value": "xs", "label": "t:sections.all.space_step.xs" },
-        { "value": "sm", "label": "t:sections.all.space_step.sm" },
-        { "value": "md", "label": "t:sections.all.space_step.md" },
-        { "value": "lg", "label": "t:sections.all.space_step.lg" },
-        { "value": "xl", "label": "t:sections.all.space_step.xl" },
-        { "value": "max", "label": "t:sections.all.space_step.max" }
+        {
+          "value": "none",
+          "label": "t:sections.all.space_step.none"
+        },
+        {
+          "value": "2xs",
+          "label": "t:sections.all.space_step.2xs"
+        },
+        {
+          "value": "xs",
+          "label": "t:sections.all.space_step.xs"
+        },
+        {
+          "value": "sm",
+          "label": "t:sections.all.space_step.sm"
+        },
+        {
+          "value": "md",
+          "label": "t:sections.all.space_step.md"
+        },
+        {
+          "value": "lg",
+          "label": "t:sections.all.space_step.lg"
+        },
+        {
+          "value": "xl",
+          "label": "t:sections.all.space_step.xl"
+        },
+        {
+          "value": "max",
+          "label": "t:sections.all.space_step.max"
+        }
       ],
       "default": "md"
     }
   ],
   "blocks": [
     {
-      "type": "spec",
-      "name": "t:sections.craft.blocks.spec.name",
-      "settings": [
-        {
-          "type": "text",
-          "id": "label",
-          "label": "t:sections.craft.blocks.spec.label.label",
-          "default": "Metal"
-        },
-        {
-          "type": "text",
-          "id": "value",
-          "label": "t:sections.craft.blocks.spec.value.label",
-          "default": "18-karat gold"
-        }
-      ]
+      "type": "detail"
     },
     {
-      "type": "buttons",
-      "name": "t:sections.craft.blocks.buttons.name",
-      "limit": 1,
-      "settings": [
-    {
-      "type": "select",
-      "id": "button_style",
-      "label": "t:sections.all.button_style.label",
-      "options": [
-        { "value": "filled", "label": "t:settings_schema.button_style.filled" },
-        { "value": "outline", "label": "t:settings_schema.button_style.outline" },
-        { "value": "link", "label": "t:settings_schema.button_style.link" },
-        { "value": "quiet", "label": "t:settings_schema.button_style.quiet" },
-        { "value": "arrow", "label": "t:settings_schema.button_style.arrow" },
-        { "value": "arrow_outline", "label": "t:settings_schema.button_style.arrow_outline" }
-      ],
-      "default": "filled"
+      "type": "buttons"
     },
     {
-      "type": "select",
-      "id": "button_size",
-      "label": "t:sections.all.button_size.label",
-      "options": [
-        { "value": "inherit", "label": "t:settings_schema.button_size.inherit" },
-        { "value": "xs", "label": "t:settings_schema.button_size.xs" },
-        { "value": "sm", "label": "t:settings_schema.button_size.sm" },
-        { "value": "md", "label": "t:settings_schema.button_size.md" },
-        { "value": "lg", "label": "t:settings_schema.button_size.lg" },
-        { "value": "xl", "label": "t:settings_schema.button_size.xl" }
-      ],
-      "default": "inherit"
+      "type": "prose"
     },
     {
-      "type": "select",
-      "id": "button_radius",
-      "label": "t:sections.all.button_radius.label",
-      "options": [
-        { "value": "inherit", "label": "t:settings_schema.button_radius.inherit" },
-        { "value": "square", "label": "t:settings_schema.button_radius.square" },
-        { "value": "soft", "label": "t:settings_schema.button_radius.soft" },
-        { "value": "rounded", "label": "t:settings_schema.button_radius.rounded" },
-        { "value": "pill", "label": "t:settings_schema.button_radius.pill" }
-      ],
-      "default": "inherit"
+      "type": "paragraph"
     },
     {
-      "type": "select",
-      "id": "button_style_2",
-      "label": "t:sections.all.button_style_2.label",
-      "options": [
-        { "value": "filled", "label": "t:settings_schema.button_style.filled" },
-        { "value": "outline", "label": "t:settings_schema.button_style.outline" },
-        { "value": "link", "label": "t:settings_schema.button_style.link" },
-        { "value": "quiet", "label": "t:settings_schema.button_style.quiet" },
-        { "value": "arrow", "label": "t:settings_schema.button_style.arrow" },
-        { "value": "arrow_outline", "label": "t:settings_schema.button_style.arrow_outline" }
-      ],
-      "default": "link"
+      "type": "title"
     },
     {
-      "type": "select",
-      "id": "button_size_2",
-      "label": "t:sections.all.button_size_2.label",
-      "options": [
-        { "value": "inherit", "label": "t:settings_schema.button_size.inherit" },
-        { "value": "xs", "label": "t:settings_schema.button_size.xs" },
-        { "value": "sm", "label": "t:settings_schema.button_size.sm" },
-        { "value": "md", "label": "t:settings_schema.button_size.md" },
-        { "value": "lg", "label": "t:settings_schema.button_size.lg" },
-        { "value": "xl", "label": "t:settings_schema.button_size.xl" }
-      ],
-      "default": "inherit"
-    },
-    {
-      "type": "select",
-      "id": "button_radius_2",
-      "label": "t:sections.all.button_radius_2.label",
-      "options": [
-        { "value": "inherit", "label": "t:settings_schema.button_radius.inherit" },
-        { "value": "square", "label": "t:settings_schema.button_radius.square" },
-        { "value": "soft", "label": "t:settings_schema.button_radius.soft" },
-        { "value": "rounded", "label": "t:settings_schema.button_radius.rounded" },
-        { "value": "pill", "label": "t:settings_schema.button_radius.pill" }
-      ],
-      "default": "inherit"
-    },
-        {
-          "type": "text",
-          "id": "button_label",
-          "label": "t:sections.hero.blocks.buttons.button_label.label",
-          "default": "Bespoke Commissions"
-        },
-        {
-          "type": "url",
-          "id": "button_link",
-          "label": "t:sections.hero.blocks.buttons.button_link.label"
-        },
-        {
-          "type": "text",
-          "id": "button_label_2",
-          "label": "t:sections.hero.blocks.buttons.button_label_2.label",
-          "default": "Old Gold, Renewed"
-        },
-        {
-          "type": "url",
-          "id": "button_link_2",
-          "label": "t:sections.hero.blocks.buttons.button_link_2.label"
-        }
-      ]
+      "type": "subheading"
     }
   ],
   "presets": [
     {
       "name": "t:sections.craft.name",
       "blocks": [
-        { "type": "spec" },
-        { "type": "spec", "settings": { "label": "Clarity", "value": "VVS and above" } },
-        { "type": "spec", "settings": { "label": "Colour", "value": "F and above" } },
-        { "type": "spec", "settings": { "label": "Certification", "value": "IGI" } },
-        { "type": "buttons" }
+        {
+          "type": "detail"
+        },
+        {
+          "type": "detail",
+          "settings": {
+            "label": "Clarity",
+            "value": "VVS and above"
+          }
+        },
+        {
+          "type": "detail",
+          "settings": {
+            "label": "Colour",
+            "value": "F and above"
+          }
+        },
+        {
+          "type": "detail",
+          "settings": {
+            "label": "Certification",
+            "value": "IGI"
+          }
+        },
+        {
+          "type": "buttons"
+        }
       ]
     }
   ]

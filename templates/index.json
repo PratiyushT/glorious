@@ -19,7 +19,7 @@
           }
         },
         "gemstone": {
-          "type": "detail",
+          "type": "hero_detail",
           "settings": {
             "label": "Gemstone:",
             "value": "Diamond"
@@ -40,7 +40,7 @@
           }
         },
         "buttons": {
-          "type": "buttons",
+          "type": "hero_cta",
           "settings": {
             "button_label": "Collections",
             "button_link": "/collections/all"
@@ -246,28 +246,28 @@
       "type": "craft",
       "blocks": {
         "metal": {
-          "type": "spec",
+          "type": "detail",
           "settings": {
             "label": "Metal",
             "value": "18-karat gold"
           }
         },
         "clarity": {
-          "type": "spec",
+          "type": "detail",
           "settings": {
             "label": "Clarity",
             "value": "VVS and above"
           }
         },
         "colour": {
-          "type": "spec",
+          "type": "detail",
           "settings": {
             "label": "Colour",
             "value": "F and above"
           }
         },
         "certification": {
-          "type": "spec",
+          "type": "detail",
           "settings": {
             "label": "Certification",
             "value": "IGI"
@@ -435,7 +435,9 @@
             "button_label_2": "Contact Us",
             "button_link_2": "",
             "button_style": "filled",
-            "button_style_2": "link"
+            "button_style_2": "link",
+            "button_link_source": "address",
+            "button_link_source_2": "email"
           }
         }
       },

@@ -596,7 +596,32 @@
     },
     "buttons": {
       "name": "Buttons",
-      "second_header": "Second button"
+      "second_header": "Second button",
+      "link_source": {
+        "label": "Link to",
+        "info": "Anything but Custom falls back to Theme settings → Shop details when no link is set."
+      }
+    },
+    "detail": {
+      "name": "Detail row",
+      "label": {
+        "label": "Label"
+      },
+      "source": {
+        "label": "Value from",
+        "info": "Anything but Custom takes the value, and its link, from Theme settings → Shop details.",
+        "custom": "Custom",
+        "address": "Shop location",
+        "phone": "Shop telephone",
+        "email": "Shop email"
+      },
+      "value": {
+        "label": "Value",
+        "info": "Used only when Value from is Custom."
+      },
+      "link": {
+        "label": "Link"
+      }
     }
   },
   "sections": {
@@ -892,7 +917,7 @@
             "label": "Size"
           }
         },
-        "detail": {
+        "hero_detail": {
           "name": "Detail row"
         },
         "metal": {
@@ -905,7 +930,7 @@
         "text": {
           "name": "Text"
         },
-        "buttons": {
+        "hero_cta": {
           "name": "Buttons",
           "button_label": {
             "label": "Primary button"
@@ -1045,20 +1070,6 @@
       },
       "show_frame": {
         "label": "Show the offset frame"
-      },
-      "blocks": {
-        "spec": {
-          "name": "Specification row",
-          "label": {
-            "label": "Label"
-          },
-          "value": {
-            "label": "Value"
-          }
-        },
-        "buttons": {
-          "name": "Buttons"
-        }
       }
     },
     "about": {
@@ -1114,32 +1125,6 @@
       },
       "show_rule": {
         "label": "Show the top rule"
-      },
-      "blocks": {
-        "detail": {
-          "name": "Detail row",
-          "label": {
-            "label": "Label"
-          },
-          "source": {
-            "label": "Value from",
-            "info": "Anything but Custom takes the value, and its link, from Theme settings → Shop details.",
-            "custom": "Custom",
-            "address": "Shop location",
-            "phone": "Shop telephone",
-            "email": "Shop email"
-          },
-          "value": {
-            "label": "Value",
-            "info": "Used only when Value from is Custom."
-          },
-          "link": {
-            "label": "Link"
-          }
-        },
-        "buttons": {
-          "name": "Buttons"
-        }
       }
     },
     "rich_text": {

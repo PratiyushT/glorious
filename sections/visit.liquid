@@ -56,100 +56,17 @@
           <div class="rte measure">{{ section.settings.text }}</div>
         {%- endif -%}
 
-        {%- assign detail_blocks = section.blocks | where: 'type', 'detail' -%}
-        {%- if detail_blocks.size > 0 -%}
-          <div>
-            {%- for block in detail_blocks -%}
-              {%- comment -%}
-                A row either states one of the shop's three facts — in which
-                case it takes it from the theme settings and builds its own
-                tel:/mailto: — or it is the merchant's own label and value.
-                Only the label is theirs in the first case, so "Address" can
-                still read "Find us".
-              {%- endcomment -%}
-              {%- liquid
-                assign row_value = block.settings.value
-                assign row_link = block.settings.link
+        {%- comment -%}
 
-                if block.settings.source == 'address'
-                  assign row_value = settings.shop_address
-                  assign row_link = settings.shop_address_link
-                elsif block.settings.source == 'phone'
-                  assign row_value = settings.shop_phone
-                  assign row_link = ''
-                  if settings.shop_phone != blank
-                    assign row_link = settings.shop_phone | remove: ' ' | remove: '-' | remove: '(' | remove: ')' | prepend: 'tel:'
-                  endif
-                elsif block.settings.source == 'email'
-                  assign row_value = settings.shop_email
-                  assign row_link = ''
-                  if settings.shop_email != blank
-                    assign row_link = settings.shop_email | prepend: 'mailto:'
-                  endif
-                endif
-                comment
-                  The off-site test happens here because a filter cannot be
-                  used on a `render` argument.
-                endcomment
-                assign row_external = false
-                if row_link contains '://'
-                  assign row_external = true
-                endif
-              -%}
+          Theme blocks. Both of this section's local types converted in one
 
-              {%- render 'spec-row',
-                label: block.settings.label,
-                value: row_value,
-                link: row_link,
-                new_tab: row_external,
-                attributes: block.shopify_attributes -%}
-            {%- endfor -%}
-          </div>
-        {%- endif -%}
+          commit, because a section holds either its own blocks or theme
 
-        {%- for block in section.blocks -%}
-          {%- if block.type == 'buttons' -%}
-            {%- comment -%}
-              Both buttons fall back to the shop's own details, so the address
-              and the email are each still stated in exactly one place — and
-              neither button can end up pointing at nothing. A label with no
-              destination left renders nothing, as everywhere else.
-            {%- endcomment -%}
-            {%- liquid
-              assign directions_link = block.settings.button_link | default: settings.shop_address_link
+          blocks and never both.
 
-              assign contact_link = block.settings.button_link_2
-              if contact_link == blank and settings.shop_email != blank
-                assign contact_link = settings.shop_email | prepend: 'mailto:'
-              endif
-            -%}
-            {%- comment -%}
-              A filter cannot be used on a `render` argument, so the off-site
-              test is done here and handed over as a variable.
-            {%- endcomment -%}
-            {%- liquid
-              assign directions_external = false
-              if directions_link contains '://'
-                assign directions_external = true
-              endif
-            -%}
-            <div class="btn-row" {{ block.shopify_attributes }}>
-              {%- render 'button',
-                label: block.settings.button_label,
-                link: directions_link,
-                style: block.settings.button_style,
-                size: block.settings.button_size,
-                radius: block.settings.button_radius,
-                new_tab: directions_external -%}
-              {%- render 'button',
-                label: block.settings.button_label_2,
-                link: contact_link,
-                style: block.settings.button_style_2,
-                size: block.settings.button_size_2,
-                radius: block.settings.button_radius_2 -%}
-            </div>
-          {%- endif -%}
-        {%- endfor -%}
+        {%- endcomment -%}
+
+        {% content_for 'blocks' %}
       </div>
     </div>
   </div>
@@ -189,8 +106,14 @@
       "id": "layout",
       "label": "t:sections.all.layout.label",
       "options": [
-        { "value": "image_first", "label": "t:sections.all.image_first" },
-        { "value": "text_first", "label": "t:sections.all.text_first" }
+        {
+          "value": "image_first",
+          "label": "t:sections.all.image_first"
+        },
+        {
+          "value": "text_first",
+          "label": "t:sections.all.text_first"
+        }
       ],
       "default": "image_first"
     },
@@ -221,10 +144,22 @@
       "id": "image_ratio",
       "label": "t:sections.all.image_ratio.label",
       "options": [
-        { "value": "1 / 1", "label": "t:settings_schema.options.square" },
-        { "value": "4 / 5", "label": "t:settings_schema.options.portrait" },
-        { "value": "3 / 4", "label": "t:settings_schema.options.tall_portrait" },
-        { "value": "4 / 3", "label": "t:settings_schema.options.landscape" }
+        {
+          "value": "1 / 1",
+          "label": "t:settings_schema.options.square"
+        },
+        {
+          "value": "4 / 5",
+          "label": "t:settings_schema.options.portrait"
+        },
+        {
+          "value": "3 / 4",
+          "label": "t:settings_schema.options.tall_portrait"
+        },
+        {
+          "value": "4 / 3",
+          "label": "t:settings_schema.options.landscape"
+        }
       ],
       "default": "4 / 5"
     },
@@ -255,14 +190,38 @@
       "id": "padding_top",
       "label": "t:sections.all.padding_top.label",
       "options": [
-        { "value": "none", "label": "t:sections.all.space_step.none" },
-        { "value": "2xs", "label": "t:sections.all.space_step.2xs" },
-        { "value": "xs", "label": "t:sections.all.space_step.xs" },
-        { "value": "sm", "label": "t:sections.all.space_step.sm" },
-        { "value": "md", "label": "t:sections.all.space_step.md" },
-        { "value": "lg", "label": "t:sections.all.space_step.lg" },
-        { "value": "xl", "label": "t:sections.all.space_step.xl" },
-        { "value": "max", "label": "t:sections.all.space_step.max" }
+        {
+          "value": "none",
+          "label": "t:sections.all.space_step.none"
+        },
+        {
+          "value": "2xs",
+          "label": "t:sections.all.space_step.2xs"
+        },
+        {
+          "value": "xs",
+          "label": "t:sections.all.space_step.xs"
+        },
+        {
+          "value": "sm",
+          "label": "t:sections.all.space_step.sm"
+        },
+        {
+          "value": "md",
+          "label": "t:sections.all.space_step.md"
+        },
+        {
+          "value": "lg",
+          "label": "t:sections.all.space_step.lg"
+        },
+        {
+          "value": "xl",
+          "label": "t:sections.all.space_step.xl"
+        },
+        {
+          "value": "max",
+          "label": "t:sections.all.space_step.max"
+        }
       ],
       "default": "md"
     },
@@ -271,174 +230,83 @@
       "id": "padding_bottom",
       "label": "t:sections.all.padding_bottom.label",
       "options": [
-        { "value": "none", "label": "t:sections.all.space_step.none" },
-        { "value": "2xs", "label": "t:sections.all.space_step.2xs" },
-        { "value": "xs", "label": "t:sections.all.space_step.xs" },
-        { "value": "sm", "label": "t:sections.all.space_step.sm" },
-        { "value": "md", "label": "t:sections.all.space_step.md" },
-        { "value": "lg", "label": "t:sections.all.space_step.lg" },
-        { "value": "xl", "label": "t:sections.all.space_step.xl" },
-        { "value": "max", "label": "t:sections.all.space_step.max" }
+        {
+          "value": "none",
+          "label": "t:sections.all.space_step.none"
+        },
+        {
+          "value": "2xs",
+          "label": "t:sections.all.space_step.2xs"
+        },
+        {
+          "value": "xs",
+          "label": "t:sections.all.space_step.xs"
+        },
+        {
+          "value": "sm",
+          "label": "t:sections.all.space_step.sm"
+        },
+        {
+          "value": "md",
+          "label": "t:sections.all.space_step.md"
+        },
+        {
+          "value": "lg",
+          "label": "t:sections.all.space_step.lg"
+        },
+        {
+          "value": "xl",
+          "label": "t:sections.all.space_step.xl"
+        },
+        {
+          "value": "max",
+          "label": "t:sections.all.space_step.max"
+        }
       ],
       "default": "max"
     }
   ],
   "blocks": [
     {
-      "type": "detail",
-      "name": "t:sections.visit.blocks.detail.name",
-      "settings": [
-        {
-          "type": "text",
-          "id": "label",
-          "label": "t:sections.visit.blocks.detail.label.label",
-          "default": "Address"
-        },
-        {
-          "type": "select",
-          "id": "source",
-          "label": "t:sections.visit.blocks.detail.source.label",
-          "info": "t:sections.visit.blocks.detail.source.info",
-          "options": [
-            { "value": "custom", "label": "t:sections.visit.blocks.detail.source.custom" },
-            { "value": "address", "label": "t:sections.visit.blocks.detail.source.address" },
-            { "value": "phone", "label": "t:sections.visit.blocks.detail.source.phone" },
-            { "value": "email", "label": "t:sections.visit.blocks.detail.source.email" }
-          ],
-          "default": "custom"
-        },
-        {
-          "type": "text",
-          "id": "value",
-          "label": "t:sections.visit.blocks.detail.value.label",
-          "info": "t:sections.visit.blocks.detail.value.info"
-        },
-        {
-          "type": "url",
-          "id": "link",
-          "label": "t:sections.visit.blocks.detail.link.label"
-        }
-      ]
+      "type": "detail"
     },
     {
-      "type": "buttons",
-      "name": "t:sections.visit.blocks.buttons.name",
-      "limit": 1,
-      "settings": [
-    {
-      "type": "select",
-      "id": "button_style",
-      "label": "t:sections.all.button_style.label",
-      "options": [
-        { "value": "filled", "label": "t:settings_schema.button_style.filled" },
-        { "value": "outline", "label": "t:settings_schema.button_style.outline" },
-        { "value": "link", "label": "t:settings_schema.button_style.link" },
-        { "value": "quiet", "label": "t:settings_schema.button_style.quiet" },
-        { "value": "arrow", "label": "t:settings_schema.button_style.arrow" },
-        { "value": "arrow_outline", "label": "t:settings_schema.button_style.arrow_outline" }
-      ],
-      "default": "filled"
+      "type": "buttons"
     },
     {
-      "type": "select",
-      "id": "button_size",
-      "label": "t:sections.all.button_size.label",
-      "options": [
-        { "value": "inherit", "label": "t:settings_schema.button_size.inherit" },
-        { "value": "xs", "label": "t:settings_schema.button_size.xs" },
-        { "value": "sm", "label": "t:settings_schema.button_size.sm" },
-        { "value": "md", "label": "t:settings_schema.button_size.md" },
-        { "value": "lg", "label": "t:settings_schema.button_size.lg" },
-        { "value": "xl", "label": "t:settings_schema.button_size.xl" }
-      ],
-      "default": "inherit"
+      "type": "prose"
     },
     {
-      "type": "select",
-      "id": "button_radius",
-      "label": "t:sections.all.button_radius.label",
-      "options": [
-        { "value": "inherit", "label": "t:settings_schema.button_radius.inherit" },
-        { "value": "square", "label": "t:settings_schema.button_radius.square" },
-        { "value": "soft", "label": "t:settings_schema.button_radius.soft" },
-        { "value": "rounded", "label": "t:settings_schema.button_radius.rounded" },
-        { "value": "pill", "label": "t:settings_schema.button_radius.pill" }
-      ],
-      "default": "inherit"
+      "type": "paragraph"
     },
     {
-      "type": "select",
-      "id": "button_style_2",
-      "label": "t:sections.all.button_style_2.label",
-      "options": [
-        { "value": "filled", "label": "t:settings_schema.button_style.filled" },
-        { "value": "outline", "label": "t:settings_schema.button_style.outline" },
-        { "value": "link", "label": "t:settings_schema.button_style.link" },
-        { "value": "quiet", "label": "t:settings_schema.button_style.quiet" },
-        { "value": "arrow", "label": "t:settings_schema.button_style.arrow" },
-        { "value": "arrow_outline", "label": "t:settings_schema.button_style.arrow_outline" }
-      ],
-      "default": "link"
+      "type": "title"
     },
     {
-      "type": "select",
-      "id": "button_size_2",
-      "label": "t:sections.all.button_size_2.label",
-      "options": [
-        { "value": "inherit", "label": "t:settings_schema.button_size.inherit" },
-        { "value": "xs", "label": "t:settings_schema.button_size.xs" },
-        { "value": "sm", "label": "t:settings_schema.button_size.sm" },
-        { "value": "md", "label": "t:settings_schema.button_size.md" },
-        { "value": "lg", "label": "t:settings_schema.button_size.lg" },
-        { "value": "xl", "label": "t:settings_schema.button_size.xl" }
-      ],
-      "default": "inherit"
-    },
-    {
-      "type": "select",
-      "id": "button_radius_2",
-      "label": "t:sections.all.button_radius_2.label",
-      "options": [
-        { "value": "inherit", "label": "t:settings_schema.button_radius.inherit" },
-        { "value": "square", "label": "t:settings_schema.button_radius.square" },
-        { "value": "soft", "label": "t:settings_schema.button_radius.soft" },
-        { "value": "rounded", "label": "t:settings_schema.button_radius.rounded" },
-        { "value": "pill", "label": "t:settings_schema.button_radius.pill" }
-      ],
-      "default": "inherit"
-    },
-        {
-          "type": "text",
-          "id": "button_label",
-          "label": "t:sections.hero.blocks.buttons.button_label.label",
-          "default": "Get Directions"
-        },
-        {
-          "type": "url",
-          "id": "button_link",
-          "label": "t:sections.hero.blocks.buttons.button_link.label"
-        },
-        {
-          "type": "text",
-          "id": "button_label_2",
-          "label": "t:sections.hero.blocks.buttons.button_label_2.label",
-          "default": "Contact Us"
-        },
-        {
-          "type": "url",
-          "id": "button_link_2",
-          "label": "t:sections.hero.blocks.buttons.button_link_2.label"
-        }
-      ]
+      "type": "subheading"
     }
   ],
   "presets": [
     {
       "name": "t:sections.visit.name",
       "blocks": [
-        { "type": "detail", "settings": { "label": "Address", "source": "address" } },
-        { "type": "detail", "settings": { "label": "Hours", "value": "Tue–Sat 11–7 · Sun 11–4 · Mon closed" } },
-        { "type": "buttons" }
+        {
+          "type": "detail",
+          "settings": {
+            "label": "Address",
+            "source": "address"
+          }
+        },
+        {
+          "type": "detail",
+          "settings": {
+            "label": "Hours",
+            "value": "Tue–Sat 11–7 · Sun 11–4 · Mon closed"
+          }
+        },
+        {
+          "type": "buttons"
+        }
       ]
     }
   ]

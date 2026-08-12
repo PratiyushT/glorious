@@ -23,9 +23,9 @@
   assign wordmark_letters = wordmark_source | split: ''
 
   assign metal_blocks = section.blocks | where: 'type', 'metal'
-  assign detail_blocks = section.blocks | where: 'type', 'detail'
+  assign detail_blocks = section.blocks | where: 'type', 'hero_detail'
   assign text_block = section.blocks | where: 'type', 'text' | first
-  assign button_block = section.blocks | where: 'type', 'buttons' | first
+  assign button_block = section.blocks | where: 'type', 'hero_cta' | first
 -%}
 
 <section
@@ -328,19 +328,19 @@
       ]
     },
     {
-      "type": "detail",
-      "name": "t:sections.hero.blocks.detail.name",
+      "type": "hero_detail",
+      "name": "t:sections.hero.blocks.hero_detail.name",
       "settings": [
         {
           "type": "text",
           "id": "label",
-          "label": "t:sections.visit.blocks.detail.label.label",
+          "label": "t:blocks.detail.label.label",
           "default": "Gemstone:"
         },
         {
           "type": "text",
           "id": "value",
-          "label": "t:sections.visit.blocks.detail.value.label",
+          "label": "t:blocks.detail.value.label",
           "default": "Diamond"
         }
       ]
@@ -364,20 +364,20 @@
       ]
     },
     {
-      "type": "buttons",
-      "name": "t:sections.hero.blocks.buttons.name",
+      "type": "hero_cta",
+      "name": "t:sections.hero.blocks.hero_cta.name",
       "limit": 1,
       "settings": [
         {
           "type": "text",
           "id": "button_label",
-          "label": "t:sections.hero.blocks.buttons.button_label.label",
+          "label": "t:sections.hero.blocks.hero_cta.button_label.label",
           "default": "Collections"
         },
         {
           "type": "url",
           "id": "button_link",
-          "label": "t:sections.hero.blocks.buttons.button_link.label"
+          "label": "t:sections.hero.blocks.hero_cta.button_link.label"
         }
       ]
     }
@@ -387,9 +387,9 @@
       "name": "t:sections.hero.name",
       "blocks": [
         { "type": "text" },
-        { "type": "detail" },
+        { "type": "hero_detail" },
         { "type": "metal" },
-        { "type": "buttons" }
+        { "type": "hero_cta" }
       ]
     }
   ]

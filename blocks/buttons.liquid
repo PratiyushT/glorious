@@ -21,16 +21,68 @@
   enforces that, so a half-filled block leaves no empty row behind.
 {%- endcomment -%}
 
+{%- liquid
+  comment
+    A button may point at one of the shop's own facts rather than at a URL the
+    merchant retypes. The shop states its address, telephone and email once, as
+    theme settings, and this is how a button reaches them — the same `source`
+    idea the detail block uses, and the reason templates/index.json stores no
+    map URL for Visit's "Get Directions".
+
+    It is a fallback, not an override: an explicit link always wins, so a
+    merchant can point the button anywhere without first changing the source.
+  endcomment
+  assign link_1 = block.settings.button_link
+  assign link_2 = block.settings.button_link_2
+
+  case block.settings.button_link_source
+    when 'address'
+      assign link_1 = link_1 | default: settings.shop_address_link
+    when 'email'
+      if link_1 == blank and settings.shop_email != blank
+        assign link_1 = settings.shop_email | prepend: 'mailto:'
+      endif
+    when 'phone'
+      if link_1 == blank and settings.shop_phone != blank
+        assign link_1 = settings.shop_phone | remove: ' ' | remove: '-' | remove: '(' | remove: ')' | prepend: 'tel:'
+      endif
+  endcase
+
+  case block.settings.button_link_source_2
+    when 'address'
+      assign link_2 = link_2 | default: settings.shop_address_link
+    when 'email'
+      if link_2 == blank and settings.shop_email != blank
+        assign link_2 = settings.shop_email | prepend: 'mailto:'
+      endif
+    when 'phone'
+      if link_2 == blank and settings.shop_phone != blank
+        assign link_2 = settings.shop_phone | remove: ' ' | remove: '-' | remove: '(' | remove: ')' | prepend: 'tel:'
+      endif
+  endcase
+
+  assign ext_1 = false
+  if link_1 contains '://'
+    assign ext_1 = true
+  endif
+  assign ext_2 = false
+  if link_2 contains '://'
+    assign ext_2 = true
+  endif
+-%}
+
 <div class="btn-row" {{ block.shopify_attributes }}>
   {%- render 'button',
     label: block.settings.button_label,
-    link: block.settings.button_link,
+    link: link_1,
+    new_tab: ext_1,
     style: block.settings.button_style,
     size: block.settings.button_size,
     radius: block.settings.button_radius -%}
   {%- render 'button',
     label: block.settings.button_label_2,
-    link: block.settings.button_link_2,
+    link: link_2,
+    new_tab: ext_2,
     style: block.settings.button_style_2,
     size: block.settings.button_size_2,
     radius: block.settings.button_radius_2 -%}
@@ -51,6 +103,19 @@
       "type": "url",
       "id": "button_link",
       "label": "t:sections.all.link.label"
+    },
+    {
+      "type": "select",
+      "id": "button_link_source",
+      "label": "t:blocks.buttons.link_source.label",
+      "info": "t:blocks.buttons.link_source.info",
+      "options": [
+        { "value": "custom", "label": "t:blocks.detail.source.custom" },
+        { "value": "address", "label": "t:blocks.detail.source.address" },
+        { "value": "phone", "label": "t:blocks.detail.source.phone" },
+        { "value": "email", "label": "t:blocks.detail.source.email" }
+      ],
+      "default": "custom"
     },
     {
       "type": "select",
@@ -106,6 +171,19 @@
       "type": "url",
       "id": "button_link_2",
       "label": "t:sections.all.link.label"
+    },
+    {
+      "type": "select",
+      "id": "button_link_source_2",
+      "label": "t:blocks.buttons.link_source.label",
+      "info": "t:blocks.buttons.link_source.info",
+      "options": [
+        { "value": "custom", "label": "t:blocks.detail.source.custom" },
+        { "value": "address", "label": "t:blocks.detail.source.address" },
+        { "value": "phone", "label": "t:blocks.detail.source.phone" },
+        { "value": "email", "label": "t:blocks.detail.source.email" }
+      ],
+      "default": "custom"
     },
     {
       "type": "select",

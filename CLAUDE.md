@@ -18,6 +18,50 @@ this file that explains a feature and the code that implements it must never
 arrive separately: the note is how the next pass learns why a number is what it
 is.
 
+### A theme block's name is global
+
+**Creating `blocks/<name>.liquid` changes the meaning of every section that has
+a *local* block of that name.** This is not documented anywhere obvious and it
+cost a broken homepage to find.
+
+The hero declares four local blocks — `text`, `detail`, `metal`, `buttons` —
+each with its own `name` and `settings`, which is a complete local definition.
+The moment `blocks/detail.liquid` and `blocks/buttons.liquid` existed, the
+whole template failed to upload with:
+
+```
+templates/index.json
+Invalid value for type in block 'metal'. Type must be defined in schema.
+```
+
+`metal` is the one hero block with no theme-block file of the same name. The
+server had started reading the hero as a *theme-block* section — because two of
+its four types now resolved to theme blocks — and then found no definition for
+the other two. **The error names the innocent block**, not the collision.
+
+So a shared theme block cannot take a name any surviving local block still
+uses. The hero's are genuinely hero-specific — its `detail` renders
+`.hero__choice`, not `.spec-row` — so they were renamed `hero_detail` and
+`hero_cta`, with their stored instances and locale namespaces migrated in the
+same commit.
+
+**And the upload order bites twice, not once.** `CLAUDE.md` already records
+that a template validates against the *server's* copy of a section schema. Two
+separate instances of it in this one change:
+
+1. After renaming the hero's block types, the template still failed — naming
+   `gemstone`, the stored *key* of the renamed block — because the server still
+   held the old `hero.liquid`. Forcing that file to re-upload with a real
+   content change fixed it.
+2. `templates/index.json` was pushed carrying `button_link_source` before
+   `blocks/buttons.liquid` declared it, so Shopify **dropped the setting as
+   unknown** and the block fell back to its schema default. The block renders,
+   the section renders, nothing errors — the setting is simply gone. Re-pushing
+   the template afterwards did not recover it in a running `theme dev` session.
+
+The remedy for both is the one already recorded: push `blocks/*` first, then
+templates, or restart `shopify theme dev`, which does both in one pass.
+
 ### Section conversions
 
 `about` is the first body section on theme blocks. It lists `prose`, `buttons`,
