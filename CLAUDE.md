@@ -136,6 +136,16 @@ to a schema default.
   only flow the section has to place blocks in *is* `.promises__grid`, so a
   title block would land inside the grid as a card-shaped cell.
 
+  They still emit what the blocks would have. The subheading was on
+  `.section-header` — the row Most Loved uses to carry a label *and* a "view
+  all" link, spaced for the link. With nothing beside it that is a hole, and it
+  measured like one: **15.6 above and 41.6 below** an 18px label, 75.2 from the
+  heading to the grid. On `.section-eyebrow`, which is what
+  `blocks/subheading.liquid` emits, it is **7.8 / 18 / 31.2** and 57 — the
+  Medium row already tabulated under "Block spacing". The label box stays 18px,
+  which is the standing check that the eyebrow's `display: flex` is doing its
+  job, and the cards stay level at 294.
+
 - **`"tag": null` on the card is load-bearing.** The card has to *be* the grid
   item. A generated wrapper would take `.promises__grid > *`'s column span while
   the card inside sized to its own content, and a row would stop being level.

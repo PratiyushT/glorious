@@ -32,8 +32,16 @@
       <{{ heading_tag }} class="display reveal">{{ section.settings.heading }}</{{ heading_tag }}>
     {%- endif -%}
 
+    {%- comment -%}
+      `.section-eyebrow`, not `.section-header`. That one is the row Most Loved
+      uses to carry a micro label *and* a "view all" link, and it is spaced for
+      the link — measured here at 15.6 above and 41.6 below a label 18px tall.
+      With nothing beside it that reads as a hole. This is the same markup
+      `blocks/subheading.liquid` emits, so the label sits in the same box
+      wherever it comes from.
+    {%- endcomment -%}
     {%- if section.settings.subheading != blank -%}
-      <div class="section-header reveal">
+      <div class="section-eyebrow reveal">
         <span class="micro">{{ section.settings.subheading }}</span>
       </div>
     {%- endif -%}
