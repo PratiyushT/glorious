@@ -599,7 +599,8 @@
       "second_header": "Second button",
       "link_source": {
         "label": "Link to",
-        "info": "Anything but Custom falls back to Theme settings → Shop details when no link is set."
+        "info": "Anything but Custom falls back to Theme settings → Shop details when no link is set. This section's collection uses the collection the section is showing.",
+        "collection": "This section's collection"
       }
     },
     "detail": {
@@ -628,6 +629,47 @@
       "size": {
         "label": "Size"
       }
+    },
+    "group": {
+      "name": "Layout group",
+      "direction": {
+        "label": "Direction",
+        "info": "Horizontal puts the blocks inside on one row. Vertical stacks them, which is what they do without a group.",
+        "horizontal": "Horizontal",
+        "vertical": "Vertical"
+      },
+      "distribute": {
+        "label": "Distribute",
+        "info": "How the space along the group is shared out.",
+        "start": "Together, at the start",
+        "center": "Together, centred",
+        "end": "Together, at the end",
+        "between": "Pushed apart"
+      },
+      "align": {
+        "label": "Align",
+        "info": "How the blocks line up across the group. Baseline aligns the text itself rather than the boxes.",
+        "baseline": "Text baseline",
+        "start": "Start",
+        "center": "Centre",
+        "end": "End",
+        "stretch": "Stretch"
+      },
+      "wrap": {
+        "label": "Wrap onto more rows",
+        "info": "Off keeps everything on one row, however narrow it gets."
+      },
+      "stack_below": {
+        "label": "Stack when narrow",
+        "info": "Measured on the group's own width, not the screen, so a group in a narrow column stacks on a desktop too.",
+        "never": "Never",
+        "tablet": "Below tablet width",
+        "mobile": "Below phone width"
+      }
+    },
+    "product_count": {
+      "name": "Product count",
+      "info": "Counts the collection chosen for this section. Shows nothing when no collection is set."
     },
     "quote": {
       "name": "Quote",
@@ -1031,7 +1073,7 @@
       }
     },
     "featured_products": {
-      "name": "Featured products",
+      "name": "Products list",
       "collection": {
         "label": "Collection"
       },
@@ -1055,7 +1097,7 @@
       }
     },
     "collection_list": {
-      "name": "Collection list",
+      "name": "Collections list",
       "collections": {
         "label": "Collections",
         "info": "One card per collection, all from the single Collection card below."

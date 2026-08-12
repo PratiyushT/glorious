@@ -35,7 +35,23 @@
   assign link_1 = block.settings.button_link
   assign link_2 = block.settings.button_link_2
 
+  comment
+    "This section's collection" is how a row's own link out is built — the
+    "View All" beside a products list. It reads `section.settings.collection`,
+    which a theme block *can* do (measured: section.settings, section.id and
+    section.blocks.size all resolve inside a block; section.type does not).
+
+    That is a deliberate exception to the rule that a block reads nothing from
+    its parent. It is safe because it degrades rather than breaks: a section
+    with no `collection` setting falls through to all products, so the button
+    still has a real destination and never becomes the `href="#"` this theme
+    refuses to ship.
+  endcomment
+  assign row_collection_url = collections[section.settings.collection].url | default: routes.all_products_collection_url
+
   case block.settings.button_link_source
+    when 'collection'
+      assign link_1 = link_1 | default: row_collection_url
     when 'address'
       assign link_1 = link_1 | default: settings.shop_address_link
     when 'email'
@@ -49,6 +65,8 @@
   endcase
 
   case block.settings.button_link_source_2
+    when 'collection'
+      assign link_2 = link_2 | default: row_collection_url
     when 'address'
       assign link_2 = link_2 | default: settings.shop_address_link
     when 'email'
@@ -111,6 +129,7 @@
       "info": "t:blocks.buttons.link_source.info",
       "options": [
         { "value": "custom", "label": "t:blocks.detail.source.custom" },
+        { "value": "collection", "label": "t:blocks.buttons.link_source.collection" },
         { "value": "address", "label": "t:blocks.detail.source.address" },
         { "value": "phone", "label": "t:blocks.detail.source.phone" },
         { "value": "email", "label": "t:blocks.detail.source.email" }
@@ -179,6 +198,7 @@
       "info": "t:blocks.buttons.link_source.info",
       "options": [
         { "value": "custom", "label": "t:blocks.detail.source.custom" },
+        { "value": "collection", "label": "t:blocks.buttons.link_source.collection" },
         { "value": "address", "label": "t:blocks.detail.source.address" },
         { "value": "phone", "label": "t:blocks.detail.source.phone" },
         { "value": "email", "label": "t:blocks.detail.source.email" }

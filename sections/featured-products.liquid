@@ -33,12 +33,6 @@
 {%- endcomment -%}
 
 {%- liquid
-  assign heading_tag = section.settings.heading_level | default: 'h2'
-  unless heading_tag == 'h1' or heading_tag == 'h2' or heading_tag == 'h3' or heading_tag == 'div'
-    assign heading_tag = 'h2'
-  endunless
--%}
-{%- liquid
   assign collection = collections[section.settings.collection]
 
   comment
@@ -78,53 +72,43 @@
     endif
   endif
 
-  assign carousel_label = section.settings.heading
-  if carousel_label == blank
-    assign carousel_label = 'general.carousel.label' | t
-  endif
-
-  assign view_all = section.settings.view_all_label
-  if view_all == blank and collection != blank
-    assign view_all = 'collections.view_all_count' | t: count: collection.all_products_count
-  elsif view_all == blank
-    assign view_all = 'collections.view_all' | t
-  endif
-
   comment
-    Where "View all" goes. The collection this section is showing, by default —
-    it is the obvious destination and needs no setting to be right — with an
-    override for the case where it is not, say a curated landing page or a
-    filtered URL. All products stands in when no collection is chosen, so the
-    link always has a real destination and never becomes an `href="#"`.
+    The carousel's accessible name. There is no heading setting to borrow from
+    any more — the heading is a block, and a section cannot read one — so it
+    falls back to the theme's own label rather than guessing at a block's text.
+    Same answer collection-list reached when it converted.
   endcomment
-  assign view_all_url = section.settings.view_all_link
-  if view_all_url == blank
-    assign view_all_url = collection.url | default: routes.all_products_collection_url
-  endif
+  assign carousel_label = 'general.carousel.label' | t
 -%}
 
 <section
   class="section scheme-{{ section.settings.color_scheme }}{% if section.settings.full_height %} section--tall{% endif %}"
   style="{% render 'section-style', padding_top: section.settings.padding_top, padding_bottom: section.settings.padding_bottom %} {%- if section.settings.content_alignment != blank and section.settings.content_alignment != 'inherit' -%}--section-align: {{ section.settings.content_alignment }}; --section-align-jc: {% if section.settings.content_alignment == 'center' %}center{% elsif section.settings.content_alignment == 'right' %}flex-end{% else %}flex-start{% endif %};{%- endif -%}"
 >
-  <div class="page-width">
-    {%- if section.settings.heading != blank -%}
-      <{{ heading_tag }} class="display reveal">{{ section.settings.heading }}</{{ heading_tag }}>
-    {%- endif -%}
+  {%- comment -%}
+    **The header is blocks, and the row they used to share is now the
+    container's job.** This section resisted conversion for one reason: its
+    subheading and its "View All" link share a single `space-between` row, and
+    merchant blocks can only render as one flat sibling flow — made into blocks
+    they would fall onto two lines.
 
-    {%- if section.settings.subheading != blank or section.settings.show_view_all -%}
-      <div class="section-header reveal">
-        {%- if section.settings.subheading != blank -%}
-          <span class="micro">{{ section.settings.subheading }}</span>
-        {%- endif -%}
+    **The `group` block answers it, and generally rather than here.** A layout
+    group is a block that arranges other blocks, so the eyebrow and the button
+    go *inside* one and the group puts them on a row and pushes them apart. The
+    merchant can see it, move it, and use the same thing anywhere else — which
+    is why this is not a rule in the stylesheet named after this section.
 
-        {%- if section.settings.show_view_all -%}
-          <a class="link-rule" href="{{ view_all_url }}">
-            {{ view_all }}&nbsp;&nbsp;&rarr;
-          </a>
-        {%- endif -%}
-      </div>
-    {%- endif -%}
+    "View All" is a `buttons` block now rather than a bespoke link, with its
+    destination set to "This section's collection", so it still needs no URL
+    typed in to be right and it gains the design's six button variants.
+
+    The section owns the vertical rhythm: one `gap` spaces every direct child,
+    each header block and the row itself. That also retires `.display +
+    .grid-auto` here — an adjacency rule a wrapper would break — exactly as
+    `collection-list` already does.
+  {%- endcomment -%}
+  <div class="page-width products-list__content" style="{% render 'block-spacing', gap: section.settings.gap %}">
+    {% content_for 'blocks' %}
 
     {%- comment -%}
       The column floor is `.grid-auto--products`' own now, so both layouts and
@@ -185,20 +169,18 @@
 {
   "name": "t:sections.featured_products.name",
   "tag": "div",
+  "blocks": [
+    { "type": "@app" },
+    { "type": "title" },
+    { "type": "subheading" },
+    { "type": "paragraph" },
+    { "type": "product-count" },
+    { "type": "group" },
+    { "type": "buttons" },
+    { "type": "prose" },
+    { "type": "heading" }
+  ],
   "settings": [
-    {
-      "type": "select",
-      "id": "heading_level",
-      "label": "t:sections.all.heading_level.label",
-      "info": "t:sections.all.heading_level.info",
-      "options": [
-        { "value": "h1", "label": "t:settings_schema.heading_level.h1" },
-        { "value": "h2", "label": "t:settings_schema.heading_level.h2" },
-        { "value": "h3", "label": "t:settings_schema.heading_level.h3" },
-        { "value": "div", "label": "t:settings_schema.heading_level.div" }
-      ],
-      "default": "h2"
-    },
     {
       "type": "select",
       "id": "content_alignment",
@@ -216,18 +198,6 @@
       "id": "color_scheme",
       "label": "t:sections.all.color_scheme.label",
       "default": "scheme_1"
-    },
-    {
-      "type": "text",
-      "id": "heading",
-      "label": "t:sections.all.heading.label",
-      "default": "Most Loved"
-    },
-    {
-      "type": "text",
-      "id": "subheading",
-      "label": "t:sections.all.subheading.label",
-      "default": "Our most loved creations"
     },
     {
       "type": "collection",
@@ -309,22 +279,19 @@
       "default": 8
     },
     {
-      "type": "checkbox",
-      "id": "show_view_all",
-      "label": "t:sections.featured_products.show_view_all.label",
-      "default": true
-    },
-    {
-      "type": "text",
-      "id": "view_all_label",
-      "label": "t:sections.featured_products.view_all_label.label",
-      "info": "t:sections.featured_products.view_all_label.info"
-    },
-    {
-      "type": "url",
-      "id": "view_all_link",
-      "label": "t:sections.featured_products.view_all_link.label",
-      "info": "t:sections.featured_products.view_all_link.info"
+      "type": "select",
+      "id": "gap",
+      "label": "t:blocks.all.gap.label",
+      "info": "t:blocks.all.gap.info",
+      "options": [
+        { "value": "none", "label": "t:blocks.all.step.none" },
+        { "value": "tiny", "label": "t:blocks.all.step.tiny" },
+        { "value": "small", "label": "t:blocks.all.step.small" },
+        { "value": "medium", "label": "t:blocks.all.step.medium" },
+        { "value": "large", "label": "t:blocks.all.step.large" },
+        { "value": "xlarge", "label": "t:blocks.all.step.xlarge" }
+      ],
+      "default": "large"
     },
     {
       "type": "checkbox",
@@ -371,7 +338,25 @@
   ],
   "presets": [
     {
-      "name": "t:sections.featured_products.name"
+      "name": "t:sections.featured_products.name",
+      "blocks": [
+        { "type": "title", "settings": { "text": "Most Loved" } },
+        {
+          "type": "group",
+          "blocks": [
+            { "type": "subheading", "settings": { "text": "Our most loved creations" } },
+            {
+              "type": "buttons",
+              "settings": {
+                "button_label": "View All",
+                "button_link_source": "collection",
+                "button_style": "arrow",
+                "button_label_2": ""
+              }
+            }
+          ]
+        }
+      ]
     }
   ]
 }

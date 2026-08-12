@@ -1,0 +1,185 @@
+{%- comment -%}
+  A layout group — the one block that arranges other blocks.
+
+  **This is the primitive the theme was missing.** Merchant blocks render as one
+  flat sibling flow, so until now anything the design puts *side by side* could
+  not be built from blocks at all: the products list's eyebrow and its "View
+  All" share one `space-between` row, and as plain blocks they fell onto two
+  lines. Every workaround for that was a section-specific rule in the
+  stylesheet. A group replaces all of them with something a merchant can see and
+  move.
+
+  It belongs to no section. Any section that renders `{% content_for 'blocks' %}`
+  can list `group`, and the group takes `@theme` — every theme block there is —
+  so what goes inside it is the merchant's business, not the section's.
+
+  **Horizontal is the default, deliberately.** A vertical group adds nothing
+  over simply placing the blocks one after another, which is what a flat flow
+  already gives; the reason to reach for a group is to put things on one row.
+
+  The children's own vertical margins are zeroed, the same way
+  `.collection-list__content` zeroes them: a gap and a margin add, so a block
+  carrying both would space itself twice. They keep those margins everywhere
+  else, which is why this is done here rather than at the source.
+{%- endcomment -%}
+
+{%- liquid
+  assign direction = 'row'
+  if block.settings.direction == 'vertical'
+    assign direction = 'column'
+  endif
+
+  case block.settings.distribute
+    when 'center'
+      assign justify = 'center'
+    when 'end'
+      assign justify = 'flex-end'
+    when 'between'
+      assign justify = 'space-between'
+    else
+      assign justify = 'flex-start'
+  endcase
+
+  case block.settings.align
+    when 'center'
+      assign align = 'center'
+    when 'end'
+      assign align = 'flex-end'
+    when 'stretch'
+      assign align = 'stretch'
+    when 'start'
+      assign align = 'flex-start'
+    else
+      assign align = 'baseline'
+  endcase
+
+  assign wrap = 'wrap'
+  unless block.settings.wrap
+    assign wrap = 'nowrap'
+  endunless
+-%}
+
+{%- comment -%}
+  **Two elements, and that is not a wrapper for its own sake.** The group has
+  to answer a question about its own width — "am I narrow enough to stack?" —
+  and a container cannot be styled by a query against itself. So the outer
+  element *is* the container and the inner one is the row that responds. This
+  theme has hit that trap twice already, on `.row-carousel__frame` and on
+  `.quick-view__frame`: put both on one element and it parses, uploads and
+  silently never fires.
+
+  A container query rather than a media query, deliberately. The group should
+  stack when *it* is narrow — in a half-width column on a desktop just as much
+  as on a phone — which is a question about the block, not the screen.
+{%- endcomment -%}
+<div
+  class="layout-group"
+  data-stack="{{ block.settings.stack_below }}"
+  {{ block.shopify_attributes }}
+>
+  <div
+    class="layout-group__inner"
+    style="--group-direction: {{ direction }}; --group-justify: {{ justify }}; --group-align: {{ align }}; --group-wrap: {{ wrap }};{% render 'block-spacing', gap: block.settings.gap %}"
+  >
+    {% content_for 'blocks' %}
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "t:blocks.group.name",
+  "tag": null,
+  "blocks": [{ "type": "@theme" }, { "type": "@app" }],
+  "settings": [
+    {
+      "type": "select",
+      "id": "direction",
+      "label": "t:blocks.group.direction.label",
+      "info": "t:blocks.group.direction.info",
+      "options": [
+        { "value": "horizontal", "label": "t:blocks.group.direction.horizontal" },
+        { "value": "vertical", "label": "t:blocks.group.direction.vertical" }
+      ],
+      "default": "horizontal"
+    },
+    {
+      "type": "select",
+      "id": "distribute",
+      "label": "t:blocks.group.distribute.label",
+      "info": "t:blocks.group.distribute.info",
+      "options": [
+        { "value": "start", "label": "t:blocks.group.distribute.start" },
+        { "value": "center", "label": "t:blocks.group.distribute.center" },
+        { "value": "end", "label": "t:blocks.group.distribute.end" },
+        { "value": "between", "label": "t:blocks.group.distribute.between" }
+      ],
+      "default": "between"
+    },
+    {
+      "type": "select",
+      "id": "align",
+      "label": "t:blocks.group.align.label",
+      "info": "t:blocks.group.align.info",
+      "options": [
+        { "value": "baseline", "label": "t:blocks.group.align.baseline" },
+        { "value": "start", "label": "t:blocks.group.align.start" },
+        { "value": "center", "label": "t:blocks.group.align.center" },
+        { "value": "end", "label": "t:blocks.group.align.end" },
+        { "value": "stretch", "label": "t:blocks.group.align.stretch" }
+      ],
+      "default": "baseline"
+    },
+    {
+      "type": "checkbox",
+      "id": "wrap",
+      "label": "t:blocks.group.wrap.label",
+      "info": "t:blocks.group.wrap.info",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "stack_below",
+      "label": "t:blocks.group.stack_below.label",
+      "info": "t:blocks.group.stack_below.info",
+      "options": [
+        { "value": "never", "label": "t:blocks.group.stack_below.never" },
+        { "value": "tablet", "label": "t:blocks.group.stack_below.tablet" },
+        { "value": "mobile", "label": "t:blocks.group.stack_below.mobile" }
+      ],
+      "default": "mobile"
+    },
+    {
+      "type": "header",
+      "content": "t:blocks.all.spacing_header"
+    },
+    {
+      "type": "select",
+      "id": "gap",
+      "label": "t:blocks.all.gap.label",
+      "info": "t:blocks.all.gap.info",
+      "options": [
+        { "value": "none", "label": "t:blocks.all.step.none" },
+        { "value": "tiny", "label": "t:blocks.all.step.tiny" },
+        { "value": "small", "label": "t:blocks.all.step.small" },
+        { "value": "medium", "label": "t:blocks.all.step.medium" },
+        { "value": "large", "label": "t:blocks.all.step.large" },
+        { "value": "xlarge", "label": "t:blocks.all.step.xlarge" }
+      ],
+      "default": "medium"
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:blocks.group.name",
+      "settings": {
+        "direction": "horizontal",
+        "distribute": "between",
+        "align": "baseline",
+        "wrap": true,
+        "stack_below": "mobile",
+        "gap": "medium"
+      }
+    }
+  ]
+}
+{% endschema %}

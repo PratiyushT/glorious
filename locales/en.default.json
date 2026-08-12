@@ -94,6 +94,10 @@
       "one": "View all {{ count }} piece",
       "other": "View all {{ count }} pieces"
     },
+    "product_count": {
+      "one": "{{ count }} piece",
+      "other": "{{ count }} pieces"
+    },
     "empty": "No products found."
   },
   "cart": {

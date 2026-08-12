@@ -65,16 +65,50 @@
     },
     "most-loved": {
       "type": "featured-products",
+      "blocks": {
+        "heading": {
+          "type": "title",
+          "settings": {
+            "text": "Most Loved"
+          }
+        },
+        "row": {
+          "type": "group",
+          "blocks": {
+            "eyebrow": {
+              "type": "subheading",
+              "settings": {
+                "text": "Our most loved creations"
+              }
+            },
+            "view-all": {
+              "type": "buttons",
+              "settings": {
+                "button_label": "View All",
+                "button_link_source": "collection",
+                "button_style": "arrow",
+                "button_label_2": ""
+              }
+            }
+          },
+          "block_order": ["eyebrow", "view-all"],
+          "settings": {
+            "direction": "horizontal",
+            "distribute": "between",
+            "align": "baseline",
+            "wrap": true,
+            "stack_below": "mobile",
+            "gap": "medium"
+          }
+        }
+      },
+      "block_order": ["heading", "row"],
       "settings": {
         "color_scheme": "scheme_1",
-        "heading": "Most Loved",
-        "subheading": "Our most loved creations",
         "collection": "featured-products-homepage",
         "products_to_show": 8,
         "columns": 4,
         "mobile_columns": "2",
-        "show_view_all": true,
-        "view_all_label": "View All",
         "full_height": true,
         "padding_top": "sm",
         "padding_bottom": "sm"

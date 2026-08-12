@@ -392,6 +392,62 @@ If the Lighthouse score does need work, the lever is what blocks rendering and
 what shifts layout, not file size — `base.css` is a render-blocking
 `stylesheet_tag` in `<head>`, while `theme.js` is already `defer`.
 
+### The layout group
+
+**`blocks/group.liquid` is the block that arranges other blocks**, and it
+retires a constraint that had produced a section-specific stylesheet rule every
+time it came up: merchant blocks render as one flat sibling flow, so anything
+the design puts *side by side* could not be built from blocks at all. The
+products list's eyebrow and its "View All" share one `space-between` row; as
+plain blocks they fell onto two lines.
+
+It belongs to no section — any section rendering `{% content_for 'blocks' %}`
+can list `group`, and the group takes `@theme`, so what goes inside is the
+merchant's business. Groups nest.
+
+- **Horizontal is the default, deliberately.** A vertical group adds nothing
+  over placing the blocks one after another, which is what a flat flow already
+  gives. The reason to reach for a group is to put things on a row.
+- **Two elements, and the wrapper is load-bearing.** The group answers a
+  question about its own width — "am I narrow enough to stack?" — and *a
+  container cannot be styled by a query against itself*. So `.layout-group` is
+  the container and `.layout-group__inner` is the row that responds. This theme
+  has hit that trap twice before, on `.row-carousel__frame` and
+  `.quick-view__frame`, where putting both on one element parsed, uploaded and
+  silently never fired.
+- **Stacking is a container query, not a media query**, so a group stacks when
+  *it* is narrow — in a half-width column on a desktop exactly as on a phone.
+  `stack_below` offers never / tablet (48rem) / phone (30rem). Stacking also
+  forces `align-items: flex-start`, since `baseline` is meaningless in a column
+  and `stretch` would run a link's underline the full width.
+- **A group must not shrink-wrap.** As a flex item it would hug its contents
+  and `space-between` would have nothing to distribute — the commonest way a
+  horizontal group looks like it is ignoring its own setting. It is given
+  `flex: 1 1 100%` inside the section content wrappers.
+
+Verified on the page: the group resolves `container-type: inline-size`, its
+inner row `space-between` / `baseline` with the eyebrow at x=32 and the button
+at x=811 across an 868px group; and at a 381px group width the query fires,
+giving `column` / `flex-start` with both children at x=19.
+
+**"View All" is a `buttons` block now, not a bespoke link.** `buttons` gained a
+`collection` link source — "This section's collection" — which reads
+`section.settings.collection`. So the destination still needs no URL typed to
+be right, and the control gains the design's six variants; it renders
+`btn btn--arrow` pointing at the row's own collection.
+
+**A theme block can read its parent section, and that was measured before being
+relied on.** `section.settings`, `section.id` and `section.blocks.size` all
+resolve inside a block; `section.type` does not, and `closest.collection` is
+empty where no collection is in context. Static blocks are not counted in
+`section.blocks.size`.
+
+This is a deliberate exception to the rule stated on `title` and `subheading`
+that a block reads nothing from its parent. That rule holds for blocks that
+belong to *every* section; it does not hold for a block whose whole job is to
+describe the row it sits in. Both exceptions degrade rather than break — a
+section with no `collection` setting falls through to all products.
+
 ### Duplicate ids
 
 **The home page had six elements sharing an id, and every one was generated

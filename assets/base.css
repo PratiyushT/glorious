@@ -502,6 +502,91 @@ a {
 .section-eyebrow.align-center { justify-content: center; }
 .section-eyebrow.align-right  { justify-content: flex-end; }
 
+/* ---- Layout group ------------------------------------------------
+   The block that arranges other blocks, and the answer to a constraint that
+   had produced a section-specific rule every time it came up: merchant blocks
+   render as one flat sibling flow, so anything the design puts *side by side*
+   could not be built from blocks at all.
+
+   Every value comes in as a custom property from the block's own settings, so
+   this rule is the whole component — direction, distribution, cross-axis
+   alignment, wrapping and the gap. The fallbacks are the horizontal row the
+   block defaults to, so a group with nothing set still does the useful thing.
+
+   Children's vertical margins are zeroed for the reason
+   `.collection-list__content` zeroes them: a gap and a margin add, so a block
+   carrying both would space itself twice. They keep those margins everywhere
+   else, which is why it is done here and not at the source. */
+
+.layout-group {
+  container-type: inline-size;
+  min-width: 0;
+}
+
+.layout-group__inner {
+  display: flex;
+  flex-direction: var(--group-direction, row);
+  flex-wrap: var(--group-wrap, wrap);
+  justify-content: var(--group-justify, flex-start);
+  align-items: var(--group-align, baseline);
+  gap: var(--block-gap, var(--step-medium));
+  min-width: 0;
+}
+
+.layout-group__inner > * {
+  margin-block: 0;
+}
+
+/* Stacking. A container query on the group's own width, not the viewport, so a
+   group in a half-width column stacks on a desktop exactly as it would on a
+   phone — the block's width is the thing that decides whether a row still fits.
+
+   Stacking sets `align-items: start` too: `baseline` is meaningless once the
+   children are in a column, and `stretch` would pull a link the full width and
+   make its underline run edge to edge. */
+
+@container (max-width: 30rem) {
+  .layout-group[data-stack="mobile"] > .layout-group__inner {
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+  }
+}
+
+@container (max-width: 48rem) {
+  .layout-group[data-stack="tablet"] > .layout-group__inner {
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+  }
+}
+
+/* A group is a flex item wherever it sits. Left to shrink-wrap it would hug
+   its contents, and `space-between` would then have nothing to distribute —
+   the commonest way a horizontal group looks like it is ignoring its setting. */
+.layout-group--fill,
+.collection-list__content > .layout-group,
+.products-list__content > .layout-group {
+  flex: 1 1 100%;
+}
+
+/* ---- Products list: the section owns the vertical rhythm ---------
+   Same shape as `.collection-list__content`, and for the same reason: one gap
+   spaces every direct child — each header block and the row itself — so a
+   block brings no idea of its own about how far it sits from its neighbours.
+   It also retires the `.display + .grid-auto` adjacency rule here, which a
+   wrapper would otherwise break. */
+
+.products-list__content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--block-gap, var(--step-large));
+}
+
+.products-list__content > * {
+  margin-block: 0;
+}
+
 /* ---- Section header ---------------------------------------------- */
 
 .section-header {

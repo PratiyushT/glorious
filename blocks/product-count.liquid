@@ -1,0 +1,49 @@
+{%- comment -%}
+  How many pieces are in the collection the row is showing.
+
+  Like `view-all`, this reads `section.settings.collection` rather than asking
+  the merchant to name the collection a second time — the same deliberate
+  exception to the "a block reads nothing from its parent" rule, for the same
+  reason: the block exists to describe the row it sits in.
+
+  **The count is the collection's, not the row's.** A row showing eight of
+  twenty-four pieces says twenty-four, because that is what the number is for —
+  it tells a shopper how much more there is, which is also why it reads well
+  beside "View All". `all_products_count` is the whole collection whatever the
+  row's own limit.
+
+  **The sentence is Liquid's.** Pluralisation belongs in the locale file, as it
+  does for the bag count and the card's Add to Bag labels, so nothing here
+  assembles a number and a word in the browser or in the schema.
+
+  Renders nothing at all when the section names no collection — there is no
+  honest number to print, and an empty label would leave a gap in the row.
+{%- endcomment -%}
+
+{%- liquid
+  assign row_collection = collections[section.settings.collection]
+-%}
+
+{%- if row_collection != blank -%}
+  <span class="micro products-list__count reveal" {{ block.shopify_attributes }}>
+    {{- 'collections.product_count' | t: count: row_collection.all_products_count -}}
+  </span>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "t:blocks.product_count.name",
+  "tag": null,
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "t:blocks.product_count.info"
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:blocks.product_count.name"
+    }
+  ]
+}
+{% endschema %}
