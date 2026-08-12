@@ -19,13 +19,24 @@
   if block.settings.alignment != blank and block.settings.alignment != 'inherit'
     assign align_class = ' align-' | append: block.settings.alignment
   endif
+
+  comment
+    A guard rather than interpolating whatever is stored: an unknown value would
+    print as a tag name and Liquid would emit `<foo>`. Same shape as the level
+    guard on `blocks/title.liquid`.
+  endcomment
+  assign tags = 'span,p,h1,h2,h3,h4,h5,h6' | split: ','
+  assign tag = 'p'
+  if tags contains block.settings.element
+    assign tag = block.settings.element
+  endif
 -%}
 {%- if block.settings.text != blank -%}
-  <p
+  <{{ tag }}
     class="section-lede reveal{{ align_class }}"
-    style="{% render 'block-spacing', padding: block.settings.padding %}"
+    style="{% render 'block-spacing', padding: block.settings.padding %}{% render 'text-style', style: block.settings.style, color: block.settings.color %}"
     {{ block.shopify_attributes }}
-  >{{ block.settings.text }}</p>
+  >{{ block.settings.text }}</{{ tag }}>
 {%- endif -%}
 
 {% schema %}
@@ -33,6 +44,50 @@
   "name": "t:blocks.paragraph.name",
   "tag": null,
   "settings": [
+    {
+      "type": "header",
+      "content": "t:blocks.all.text_header"
+    },
+    {
+      "type": "select",
+      "id": "style",
+      "label": "t:blocks.all.text_style.label",
+      "info": "t:blocks.all.text_style.info",
+      "options": [
+        { "value": "inherit", "label": "t:blocks.all.inherit.label" },
+        { "value": "display", "label": "t:settings_schema.text_styles.display.header" },
+        { "value": "title", "label": "t:settings_schema.text_styles.title.header" },
+        { "value": "subtitle", "label": "t:settings_schema.text_styles.subtitle.header" },
+        { "value": "lead", "label": "t:settings_schema.text_styles.lead.header" },
+        { "value": "body", "label": "t:settings_schema.text_styles.body.header" },
+        { "value": "small", "label": "t:settings_schema.text_styles.small.header" },
+        { "value": "caption", "label": "t:settings_schema.text_styles.caption.header" }
+      ],
+      "default": "inherit"
+    },
+    {
+      "type": "select",
+      "id": "element",
+      "label": "t:blocks.all.text_element.label",
+      "info": "t:blocks.all.text_element.info",
+      "options": [
+        { "value": "span", "label": "t:blocks.all.text_element.span" },
+        { "value": "p", "label": "t:blocks.all.text_element.p" },
+        { "value": "h1", "label": "t:blocks.all.text_element.h1" },
+        { "value": "h2", "label": "t:blocks.all.text_element.h2" },
+        { "value": "h3", "label": "t:blocks.all.text_element.h3" },
+        { "value": "h4", "label": "t:blocks.all.text_element.h4" },
+        { "value": "h5", "label": "t:blocks.all.text_element.h5" },
+        { "value": "h6", "label": "t:blocks.all.text_element.h6" }
+      ],
+      "default": "p"
+    },
+    {
+      "type": "color",
+      "id": "color",
+      "label": "t:blocks.all.text_color.label",
+      "info": "t:blocks.all.text_color.info"
+    },
     {
       "type": "select",
       "id": "alignment",

@@ -26,7 +26,11 @@
 -%}
 
 {%- if block.settings.text != blank -%}
-  <div class="rte measure{{ align_class }}" {{ block.shopify_attributes }}>
+  <div
+    class="rte measure{{ align_class }}"
+    style="{% render 'text-style', style: block.settings.style, color: block.settings.color %}"
+    {{ block.shopify_attributes }}
+  >
     {{- block.settings.text -}}
   </div>
 {%- endif -%}
@@ -36,6 +40,33 @@
   "name": "t:blocks.prose.name",
   "tag": null,
   "settings": [
+    {
+      "type": "header",
+      "content": "t:blocks.all.text_header"
+    },
+    {
+      "type": "select",
+      "id": "style",
+      "label": "t:blocks.all.text_style.label",
+      "info": "t:blocks.all.text_style.info",
+      "options": [
+        { "value": "inherit", "label": "t:blocks.all.inherit.label" },
+        { "value": "display", "label": "t:settings_schema.text_styles.display.header" },
+        { "value": "title", "label": "t:settings_schema.text_styles.title.header" },
+        { "value": "subtitle", "label": "t:settings_schema.text_styles.subtitle.header" },
+        { "value": "lead", "label": "t:settings_schema.text_styles.lead.header" },
+        { "value": "body", "label": "t:settings_schema.text_styles.body.header" },
+        { "value": "small", "label": "t:settings_schema.text_styles.small.header" },
+        { "value": "caption", "label": "t:settings_schema.text_styles.caption.header" }
+      ],
+      "default": "inherit"
+    },
+    {
+      "type": "color",
+      "id": "color",
+      "label": "t:blocks.all.text_color.label",
+      "info": "t:blocks.all.text_color.info"
+    },
     {
       "type": "select",
       "id": "alignment",
