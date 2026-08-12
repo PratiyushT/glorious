@@ -162,8 +162,35 @@
               }
             },
             "karats": {
-              "type": "product-card-available",
-              "settings": {}
+              "type": "group",
+              "blocks": {
+                "label": {
+                  "type": "product-card-text",
+                  "settings": {
+                    "text": "Available in",
+                    "size": "card_note",
+                    "color_source": "faint"
+                  }
+                },
+                "values": {
+                  "type": "product-card-option-values",
+                  "settings": {
+                    "option_name": "Karat",
+                    "separator": ", ",
+                    "size": "card_note",
+                    "color_source": "faint"
+                  }
+                }
+              },
+              "block_order": ["label", "values"],
+              "settings": {
+                "direction": "horizontal",
+                "distribute": "start",
+                "align": "baseline",
+                "wrap": true,
+                "stack_below": "never",
+                "gap": "tiny"
+              }
             },
             "price-row": {
               "type": "group",

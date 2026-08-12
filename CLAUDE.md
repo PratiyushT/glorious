@@ -382,14 +382,43 @@ that reaches for a parent would tie the two cards' structures together again.
   the second is answered by making the name its own block. **Fidelity to the
   design is not a licence to bake its catalogue in.**
 
-  **Two jewellery assumptions remain and are not fixed here.**
+  **"Available in 18K, 22K" went the same way.**
+  `blocks/product-card-option-values.liquid` renders the list and nothing else;
+  the words beside it are a `product-card-text` in a `group`, so a shop types
+  "Comes in" or "Sizes:" rather than asking the theme for a setting. Three
+  things stopped being assumptions:
+
+  - **The option is named by the merchant and matched, not positioned.** A text
+    setting — "Karat", "Size" — matched case-insensitively against each
+    option's name. Position is simpler and wrong on a mixed catalogue: one
+    product ordered Metal, Karat and another Karat, Metal cannot both be served
+    by "the second option". A product with no such option renders nothing.
+  - **There is no sorting.** The block before it pulled the first number out of
+    each value and zero-padded it so "9K" sorted before "22K". That is right
+    for karats and arbitrary for everything else — S/M/L/XL sorts *wrongly*
+    under every rule except the one the merchant already applied when they
+    ordered the values in admin. Admin order is simpler and correct more often.
+  - **Every value is still listed whatever the stock**, which is not an
+    assumption but a rule: an option value exists because the piece can be made
+    that way, and filtering on `available` would make the sentence flicker as
+    inventory moved.
+
+  **The cost of composing it is a label that cannot know whether its list is
+  empty.** On a product with no matching option the values block renders
+  nothing while the text block beside it still says "Available in". Nothing on
+  this store hits it — all seven pieces in Most Loved carry the option — but a
+  mixed catalogue would. A block cannot read its sibling's output, so the fix
+  is either a `:has()` rule that hides a row whose only content is a label, or
+  giving the values block its own optional label and giving up the composition.
+  Neither is built; the trade was made deliberately.
+
+  **One jewellery assumption remains and is not fixed here.**
   `snippets/card-option.liquid` finds the card's option by matching "metal" in
-  its name, and `blocks/product-card-available.liquid` matches "purity" or
-  "karat". The first is load-bearing — it decides which variant the price and
-  the button answer for, and generalising it to "the first option with a native
-  swatch" would change which variant this shop's cards stand on. The second is
-  display-only and could take an option picker safely, its choice driving
-  nothing else. Both are deliberate leftovers, not oversights.
+  its name. It is load-bearing — it decides which variant the price and the
+  button answer for — and generalising it to "the first option carrying a
+  native swatch" would change which variant this shop's cards stand on, since
+  only 4 of 12 products have the Color metafield connected. A deliberate
+  leftover, not an oversight.
 
 - **`product-card-text` is one block for every fixed thing a card says**, and
   it replaced two that were the same element with different words. It prints a

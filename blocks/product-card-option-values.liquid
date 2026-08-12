@@ -1,50 +1,74 @@
 {%- comment -%}
-  Product card — a line of text the merchant writes or binds.
+  Product card — every value one of the product's options carries.
 
-  **One block for every fixed thing a card says.** It replaced two: a
-  metafield-only caption line and a tax note that carried its own copy. Both
-  were the same element with different words, and one of them had a jeweller's
-  vocabulary built in.
+  "18K, 22K". The words around it are not here: this block renders the list and
+  a `product-card-text` beside it in a `group` says "Available in", which is the
+  same composition the caption uses. A shop that wants "Comes in", "Sizes:" or
+  nothing at all types it there rather than asking the theme for a setting.
 
-  Three uses, all of them the same block:
+  **The option is named by the merchant, and matched rather than positioned.**
+  A text setting — "Karat", "Size", "Length" — matched case-insensitively
+  against each option's name. Position would be simpler and is wrong on a mixed
+  catalogue: one product ordered Metal, Karat and another Karat, Metal cannot
+  both be served by "the second option". A name finds the right one either way,
+  and renders nothing on a product that has no such option, which is the honest
+  answer for a catalogue where only some pieces carry it.
 
-    - a fact about the piece — connect the text to a product metafield with the
-      dynamic-source button and it prints whatever that shop keeps there;
-    - a separator — a `·` between two other blocks inside a `group`, which is
-      how "White Gold · 1.5 ct" is composed now rather than assembled in Liquid;
-    - an aside beside the price, which is what the tax note became.
+  This replaced a block that matched "purity" or "karat" in Liquid, which put
+  one shop's vocabulary in the theme — the same assumption the caption carried.
 
-  **The text is a dynamic source, not a metafield picker.** Shopify has no
-  metafield setting type for a block schema; what it has is the dynamic-source
-  connector on a `text` setting, and inside this static card it binds against
-  `closest.product` — the same context every other block here reads.
+  **The order is the merchant's own.** The block that came before this sorted
+  numerically: it pulled the first number out of each value and zero-padded it,
+  so "9K" sorted before "22K" where a plain string sort would not. That is right
+  for karats and ring sizes and arbitrary for everything else — "Brushed,
+  Polished" has no number to sort by, and S/M/L/XL sorts *wrongly* by every rule
+  except the one the merchant already applied when they ordered the option in
+  admin. So there is no sorting here at all, which is both simpler and correct
+  more often.
 
-  **Every control is an override and none of them is required.** Left alone the
-  block is the card's caption: the theme's micro size, its meta tracking,
-  uppercase, and ink at 72%. Each setting replaces exactly one of those and
-  emits nothing when it is set to inherit, so the block's own stylesheet rule
-  stays the single description of what a caption looks like.
+  **Every value is listed, whatever the stock.** An option value exists because
+  the piece can be made that way, so a sold-out one is still something the shop
+  offers; filtering on `available` would make the sentence flicker as inventory
+  moved.
 
-  The sizes are the theme's **product-text tokens**, not lengths — the same
-  four `--product-*` properties the title, the caption and the price are drawn
-  from. A merchant picks "as large as the price", not a number, and a shop that
-  retunes its type scale moves this with everything else. That is the rule this
-  theme is built to: nothing hardcodes a size.
-
-  **The row is held whether or not there is a word in it.** `.card__meta`'s
-  `min-height: 1.5em` is what keeps a row of cards level when one piece has a
-  fact and its neighbour does not, and it is why a block bound to a metafield
-  one product is missing still shows as an empty line rather than collapsing.
+  The type controls are `product-card-text`'s, and for the same reason: this is
+  a line of caption, and a merchant setting one line's size and colour should
+  not have to discover that the block beside it in the same row cannot be set
+  the same way.
 {%- endcomment -%}
 
 {%- liquid
-  assign value = block.settings.text
+  assign product = closest.product
+  assign wanted = block.settings.option_name | downcase | strip
+
+  assign values_option = blank
+  if wanted != blank
+    for option in product.options_with_values
+      assign option_down = option.name | downcase
+      if option_down contains wanted
+        assign values_option = option
+        break
+      endif
+    endfor
+  endif
+
+  assign separator = block.settings.separator | default: ', '
+
+  assign values_list = ''
+  if values_option != blank
+    for value in values_option.values
+      if forloop.first
+        assign values_list = value | append: ''
+      else
+        assign values_list = values_list | append: separator | append: value
+      endif
+    endfor
+  endif
 
   comment
-    Each override emits one declaration, or nothing at all. Nothing is the
-    important half: an unset control has to leave the stylesheet's own value
-    standing rather than restate it, or the class stops being the one place a
-    caption is described.
+    The same override ladder `product-card-text` carries, emitting nothing for
+    a control left alone so the stylesheet stays the one description of what a
+    caption line looks like.
   endcomment
   assign style = ''
 
@@ -59,11 +83,6 @@
     when 'xs'
       assign style = style | append: 'font-size: calc(var(--micro-size) * 0.85);'
     when 'note'
-      comment
-        The theme's own price-note relationship — `.price-tax` is `0.75em` of
-        the price it follows, and this is that same figure stated where the
-        note is no longer inside the price element to inherit it from.
-      endcomment
       assign style = style | append: 'font-size: calc(var(--product-price-size) * 0.75);'
     when 'card_note'
       assign style = style | append: 'font-size: var(--card-note-size);'
@@ -88,12 +107,6 @@
       assign style = style | append: 'text-transform: none;'
   endcase
 
-  comment
-    "Muted" is a relative expression rather than a colour, so it follows
-    whatever scheme the card is in — the same treatment the price note has
-    always had. A picked colour is absolute by definition and is the merchant's
-    to get right on every scheme they use.
-  endcomment
   case block.settings.color_source
     when 'muted'
       assign style = style | append: 'color: color-mix(in srgb, currentColor 62%, transparent);'
@@ -106,20 +119,28 @@
   endcase
 -%}
 
-<span class="card__meta card__text" style="{{ style }}" {{ block.shopify_attributes }}>
-  {{- value -}}
-</span>
+{%- if values_list != blank -%}
+  <span class="card__meta card__text" style="{{ style }}" {{ block.shopify_attributes }}>
+    {{- values_list -}}
+  </span>
+{%- endif -%}
 
 {% schema %}
 {
-  "name": "t:blocks.product_card_text.name",
+  "name": "t:blocks.product_card_option_values.name",
   "tag": null,
   "settings": [
     {
       "type": "text",
-      "id": "text",
-      "label": "t:blocks.product_card_text.text.label",
-      "info": "t:blocks.product_card_text.text.info"
+      "id": "option_name",
+      "label": "t:blocks.product_card_option_values.option_name.label",
+      "info": "t:blocks.product_card_option_values.option_name.info"
+    },
+    {
+      "type": "text",
+      "id": "separator",
+      "label": "t:blocks.product_card_option_values.separator.label",
+      "default": ", "
     },
     {
       "type": "header",
@@ -188,10 +209,7 @@
   ],
   "presets": [
     {
-      "name": "t:blocks.product_card_text.name",
-      "settings": {
-        "text": "Text"
-      }
+      "name": "t:blocks.product_card_option_values.name"
     }
   ]
 }

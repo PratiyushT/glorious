@@ -634,6 +634,7 @@
         "info": "Steps of the theme's own product type, so a shop that retunes its type scale moves this with it.",
         "xs": "Smaller than the caption",
         "note": "Beside the price",
+        "card_note": "Small note",
         "sm": "Caption",
         "md": "Price",
         "lg": "Product title",
@@ -650,10 +651,21 @@
         "label": "Colour",
         "info": "Muted follows whatever scheme the card is in. A picked colour does not, and has to be right on every scheme the shop uses.",
         "muted": "Muted",
+        "faint": "Faint",
         "custom": "Custom"
       },
       "custom_color": {
         "label": "Custom colour"
+      }
+    },
+    "product_card_option_values": {
+      "name": "Option values",
+      "option_name": {
+        "label": "Option name",
+        "info": "Which of the product's options to list — \"Karat\", \"Size\", \"Length\". Matched on the name, so it finds the right one whether it is first or third on a given product, and prints nothing on a product that has no such option. The words around the list are a Text block beside this one."
+      },
+      "separator": {
+        "label": "Between values"
       }
     },
     "product_card_variants": {
@@ -669,9 +681,6 @@
         "round": "Round",
         "square": "Square"
       }
-    },
-    "product_card_available": {
-      "name": "Available in"
     },
     "product_card_add": {
       "name": "Add to Bag",
