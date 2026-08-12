@@ -659,6 +659,10 @@
         "label": "Wrap onto more rows",
         "info": "Off keeps everything on one row, however narrow it gets."
       },
+      "gap": {
+        "label": "Space between blocks",
+        "info": "The gap between the blocks in this group, along whichever direction it runs."
+      },
       "stack_below": {
         "label": "Stack when narrow",
         "info": "Measured on the group's own width, not the screen, so a group in a narrow column stacks on a desktop too.",

@@ -18,9 +18,20 @@
   spacing it had before the control existed.
 {%- endcomment -%}
 
+{%- comment -%}
+  **`none` had to be handled, not skipped.** It is an offered value for padding
+  and gap, and it fell outside the step list — so choosing None printed nothing
+  at all, the class kept its own fallback, and the control did nothing. That
+  reads as a broken setting rather than an empty one, which is exactly what it
+  was reported as.
+
+  It prints `0` rather than `var(--step-none)`: whether that token exists is a
+  question the caller should not have to ask, and a `var()` that resolves to
+  nothing takes the whole declaration with it.
+{%- endcomment -%}
 {%- liquid
   assign steps = 'tiny,small,medium,large,xlarge' | split: ','
 -%}
-{%- if steps contains margin %}--block-margin: var(--step-{{ margin }});{% endif -%}
-{%- if steps contains padding %}--block-padding: var(--step-{{ padding }});{% endif -%}
-{%- if steps contains gap %}--block-gap: var(--step-{{ gap }});{% endif -%}
+{%- if margin == 'none' %}--block-margin: 0;{% elsif steps contains margin %}--block-margin: var(--step-{{ margin }});{% endif -%}
+{%- if padding == 'none' %}--block-padding: 0;{% elsif steps contains padding %}--block-padding: var(--step-{{ padding }});{% endif -%}
+{%- if gap == 'none' %}--block-gap: 0;{% elsif steps contains gap %}--block-gap: var(--step-{{ gap }});{% endif -%}
