@@ -629,6 +629,27 @@
         "large": "Large",
         "xlarge": "Extra large"
       },
+      "text_header": "Text",
+      "text_style": {
+        "label": "Style",
+        "info": "A look from Theme settings → Text styles. Leave it as it is to keep the card's own caption."
+      },
+      "text_element": {
+        "label": "Element",
+        "info": "What this is in the page's outline, which is a question for search engines rather than for how it looks. Use a heading level only for something that really is a heading.",
+        "span": "Inline text",
+        "p": "Paragraph",
+        "h1": "Heading 1",
+        "h2": "Heading 2",
+        "h3": "Heading 3",
+        "h4": "Heading 4",
+        "h5": "Heading 5",
+        "h6": "Heading 6"
+      },
+      "text_color": {
+        "label": "Colour",
+        "info": "Leave it empty to follow the scheme the card is in. A picked colour is fixed, so choose one that works on every scheme this card appears on."
+      },
       "inherit": {
         "label": "Leave as it is"
       }
@@ -731,46 +752,9 @@
     },
     "product_card_text": {
       "name": "Text",
-      "type_header": "Type",
       "text": {
         "label": "Text",
         "info": "Type a line, or connect it to a product metafield with the dynamic-source button. A single character works too — a \"·\" between two blocks inside a group."
-      },
-      "font": {
-        "label": "Font",
-        "body": "Body",
-        "subheading": "Subheading",
-        "heading": "Heading",
-        "accent": "Accent",
-        "price": "Price"
-      },
-      "size": {
-        "label": "Size",
-        "info": "Steps of the theme's own product type, so a shop that retunes its type scale moves this with it.",
-        "xs": "Smaller than the caption",
-        "note": "Beside the price",
-        "card_note": "Small note",
-        "sm": "Caption",
-        "md": "Price",
-        "lg": "Product title",
-        "xl": "Larger than the title"
-      },
-      "text_transform": {
-        "label": "Letter case",
-        "uppercase": "UPPERCASE",
-        "lowercase": "lowercase",
-        "capitalize": "Capitalise Each Word",
-        "none": "As typed"
-      },
-      "color_source": {
-        "label": "Colour",
-        "info": "Muted follows whatever scheme the card is in. A picked colour does not, and has to be right on every scheme the shop uses.",
-        "muted": "Muted",
-        "faint": "Faint",
-        "custom": "Custom"
-      },
-      "custom_color": {
-        "label": "Custom colour"
       }
     },
     "product_card_option_values": {

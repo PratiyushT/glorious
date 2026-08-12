@@ -1885,8 +1885,39 @@ ladder, a line height, a letter spacing and a case.
 
 Verified at 1280: all seven resolve and descend — 71.3 / 45.6 / 29.1 / 19.6 /
 16.7 / 14.7 / 12.9 — Display, Title and Subtitle in Italiana, the rest in Karla,
-Caption uppercase at wide tracking, and Display at 0.95 leading. Nothing on the
-page moved, since nothing wears the classes yet.
+Caption uppercase at wide tracking, and Display at 0.95 leading.
+
+**`snippets/text-style.liquid` is the one place a style is spent.** Every block
+offering text renders it, and it prints **inline declarations rather than a
+class name** — deliberately: `.text-caption` and `.card__meta` are both one
+class of specificity and `.card__meta` is declared later, so a class would lose
+to the very rule it is meant to override, silently, with the markup looking
+right. Inline wins outright and needs no ordering contract between two distant
+parts of the stylesheet.
+
+It replaced roughly **5,100 characters of identical ladder** duplicated across
+`product-card-text` and `product-card-option-values` — measured, not estimated:
+four shared runs of 3066, 949, 673 and 452 characters.
+
+- **An untouched style prints nothing**, so the block keeps `.card__meta`'s own
+  caption until a merchant chooses otherwise. The control is additive, which is
+  the rule the fallback-in-CSS idiom exists for.
+- **Colour is one picker and empty means inherit.** It was a select of
+  inherit / muted / faint / custom with a picker behind the last — four options
+  and a conditional field to say one thing. The cost is that a picked colour is
+  absolute where `muted` followed the scheme; a shop using one style across a
+  light and a dark scheme picks a colour that works on both, or leaves it empty.
+- **The `suffix` setting is gone.** It appended a unit to a bound value, which
+  is a second text block's job in a theme where the caption is already composed
+  from four of them.
+
+Verified against the live card: the declarations the snippet emits resolve end
+to end — Caption 12.85px Karla uppercase at 0.64px tracking, Subtitle 29.11px
+Italiana, Display 71.26px, a picked colour applied — and clearing them restores
+the card's own 12px caption. **Two rows moved and it is the ladder's retirement,
+not a fault:** "Available in" was 11.5px at ink 50% from the old `card_note`
+size and `faint` colour, and is the caption's 12px at 72% now. A merchant wanting
+the quieter line picks Caption and a colour.
 
 - **No pixel field anywhere in it.** A merchant picks a rung and it scales. The
   ladder is `--type-3xs` … `--type-8xl` in `base.css`, fourteen fluid clamps

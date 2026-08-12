@@ -91,7 +91,10 @@
               }
             }
           },
-          "block_order": ["eyebrow", "view-all"],
+          "block_order": [
+            "eyebrow",
+            "view-all"
+          ],
           "settings": {
             "direction": "horizontal",
             "distribute": "between",
@@ -143,7 +146,12 @@
                   }
                 }
               },
-              "block_order": ["option", "dot", "carat", "unit"],
+              "block_order": [
+                "option",
+                "dot",
+                "carat",
+                "unit"
+              ],
               "settings": {
                 "direction": "horizontal",
                 "distribute": "start",
@@ -166,22 +174,21 @@
                 "label": {
                   "type": "product-card-text",
                   "settings": {
-                    "text": "Available in",
-                    "size": "card_note",
-                    "color_source": "faint"
+                    "text": "Available in"
                   }
                 },
                 "values": {
                   "type": "product-card-option-values",
                   "settings": {
                     "option_name": "Karat",
-                    "separator": ", ",
-                    "size": "card_note",
-                    "color_source": "faint"
+                    "separator": ", "
                   }
                 }
               },
-              "block_order": ["label", "values"],
+              "block_order": [
+                "label",
+                "values"
+              ],
               "settings": {
                 "direction": "horizontal",
                 "distribute": "start",
@@ -199,7 +206,9 @@
                   "settings": {}
                 }
               },
-              "block_order": ["price"],
+              "block_order": [
+                "price"
+              ],
               "settings": {
                 "direction": "horizontal",
                 "distribute": "start",
@@ -238,7 +247,10 @@
           }
         }
       },
-      "block_order": ["heading", "row"],
+      "block_order": [
+        "heading",
+        "row"
+      ],
       "settings": {
         "color_scheme": "scheme_1",
         "collection": "featured-products-homepage",

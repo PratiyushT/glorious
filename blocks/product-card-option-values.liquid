@@ -6,35 +6,28 @@
   same composition the caption uses. A shop that wants "Comes in", "Sizes:" or
   nothing at all types it there rather than asking the theme for a setting.
 
-  **The option is named by the merchant, and matched rather than positioned.**
-  A text setting — "Karat", "Size", "Length" — matched case-insensitively
-  against each option's name. Position would be simpler and is wrong on a mixed
+  **The option is named by the merchant, and matched rather than positioned.** A
+  text setting — "Karat", "Size", "Length" — matched case-insensitively against
+  each option's name. Position would be simpler and is wrong on a mixed
   catalogue: one product ordered Metal, Karat and another Karat, Metal cannot
   both be served by "the second option". A name finds the right one either way,
-  and renders nothing on a product that has no such option, which is the honest
+  and renders nothing on a product with no such option, which is the honest
   answer for a catalogue where only some pieces carry it.
 
-  This replaced a block that matched "purity" or "karat" in Liquid, which put
-  one shop's vocabulary in the theme — the same assumption the caption carried.
-
-  **The order is the merchant's own.** The block that came before this sorted
-  numerically: it pulled the first number out of each value and zero-padded it,
-  so "9K" sorted before "22K" where a plain string sort would not. That is right
-  for karats and ring sizes and arbitrary for everything else — "Brushed,
-  Polished" has no number to sort by, and S/M/L/XL sorts *wrongly* by every rule
-  except the one the merchant already applied when they ordered the option in
-  admin. So there is no sorting here at all, which is both simpler and correct
-  more often.
+  **The order is the merchant's own.** The block before this sorted numerically
+  — pulling the first number out of each value and zero-padding it so "9K"
+  sorted before "22K". That is right for karats and arbitrary for everything
+  else: "Brushed, Polished" has no number, and S/M/L/XL sorts wrongly under
+  every rule except the one the merchant already applied in admin.
 
   **Every value is listed, whatever the stock.** An option value exists because
   the piece can be made that way, so a sold-out one is still something the shop
   offers; filtering on `available` would make the sentence flicker as inventory
   moved.
 
-  The type controls are `product-card-text`'s, and for the same reason: this is
-  a line of caption, and a merchant setting one line's size and colour should
-  not have to discover that the block beside it in the same row cannot be set
-  the same way.
+  Its style and element controls are `product-card-text`'s, from the same
+  `snippets/text-style.liquid` — a merchant setting one half of a row should not
+  find the other half cannot be set the same way.
 {%- endcomment -%}
 
 {%- liquid
@@ -65,70 +58,19 @@
     endfor
   endif
 
-  comment
-    The same override ladder `product-card-text` carries, emitting nothing for
-    a control left alone so the stylesheet stays the one description of what a
-    caption line looks like.
-  endcomment
-  assign style = ''
-
-  case block.settings.font
-    when 'body'
-      assign style = style | append: 'font-family: var(--font-body);'
-    when 'heading'
-      assign style = style | append: 'font-family: var(--font-heading);'
-    when 'subheading'
-      assign style = style | append: 'font-family: var(--font-subheading);'
-    when 'accent'
-      assign style = style | append: 'font-family: var(--font-accent);'
-    when 'price'
-      assign style = style | append: 'font-family: var(--font-price);'
-  endcase
-
-  case block.settings.size
-    when 'xs'
-      assign style = style | append: 'font-size: calc(var(--micro-size) * 0.85);'
-    when 'note'
-      assign style = style | append: 'font-size: calc(var(--product-price-size) * 0.75);'
-    when 'card_note'
-      assign style = style | append: 'font-size: var(--card-note-size);'
-    when 'sm'
-      assign style = style | append: 'font-size: var(--micro-size);'
-    when 'md'
-      assign style = style | append: 'font-size: var(--product-price-size);'
-    when 'lg'
-      assign style = style | append: 'font-size: var(--product-title-size);'
-    when 'xl'
-      assign style = style | append: 'font-size: calc(var(--product-title-size) * 1.35);'
-  endcase
-
-  case block.settings.text_transform
-    when 'uppercase'
-      assign style = style | append: 'text-transform: uppercase;'
-    when 'lowercase'
-      assign style = style | append: 'text-transform: lowercase;'
-    when 'capitalize'
-      assign style = style | append: 'text-transform: capitalize;'
-    when 'none'
-      assign style = style | append: 'text-transform: none;'
-  endcase
-
-  case block.settings.color_source
-    when 'muted'
-      assign style = style | append: 'color: color-mix(in srgb, currentColor 62%, transparent);'
-    when 'faint'
-      assign style = style | append: 'color: color-mix(in srgb, currentColor 50%, transparent);'
-    when 'custom'
-      if block.settings.custom_color != blank
-        assign style = style | append: 'color: ' | append: block.settings.custom_color | append: ';'
-      endif
-  endcase
+  assign tags = 'span,p,h1,h2,h3,h4,h5,h6' | split: ','
+  assign tag = 'span'
+  if tags contains block.settings.element
+    assign tag = block.settings.element
+  endif
 -%}
 
 {%- if values_list != blank -%}
-  <span class="card__meta card__text" style="{{ style }}" {{ block.shopify_attributes }}>
-    {{- values_list -}}
-  </span>
+  <{{ tag }}
+    class="card__meta card__text"
+    style="{% render 'text-style', style: block.settings.style, color: block.settings.color %}"
+    {{ block.shopify_attributes }}
+  >{{ values_list }}</{{ tag }}>
 {%- endif -%}
 
 {% schema %}
@@ -150,70 +92,47 @@
     },
     {
       "type": "header",
-      "content": "t:blocks.product_card_text.type_header"
+      "content": "t:blocks.all.text_header"
     },
     {
       "type": "select",
-      "id": "font",
-      "label": "t:blocks.product_card_text.font.label",
+      "id": "style",
+      "label": "t:blocks.all.text_style.label",
+      "info": "t:blocks.all.text_style.info",
       "options": [
         { "value": "inherit", "label": "t:blocks.all.inherit.label" },
-        { "value": "body", "label": "t:blocks.product_card_text.font.body" },
-        { "value": "subheading", "label": "t:blocks.product_card_text.font.subheading" },
-        { "value": "heading", "label": "t:blocks.product_card_text.font.heading" },
-        { "value": "accent", "label": "t:blocks.product_card_text.font.accent" },
-        { "value": "price", "label": "t:blocks.product_card_text.font.price" }
+        { "value": "display", "label": "t:settings_schema.text_styles.display.header" },
+        { "value": "title", "label": "t:settings_schema.text_styles.title.header" },
+        { "value": "subtitle", "label": "t:settings_schema.text_styles.subtitle.header" },
+        { "value": "lead", "label": "t:settings_schema.text_styles.lead.header" },
+        { "value": "body", "label": "t:settings_schema.text_styles.body.header" },
+        { "value": "small", "label": "t:settings_schema.text_styles.small.header" },
+        { "value": "caption", "label": "t:settings_schema.text_styles.caption.header" }
       ],
       "default": "inherit"
     },
     {
       "type": "select",
-      "id": "size",
-      "label": "t:blocks.product_card_text.size.label",
-      "info": "t:blocks.product_card_text.size.info",
+      "id": "element",
+      "label": "t:blocks.all.text_element.label",
+      "info": "t:blocks.all.text_element.info",
       "options": [
-        { "value": "inherit", "label": "t:blocks.all.inherit.label" },
-        { "value": "xs", "label": "t:blocks.product_card_text.size.xs" },
-        { "value": "note", "label": "t:blocks.product_card_text.size.note" },
-        { "value": "card_note", "label": "t:blocks.product_card_text.size.card_note" },
-        { "value": "sm", "label": "t:blocks.product_card_text.size.sm" },
-        { "value": "md", "label": "t:blocks.product_card_text.size.md" },
-        { "value": "lg", "label": "t:blocks.product_card_text.size.lg" },
-        { "value": "xl", "label": "t:blocks.product_card_text.size.xl" }
+        { "value": "span", "label": "t:blocks.all.text_element.span" },
+        { "value": "p", "label": "t:blocks.all.text_element.p" },
+        { "value": "h1", "label": "t:blocks.all.text_element.h1" },
+        { "value": "h2", "label": "t:blocks.all.text_element.h2" },
+        { "value": "h3", "label": "t:blocks.all.text_element.h3" },
+        { "value": "h4", "label": "t:blocks.all.text_element.h4" },
+        { "value": "h5", "label": "t:blocks.all.text_element.h5" },
+        { "value": "h6", "label": "t:blocks.all.text_element.h6" }
       ],
-      "default": "inherit"
-    },
-    {
-      "type": "select",
-      "id": "text_transform",
-      "label": "t:blocks.product_card_text.text_transform.label",
-      "options": [
-        { "value": "inherit", "label": "t:blocks.all.inherit.label" },
-        { "value": "uppercase", "label": "t:blocks.product_card_text.text_transform.uppercase" },
-        { "value": "lowercase", "label": "t:blocks.product_card_text.text_transform.lowercase" },
-        { "value": "capitalize", "label": "t:blocks.product_card_text.text_transform.capitalize" },
-        { "value": "none", "label": "t:blocks.product_card_text.text_transform.none" }
-      ],
-      "default": "inherit"
-    },
-    {
-      "type": "select",
-      "id": "color_source",
-      "label": "t:blocks.product_card_text.color_source.label",
-      "info": "t:blocks.product_card_text.color_source.info",
-      "options": [
-        { "value": "inherit", "label": "t:blocks.all.inherit.label" },
-        { "value": "muted", "label": "t:blocks.product_card_text.color_source.muted" },
-        { "value": "faint", "label": "t:blocks.product_card_text.color_source.faint" },
-        { "value": "custom", "label": "t:blocks.product_card_text.color_source.custom" }
-      ],
-      "default": "inherit"
+      "default": "span"
     },
     {
       "type": "color",
-      "id": "custom_color",
-      "label": "t:blocks.product_card_text.custom_color.label",
-      "visible_if": "{{ block.settings.color_source == 'custom' }}"
+      "id": "color",
+      "label": "t:blocks.all.text_color.label",
+      "info": "t:blocks.all.text_color.info"
     }
   ],
   "presets": [
