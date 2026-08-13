@@ -145,9 +145,9 @@ editable number), `border`, `heading`, and `paragraph`.
 - Numbers are ordinary text on purpose. Automatic numbering couples content
   to sibling position and needs parent-specific counters; editable text stays
   reusable and can be removed or replaced with any label.
-- Responsive behavior comes from Group's existing equal widths, wrapping,
-  minimum block width, and container-based stacking controls. There are no
-  feature-specific breakpoints or orphan rules.
+- Responsive behavior comes from Group's equal widths, automatic wrapping,
+  and container-based stacking presets. There are no feature-specific
+  breakpoints, width sliders, or orphan rules.
 - The Group section's **Feature grid** preset is the reusable entry point for
   other templates. It seeds three bordered Groups made only from Icon, Heading
   and Paragraph blocks; it does not introduce another section or block type.
@@ -794,9 +794,10 @@ merchant's business. Groups nest.
   measures it; measured after the fix, both outer and inner boxes are 721px tall.
 - **Stacking is a container query, not a media query**, so a group stacks when
   *it* is narrow — in a half-width column on a desktop exactly as on a phone.
-  `stack_below` offers never / tablet (48rem) / phone (30rem). Stacking also
-  forces `align-items: flex-start`, since `baseline` is meaningless in a column
-  and `stretch` would run a link's underline the full width.
+  `stack_below` offers Fluid / tablet (48rem) / phone (30rem).
+  Stacking also forces `align-items: flex-start`, since `baseline` is
+  meaningless in a column and `stretch` would run a link's underline the full
+  width.
 - **A group must not shrink-wrap.** As a flex item it would hug its contents
   and `space-between` would have nothing to distribute — the commonest way a
   horizontal group looks like it is ignoring its own setting. It is given
@@ -826,11 +827,12 @@ Liquid implementations.
   Detail block or value-source selector.
 - `items_width` is the one addition the two-column migration needed. Natural is
   the Group block's backward-compatible default; Equal makes direct row
-  children share the available width. When the container stacks, equal-width
-  children return to full-width natural-height rows. `min_item_width` is a flex
-  basis and wrapping preference, not a hard minimum, so the composition remains
-  fluid. Reverse order and an independent vertical gap preserve the old
-  editorial layouts without section-specific CSS.
+  children share the available width. Equal rows that allow wrapping use one
+  internal 12rem floor; it is not a merchant setting. When the container
+  stacks, equal-width children return to full-width natural-height rows. The
+  Fluid / tablet / phone preset is therefore the only responsive decision
+  in the editor. Block order is always the actual visual order; About stores
+  Content before Media instead of carrying a reverse-layout control.
 - **Media is global.** A Shopify-hosted video wins over an image without
   deleting it; both paths keep LQIP, ratio, cover/contain, arch, offset frame,
   captions, and scroll reveal. About's arched portrait, Craft's framed video,
@@ -1566,9 +1568,9 @@ see the search overlay below.
   360px floor and the blog and collection lists are not what the design means.
   No `!important` — same specificity, later in the file.
 - **The feature-card row is a Group, not an art-directed grid.** Equal widths,
-  wrapping, the minimum block width and gap are all merchant settings on the
-  nested `items` Group. The homepage starts at a 12rem minimum and never
-  switches to a section-specific layout. Removing or adding an item therefore
+  automatic wrapping and gap are ordinary Group behavior. The internal 12rem
+  floor keeps a card useful without exposing a width control, and the row never
+  switches to section-specific layout. Removing or adding an item therefore
   reflows naturally instead of activating rules written for exactly five.
 
 - **`--page-width` is the width of the *content*, with the gutter outside it.**

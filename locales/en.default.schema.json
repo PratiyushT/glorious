@@ -825,10 +825,6 @@
         "horizontal": "Side by side",
         "vertical": "Stacked"
       },
-      "reverse": {
-        "label": "Reverse block order",
-        "info": "Starts with the last block while preserving the editor order."
-      },
       "distribute": {
         "label": "Position along the row",
         "info": "Where the blocks sit once they have been laid out.",
@@ -862,10 +858,6 @@
         "natural": "Natural",
         "equal": "Equal"
       },
-      "min_item_width": {
-        "label": "Minimum block width",
-        "info": "Equal blocks wrap only when they would become narrower than this. Zero lets them remain on one row at any width."
-      },
       "gap": {
         "label": "Space between blocks",
         "info": "Applies while the blocks sit side by side. Stacked, the space comes from the section so the rhythm matches everything above and below."
@@ -888,9 +880,9 @@
       "border_bottom_label": "Bottom border",
       "border_left_label": "Left border",
       "stack_below": {
-        "label": "Stack when narrow",
-        "info": "Measured on the group's own width rather than the screen's, so a group in a narrow column stacks on a desktop too.",
-        "never": "Never",
+        "label": "Responsive layout",
+        "info": "Fluid uses the available space and follows Allow a second row. The stacking presets switch to one column based on the Group's own width rather than the screen's.",
+        "never": "Fluid",
         "tablet": "On tablet and smaller",
         "mobile": "On phone only"
       }

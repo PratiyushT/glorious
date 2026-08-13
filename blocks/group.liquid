@@ -88,13 +88,6 @@
       "default": "horizontal"
     },
     {
-      "type": "checkbox",
-      "id": "reverse",
-      "label": "t:blocks.group.reverse.label",
-      "info": "t:blocks.group.reverse.info",
-      "default": false
-    },
-    {
       "type": "select",
       "id": "distribute",
       "label": "t:blocks.group.distribute.label",
@@ -156,18 +149,6 @@
       ],
       "default": "natural",
       "visible_if": "{{ block.settings.direction == 'horizontal' }}"
-    },
-    {
-      "type": "range",
-      "id": "min_item_width",
-      "label": "t:blocks.group.min_item_width.label",
-      "info": "t:blocks.group.min_item_width.info",
-      "min": 0,
-      "max": 40,
-      "step": 1,
-      "unit": "rem",
-      "default": 0,
-      "visible_if": "{{ block.settings.direction == 'horizontal' and block.settings.items_width == 'equal' }}"
     },
     {
       "type": "select",
@@ -305,12 +286,10 @@
       "name": "t:blocks.group.name",
       "settings": {
         "direction": "horizontal",
-        "reverse": false,
         "distribute": "between",
         "align": "baseline",
         "wrap": true,
         "items_width": "natural",
-        "min_item_width": 0,
         "stack_below": "mobile",
         "gap": "medium",
         "vertical_gap": "inherit",

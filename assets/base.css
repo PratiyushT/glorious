@@ -607,7 +607,11 @@ a {
    existing header rows and compact control groups do not suddenly become
    columns; the Group section uses equal items for its two-column compositions. */
 .layout-group[data-items="equal"] > .layout-group__inner > * {
-  flex: 1 1 var(--group-item-min, 0rem);
+  /* Equal rows wrap automatically before a block becomes too narrow to hold
+     useful content. This internal floor replaces the merchant-facing width
+     slider: the layout stays fluid, while Responsive layout remains the only
+     choice about when a row should become one column. */
+  flex: 1 1 12rem;
   min-width: 0;
 }
 
@@ -629,7 +633,7 @@ a {
 
 @container (max-width: 30rem) {
   .layout-group[data-stack="mobile"] > .layout-group__inner {
-    flex-direction: var(--group-stack-direction, column);
+    flex-direction: column;
     align-items: flex-start;
     justify-content: flex-start;
   }
@@ -642,7 +646,7 @@ a {
 
 @container (max-width: 48rem) {
   .layout-group[data-stack="tablet"] > .layout-group__inner {
-    flex-direction: var(--group-stack-direction, column);
+    flex-direction: column;
     align-items: flex-start;
     justify-content: flex-start;
   }

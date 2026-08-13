@@ -12,14 +12,6 @@
   if layout_settings.direction == 'vertical'
     assign direction = 'column'
   endif
-  if layout_settings.reverse
-    assign direction = direction | append: '-reverse'
-  endif
-
-  assign stack_direction = 'column'
-  if layout_settings.reverse
-    assign stack_direction = 'column-reverse'
-  endif
 
   assign justify = 'flex-start'
   unless layout_settings.direction == 'vertical'
@@ -73,8 +65,6 @@
     endif
   endif
 
-  assign item_min = layout_settings.min_item_width | default: 0
-
   assign padding_css = ''
   if layout_settings.padding == 'none'
     assign padding_css = '--group-padding: 0;'
@@ -84,11 +74,9 @@
 -%}
 
 --group-direction: {{ direction }};
---group-stack-direction: {{ stack_direction }};
 --group-justify: {{ justify }};
 --group-align: {{ align }};
 --group-wrap: {{ wrap }};
---group-item-min: {{ item_min }}rem;
 {{- gap_css -}}
 {{- row_gap_css -}}
 {{- padding_css -}}
