@@ -7,25 +7,21 @@
   intercepts it when the cart drawer is on, posts it in the background and
   slides the drawer out.
 
-  **What it posts is `snippets/card-option.liquid`'s answer**, the same one the
-  price block quotes — the dearest available variant in the metal the card
-  stands on. The card offers no karat or size control, so adding has to choose
-  on the customer's behalf; dearest *available*, because a sold-out variant
-  cannot be bought. Where the whole metal is sold out the dearest overall
-  stands in and the button says Sold out.
+  **What it posts is `snippets/card-option.liquid`'s answer**, the same variant
+  quoted by the price block: Shopify's selected or first available variant.
 
-  `data-card-add-id` is the hook a metal pick moves, and `.card__add` is the
+  `data-card-add-id` is the hook an option pick moves, and `.card__add` is the
   element whose label and disabled state it swaps — both read from the
   `[data-card]` root, so this block can sit anywhere in the card.
 
   **Both labels ride on the button, not on the card root**, and that follows
-  from the label being this block's setting. A metal can be sold out while the
+  from the label being this block's setting. An option can be sold out while the
   one Liquid rendered was not, so `theme.js` has to swap between them without a
   translation string of its own — and it used to read them off the root, which
   was correct only while the words came from a theme setting both could see. A
   block cannot hand its setting to its parent, so the attributes moved to where
   the setting is. `theme.js` prefers the button's and falls back to the root's,
-  which is what keeps `snippets/product-card.liquid` working unchanged.
+  which keeps the shared card behavior consistent.
 
   **The form carries an id of its own.** Shopify derives one from the product,
   so a page rendering the same piece twice — this card and a collection row,

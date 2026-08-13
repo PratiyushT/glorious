@@ -43,15 +43,15 @@
         "collections": {
           "type": "menu",
           "settings": {
-            "heading": "The Collections",
-            "label_1": "Rings",
-            "url_1": "/collections/rings",
-            "label_2": "Earrings",
-            "url_2": "/collections/earrings",
-            "label_3": "Necklaces & Pendants",
-            "url_3": "/collections/necklaces",
-            "label_4": "Bracelets",
-            "url_4": "/collections/bracelets"
+            "heading": "Shop",
+            "label_1": "All products",
+            "url_1": "/collections/all",
+            "label_2": "New arrivals",
+            "url_2": "/collections/all",
+            "label_3": "Featured",
+            "url_3": "/collections/all",
+            "label_4": "Collections",
+            "url_4": "/collections"
           }
         },
         "policies": {
@@ -72,15 +72,15 @@
             "url_6": "#cookie-preferences"
           }
         },
-        "salon-details": {
-          "type": "salon",
+        "contact-details": {
+          "type": "contact",
           "settings": {
-            "heading": "The Salon",
-            "hours": "Tue–Sat 11–7 · Sun 11–4 · Mon closed"
+            "heading": "Visit us",
+            "hours": "Mon–Fri 9–5 · Weekend hours may vary"
           }
         }
       },
-      "block_order": ["social", "navigation", "collections", "policies", "salon-details"]
+      "block_order": ["social", "navigation", "collections", "policies", "contact-details"]
     }
   },
   "order": ["footer"]

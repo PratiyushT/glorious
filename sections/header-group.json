@@ -17,7 +17,7 @@
         "show_search": true,
         "show_cart": true,
         "search_overlay": true,
-        "search_popular": "Emerald, Halo, Hoop earrings, Pendant"
+        "search_popular": "New arrivals, Best sellers, Gifts, Essentials"
       },
       "blocks": {
         "link-home": {
@@ -40,21 +40,21 @@
           "type": "link",
           "settings": { "label": "Account", "url": "/account" }
         },
-        "cat-rings": {
+        "cat-new": {
           "type": "category",
-          "settings": { "label": "Rings", "url": "/collections/rings" }
+          "settings": { "label": "New arrivals", "url": "/collections/all" }
         },
-        "cat-earrings": {
+        "cat-best": {
           "type": "category",
-          "settings": { "label": "Earrings", "url": "/collections/earrings" }
+          "settings": { "label": "Best sellers", "url": "/collections/all" }
         },
-        "cat-bracelets": {
+        "cat-featured": {
           "type": "category",
-          "settings": { "label": "Bracelets", "url": "/collections/bracelets" }
+          "settings": { "label": "Featured", "url": "/collections/all" }
         },
-        "cat-necklaces": {
+        "cat-all": {
           "type": "category",
-          "settings": { "label": "Necklaces & Pendants", "url": "/collections/necklaces" }
+          "settings": { "label": "All products", "url": "/collections/all" }
         },
         "social": {
           "type": "social",
@@ -71,10 +71,10 @@
         "link-about",
         "link-contact",
         "link-account",
-        "cat-rings",
-        "cat-earrings",
-        "cat-bracelets",
-        "cat-necklaces",
+        "cat-new",
+        "cat-best",
+        "cat-featured",
+        "cat-all",
         "social"
       ]
     },
@@ -82,7 +82,7 @@
       "type": "cart-drawer",
       "settings": {
         "color_scheme": "scheme_1",
-        "note": "Sales tax calculated at checkout. Fully insured delivery, signed for at your door — or buy at the salon.",
+        "note": "Taxes and delivery are calculated at checkout. Review the order before payment.",
         "secondary_label": "Salon",
         "secondary_link": "/#visit"
       }

@@ -16,34 +16,6 @@
     "shop_email": "hello@example.com",
     "cart_name": "Cart",
     "content_for_index": [],
-    "blocks": {
-      "15069410091156550825": {
-        "type": "shopify://apps/keyideas-ringbuilder-jewelry/blocks/diamond-ring-builder/aa1f04d9-134c-4595-84f5-3ef5b35d5851",
-        "disabled": false,
-        "settings": {
-          "headingfontSize": 30,
-          "descfontSize": 14,
-          "normalPrimary": "#575757",
-          "normalSecondary": "#FFFFFF",
-          "hoverPrimary": "#575757",
-          "backgroundColor": "#EEEEEE",
-          "hoverSecondary": "#EEEEEE",
-          "primaryBackground": "#EEEEEE",
-          "secondaryBackground": "#EEEEEE",
-          "primaryText": "#000000",
-          "secondaryText": "#000000",
-          "custom_css": "",
-          "review_page_hide": "",
-          "hide_on_byor_ring": "",
-          "jquery_cdn": true
-        }
-      },
-      "562504454226930115": {
-        "type": "shopify://apps/keyideas-ringbuilder-jewelry/blocks/keybuilderBlock/aa1f04d9-134c-4595-84f5-3ef5b35d5851",
-        "disabled": false,
-        "settings": {}
-      }
-    },
     "color_schemes": {
       "scheme_1": {
         "settings": {

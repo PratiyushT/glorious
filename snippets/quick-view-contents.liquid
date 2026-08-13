@@ -15,30 +15,12 @@
 {%- liquid
   assign gallery_images = product.media | where: 'media_type', 'image'
   assign product_videos = product.media | where: 'media_type', 'video'
-  assign gallery_video = product.metafields.custom.spin_360_video.value | default: product_videos.first
+  assign gallery_video = product_videos.first
 
   assign slide_count = gallery_images.size
   if gallery_video != blank
     assign slide_count = slide_count | plus: 1
   endif
-
-  comment
-    The framing correction, from the piece's own metafield and nothing else.
-
-    It used to match "bracelet", "earring" and "ring" against the product's type
-    and title — earrings before rings, because "earrings" contains "ring" — and
-    was gated on a `settings.card_image_zoom` that no longer exists: a card is
-    edited on the card now, and there is no "Product cards" group in the theme
-    settings. The category table went with it, being one catalogue's vocabulary
-    written into the theme.
-
-    The card block took the better answer, a setting that accepts a dynamic
-    source so the metafield is the merchant's choice rather than the theme's.
-    This panel is not built on blocks and has nowhere to put one, so the
-    metafield name stays hardcoded here until the product template is built.
-    A piece without it simply gets no correction.
-  endcomment
-  assign zoom_base = product.metafields.custom.card_zoom.value
 
   assign category = product.type
   if category == blank
@@ -111,12 +93,12 @@
   every descendant applied and that one did not.
 
   It is also what keeps the loading state safe. theme.js empties the contents
-  before it adds `is-loading`, so while the diamond is on screen this element
+  before it adds `is-loading`, so while the loading mark is on screen this element
   does not exist and nothing can give an empty box a screen's worth of height.
 {%- endcomment -%}
 <div class="quick-view__frame">
 <div class="quick-view__grid">
-  <div class="quick-view__gallery" data-quick-gallery{% if zoom_base != blank %} style="--qv-zoom-base: {{ zoom_base }};"{% endif %}>
+  <div class="quick-view__gallery" data-quick-gallery>
     {%- if slide_count > 0 -%}
       {%- comment -%}
         One track, translated by whole slots — the design's transform carousel,

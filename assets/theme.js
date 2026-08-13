@@ -833,7 +833,7 @@
     if (typeof event.button === 'number' && event.button !== 0) return;
 
     var el = event.target.closest && event.target.closest(
-      '[data-drawer-open],[data-search-open],[data-quick-view],[data-card-option],[data-card-metal],[data-overlay-open]'
+      '[data-drawer-open],[data-search-open],[data-quick-view],[data-card-option],[data-overlay-open]'
     );
     if (!el) return;
 
@@ -842,7 +842,6 @@
       (el.hasAttribute('data-search-open') && overlays.search) ||
       (el.hasAttribute('data-quick-view') && quickOverlay()) ||
       el.hasAttribute('data-card-option') ||
-      el.hasAttribute('data-card-metal') ||
       (el.hasAttribute('data-overlay-open') && overlays[el.dataset.overlayOpen]);
 
     if (ours) event.preventDefault();
@@ -2321,7 +2320,7 @@
   var swatchFit = null;
 
   function fitSwatches(row) {
-    var swatches = Array.prototype.slice.call(row.querySelectorAll('[data-card-option],[data-card-metal]'));
+    var swatches = Array.prototype.slice.call(row.querySelectorAll('[data-card-option]'));
     var more = row.querySelector('[data-card-swatch-more]');
     if (!swatches.length) return;
 
@@ -2370,12 +2369,12 @@
       try { optionValues = JSON.parse(action.dataset.cardAddOptionValues); } catch (error) { optionValues = null; }
     }
     var optionLinks = Array.prototype.slice.call(
-      card.querySelectorAll('[data-card-option],[data-card-metal]')
+      card.querySelectorAll('[data-card-option]')
     );
 
     if (optionValues || optionValue) {
       optionLinks.forEach(function (option) {
-        var value = option.dataset.optionValue || option.dataset.metalValue;
+        var value = option.dataset.optionValue;
         var optionIndex = parseInt(option.dataset.optionIndex, 10);
         var selectedValue = optionValues && !Number.isNaN(optionIndex)
           ? optionValues[optionIndex]
@@ -2427,7 +2426,7 @@
   }
 
   document.addEventListener('click', function (event) {
-    var swatch = event.target.closest && event.target.closest('[data-card-option],[data-card-metal]');
+    var swatch = event.target.closest && event.target.closest('[data-card-option]');
     if (!swatch) return;
 
     var card = swatch.closest('[data-card]');
@@ -2443,7 +2442,7 @@
     event.preventDefault();
 
     var optionControl = swatch.closest('[data-card-option-control]') || card;
-    optionControl.querySelectorAll('[data-card-option],[data-card-metal]').forEach(function (other) {
+    optionControl.querySelectorAll('[data-card-option]').forEach(function (other) {
       var on = other === swatch;
       other.classList.toggle('is-selected', on);
       other.setAttribute('aria-current', on ? 'true' : 'false');
@@ -2451,14 +2450,14 @@
 
     var meta = optionControl.querySelector('[data-card-meta]');
     if (meta && !meta.hasAttribute('data-card-meta-fixed')) {
-      meta.textContent = swatch.dataset.optionMeta || swatch.dataset.metalMeta || '';
+      meta.textContent = swatch.dataset.optionMeta || '';
     }
 
     var price = card.querySelector('[data-card-price]');
-    if (price) price.innerHTML = swatch.dataset.optionPrice || swatch.dataset.metalPrice || '';
+    if (price) price.innerHTML = swatch.dataset.optionPrice || '';
 
     /* Keep every action on the variant the caption and price now describe. */
-    var optionId = swatch.dataset.optionId || swatch.dataset.metalId;
+    var optionId = swatch.dataset.optionId;
     var optionValues = null;
     if (swatch.dataset.optionValues) {
       try { optionValues = JSON.parse(swatch.dataset.optionValues); } catch (error) { optionValues = null; }
@@ -2492,11 +2491,11 @@
        The button's own labels win over the card's. On a card built from blocks
        the words are the button block's setting, and a block cannot hand a
        setting to its parent — so the attributes live where the setting does.
-       The snippet card states them on the root and carries none on the button,
-       which is what this falls back to. */
+       Root fallbacks remain for cards configured before the button block
+       exposed its own labels. */
     var add = card.querySelector('.card__add');
     if (add && add.tagName === 'BUTTON') {
-      var optionAvailable = swatch.dataset.optionAvailable || swatch.dataset.metalAvailable;
+      var optionAvailable = swatch.dataset.optionAvailable;
       var sold = optionAvailable === 'false';
       add.disabled = sold;
       add.setAttribute('aria-disabled', sold ? 'true' : 'false');
@@ -2506,8 +2505,7 @@
         : (add.dataset.addLabel || card.dataset.addLabel);
       if (label) {
         /* Shared Button arrow styles carry a decorative icon beside a mutable
-           label. Change only the words when that wrapper exists; legacy cards
-           still use the original text-only control. */
+           label. Change only the words when that wrapper exists. */
         var labelNode = add.querySelector('[data-button-label]');
         if (labelNode) labelNode.textContent = label;
         else add.textContent = label;
@@ -3401,7 +3399,7 @@
   }
 
   /* ---- Hero carousel --------------------------------------------------
-     Two pieces at a time out of the selected metal's collection. The whole
+     Two products at a time out of the selected tab's collection. The whole
      pool is already in the document, so stepping is a matter of choosing
      which pair is on show — no request, and every piece stays a real link
      for a visitor without scripting, who simply sees the first pair. */

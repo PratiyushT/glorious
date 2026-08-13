@@ -3,24 +3,21 @@
 
   Product card — every value one of the product's options carries.
 
-  "18K, 22K". The words around it are not here: this block renders the list and
+  "Small, Medium, Large". The words around it are not here: this block renders the list and
   a Text block beside it in a `group` says "Available in", which is the
   same composition the caption uses. A shop that wants "Comes in", "Sizes:" or
   nothing at all types it there rather than asking the theme for a setting.
 
   **The option is named by the merchant, and matched rather than positioned.** A
-  text setting — "Karat", "Size", "Length" — matched case-insensitively against
+  text setting — "Colour", "Size", "Length" — matched case-insensitively against
   each option's name. Position would be simpler and is wrong on a mixed
-  catalogue: one product ordered Metal, Karat and another Karat, Metal cannot
+  catalogue: products can put the same option at different positions and cannot
   both be served by "the second option". A name finds the right one either way,
   and renders nothing on a product with no such option, which is the honest
   answer for a catalogue where only some pieces carry it.
 
-  **The order is the merchant's own.** The block before this sorted numerically
-  — pulling the first number out of each value and zero-padding it so "9K"
-  sorted before "22K". That is right for karats and arbitrary for everything
-  else: "Brushed, Polished" has no number, and S/M/L/XL sorts wrongly under
-  every rule except the one the merchant already applied in admin.
+  **The order is the merchant's own.** Size, flavour, finish, and every other
+  value stay in the exact order configured in Shopify admin.
 
   **Every value is listed, whatever the stock.** An option value exists because
   the piece can be made that way, so a sold-out one is still something the shop
@@ -40,7 +37,7 @@
   if wanted != blank
     for option in product.options_with_values
       assign option_down = option.name | downcase
-      if option_down contains wanted
+      if option_down == wanted
         assign values_option = option
         break
       endif

@@ -326,20 +326,6 @@
     </div>
   </section>
 
-  {%- comment -%} ---- The product card ---------------------------------- {%- endcomment -%}
-  <section class="ds__block">
-    <h2 class="h2">Product card</h2>
-    <p class="rte measure">The real snippet, so its caption type, swatch row and framing are checked here rather than only on the homepage.</p>
-    {%- assign ds_collection = collections.all -%}
-    <div class="grid-auto grid-auto--products">
-      {%- for product in ds_collection.products limit: 4 -%}
-        {%- render 'product-card', product: product -%}
-      {%- else -%}
-        {%- render 'product-card' -%}
-      {%- endfor -%}
-    </div>
-  </section>
-
   {%- comment -%} ---- Loading mark -------------------------------------- {%- endcomment -%}
   <section class="ds__block">
     <h2 class="h2">Loading</h2>

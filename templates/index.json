@@ -53,7 +53,7 @@
         "show_sparkles": true,
         "show_arcs": true,
         "intro": "<p>Thoughtfully made products with distinctive character, considered materials, and lasting quality.</p>",
-        "image": "shopify://shop_images/hero.webp",
+        "image": "",
         "tab_label": "Collection:"
       }
     },
@@ -112,7 +112,7 @@
               "settings": {
                 "image_ratio": "1/1",
                 "image_fit": "contain",
-                "zoom": "{{ closest.product.metafields.custom.card_zoom.value }}"
+                "zoom": ""
               }
             },
             "name": {
@@ -126,76 +126,19 @@
               }
             },
             "caption": {
-              "type": "_product-card-group",
-              "blocks": {
-                "carat": {
-                  "type": "text",
-                  "settings": {
-                    "style": "caption",
-                    "element": "span",
-                    "text": "{{ closest.product.metafields.custom.total_carat_weight.value }}"
-                  }
-                },
-                "unit": {
-                  "type": "text",
-                  "settings": {
-                    "style": "caption",
-                    "element": "span",
-                    "text": "ct"
-                  }
-                }
-              },
-              "block_order": [
-                "carat",
-                "unit"
-              ],
+              "type": "text",
               "settings": {
-                "direction": "horizontal",
-                "distribute": "start",
-                "align": "baseline",
-                "wrap": true,
-                "stack_below": "never",
-                "gap": "tiny"
+                "style": "caption",
+                "element": "span",
+                "text": "{{ closest.product.vendor }}"
               }
             },
-            "metal": {
+            "option": {
               "type": "_product-card-option-control",
               "settings": {
                 "target_by": "auto",
                 "control": "auto",
                 "swatch_shape": "round"
-              }
-            },
-            "karats": {
-              "type": "_product-card-group",
-              "blocks": {
-                "label": {
-                  "type": "text",
-                  "settings": {
-                    "style": "caption",
-                    "element": "span",
-                    "text": "Available in"
-                  }
-                },
-                "values": {
-                  "type": "_product-card-option-values",
-                  "settings": {
-                    "option_name": "Karat",
-                    "separator": ", "
-                  }
-                }
-              },
-              "block_order": [
-                "label",
-                "values"
-              ],
-              "settings": {
-                "direction": "horizontal",
-                "distribute": "start",
-                "align": "baseline",
-                "wrap": true,
-                "stack_below": "never",
-                "gap": "tiny"
               }
             },
             "price-row": {
@@ -229,8 +172,7 @@
             "photograph",
             "name",
             "caption",
-            "metal",
-            "karats",
+            "option",
             "price-row",
             "add"
           ],
@@ -253,7 +195,7 @@
       ],
       "settings": {
         "color_scheme": "scheme_1",
-        "collection": "featured-products-homepage",
+        "collection": "",
         "products_to_show": 8,
         "full_height": true,
         "padding_top": "sm",
@@ -287,7 +229,7 @@
             "lookbook-lede": {
               "type": "text",
               "settings": {
-                "text": "Tap a point to see the piece it marks. In the film, points appear as each piece comes on screen.",
+                "text": "Tap a point to explore the product it marks. In a film, points can appear as each product comes on screen.",
                 "style": "paragraph",
                 "layout": "lede",
                 "element": "p"
@@ -306,13 +248,13 @@
             "padding": "none"
           }
         },
-        "gold": {
+        "featured-edit": {
           "type": "interactive-media",
           "blocks": {
-            "gold-media": {
+            "featured-media": {
               "type": "media",
               "settings": {
-                "image": "shopify://shop_images/Bridal_-_Lookbook.jpg",
+                "image": "",
                 "autoplay": true,
                 "loop": true,
                 "ratio": "4 / 5",
@@ -321,26 +263,26 @@
                 "padding": "none"
               }
             },
-            "gold-caption": {
+            "featured-caption": {
               "type": "text",
               "settings": {
-                "text": "The Bridal Look",
+                "text": "The Editorial Look",
                 "style": "caption",
                 "element": "span",
                 "override_case": "uppercase",
                 "override_tracking": "wider"
               }
             },
-            "gold-necklace": {
+            "featured-product-one": {
               "type": "_hotspot",
               "blocks": {
-                "necklace-card": {
+                "product-card-one": {
                   "type": "_hotspot-card",
                   "blocks": {
-                    "necklace-top": {
+                    "product-top-one": {
                       "type": "group",
                       "blocks": {
-                        "necklace-image": {
+                        "product-image-one": {
                           "type": "media",
                           "settings": {
                             "image": "{{ closest.product.featured_image }}",
@@ -350,10 +292,10 @@
                             "padding": "none"
                           }
                         },
-                        "necklace-copy": {
+                        "product-copy-one": {
                           "type": "group",
                           "blocks": {
-                            "necklace-title": {
+                            "product-title-one": {
                               "type": "text",
                               "settings": {
                                 "text": "{{ closest.product.title }}",
@@ -362,7 +304,7 @@
                               }
                             }
                           },
-                          "block_order": ["necklace-title"],
+                          "block_order": ["product-title-one"],
                           "settings": {
                             "direction": "vertical",
                             "align_vertical": "stretch",
@@ -371,7 +313,7 @@
                           }
                         }
                       },
-                      "block_order": ["necklace-image", "necklace-copy"],
+                      "block_order": ["product-image-one", "product-copy-one"],
                       "settings": {
                         "direction": "horizontal",
                         "distribute": "start",
@@ -381,14 +323,14 @@
                         "gap": "small"
                       }
                     },
-                    "necklace-actions": {
+                    "product-actions-one": {
                       "type": "_hotspot-actions",
                       "blocks": {
-                        "necklace-price": {
+                        "product-price-one": {
                           "type": "_hotspot-price",
                           "settings": {}
                         },
-                        "necklace-details": {
+                        "product-details-one": {
                           "type": "button",
                           "settings": {
                             "button_label": "Details",
@@ -397,12 +339,12 @@
                             "button_size": "xs"
                           }
                         },
-                        "necklace-add": {
+                        "product-add-one": {
                           "type": "_hotspot-add",
                           "settings": {}
                         }
                       },
-                      "block_order": ["necklace-price", "necklace-details", "necklace-add"],
+                      "block_order": ["product-price-one", "product-details-one", "product-add-one"],
                       "settings": {
                         "direction": "horizontal",
                         "distribute": "between",
@@ -413,7 +355,7 @@
                       }
                     }
                   },
-                  "block_order": ["necklace-top", "necklace-actions"],
+                  "block_order": ["product-top-one", "product-actions-one"],
                   "settings": {
                     "direction": "vertical",
                     "align_vertical": "stretch",
@@ -422,23 +364,23 @@
                   }
                 }
               },
-              "block_order": ["necklace-card"],
+              "block_order": ["product-card-one"],
               "settings": {
-                "product": "cluster-drop-diamond-necklace",
+                "product": "",
                 "x": 33,
                 "y": 46
               }
             },
-            "gold-earrings": {
+            "featured-product-two": {
               "type": "_hotspot",
               "blocks": {
-                "earrings-card": {
+                "product-card-two": {
                   "type": "_hotspot-card",
                   "blocks": {
-                    "earrings-top": {
+                    "product-top-two": {
                       "type": "group",
                       "blocks": {
-                        "earrings-image": {
+                        "product-image-two": {
                           "type": "media",
                           "settings": {
                             "image": "{{ closest.product.featured_image }}",
@@ -448,10 +390,10 @@
                             "padding": "none"
                           }
                         },
-                        "earrings-copy": {
+                        "product-copy-two": {
                           "type": "group",
                           "blocks": {
-                            "earrings-title": {
+                            "product-title-two": {
                               "type": "text",
                               "settings": {
                                 "text": "{{ closest.product.title }}",
@@ -460,7 +402,7 @@
                               }
                             }
                           },
-                          "block_order": ["earrings-title"],
+                          "block_order": ["product-title-two"],
                           "settings": {
                             "direction": "vertical",
                             "align_vertical": "stretch",
@@ -469,7 +411,7 @@
                           }
                         }
                       },
-                      "block_order": ["earrings-image", "earrings-copy"],
+                      "block_order": ["product-image-two", "product-copy-two"],
                       "settings": {
                         "direction": "horizontal",
                         "distribute": "start",
@@ -479,14 +421,14 @@
                         "gap": "small"
                       }
                     },
-                    "earrings-actions": {
+                    "product-actions-two": {
                       "type": "_hotspot-actions",
                       "blocks": {
-                        "earrings-price": {
+                        "product-price-two": {
                           "type": "_hotspot-price",
                           "settings": {}
                         },
-                        "earrings-details": {
+                        "product-details-two": {
                           "type": "button",
                           "settings": {
                             "button_label": "Details",
@@ -495,12 +437,12 @@
                             "button_size": "xs"
                           }
                         },
-                        "earrings-add": {
+                        "product-add-two": {
                           "type": "_hotspot-add",
                           "settings": {}
                         }
                       },
-                      "block_order": ["earrings-price", "earrings-details", "earrings-add"],
+                      "block_order": ["product-price-two", "product-details-two", "product-add-two"],
                       "settings": {
                         "direction": "horizontal",
                         "distribute": "between",
@@ -511,7 +453,7 @@
                       }
                     }
                   },
-                  "block_order": ["earrings-top", "earrings-actions"],
+                  "block_order": ["product-top-two", "product-actions-two"],
                   "settings": {
                     "direction": "vertical",
                     "align_vertical": "stretch",
@@ -520,9 +462,9 @@
                   }
                 }
               },
-              "block_order": ["earrings-card"],
+              "block_order": ["product-card-two"],
               "settings": {
-                "product": "cluster-diamond-hoop-earrings",
+                "product": "",
                 "x": 62,
                 "y": 24
               }
@@ -564,7 +506,7 @@
               "type": "button",
               "static": true,
               "settings": {
-                "button_label": "Shop all pieces",
+                "button_label": "Shop all products",
                 "button_link": "/collections/all",
                 "button_style": "link",
                 "button_size": "sm"
@@ -572,13 +514,13 @@
             }
           },
           "block_order": [
-            "gold-media",
-            "gold-caption",
-            "gold-necklace",
-            "gold-earrings"
+            "featured-media",
+            "featured-caption",
+            "featured-product-one",
+            "featured-product-two"
           ],
           "settings": {
-            "label": "Gold Hour",
+            "label": "Featured Edit",
             "pin_style": "dot",
             "pulse": true,
             "show_list": true
@@ -587,7 +529,7 @@
       },
       "block_order": [
         "lookbook-intro",
-        "gold"
+        "featured-edit"
       ],
       "settings": {
         "color_scheme": "scheme_2",
@@ -705,12 +647,7 @@
       ],
       "settings": {
         "color_scheme": "scheme_3",
-        "collections": [
-          "rings",
-          "earrings",
-          "bracelets",
-          "necklaces-pendants"
-        ],
+        "collections": [],
         "columns": 4,
         "layout": "grid",
         "padding_top": "lg",
@@ -942,7 +879,7 @@
                     "element": "p",
                     "override_leading": "relaxed",
                     "alignment": "inherit",
-                    "text": "Speak with the salon directly — Tue–Sat, by phone or email.",
+                    "text": "Speak directly with a real person by phone or email.",
                     "padding": "none"
                   }
                 }
@@ -1148,7 +1085,7 @@
                     "element": "p",
                     "override_leading": "relaxed",
                     "alignment": "inherit",
-                    "text": "Cut, set, and finished by hand in our own workshop.",
+                    "text": "Made with care and finished by skilled hands.",
                     "padding": "none"
                   }
                 }
@@ -1251,7 +1188,7 @@
                     "element": "p",
                     "override_leading": "relaxed",
                     "alignment": "inherit",
-                    "text": "Every stone graded and certified before it leaves the salon.",
+                    "text": "Every product is checked before it leaves our studio.",
                     "padding": "none"
                   }
                 }
@@ -1320,7 +1257,7 @@
         "media": {
           "type": "media",
           "settings": {
-            "video": "shopify://files/videos/video.mp4",
+            "video": "",
             "autoplay": true,
             "loop": true,
             "ratio": "4 / 5",
@@ -1349,7 +1286,7 @@
             "heading": {
               "type": "text",
               "settings": {
-                "text": "Cut, set, and finished by hand.",
+                "text": "Made with care, from start to finish.",
                 "style": "heading_2",
                 "element": "h2"
               }
@@ -1357,19 +1294,19 @@
             "intro": {
               "type": "rich-text",
               "settings": {
-                "text": "<p>Heritage techniques from Indian goldsmithing, held to modern standards. Stones are chosen for brilliance and certified independently, so what you wear is exactly what was promised.</p>"
+                "text": "<p>Thoughtful techniques meet modern standards. Materials are selected carefully and every product is checked before it reaches the customer.</p>"
               }
             },
-            "metal": {
+            "material": {
               "type": "group",
               "blocks": {
                 "label": {
                   "type": "text",
-                  "settings": { "style": "subheading", "layout": "eyebrow", "element": "span", "text": "Metal", "override_size": "xs", "padding": "tiny" }
+                  "settings": { "style": "subheading", "layout": "eyebrow", "element": "span", "text": "Materials", "override_size": "xs", "padding": "tiny" }
                 },
                 "value": {
                   "type": "text",
-                  "settings": { "layout": "lede", "text": "18-karat gold", "style": "heading_5", "element": "span", "override_size": "lg", "padding": "tiny" }
+                  "settings": { "layout": "lede", "text": "Responsibly selected", "style": "heading_5", "element": "span", "override_size": "lg", "padding": "tiny" }
                 }
               },
               "block_order": ["label", "value"],
@@ -1379,16 +1316,16 @@
                 "show_borders": true, "group_border_width": 1, "border_top": true, "border_right": false, "border_bottom": false, "border_left": false
               }
             },
-            "clarity": {
+            "process": {
               "type": "group",
               "blocks": {
                 "label": {
                   "type": "text",
-                  "settings": { "style": "subheading", "layout": "eyebrow", "element": "span", "text": "Clarity", "override_size": "xs", "padding": "tiny" }
+                  "settings": { "style": "subheading", "layout": "eyebrow", "element": "span", "text": "Process", "override_size": "xs", "padding": "tiny" }
                 },
                 "value": {
                   "type": "text",
-                  "settings": { "layout": "lede", "text": "VVS and above", "style": "heading_5", "element": "span", "override_size": "lg", "padding": "tiny" }
+                  "settings": { "layout": "lede", "text": "Made in small batches", "style": "heading_5", "element": "span", "override_size": "lg", "padding": "tiny" }
                 }
               },
               "block_order": ["label", "value"],
@@ -1398,16 +1335,16 @@
                 "show_borders": true, "group_border_width": 1, "border_top": true, "border_right": false, "border_bottom": false, "border_left": false
               }
             },
-            "colour": {
+            "origin": {
               "type": "group",
               "blocks": {
                 "label": {
                   "type": "text",
-                  "settings": { "style": "subheading", "layout": "eyebrow", "element": "span", "text": "Colour", "override_size": "xs", "padding": "tiny" }
+                  "settings": { "style": "subheading", "layout": "eyebrow", "element": "span", "text": "Origin", "override_size": "xs", "padding": "tiny" }
                 },
                 "value": {
                   "type": "text",
-                  "settings": { "layout": "lede", "text": "F and above", "style": "heading_5", "element": "span", "override_size": "lg", "padding": "tiny" }
+                  "settings": { "layout": "lede", "text": "Made close to home", "style": "heading_5", "element": "span", "override_size": "lg", "padding": "tiny" }
                 }
               },
               "block_order": ["label", "value"],
@@ -1417,16 +1354,16 @@
                 "show_borders": true, "group_border_width": 1, "border_top": true, "border_right": false, "border_bottom": false, "border_left": false
               }
             },
-            "certification": {
+            "quality": {
               "type": "group",
               "blocks": {
                 "label": {
                   "type": "text",
-                  "settings": { "style": "subheading", "layout": "eyebrow", "element": "span", "text": "Certification", "override_size": "xs", "padding": "tiny" }
+                  "settings": { "style": "subheading", "layout": "eyebrow", "element": "span", "text": "Quality", "override_size": "xs", "padding": "tiny" }
                 },
                 "value": {
                   "type": "text",
-                  "settings": { "layout": "lede", "text": "IGI", "style": "heading_5", "element": "span", "override_size": "lg", "padding": "tiny" }
+                  "settings": { "layout": "lede", "text": "Checked by hand", "style": "heading_5", "element": "span", "override_size": "lg", "padding": "tiny" }
                 }
               },
               "block_order": ["label", "value"],
@@ -1442,7 +1379,7 @@
                 "bespoke": {
                   "type": "button",
                   "settings": {
-                    "button_label": "Bespoke Commissions",
+                    "button_label": "Custom Orders",
                     "button_link": "/#visit",
                     "button_style": "outline"
                   }
@@ -1450,7 +1387,7 @@
                 "renewed": {
                   "type": "button",
                   "settings": {
-                    "button_label": "Old Gold, Renewed",
+                    "button_label": "Our Process",
                     "button_link": "/#visit",
                     "button_style": "link"
                   }
@@ -1467,10 +1404,10 @@
             "eyebrow",
             "heading",
             "intro",
-            "metal",
-            "clarity",
-            "colour",
-            "certification",
+            "material",
+            "process",
+            "origin",
+            "quality",
             "actions"
           ],
           "settings": {
@@ -1531,13 +1468,13 @@
                 "p2": {
                   "type": "rich-text",
                   "settings": {
-                    "text": "<p>Every piece is handcrafted by master artisans who bring decades of skill to each cut, setting, and polish. Designs are guided by heritage and made for real lives — jewelry that becomes a treasured heirloom.</p>"
+                    "text": "<p>Our products are made by skilled people who bring care to every material, detail, and finish. The result is designed for real life and made to last.</p>"
                   }
                 },
                 "p3": {
                   "type": "rich-text",
                   "settings": {
-                    "text": "<p>From your first sparkle to your forever keepsake, generations trust us not just for what we create, but for how it makes them feel.</p>"
+                    "text": "<p>Customers return not only for what we make, but for the thoughtful experience that comes with it.</p>"
                   }
                 },
                 "actions": {
@@ -1584,7 +1521,7 @@
             "media": {
               "type": "media",
               "settings": {
-                "image": "shopify://shop_images/about.webp",
+                "image": "",
                 "autoplay": true,
                 "loop": true,
                 "ratio": "4 / 5",
@@ -1638,8 +1575,8 @@
         "q1": {
           "type": "_testimonial",
           "blocks": {
-            "text": { "type": "text", "settings": { "text": "“The craftsmanship is extraordinary and the service even more so.”", "style": "paragraph", "element": "blockquote", "override_font": "accent", "override_size": "2xl", "override_leading": "normal" } },
-            "author": { "type": "text", "settings": { "text": "Manjit Kaur — Google Review", "style": "caption", "element": "figcaption", "override_case": "uppercase", "override_tracking": "wider" } }
+            "text": { "type": "text", "settings": { "text": "“The quality is extraordinary and the service even more so.”", "style": "paragraph", "element": "blockquote", "override_font": "accent", "override_size": "2xl", "override_leading": "normal" } },
+            "author": { "type": "text", "settings": { "text": "Verified customer", "style": "caption", "element": "figcaption", "override_case": "uppercase", "override_tracking": "wider" } }
           },
           "block_order": [
             "text",
@@ -1651,7 +1588,7 @@
           "type": "_testimonial",
           "blocks": {
             "text": { "type": "text", "settings": { "text": "“They took the time to get every detail right. It shows.”", "style": "paragraph", "element": "blockquote", "override_font": "accent", "override_size": "2xl", "override_leading": "normal" } },
-            "author": { "type": "text", "settings": { "text": "Nisarg P — Google Review", "style": "caption", "element": "figcaption", "override_case": "uppercase", "override_tracking": "wider" } }
+            "author": { "type": "text", "settings": { "text": "Verified customer", "style": "caption", "element": "figcaption", "override_case": "uppercase", "override_tracking": "wider" } }
           },
           "block_order": [
             "text",
@@ -1662,8 +1599,8 @@
         "q3": {
           "type": "_testimonial",
           "blocks": {
-            "text": { "type": "text", "settings": { "text": "“Beautiful pieces and genuinely warm people behind the counter.”", "style": "paragraph", "element": "blockquote", "override_font": "accent", "override_size": "2xl", "override_leading": "normal" } },
-            "author": { "type": "text", "settings": { "text": "Rahul Jogula — Google Review", "style": "caption", "element": "figcaption", "override_case": "uppercase", "override_tracking": "wider" } }
+            "text": { "type": "text", "settings": { "text": "“Beautiful products and genuinely warm people behind the counter.”", "style": "paragraph", "element": "blockquote", "override_font": "accent", "override_size": "2xl", "override_leading": "normal" } },
+            "author": { "type": "text", "settings": { "text": "Verified customer", "style": "caption", "element": "figcaption", "override_case": "uppercase", "override_tracking": "wider" } }
           },
           "block_order": [
             "text",
@@ -1675,7 +1612,7 @@
           "type": "_testimonial",
           "blocks": {
             "text": { "type": "text", "settings": { "text": "“Worth the drive. I would not shop anywhere else now.”", "style": "paragraph", "element": "blockquote", "override_font": "accent", "override_size": "2xl", "override_leading": "normal" } },
-            "author": { "type": "text", "settings": { "text": "Dharti Patel — Google Review", "style": "caption", "element": "figcaption", "override_case": "uppercase", "override_tracking": "wider" } }
+            "author": { "type": "text", "settings": { "text": "Verified customer", "style": "caption", "element": "figcaption", "override_case": "uppercase", "override_tracking": "wider" } }
           },
           "block_order": [
             "text",
@@ -1720,7 +1657,7 @@
             "media": {
               "type": "media",
               "settings": {
-                "image": "shopify://shop_images/salon.webp",
+                "image": "",
                 "autoplay": true,
                 "loop": true,
                 "ratio": "4 / 5",
@@ -1729,7 +1666,7 @@
                 "frame": false,
                 "reveal": true,
                 "reveal_delay": 130,
-                "caption_left": "The salon",
+                "caption_left": "Our space",
                 "caption_right": "By appointment or walk-in",
                 "padding": "none"
               }
@@ -1749,7 +1686,7 @@
                 "heading": {
                   "type": "text",
                   "settings": {
-                    "text": "Visit the salon.",
+                    "text": "Visit the store.",
                     "style": "heading_2",
                     "element": "h2"
                   }
@@ -1757,7 +1694,7 @@
                 "intro": {
                   "type": "rich-text",
                   "settings": {
-                    "text": "<p>Come in for a private viewing — sizing, bespoke consultations, and old-gold appraisals happen at the counter, unhurried.</p>"
+                    "text": "<p>Come in to see the products in person, ask questions, or arrange a private consultation with our team.</p>"
                   }
                 },
                 "address": {
@@ -1788,7 +1725,7 @@
                     },
                     "value": {
                       "type": "text",
-                      "settings": { "layout": "lede", "text": "Tue–Sat 11–7 · Sun 11–4 · Mon closed", "style": "heading_5", "element": "span", "override_size": "lg", "padding": "tiny" }
+                      "settings": { "layout": "lede", "text": "Mon–Fri 9–5 · Weekend hours may vary", "style": "heading_5", "element": "span", "override_size": "lg", "padding": "tiny" }
                     }
                   },
                   "block_order": ["label", "value"],

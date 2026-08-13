@@ -2159,7 +2159,7 @@ a {
 .card {
   --card-pad: 1rem;              /* 16px */
   --card-pad-bottom: 1.188rem;   /* 19px */
-  --card-meta-gap: 0.375rem;     /* 6px above the metal line */
+  --card-meta-gap: 0.375rem;     /* 6px above the metadata line */
   --card-price-gap: 0;           /* rev 13 moved this gap onto the price */
   --card-price-top: 0.438rem;    /* 7px above the price */
   --card-add-gap: 0.813rem;      /* 13px above the button */
@@ -2173,7 +2173,7 @@ a {
      is tuned. */
   --card-swatch-bleed: calc((var(--card-swatch-pitch) - var(--card-swatch-size)) / 2);
   --card-swatch-edge: color-mix(in srgb, var(--c-text) 22%, transparent);
-  --card-note-size: 0.719rem;    /* 11.5px — the karat note and the "+N" */
+  --card-note-size: 0.719rem;    /* 11.5px — option notes and the "+N" */
   --card-note-gap: 0.188rem;     /* 3px */
   --card-edge: color-mix(in srgb, var(--c-text) 8%, transparent);
   --card-zoom: 1;
@@ -2530,8 +2530,8 @@ a {
   text-overflow: ellipsis;
 }
 
-/* ---- Card metal swatches ---------------------------------------------
-   Design revision 13 puts the metal control on the card itself. Card-scoped
+/* ---- Card option swatches --------------------------------------------
+   Product option controls can sit directly on a card. Card-scoped
    literals like the rest of the block: a 20px dot centred in a 44px hit
    target, the row bled 12px each side so the first dot's padding does not
    indent it past the caption, and clipped rather than wrapped — the script
@@ -2609,9 +2609,9 @@ a {
   border-radius: var(--swatch-radius, 50%);
   /* Unpainted when an option value has no native swatch — the hairline still
      draws the control instead of the theme inventing a colour for its name. */
-  background: var(--option-swatch, var(--metal-swatch, transparent));
-  /* After the shorthand, which resets them. The generic option property and
-     the legacy metal alias may be a colour or a url(), whose source image would
+  background: var(--option-swatch, transparent);
+  /* After the shorthand, which resets them. The option property may be a
+     colour or a url(), whose source image would
      otherwise draw at its own size inside a 20px dot. */
   background-size: cover;
   background-position: center;
@@ -2700,7 +2700,7 @@ a {
   color: var(--c-bg);
 }
 
-/* The design's karat note — the axes the card states but does not control. */
+/* An optional note for axes the card states but does not control. */
 .card__note {
   margin-top: var(--card-note-gap);
   font-size: var(--card-note-size, 0.719rem);
@@ -6854,9 +6854,9 @@ a.nav-menu__address:hover {
   overflow-wrap: anywhere;
 }
 
-/* Only the salon entries wrap, so only they get the looser leading. */
-.footer__col--salon .footer__link,
-.footer__col--salon .footer__text {
+/* Contact details wrap, so they receive the looser leading. */
+.footer__col--contact .footer__link,
+.footer__col--contact .footer__text {
   line-height: 1.7;
 }
 
@@ -8079,13 +8079,6 @@ a.nav-menu__address:hover {
 
 .field::placeholder {
   color: var(--c-muted);
-}
-
-.product-option--metal {
-  min-inline-size: 0;
-  margin: 0;
-  padding: 0;
-  border: 0;
 }
 
 .product-option__label {

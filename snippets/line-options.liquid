@@ -1,5 +1,5 @@
 {%- comment -%}
-  A cart line's variant, written the way the design writes it: one choice per
+  A cart line's variant, written one choice per
   row, rather than Shopify's " / "-joined `variant.title`.
 
   `gj-variants.js` builds the label and then re-splits it —
@@ -13,11 +13,8 @@
   elements would look the same today and stop matching the moment the design
   changes how it joins them.
 
-  The design lists only what the customer moved off the catalogue default
-  ("metal, weight and size always; the rest only when the customer moved it").
-  Shopify has no notion of a default option value, so every option is listed:
-  the same information, without the shop's own opinion of which parts are
-  ordinary.
+  Every merchant-defined option is listed in its native order. The theme never
+  combines, renames, or reorders axes based on option names.
 
   Line item properties come after the options, quoted as the design quotes
   engraving — `parts.push(v.text ? '“' + v.text + '”' : 'Engraved')`. Shopify's
@@ -35,63 +32,16 @@
   assign parts = ''
 
   unless item.product.has_only_default_variant
-    comment
-      Karat and metal are one fact, not two: "18K Yellow Gold" reads as the
-      piece's material, where "18K" alone on a line above "Yellow Gold" reads as
-      two unrelated choices. So those two are joined and every other axis keeps
-      its own row. This matches the card's caption, which composes the same pair
-      the same way.
-    endcomment
-    assign purity_value = blank
-    assign metal_value = blank
-    for option in item.options_with_values
-      assign option_down = option.name | downcase
-      if option_down contains 'purity' or option_down contains 'karat'
-        assign purity_value = option.value
-      elsif option_down contains 'metal'
-        assign metal_value = option.value
-      endif
-    endfor
-
-    assign combined = blank
-    if purity_value != blank and metal_value != blank
-      assign combined = purity_value | append: ' ' | append: metal_value
-    endif
-
-    comment
-      The joined line takes the place of whichever of the pair the merchant put
-      first, so the row order stays theirs; the other is skipped.
-    endcomment
-    assign combined_done = false
     for option in item.options_with_values
       assign option_value = option.value
       if option_value == blank
         continue
       endif
 
-      assign option_down = option.name | downcase
-      assign in_pair = false
-      if option_down contains 'purity'
-        assign in_pair = true
-      elsif option_down contains 'karat'
-        assign in_pair = true
-      elsif option_down contains 'metal'
-        assign in_pair = true
-      endif
-
-      assign line = option_value
-      if combined != blank and in_pair
-        if combined_done
-          continue
-        endif
-        assign line = combined
-        assign combined_done = true
-      endif
-
       if parts == blank
-        assign parts = line
+        assign parts = option_value
       else
-        assign parts = parts | append: nl | append: line
+        assign parts = parts | append: nl | append: option_value
       endif
     endfor
   endunless
