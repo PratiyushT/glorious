@@ -2289,12 +2289,6 @@
       },
       {
         "type": "text",
-        "id": "quick_view_add_label",
-        "label": "t:settings_schema.quick_view.quick_view_add_label.label",
-        "default": "Add to Bag"
-      },
-      {
-        "type": "text",
         "id": "quick_view_reassurance",
         "label": "t:settings_schema.quick_view.quick_view_reassurance.label",
         "default": "Free insured shipping"
@@ -2346,6 +2340,13 @@
       {
         "type": "paragraph",
         "content": "t:settings_schema.cart.paragraph"
+      },
+      {
+        "type": "text",
+        "id": "cart_name",
+        "label": "t:settings_schema.cart.cart_name.label",
+        "info": "t:settings_schema.cart.cart_name.info",
+        "default": "Cart"
       },
       {
         "type": "select",

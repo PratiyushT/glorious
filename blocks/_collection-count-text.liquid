@@ -1,47 +1,27 @@
 {%- comment -%}
-  A body paragraph under a heading, as a block.
-
-  **Named for what it is, not for where it first appeared.** The class was
-  `.lookbook__intro` — the theme's one lede, but named after the single section
-  that happened to own it. It is `.section-lede` now, and the lookbook uses that
-  too, so a second caller does not have to choose between an odd class name and
-  forking the numbers.
-
-  Carries default text for the reason the subheading does: a block that renders
-  nothing until it is filled in is invisible the moment it is added, with no
-  element for the editor to select, which reads as a broken block rather than
-  an empty one.
+  Collection-only Text value. It is private so it can be offered only by
+  collection-aware parents, while the shared renderer keeps every Text
+  typography, element, alignment, layout, and spacing control.
 {%- endcomment -%}
 
-
 {%- liquid
-  assign align_class = ''
-  if block.settings.alignment != blank and block.settings.alignment != 'inherit'
-    assign align_class = ' align-' | append: block.settings.alignment
-  endif
-
-  comment
-    A guard rather than interpolating whatever is stored: an unknown value would
-    print as a tag name and Liquid would emit `<foo>`. Same shape as the level
-    guard on `blocks/title.liquid`.
-  endcomment
-  assign tags = 'span,p,h1,h2,h3,h4,h5,h6' | split: ','
-  assign tag = 'p'
-  if tags contains block.settings.element
-    assign tag = block.settings.element
+  assign source_collection = closest.collection
+  if source_collection == blank and section.settings.collection != blank
+    assign source_collection = collections[section.settings.collection]
   endif
 -%}
-{%- if block.settings.text != blank -%}
-  <{{ tag }}
-    class="section-lede reveal{{ align_class }}"
-    style="{% render 'block-spacing', padding: block.settings.padding %}{% render 'text-style', preset: block.settings.style, font_style: block.settings.override_font, font_size: block.settings.override_size, color: block.settings.color, line_height: block.settings.override_leading, text_case: block.settings.override_case, letter_spacing: block.settings.override_tracking %}"
-    {{ block.shopify_attributes }}
-  >{{ block.settings.text }}</{{ tag }}>
+
+{%- if source_collection != blank -%}
+  {% render 'text-block',
+    block: block,
+    content: source_collection.all_products_count,
+    marker: 'data-collection-count-text'
+  %}
 {%- endif -%}
 
 {% schema %}
 {
-  "name": "t:blocks.paragraph.name",
+  "name": "t:blocks.collection_count_text.name",
   "tag": null,
   "settings": [
     {
@@ -69,6 +49,19 @@
     },
     {
       "type": "select",
+      "id": "layout",
+      "label": "t:blocks.text.layout.label",
+      "info": "t:blocks.text.layout.info",
+      "options": [
+        { "value": "standard", "label": "t:blocks.text.layout.standard" },
+        { "value": "display", "label": "t:blocks.text.layout.display" },
+        { "value": "eyebrow", "label": "t:blocks.text.layout.eyebrow" },
+        { "value": "lede", "label": "t:blocks.text.layout.lede" }
+      ],
+      "default": "standard"
+    },
+    {
+      "type": "select",
       "id": "element",
       "label": "t:blocks.all.text_element.label",
       "info": "t:blocks.all.text_element.info",
@@ -80,7 +73,9 @@
         { "value": "h3", "label": "t:blocks.all.text_element.h3" },
         { "value": "h4", "label": "t:blocks.all.text_element.h4" },
         { "value": "h5", "label": "t:blocks.all.text_element.h5" },
-        { "value": "h6", "label": "t:blocks.all.text_element.h6" }
+        { "value": "h6", "label": "t:blocks.all.text_element.h6" },
+        { "value": "blockquote", "label": "t:blocks.all.text_element.blockquote" },
+        { "value": "figcaption", "label": "t:blocks.all.text_element.figcaption" }
       ],
       "default": "p"
     },
@@ -185,12 +180,6 @@
       "default": "inherit"
     },
     {
-      "type": "textarea",
-      "id": "text",
-      "label": "t:sections.all.text.label",
-      "default": "Share a sentence or two about what this collection is for."
-    },
-    {
       "type": "header",
       "content": "t:blocks.all.spacing_header"
     },
@@ -212,9 +201,10 @@
   ],
   "presets": [
     {
-      "name": "t:blocks.paragraph.name",
+      "name": "t:blocks.collection_count_text.name",
       "settings": {
-        "text": "Share a sentence or two about what this collection is for.",
+        "style": "caption",
+        "layout": "standard",
         "padding": "none"
       }
     }

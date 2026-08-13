@@ -6,6 +6,9 @@
 {%- liquid
   assign selected_variant = product.selected_or_first_available_variant
   assign supports_engraving = product.metafields.custom.engraving_available.value
+  assign cart_name = settings.cart_name | default: 'Cart'
+  assign cart_name_lower = cart_name | downcase
+  assign add_to_cart_label = 'products.add_to_cart' | t: cart_name: cart_name
 -%}
 
 <div class="page-width simple-template">
@@ -163,7 +166,7 @@
               autocomplete="off"
               placeholder="{{ 'products.custom_engraving_placeholder' | t | escape }}"
             >
-            <p class="text-xs text-muted">{{ 'products.custom_engraving_hint' | t }}</p>
+            <p class="text-xs text-muted">{{ 'products.custom_engraving_hint' | t: cart_name: cart_name_lower }}</p>
           {%- endif -%}
 
           <select name="id" class="visually-hidden" aria-hidden="true" data-product-variant-id>
@@ -182,13 +185,13 @@
             name="add"
             class="btn btn--primary"
             data-product-submit
-            data-add-label="{{ 'products.add_to_cart' | t | escape }}"
+            data-add-label="{{ add_to_cart_label | escape }}"
             data-sold-out-label="{{ 'products.sold_out' | t | escape }}"
             data-unavailable-label="{{ 'products.unavailable' | t | escape }}"
             {% unless selected_variant.available %}disabled{% endunless %}
           >
             {%- if selected_variant.available -%}
-              {{ 'products.add_to_cart' | t }}
+              {{ add_to_cart_label }}
             {%- else -%}
               {{ 'products.sold_out' | t }}
             {%- endif -%}

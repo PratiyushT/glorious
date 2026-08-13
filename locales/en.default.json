@@ -59,7 +59,8 @@
     "sold_out": "Sold out",
     "on_sale": "Sale",
     "from_price": "From {{ price }}",
-    "add_to_cart": "Add to cart",
+    "add_to_cart": "Add to {{ cart_name }}",
+    "choose_options": "Choose options",
     "quantity": "Quantity",
     "unavailable": "Unavailable",
     "choose": "Choose",
@@ -84,7 +85,7 @@
     "engraving_custom": "Custom",
     "custom_engraving": "Custom engraving (optional)",
     "custom_engraving_placeholder": "Up to 20 characters",
-    "custom_engraving_hint": "Up to 20 characters. The text is saved with this item in your bag and order.",
+    "custom_engraving_hint": "Up to 20 characters. The text is saved with this item in your {{ cart_name }} and order.",
     "tax_note": "inc. all taxes and fees",
     "tax_note_short": "inc. all taxes",
     "available_in": "Available in {{ list }}"
@@ -102,9 +103,9 @@
     "empty": "No products found."
   },
   "cart": {
-    "title": "Cart",
-    "title_bag": "Your Bag",
-    "empty": "Your bag is empty.",
+    "title": "{{ cart_name }}",
+    "title_drawer": "Your {{ cart_name }}",
+    "empty": "Your {{ cart_name }} is empty.",
     "empty_text": "Pieces you add will wait for you here.",
     "browse": "Browse the Collection",
     "subtotal": "Subtotal",
@@ -120,13 +121,16 @@
   "navigation": {
     "menu": "Menu",
     "close": "Close",
-    "bag": "Bag",
-    "your_bag": "Your Bag",
-    "bag_count": {
+    "your_cart": "Your {{ cart_name }}",
+    "cart_count": {
       "one": "{{ count }} piece",
       "other": "{{ count }} pieces"
     },
-    "bag_empty": "Empty"
+    "cart_status": {
+      "one": "{{ count }} piece in your {{ cart_name }}",
+      "other": "{{ count }} pieces in your {{ cart_name }}"
+    },
+    "cart_empty": "Empty"
   },
   "newsletter": {
     "email": "Email address",
@@ -144,7 +148,7 @@
     "scenes": "Looks",
     "in_this_look": "In this look",
     "show_piece": "Show {{ title }}",
-    "add": "Add {{ title }} to bag",
+    "add": "Add {{ title }} to {{ cart_name }}",
     "details": "Details",
     "play": "Play the film",
     "pieces_count": {

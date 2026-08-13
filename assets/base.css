@@ -383,6 +383,18 @@ a {
 
 /* ---- Type -------------------------------------------------------- */
 
+/* Text is the single inline content block. Its layout treatment may add its
+   own spacing, while the standard treatment still needs the shared block
+   padding token to do something. The eyebrow owns that padding on its wrapper
+   so its inner label must not apply it a second time. */
+.text-block {
+  padding: var(--block-padding, 0);
+}
+
+.section-eyebrow .text-block {
+  padding: 0;
+}
+
 /* The oversized edge-to-edge section titles. */
 /* `margin-block: 0` is load-bearing the moment this is a real heading. As a
    `div` it had no default margin and needed none; as an `h1`/`h2` the user
@@ -519,8 +531,16 @@ a {
    else, which is why it is done here and not at the source. */
 
 .layout-group {
-  container-type: inline-size;
   min-width: 0;
+}
+
+/* Only a horizontal Group that can actually stack needs to be a query
+   container. `container-type: inline-size` applies inline-size containment;
+   putting it on a natural-width nested Group makes its intrinsic width zero,
+   so its Text and Icon paint on top of each other. Fluid rows and vertical
+   Groups have no responsive query to answer and must keep their natural size. */
+.layout-group[data-direction="horizontal"]:not([data-stack="never"]) {
+  container-type: inline-size;
 }
 
 .layout-group__inner {
@@ -529,6 +549,7 @@ a {
   flex-wrap: var(--group-wrap, wrap);
   justify-content: var(--group-justify, flex-start);
   align-items: var(--group-align, baseline);
+  text-align: var(--group-content-align, inherit);
   min-width: 0;
 
   /* **The two axes come from two places, and that is the whole rule.**
@@ -564,6 +585,16 @@ a {
   max-inline-size: 100%;
 }
 
+/* A natural-width row may itself be a natural-width child of another row.
+   Keeping `max-inline-size: 100%` on that inner row creates a circular
+   percentage while its parent is shrink-wrapping, and browsers resolve every
+   child to a zero-width box even though the content still paints. Natural
+   rows need their content size as the flex basis; `min-inline-size: 0` still
+   lets them shrink when the container genuinely runs out of room. */
+.layout-group[data-direction="horizontal"][data-items="natural"] > .layout-group__inner > * {
+  max-inline-size: none;
+}
+
 /* A Group promises containment even when a merchant enters one long word.
    Equal children can shrink below that word's intrinsic width, so text must
    be allowed to wrap instead of painting over the next card. */
@@ -584,6 +615,7 @@ a {
    the Group around it, so the same block works in a compact row, a card-like
    bordered Group, or a standalone editorial stack. */
 .icon-block {
+  flex: none;
   display: flex;
   justify-content: var(--icon-align, flex-start);
   padding: var(--block-padding, 0);
@@ -595,6 +627,53 @@ a {
   display: grid;
   place-items: center;
   color: inherit;
+  transform-origin: center;
+  transition: transform var(--duration) var(--ease-ui);
+}
+
+/* A contextual count is an atomic private Text value. It keeps its intrinsic
+   width in its owning layout while the neighbouring title remains flexible. */
+.layout-group > .layout-group__inner > [data-collection-count-text] {
+  flex: none;
+  white-space: nowrap;
+}
+
+/* Hover motion is a setting on the global Icon block, so it follows the icon
+   everywhere it is used. A containing link, button, or Group can be the
+   interactive surface; hovering the small drawing itself works for a
+   standalone icon too. */
+.icon-block[data-hover-animation="lift"] { --icon-hover-transform: translateY(-0.2em); }
+.icon-block[data-hover-animation="nudge"] { --icon-hover-transform: translateX(0.25em); }
+.icon-block[data-hover-animation="grow"] { --icon-hover-transform: scale(1.12); }
+.icon-block[data-hover-animation="rotate"] { --icon-hover-transform: rotate(14deg); }
+.icon-block[data-hover-animation="bounce"] { --icon-hover-animation: gj-icon-bounce 0.65s var(--ease-out) both; }
+.icon-block[data-hover-animation="pulse"] { --icon-hover-animation: gj-icon-pulse 0.8s ease-in-out infinite alternate; }
+
+.icon-block:hover > .icon-block__shape,
+:is(a, button, .layout-group):is(:hover, :focus-within) .icon-block > .icon-block__shape {
+  transform: var(--icon-hover-transform, none);
+  animation: var(--icon-hover-animation, none);
+}
+
+@keyframes gj-icon-bounce {
+  0%, 100% { transform: translateY(0); }
+  40% { transform: translateY(-0.28em); }
+  70% { transform: translateY(-0.1em); }
+}
+
+@keyframes gj-icon-pulse {
+  from { transform: scale(1); }
+  to { transform: scale(1.14); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .icon-block > .icon-block__shape,
+  .icon-block:hover > .icon-block__shape,
+  :is(a, button, .layout-group):is(:hover, :focus-within) .icon-block > .icon-block__shape {
+    animation: none;
+    transform: none;
+    transition: none;
+  }
 }
 
 .icon-block--framed .icon-block__shape {
@@ -656,7 +735,7 @@ a {
 @container (max-width: 30rem) {
   .layout-group[data-stack="mobile"] > .layout-group__inner {
     flex-direction: column;
-    align-items: flex-start;
+    align-items: var(--group-content-items, flex-start);
     justify-content: flex-start;
   }
 
@@ -668,12 +747,36 @@ a {
   .layout-group[data-items="equal"][data-stack="mobile"] > .layout-group__inner {
     grid-template-columns: 1fr;
   }
+
+  .layout-group[data-stack="mobile"][data-mobile-align="left"] > .layout-group__inner {
+    --group-content-align: left;
+    --group-content-items: flex-start;
+    --section-align: left;
+    --section-align-jc: flex-start;
+    align-items: flex-start;
+  }
+
+  .layout-group[data-stack="mobile"][data-mobile-align="center"] > .layout-group__inner {
+    --group-content-align: center;
+    --group-content-items: center;
+    --section-align: center;
+    --section-align-jc: center;
+    align-items: center;
+  }
+
+  .layout-group[data-stack="mobile"][data-mobile-align="right"] > .layout-group__inner {
+    --group-content-align: right;
+    --group-content-items: flex-end;
+    --section-align: right;
+    --section-align-jc: flex-end;
+    align-items: flex-end;
+  }
 }
 
 @container (max-width: 48rem) {
   .layout-group[data-stack="tablet"] > .layout-group__inner {
     flex-direction: column;
-    align-items: flex-start;
+    align-items: var(--group-content-items, flex-start);
     justify-content: flex-start;
   }
 
@@ -684,6 +787,30 @@ a {
 
   .layout-group[data-items="equal"][data-stack="tablet"] > .layout-group__inner {
     grid-template-columns: 1fr;
+  }
+
+  .layout-group[data-stack="tablet"][data-mobile-align="left"] > .layout-group__inner {
+    --group-content-align: left;
+    --group-content-items: flex-start;
+    --section-align: left;
+    --section-align-jc: flex-start;
+    align-items: flex-start;
+  }
+
+  .layout-group[data-stack="tablet"][data-mobile-align="center"] > .layout-group__inner {
+    --group-content-align: center;
+    --group-content-items: center;
+    --section-align: center;
+    --section-align-jc: center;
+    align-items: center;
+  }
+
+  .layout-group[data-stack="tablet"][data-mobile-align="right"] > .layout-group__inner {
+    --group-content-align: right;
+    --group-content-items: flex-end;
+    --section-align: right;
+    --section-align-jc: flex-end;
+    align-items: flex-end;
   }
 }
 
@@ -825,7 +952,7 @@ a {
   min-block-size: 44px;
   box-sizing: border-box;
   padding: var(--btn-pad-y, var(--button-padding-y)) var(--btn-pad-x, var(--button-padding-x));
-  border: var(--button-border-width) solid transparent;
+  border: var(--btn-border-width, var(--button-border-width)) solid transparent;
   border-radius: var(--btn-radius, var(--button-radius));
   font-family: var(--font-body);
   font-size: var(--btn-font, var(--button-size));
@@ -841,26 +968,26 @@ a {
 }
 
 .btn--primary {
-  background-color: var(--c-button);
-  color: var(--c-button-label);
-  border-color: var(--c-button);
+  background-color: var(--btn-bg, var(--c-button));
+  color: var(--btn-text, var(--c-button-label));
+  border-color: var(--btn-bg, var(--c-button));
 }
 
 .btn--primary:hover {
-  background-color: var(--c-button-hover);
-  border-color: var(--c-button-hover);
+  background-color: var(--btn-bg, var(--c-button-hover));
+  border-color: var(--btn-bg, var(--c-button-hover));
 }
 
 .btn--outline {
   background-color: transparent;
-  color: var(--c-button-secondary-label);
-  border-color: color-mix(in srgb, var(--c-accent) 55%, transparent);
+  color: var(--btn-text, var(--c-button-secondary-label));
+  border-color: var(--btn-border, color-mix(in srgb, var(--c-accent) 55%, transparent));
 }
 
 .btn--outline:hover {
-  background-color: var(--c-button-secondary-label);
+  background-color: var(--btn-border, var(--c-button-secondary-label));
   color: var(--c-bg);
-  border-color: var(--c-button-secondary-label);
+  border-color: var(--btn-border, var(--c-button-secondary-label));
 }
 
 /* Square-cornered button used inside product cards. */
@@ -897,15 +1024,15 @@ a {
   padding: 0;
   border: 0;
   background: none;
-  color: var(--c-text);
-  border-bottom: var(--border-width) solid color-mix(in srgb, var(--c-accent) 85%, transparent);
+  color: var(--btn-text, var(--c-text));
+  border-bottom: var(--border-width) solid var(--btn-underline, color-mix(in srgb, var(--c-accent) 85%, transparent));
   border-radius: 0;
   line-height: 2.6;
 }
 
 .btn--link:hover {
-  color: var(--c-accent);
-  border-color: var(--c-accent);
+  color: var(--btn-text, var(--c-accent));
+  border-color: var(--btn-underline, var(--c-accent));
 }
 
 /* The same shape, stepped back: for the link that has to be present without
@@ -914,15 +1041,15 @@ a {
   padding: 0;
   border: 0;
   background: none;
-  color: color-mix(in srgb, var(--c-text) 55%, transparent);
-  border-bottom: var(--border-width) solid color-mix(in srgb, var(--c-text) 22%, transparent);
+  color: var(--btn-text, color-mix(in srgb, var(--c-text) 55%, transparent));
+  border-bottom: var(--border-width) solid var(--btn-underline, color-mix(in srgb, var(--c-text) 22%, transparent));
   border-radius: 0;
   line-height: 2.6;
 }
 
 .btn--quiet:hover {
-  color: var(--c-text);
-  border-color: var(--c-text);
+  color: var(--btn-text, var(--c-text));
+  border-color: var(--btn-underline, var(--c-text));
 }
 
 /* "Navigational. Moves you somewhere." The arrow travels on hover — 11px to
@@ -934,7 +1061,7 @@ a {
   border: 0;
   background: none;
   border-radius: 0;
-  color: var(--c-text);
+  color: var(--btn-text, var(--c-text));
   gap: 11px;
   transition: gap 0.35s var(--ease-out),
               color var(--duration) var(--ease-ui);
@@ -942,7 +1069,7 @@ a {
 
 .btn--arrow:hover {
   gap: 19px;
-  color: var(--c-accent);
+  color: var(--btn-text, var(--c-accent));
 }
 
 .btn--arrow > span svg {
@@ -951,17 +1078,29 @@ a {
   height: 1em;
 }
 
+.btn--arrow:not(.btn--outline) > span {
+  color: var(--btn-arrow, currentColor);
+}
+
 /* An arrow that also carries the outline's frame. The design gives it a
    slightly tighter resting gap than the bare arrow and the same travel. */
 .btn--arrow.btn--outline {
   padding: var(--btn-pad-y, var(--button-padding-y)) var(--btn-pad-x, var(--button-padding-x));
-  border: var(--button-border-width) solid color-mix(in srgb, var(--c-accent) 55%, transparent);
+  border: var(--btn-border-width, var(--button-border-width)) solid var(--btn-border, color-mix(in srgb, var(--c-accent) 55%, transparent));
   border-radius: var(--btn-radius, var(--button-radius));
   gap: 12px;
 }
 
+.btn--arrow.btn--outline > span {
+  color: var(--btn-border, color-mix(in srgb, var(--c-accent) 55%, transparent));
+}
+
 .btn--arrow.btn--outline:hover {
   gap: 20px;
+}
+
+.btn--arrow.btn--outline:hover > span {
+  color: var(--btn-border, var(--c-button-secondary-label));
 }
 
 /* Reduced motion keeps the colour change and drops the travel, rather than
@@ -973,6 +1112,8 @@ a {
   .btn--arrow.btn--outline:hover { gap: 12px; }
 }
 
+/* Storefront action rows outside the composable block system. Multiple Button
+   blocks use a horizontal Group instead. */
 .btn-row {
   display: flex;
   flex-wrap: wrap;
@@ -1750,7 +1891,7 @@ a {
   /* How a card frames and aligns, for any card that does not say. These were
      compiled from `settings.card_image_fit` and `settings.card_text_align`
      until there stopped being a "Product cards" group in the theme settings —
-     a card is edited on the card now. `blocks/product-card-image.liquid` and
+     a card is edited on the card now. `blocks/_product-card-media.liquid` and
      `blocks/_product-card.liquid` each publish their own, which is what a
      merchant's choice overrides these with; `snippets/product-card.liquid`
      publishes neither and so takes them, which is what keeps the collection
@@ -2321,6 +2462,25 @@ a {
   margin-block-start: var(--card-price-top);
 }
 
+/* The product name is an ordinary direct Text block. The card owns the link,
+   so connecting Text to `closest.product.title` does not create a parallel
+   Product Title block merely to supply navigation. */
+.card--composed > .text-block {
+  min-height: 3em;
+  color: var(--c-heading);
+}
+
+.card--composed > .card__link {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  padding: 0;
+}
+
+.card__option-control > .card__meta {
+  margin-bottom: var(--card-meta-gap, 0);
+}
+
 .card__vendor {
   display: block;
   margin-bottom: var(--card-meta-gap);
@@ -2342,9 +2502,8 @@ a {
   text-decoration: none;
 }
 
-/* The card-wide link. Scoped to a card so a public Product — Title block in an
-   unrestricted Group stays an ordinary link, and qualified to the anchor so
-   the onboarding placeholder, whose title is a span, gets no invisible layer. */
+/* The card-wide link on legacy/snippet cards. Composed cards use the structural
+   `.card__link` emitted by their private card shell. */
 .card a.card__title::after {
   content: "";
   position: absolute;
@@ -2443,13 +2602,12 @@ a {
      alone. `product-card-variants` publishes `--swatch-radius` on the row, so
      the shape is one declaration rather than a second kind of dot. */
   border-radius: var(--swatch-radius, 50%);
-  /* Unpainted when the metal was not recognised — the hairline still draws the
-     dot, so it reads as "no colour known" rather than as the wrong metal. */
-  background: var(--metal-swatch, transparent);
-  /* After the shorthand, which resets them. --metal-swatch may be a gradient, a
-     colour, or a url() — a merchant's native swatch image, or the metal-*.webp
-     the product page paints with. Those are 80px and would otherwise draw at
-     their own size inside a 20px dot, i.e. a crop of one corner. */
+  /* Unpainted when an option value has no native swatch — the hairline still
+     draws the control instead of the theme inventing a colour for its name. */
+  background: var(--option-swatch, var(--metal-swatch, transparent));
+  /* After the shorthand, which resets them. The generic option property and
+     the legacy metal alias may be a colour or a url(), whose source image would
+     otherwise draw at its own size inside a 20px dot. */
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -2486,7 +2644,7 @@ a {
   color: color-mix(in srgb, var(--c-text) 50%, transparent);
 }
 
-/* The other control `blocks/product-card-variants.liquid` offers: the values
+/* The other control `blocks/_product-card-option-control.liquid` offers: the values
    written out rather than painted. It is the quick view's own pill, brought
    down to a card's type scale and given the 44px minimum height every control
    in this theme carries. Unlike the swatch row it **wraps rather than clips**,
@@ -2547,15 +2705,12 @@ a {
   color: color-mix(in srgb, var(--c-text) 50%, transparent);
 }
 
-/* The gaps stay card-scoped — outside a card the class is caption type only,
-   and the surrounding stack spaces it.
-
-   `.card__text` shares every one of these values, because a text block left
-   alone *is* a caption line: the block emits a declaration only for a control
-   the merchant has actually set, so this rule stays the single description of
-   what a caption looks like rather than being restated in Liquid. */
+/* The gaps stay card-scoped — outside a card Text keeps its selected preset.
+   Inside a composed card it takes the same compact meta-line contract as the
+   product-aware fields around it. Inline Text overrides still win. */
 .card__meta,
-.card__text {
+.card__text,
+.card--composed .text-block {
   display: block;
   margin: var(--card-meta-gap, 0) 0 var(--card-price-gap, 0);
   min-height: 1.5em;
@@ -2604,6 +2759,18 @@ a {
   z-index: 2;
   margin-top: var(--card-add-gap);
   padding-inline: 0.625rem;
+}
+
+.card__add-fallback {
+  display: none;
+}
+
+.no-js .card__add-form--requires-js {
+  display: none;
+}
+
+.no-js .card__add-fallback {
+  display: inline-flex;
 }
 
 .badge {
@@ -3080,36 +3247,24 @@ a {
 }
 
 /* ---- Category card -------------------------------------------------
-   The card is composed of theme blocks now — a title, a count, a photograph
-   and the hover band, each one a child a merchant can add or remove — so it is
-   **a grid of named areas rather than a flex column**. Every part claims its
-   area, which is what makes the design's arrangement independent of the order
-   the blocks happen to sit in: dragging the count above the title in the
-   editor cannot move it out of the head row, and removing one part leaves the
-   rest exactly where they were.
+   The heading is one real Group composition: a nested Group holds the global
+   Text name and global Icon arrow, while the global Text count sits opposite.
+   CSS only gives that complete Group and the photograph their card regions;
+   spacing, distribution, alignment, and the header rule come from Group
+   settings.
 
-   The photograph and the band deliberately share the `media` area. That is how
-   the band covers the photograph precisely while remaining its *sibling*
-   rather than its child, which is what lets either be removed on its own.   */
+   The reveal is card behavior rather than a removable child block. It shares
+   the photograph's media area when its Collection card setting is enabled. */
 
-/* Only the horizontal padding scales — the design holds the vertical
-   spacing fixed, so the header keeps its proportions on a phone instead of
-   collapsing with the spacing scale. */
 .cat-card {
-  /* 18px – 34px, the design's own. Not 1.13/2.13rem, which is 18.08 and 34.08. */
   --cat-pad-x: clamp(1.125rem, 3vw, 2.125rem);
 
   display: grid;
-  grid-template-columns: 1fr auto;
-  /* The middle row takes the slack, which is what puts the rule hard against
-     the photograph however tall the card is stretched — the `margin-top: auto`
-     the flex column used to rely on. */
-  grid-template-rows: auto 1fr auto;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto 1fr;
   grid-template-areas:
-    "title count"
-    "rule  rule"
-    "media media";
-  column-gap: 14px;
+    "header"
+    "media";
   text-decoration: none;
   color: var(--c-text);
   background: var(--c-surface);
@@ -3117,47 +3272,9 @@ a {
   line-height: normal;
 }
 
-/* The head's own padding, split between the two blocks that now make it up so
-   the row still reads as one. Baseline is set per item rather than on the grid,
-   or the photograph and the rule would try to align to a baseline too. */
-.cat-card__title {
-  grid-area: title;
-  align-self: baseline;
-  padding: 20px 0 14px var(--cat-pad-x);
-  font-family: var(--font-display);
-  font-size: clamp(1.5rem, 2.4vw, 2.1rem);
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--c-heading);
-}
-
-.cat-card__head-arrow {
-  font-size: 0.7em;
-}
-
-.cat-card__head-arrow svg {
-  display: inline-block;
-  width: 1em;
-  height: 1em;
-  vertical-align: -0.08em;
-}
-
-.cat-card__count {
-  grid-area: count;
-  align-self: baseline;
-  padding: 20px var(--cat-pad-x) 14px 0;
-  font-family: var(--font-body);
-  font-size: 0.75rem;
-  letter-spacing: 0.17em;
-  color: color-mix(in srgb, var(--c-text) 45%, transparent);
-}
-
-.cat-card__rule {
-  grid-area: rule;
-  align-self: end;
-  height: var(--border-width);
-  background: color-mix(in srgb, var(--c-text) 30%, transparent);
-  margin-inline: var(--cat-pad-x);
+.cat-card > .layout-group {
+  grid-area: header;
+  width: 100%;
 }
 
 .cat-card__media {
@@ -3182,11 +3299,8 @@ a {
   transform: scale(1.06);
 }
 
-/* Shares the `media` area with the photograph rather than nesting inside it,
-   so the two are siblings a merchant can add and remove independently. The
-   margin has to match the photograph's or the two boxes would not coincide,
-   and the stack order has to be stated rather than left to document order —
-   the blocks can be in either order in the tree. */
+/* Shares the `media` area with the photograph. The margin matches the image
+   block so the card-owned behavior covers that frame exactly. */
 .cat-card__reveal {
   grid-area: media;
   position: relative;
@@ -3205,10 +3319,7 @@ a {
   transition: opacity 0.55s ease, transform 0.65s var(--ease);
 }
 
-/* The reveal is a public theme block, so outside a collection card it is a
-   visible content band rather than an invisible element. Only its intended
-   card composition starts hidden and waits for the card interaction. */
-.cat-card > .cat-card__reveal {
+.cat-card__reveal {
   opacity: 0;
   transform: translateY(10px);
 }
@@ -3275,22 +3386,9 @@ a {
   margin-inline: auto;
 }
 
-.lookbook__eyebrow {
-  display: block;
-  font-size: 0.75rem;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  color: var(--c-accent);
-}
-
-.lookbook__title {
-  margin-top: 12px;
-  font-family: var(--font-display);
-  font-size: clamp(2.6rem, 9.5vw, 5.4rem);
-  line-height: 0.98;
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
-  color: var(--c-heading);
+/* One reusable Interactive media block is one complete look. */
+.interactive-media[hidden] {
+  display: none;
 }
 
 /* The theme's one body paragraph under a display heading. It was
@@ -3349,16 +3447,21 @@ a {
 
 .lookbook__grid {
   display: grid;
-  grid-template-columns: minmax(0, 560px);
-  justify-content: center;
+  grid-template-columns: minmax(0, 1fr);
+  justify-content: var(--interactive-media-justify, center);
   gap: clamp(1.5rem, 4vw, 3.25rem);
   margin-top: clamp(1.25rem, 3vw, 2rem);
 }
 
 /* Wide enough for the list to sit beside the stage and stay with it. */
 @media (min-width: 61.25rem) {
-  .lookbook__grid {
-    grid-template-columns: minmax(0, 560px) minmax(280px, 380px);
+  .interactive-media[data-show-list] .lookbook__grid {
+    grid-template-columns: minmax(0, var(--interactive-media-column, 560px)) minmax(280px, 380px);
+  }
+
+  .interactive-media[data-show-list] .lookbook__main {
+    max-width: none;
+    justify-self: stretch;
   }
 
   .lookbook__list-inner {
@@ -3367,40 +3470,93 @@ a {
   }
 }
 
-/* Capped against the viewport height too, so a tall stage cannot push the
-   list off the screen. */
 .lookbook__main {
   min-width: 0;
-  width: min(100%, 62vh);
+  width: 100%;
+  max-width: var(--interactive-media-max-width, 560px);
+  justify-self: var(--interactive-media-justify, center);
 }
 
 .lookbook__stage {
   position: relative;
   width: 100%;
-  aspect-ratio: 4 / 5;
   overflow: hidden;
-  background: var(--c-surface);
-  border: var(--border-width) solid color-mix(in srgb, var(--c-accent) 16%, transparent);
+  background: transparent;
 }
 
-.lookbook__scene {
+/* Media stays in flow so its own aspect ratio determines the hotspot canvas.
+   This keeps the canvas flush with the visible media instead of leaving a
+   fixed-ratio surface below it. Caption and hotspot children remain overlays. */
+.lookbook__stage > .media-block {
+  position: relative;
+  z-index: 1;
+  padding: 0 !important;
+}
+
+.lookbook__stage > .media-block .media {
+  width: 100%;
+  background: transparent;
+}
+
+.interactive-media:not([data-media-ratio="inherit"]) .lookbook__stage {
+  aspect-ratio: var(--interactive-media-ratio);
+}
+
+.interactive-media:not([data-media-ratio="inherit"]) .lookbook__stage > .media-block {
   position: absolute;
   inset: 0;
-  z-index: 1;
 }
 
-.lookbook__scene[hidden] {
-  display: none;
-}
-
-.lookbook__scene img,
-.lookbook__scene video,
-.lookbook__scene svg {
+.interactive-media:not([data-media-ratio="inherit"]) .lookbook__stage > .media-block,
+.interactive-media:not([data-media-ratio="inherit"]) .lookbook__stage > .media-block > .media-frame,
+.interactive-media:not([data-media-ratio="inherit"]) .lookbook__stage > .media-block .media {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+}
+
+.interactive-media:not([data-media-ratio="inherit"]) .lookbook__stage > .media-block .media {
+  aspect-ratio: auto !important;
+}
+
+.lookbook__stage > .media-block img,
+.lookbook__stage > .media-block video,
+.lookbook__stage > .media-block svg {
+  width: 100%;
+  height: 100%;
   display: block;
-  background: var(--c-surface);
+}
+
+.interactive-media[data-media-fit="cover"] .lookbook__stage > .media-block img,
+.interactive-media[data-media-fit="cover"] .lookbook__stage > .media-block video,
+.interactive-media[data-media-fit="cover"] .lookbook__stage > .media-block svg {
+  object-fit: cover;
+}
+
+.interactive-media[data-media-fit="contain"] .lookbook__stage > .media-block img,
+.interactive-media[data-media-fit="contain"] .lookbook__stage > .media-block video,
+.interactive-media[data-media-fit="contain"] .lookbook__stage > .media-block svg {
+  object-fit: contain;
+}
+
+.lookbook__stage > .text-block {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  z-index: 4;
+  margin: 0;
+  color: color-mix(in srgb, var(--c-heading) 82%, transparent);
+  text-shadow: 0 1px 6px color-mix(in srgb, var(--c-noir) 80%, transparent);
+  pointer-events: none;
+}
+
+.lookbook-hotspot {
+  display: contents;
+}
+
+.lookbook-hotspot__fallback {
+  position: relative;
+  z-index: 7;
+  color: var(--c-heading);
 }
 
 .lookbook__scrim {
@@ -3415,19 +3571,6 @@ a {
     transparent 58%,
     color-mix(in srgb, var(--c-noir) 50%, transparent) 100%
   );
-}
-
-.lookbook__tag {
-  position: absolute;
-  top: 14px;
-  left: 14px;
-  z-index: 4;
-  font-size: 0.66rem;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: color-mix(in srgb, var(--c-heading) 82%, transparent);
-  text-shadow: 0 1px 6px color-mix(in srgb, var(--c-noir) 80%, transparent);
-  pointer-events: none;
 }
 
 /* ---- Lookbook points ------------------------------------------------ */
@@ -3464,15 +3607,15 @@ a {
   opacity: 0;
 }
 
-.lookbook[data-pulse] .lookbook-pin__ring {
+.interactive-media[data-pulse] .lookbook-pin__ring {
   opacity: 1;
   animation: gj-look-pulse 2.8s ease-out infinite;
 }
 
 /* The ring is an idle invitation. A point that is chosen, or under the
    cursor, has already been noticed. */
-.lookbook[data-pulse] .lookbook-pin.is-active .lookbook-pin__ring,
-.lookbook[data-pulse] .lookbook-pin:hover .lookbook-pin__ring {
+.interactive-media[data-pulse] .lookbook-pin.is-active .lookbook-pin__ring,
+.interactive-media[data-pulse] .lookbook-pin:hover .lookbook-pin__ring {
   opacity: 0;
   animation: none;
 }
@@ -3509,8 +3652,8 @@ a {
 }
 
 /* Numbered and plus share a badge; only their glyph differs. */
-.lookbook[data-pin-style="number"] .lookbook-pin__dot,
-.lookbook[data-pin-style="plus"] .lookbook-pin__dot {
+.interactive-media[data-pin-style="number"] .lookbook-pin__dot,
+.interactive-media[data-pin-style="plus"] .lookbook-pin__dot {
   width: 28px;
   height: 28px;
   box-sizing: border-box;
@@ -3526,32 +3669,34 @@ a {
 }
 
 .lookbook-pin__plus { display: none; }
-.lookbook[data-pin-style="plus"] .lookbook-pin__number { display: none; }
-.lookbook[data-pin-style="plus"] .lookbook-pin__plus { display: grid; }
-.lookbook[data-pin-style="plus"] .lookbook-pin__plus svg {
+.interactive-media[data-pin-style="plus"] .lookbook-pin__number { display: none; }
+.interactive-media[data-pin-style="plus"] .lookbook-pin__plus { display: grid; }
+.interactive-media[data-pin-style="plus"] .lookbook-pin__plus svg {
   width: 0.81rem;
   height: 0.81rem;
 }
 
-.lookbook[data-pin-style="number"] .lookbook-pin.is-active .lookbook-pin__dot,
-.lookbook[data-pin-style="plus"] .lookbook-pin.is-active .lookbook-pin__dot {
+.interactive-media[data-pin-style="number"] .lookbook-pin.is-active .lookbook-pin__dot,
+.interactive-media[data-pin-style="plus"] .lookbook-pin.is-active .lookbook-pin__dot {
   background: var(--c-accent);
   border-color: var(--c-accent);
   color: var(--c-bg);
 }
 
-/* ---- Lookbook card -------------------------------------------------- */
+/* ---- Lookbook hotspot card ----------------------------------------- */
 
 .lookbook-card {
+  --c-text: var(--c-ink);
+  --c-heading: var(--c-ink);
+  --c-muted: color-mix(in srgb, var(--c-ink) 62%, transparent);
+  --c-hairline: color-mix(in srgb, var(--c-ink) 14%, transparent);
+
   position: absolute;
   z-index: 6;
   left: 12px;
   right: 12px;
   bottom: 14px;
   box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
   padding: 14px;
   background: color-mix(in srgb, var(--c-porcelain) 97%, transparent);
   color: var(--c-ink);
@@ -3563,73 +3708,61 @@ a {
   display: none;
 }
 
-@media (min-width: 61.25rem) {
-  .lookbook-card {
-    left: 14px;
-    right: auto;
-    width: 330px;
-  }
+.lookbook-card__content > .layout-group {
+  width: 100%;
 }
 
-@keyframes gj-look-card {
-  from { opacity: 0; transform: translateY(14px); }
-  to   { opacity: 1; transform: translateY(0); }
+.lookbook-card__content .media-block {
+  flex: 0 0 64px;
+  width: 64px;
 }
 
-.lookbook-card__top {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-}
-
-.lookbook-card__thumb {
-  flex: none;
+.lookbook-card__content .media-block .media {
   width: 64px;
   height: 64px;
-  overflow: hidden;
+  aspect-ratio: 1 !important;
   background: var(--c-surface);
 }
 
-.lookbook-card__thumb img {
-  width: 100%;
-  height: 100%;
+.lookbook-card__content .media-block img {
   object-fit: contain;
 }
 
-.lookbook-card__body {
-  flex: 1;
+.lookbook-card__content .text-block {
+  margin: 0;
+}
+
+.lookbook-card__content .card__add-form {
+  display: flex;
+}
+
+.lookbook-card__content .card__add {
   min-width: 0;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  overflow: hidden;
+  font-size: 0;
 }
 
-.lookbook-card__cat {
-  display: block;
-  font-size: 0.66rem;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: var(--c-gold);
+.lookbook-card__add-icon {
+  display: grid;
+  place-items: center;
 }
 
-.lookbook-card__name {
-  display: block;
-  margin-top: 5px;
-  font-family: var(--font-display);
-  font-size: 1.25rem;
-  line-height: 1.15;
-}
-
-.lookbook-card__metal {
-  display: block;
-  margin-top: 5px;
-  font-size: 0.78rem;
-  letter-spacing: 0.05em;
-  color: color-mix(in srgb, var(--c-ink) 60%, transparent);
+.lookbook-card__add-icon svg {
+  width: 1rem;
+  height: 1rem;
 }
 
 .lookbook-card__close {
-  flex: none;
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 2;
   width: 30px;
   height: 30px;
-  margin: -4px -4px 0 0;
+  padding: 0;
   border: 0;
   background: none;
   color: color-mix(in srgb, var(--c-ink) 55%, transparent);
@@ -3643,67 +3776,17 @@ a {
   color: var(--c-ink);
 }
 
-.lookbook-card__foot {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 12px;
-  padding-top: 12px;
-  border-top: var(--border-width) solid color-mix(in srgb, var(--c-ink) 14%, transparent);
+@media (min-width: 61.25rem) {
+  .lookbook-card {
+    left: 14px;
+    right: auto;
+    width: 330px;
+  }
 }
 
-.lookbook-card__price {
-  font-size: 0.94rem;
-  letter-spacing: 0.06em;
-}
-
-.lookbook-card__actions {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-}
-
-.lookbook-card__details {
-  padding-bottom: 3px;
-  border-bottom: var(--border-width) solid color-mix(in srgb, var(--c-ink) 30%, transparent);
-  color: color-mix(in srgb, var(--c-ink) 72%, transparent);
-  font-size: 0.72rem;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  text-decoration: none;
-  transition: color var(--duration) var(--ease-ui), border-color var(--duration) var(--ease-ui);
-}
-
-.lookbook-card__details:hover {
-  color: var(--c-gold);
-  border-color: var(--c-gold);
-}
-
-.lookbook-card__add-form {
-  display: flex;
-}
-
-.lookbook-card__add {
-  display: grid;
-  place-items: center;
-  width: 44px;
-  height: 44px;
-  padding: 0;
-  border: var(--border-width) solid var(--c-champagne);
-  border-radius: 999px;
-  background: var(--c-champagne);
-  color: var(--c-noir-surface);
-  cursor: pointer;
-  transition: background var(--duration) var(--ease-ui),
-              border-color var(--duration) var(--ease-ui),
-              color var(--duration) var(--ease-ui);
-}
-
-.lookbook-card__add:hover {
-  background: var(--c-ink);
-  border-color: var(--c-ink);
-  color: var(--c-porcelain);
+@keyframes gj-look-card {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 /* ---- Lookbook film controls ----------------------------------------- */
@@ -3802,40 +3885,18 @@ a {
   font-variant-numeric: tabular-nums;
 }
 
-.lookbook__hint {
-  margin-top: 12px;
-  max-width: min(100%, 420px);
-  font-size: 0.69rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: color-mix(in srgb, var(--c-text) 40%, transparent);
-}
-
 /* ---- Lookbook list -------------------------------------------------- */
 
 .lookbook__list {
   min-width: 0;
 }
 
-.lookbook__list-head {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 14px;
+.lookbook__list-inner > .layout-group {
   padding-bottom: 12px;
 }
 
-.lookbook__list-title {
-  font-size: 0.72rem;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: var(--c-gold);
-}
-
-.lookbook__list-count {
-  font-size: 0.72rem;
-  letter-spacing: 0.14em;
-  color: color-mix(in srgb, var(--c-text) 40%, transparent);
+.lookbook__list-inner > .layout-group .text-block {
+  margin: 0;
 }
 
 .lookbook__rows[hidden] {
@@ -3968,25 +4029,6 @@ a {
   border-top: var(--border-width) solid color-mix(in srgb, var(--c-text) 14%, transparent);
 }
 
-.lookbook__all {
-  display: inline-flex;
-  align-items: center;
-  gap: 12px;
-  padding-bottom: 6px;
-  border-bottom: var(--border-width) solid color-mix(in srgb, var(--c-text) 28%, transparent);
-  color: color-mix(in srgb, var(--c-text) 72%, transparent);
-  font-size: 0.72rem;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  text-decoration: none;
-  transition: color 0.35s ease, border-color 0.35s ease;
-}
-
-.lookbook__all:hover {
-  color: var(--c-accent);
-  border-color: var(--c-accent);
-}
-
 /* ---- Testimonials ------------------------------------------------ */
 
 .quotes {
@@ -4005,9 +4047,8 @@ a {
               transform calc(var(--duration) * 2) var(--ease);
 }
 
-/* A Quote is public and can sit in any unrestricted Group. Carousel-only
-   stacking and hiding therefore belong to the carousel parent, not the block
-   itself. */
+/* Testimonial items are private to this carousel. Their Text and Rich text
+   children remain global; only this structural figure overlaps and fades. */
 .quotes .quote {
   grid-area: 1 / 1;
   opacity: 0;
@@ -4040,21 +4081,6 @@ a {
   opacity: 1;
   transform: translateY(0);
   pointer-events: auto;
-}
-
-.quote__text {
-  font-family: var(--font-display);
-  font-size: var(--fs-2xl);
-  line-height: 1.4;
-  color: var(--c-heading);
-  text-wrap: pretty;
-}
-
-.quote__author {
-  font-size: var(--micro-size);
-  letter-spacing: calc(var(--micro-tracking) * 0.9);
-  text-transform: uppercase;
-  color: var(--c-muted);
 }
 
 .quote-dots {

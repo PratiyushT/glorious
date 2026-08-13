@@ -1,0 +1,278 @@
+{%- comment -%}
+  A private product hotspot for Interactive media.
+
+  The point owns only the product, position and optional film timing. Its open
+  card is composed from ordinary nested global blocks, rendered with the
+  selected product as closest.product. The synchronized list row is structural
+  interaction output and is moved into the parent list by theme.js.
+{%- endcomment -%}
+
+{%- liquid
+  assign product = block.settings.product
+  assign placeholder = false
+  if product == blank and request.design_mode
+    assign placeholder = true
+  endif
+
+  assign title = product.title
+  if title == blank
+    assign title = 'onboarding.product_title' | t
+  endif
+  assign kind = product.type | default: product.vendor
+  assign variant = product.selected_or_first_available_variant
+  assign cart_name = settings.cart_name | default: 'Cart'
+
+  if product.price_varies
+    assign price_value = product.price_min | money
+    assign price_label = 'products.from_price' | t: price: price_value
+  else
+    assign price_label = product.price | money
+  endif
+
+  if kind != blank
+    assign row_meta = kind | append: ' · ' | append: price_label
+  else
+    assign row_meta = price_label
+  endif
+-%}
+
+{%- if product != blank or placeholder -%}
+  <div
+    class="lookbook-hotspot"
+    data-look-hotspot
+    data-look-in="{{ block.settings.appears_at | default: 0 }}"
+    data-look-out="{{ block.settings.disappears_at | default: 0 }}"
+    style="--x: {{ block.settings.x }}%; --y: {{ block.settings.y }}%;"
+    {{ block.shopify_attributes }}
+  >
+    <button
+      class="lookbook-pin"
+      type="button"
+      data-look-pin
+      data-look-in="{{ block.settings.appears_at | default: 0 }}"
+      data-look-out="{{ block.settings.disappears_at | default: 0 }}"
+      aria-expanded="false"
+      aria-controls="lookbook-card-{{ block.id }}"
+      aria-label="{{ 'lookbook.show_piece' | t: title: title | escape }}"
+    >
+      <span class="lookbook-pin__ring" aria-hidden="true"></span>
+      <span class="lookbook-pin__dot" aria-hidden="true">
+        <span class="lookbook-pin__number" data-look-number></span>
+        <span class="lookbook-pin__plus">{% render 'icon', icon: 'plus' %}</span>
+      </span>
+    </button>
+
+    <div
+      class="lookbook-card"
+      id="lookbook-card-{{ block.id }}"
+      data-look-card
+      role="dialog"
+      aria-label="{{ title | escape }}"
+      hidden
+    >
+      <button class="lookbook-card__close" type="button" data-look-card-close>
+        <span class="visually-hidden">{{ 'navigation.close' | t }}</span>
+        <span aria-hidden="true">{% render 'icon', icon: 'close' %}</span>
+      </button>
+      <div class="lookbook-card__content">
+        {% content_for 'blocks', closest.product: product %}
+      </div>
+    </div>
+
+    <div class="lookbook-row" data-look-row-source hidden>
+      <button class="lookbook-row__main" type="button" data-look-row-pick>
+        <span class="lookbook-row__thumb">
+          {%- if product.featured_media -%}
+            <img
+              src="{{ product.featured_media | image_url: width: 112 }}"
+              data-image-lqip="{{ product.featured_media | image_url: width: 40 }}"
+              alt=""
+              width="56"
+              height="56"
+              loading="lazy"
+            >
+          {%- endif -%}
+        </span>
+        <span class="lookbook-row__body">
+          <span class="lookbook-row__line">
+            <span class="lookbook-row__num" data-look-row-number></span>
+            <span class="lookbook-row__name">{{ title }}</span>
+          </span>
+          {%- unless placeholder -%}
+            <span class="lookbook-row__meta">{{ row_meta }}</span>
+          {%- endunless -%}
+        </span>
+      </button>
+
+      {%- if product.available -%}
+        {%- assign row_form_id = 'lookbook-row-' | append: block.id | append: '-' | append: product.id -%}
+        {%- form 'product', product, id: row_form_id, class: 'lookbook-row__add-form', data-cart-add: '' -%}
+          <input type="hidden" name="id" value="{{ variant.id }}">
+          <button
+            class="lookbook-row__add"
+            type="submit"
+            name="add"
+            aria-label="{{ 'lookbook.add' | t: title: title, cart_name: cart_name }}"
+          >
+            {%- assign add_uid = 'lbrow-' | append: block.id -%}
+            {% render 'icon', icon: 'bag-plus', uid: add_uid %}
+          </button>
+        {%- endform -%}
+      {%- endif -%}
+    </div>
+
+    {%- if product != blank -%}
+      <noscript><a class="lookbook-hotspot__fallback" href="{{ product.url }}">{{ title }}</a></noscript>
+    {%- endif -%}
+  </div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "t:blocks.hotspot.name",
+  "tag": null,
+  "blocks": [
+    { "type": "@theme" },
+    { "type": "group" },
+    { "type": "media" },
+    { "type": "text" },
+    { "type": "button" },
+    { "type": "_hotspot-card" }
+  ],
+  "settings": [
+    {
+      "type": "product",
+      "id": "product",
+      "label": "t:blocks.hotspot.product.label"
+    },
+    {
+      "type": "header",
+      "content": "t:blocks.hotspot.position_header"
+    },
+    {
+      "type": "range",
+      "id": "x",
+      "label": "t:blocks.hotspot.x.label",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "default": 50
+    },
+    {
+      "type": "range",
+      "id": "y",
+      "label": "t:blocks.hotspot.y.label",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "default": 50
+    },
+    {
+      "type": "header",
+      "content": "t:blocks.hotspot.timing_header"
+    },
+    {
+      "type": "number",
+      "id": "appears_at",
+      "label": "t:blocks.hotspot.appears_at.label",
+      "info": "t:blocks.hotspot.timing_info"
+    },
+    {
+      "type": "number",
+      "id": "disappears_at",
+      "label": "t:blocks.hotspot.disappears_at.label",
+      "info": "t:blocks.hotspot.timing_info"
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:blocks.hotspot.name",
+      "blocks": [
+        {
+          "type": "_hotspot-card",
+          "settings": {
+            "direction": "vertical",
+            "align_vertical": "stretch",
+            "vertical_gap": "small",
+            "padding": "none"
+          },
+          "blocks": [
+            {
+              "type": "group",
+              "settings": {
+                "direction": "horizontal",
+                "distribute": "start",
+                "align": "start",
+                "wrap": false,
+                "stack_below": "never",
+                "gap": "small"
+              },
+              "blocks": [
+                {
+                  "type": "media",
+                  "settings": {
+                    "image": "{{ closest.product.featured_image }}",
+                    "ratio": "1 / 1",
+                    "fit": "contain",
+                    "reveal": false,
+                    "padding": "none"
+                  }
+                },
+                {
+                  "type": "group",
+                  "settings": {
+                    "direction": "vertical",
+                    "align_vertical": "stretch",
+                    "vertical_gap": "minimal",
+                    "padding": "none"
+                  },
+                  "blocks": [
+                    {
+                      "type": "text",
+                      "settings": {
+                        "text": "{{ closest.product.title }}",
+                        "style": "heading_5",
+                        "element": "h3"
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "_hotspot-actions",
+              "settings": {
+                "direction": "horizontal",
+                "distribute": "between",
+                "align": "center",
+                "wrap": true,
+                "stack_below": "never",
+                "gap": "small"
+              },
+              "blocks": [
+                {
+                  "type": "_hotspot-price"
+                },
+                {
+                  "type": "button",
+                  "settings": {
+                    "button_label": "Details",
+                    "button_link": "{{ closest.product.url }}",
+                    "button_style": "link",
+                    "button_size": "xs"
+                  }
+                },
+                {
+                  "type": "_hotspot-add"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

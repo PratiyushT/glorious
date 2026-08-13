@@ -56,7 +56,8 @@
   assign card_show_options_note = true
   assign card_show_video = true
   assign card_show_add = true
-  assign card_add_label = 'Add to Bag'
+  assign cart_name = settings.cart_name | default: 'Cart'
+  assign card_add_label = 'products.add_to_cart' | t: cart_name: cart_name
 
   comment
     The frame.
@@ -224,7 +225,7 @@
     turning the whole thing off. One catalogue's categories written into a theme
     that is meant to sell anything, so it went with the settings group.
 
-    `blocks/product-card-image.liquid` has the better answer: a setting that
+    `blocks/_product-card-media.liquid` has the better answer: a setting that
     takes a dynamic source, so which metafield holds the figure is the
     merchant's choice. This snippet has nowhere to put one, so the name stays
     hardcoded until these templates are rebuilt on the card block. A piece
@@ -423,7 +424,7 @@
       </span>
       {%- if card_show_add -%}
         <span class="btn btn--square card__add" aria-disabled="true">
-          {{ card_add_label | default: 'Add to Bag' }}
+          {{ card_add_label }}
         </span>
       {%- endif -%}
     </div>
@@ -443,7 +444,7 @@
     without a translation string in JavaScript — a metal can be sold out while
     the one Liquid rendered was not.
   {%- endcomment -%}
-  {%- assign add_label = card_add_label | default: 'Add to Bag' -%}
+  {%- assign add_label = card_add_label -%}
   {%- assign sold_out_label = 'products.sold_out' | t -%}
   <div
     class="card"
@@ -804,7 +805,7 @@
               data-card-add-id
             >
             <button type="submit" name="add" class="btn btn--square card__add">
-              {{ card_add_label | default: 'Add to Bag' }}
+              {{ card_add_label }}
             </button>
           {%- endform -%}
         {%- else -%}

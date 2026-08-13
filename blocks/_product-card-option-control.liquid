@@ -1,10 +1,11 @@
 {%- comment -%}
-  Product card — the option control the design puts on the card itself.
+  Private to Product card; explicitly targeted there and nowhere else.
+
+  Product card — one option control on the card itself.
 
   Picking a value moves the caption, the price and what goes in the bag — and
-  deliberately *not* the photograph, which is the design's own rule: "Colour is
-  chosen on the card itself: the name, the price and what goes in the bag all
-  follow it. The photograph does not — we shoot one metal."
+  deliberately *not* the photograph. A card can show one option axis without
+  pretending it has resolved every other option on a complex product.
 
   Every control is a **real link** to the piece at that value, so a pick works
   without scripting — it simply navigates — and each value's price markup is
@@ -13,12 +14,9 @@
   script does nothing, and the theme's rule is that nothing is load-bearing
   without scripting.)
 
-  **This block is the control and nothing else.** The name of the chosen value
-  is `product-card-option-name`, a block of its own, because the caption is
-  something a merchant composes: a shop selling one thing wants "White Gold",
-  and a shop selling another wants the name beside two facts of its own. The
-  two used to be one block and the caption was assembled here, which put this
-  theme's first catalogue into the theme.
+  The chosen value is live control state, so it belongs here rather than in a
+  second Product text block. It stays independently styled in `.card__meta`,
+  and `theme.js` updates it from the selected link's `data-option-meta` value.
 
   **There is no option picker here, and that is a structural finding rather
   than a simplification.** A theme block cannot read its parent's settings and
@@ -29,20 +27,15 @@
   nothing on screen to say why. So all three derive the option identically
   through `snippets/card-option.liquid`.
 
-  **Swatches paint from the option value's own Color metafield and from nowhere
-  else.** `snippets/metal-swatch.liquid` is the single place the theme decides
-  what a value looks like, shared with the quick view and the product page. A
-  value with no swatch configured paints nothing and keeps its hairline and its
-  accessible name, so it stays pickable and announced — that is the connection
-  missing in admin, not a theme fault. Never hardcode a table of values here.
+  **Swatches paint from the option value's native Shopify swatch and from
+  nowhere else.** Auto uses swatches when this option carries them and written
+  values otherwise. A forced swatch with no configured paint keeps its hairline
+  and accessible name, so it stays pickable and announced. Never hardcode a
+  table of values here.
 {%- endcomment -%}
 
 {%- liquid
   assign product = closest.product
-  if block.settings.product != blank
-    assign product = block.settings.product
-  endif
-
   capture card_option_raw
     render 'card-option', product: product
   endcapture
@@ -64,15 +57,9 @@
   endif
 
   comment
-    **The order is the merchant's own, and `metal-order.liquid` is deliberately
-    not called here.** That snippet carries the design's metal table — white,
-    yellow, rose, mixed, platinum, palladium, sterling, fine silver — and
-    reordering a shop's options against a list of metals is exactly the
-    assumption this card is being cleared of. Anything it does not recognise it
-    appends, so on a non-metal option it was already a no-op with a misleading
-    name attached; on a metal one it silently overrode what the merchant set in
-    admin. The values come straight off the option now, in the order they were
-    put there. The snippet stays for the quick view and the snippet card.
+    **The order is the merchant's own.** Values come straight from the selected
+    option in Shopify admin. The theme neither sorts them alphabetically nor
+    carries a catalogue-specific value table.
 
     They stay `product_option_value` drops rather than being flattened to
     strings, which is what carries a merchant's native Shopify swatch — the
@@ -80,9 +67,21 @@
   endcomment
   assign ordered_values = card_option_drop.values
 
+  assign option_has_swatches = false
+  for value in ordered_values
+    if value.swatch.color != blank or value.swatch.image != blank
+      assign option_has_swatches = true
+      break
+    endif
+  endfor
+
   assign is_pills = false
   if block.settings.control == 'pills'
     assign is_pills = true
+  elsif block.settings.control == 'auto'
+    unless option_has_swatches
+      assign is_pills = true
+    endunless
   endif
 
   comment
@@ -99,18 +98,22 @@
 
 {%- if card_option_drop != blank -%}
   <div
-    class="{% if is_pills %}card__pills{% else %}card__swatches{% endif %}"
-    {% unless is_pills %}data-card-swatches style="--swatch-radius: {{ swatch_radius }};"{% endunless %}
+    class="card__option-control"
     {{ block.shopify_attributes }}
   >
-    {%- for value in ordered_values -%}
+    <span class="card__meta" data-card-meta>{{ selected_value }}</span>
+
+    <div
+      class="{% if is_pills %}card__pills{% else %}card__swatches{% endif %}"
+      {% unless is_pills %}data-card-swatches style="--swatch-radius: {{ swatch_radius }};"{% endunless %}
+    >
+      {%- for value in ordered_values -%}
       {%- liquid
         comment
-          The card offers no second control, so a pick has to choose a variant
-          on the customer's behalf: the dearest *available* one carrying this
-          value. A sold-out variant cannot be bought, so preferring it would
-          post something that fails at checkout; where the whole value is sold
-          out the dearest overall stands in and the button says Sold out.
+          Keep Shopify's merchant-defined variant order: the first available
+          variant carrying this value, then the first matching variant if the
+          whole value is sold out. Multi-option products use this id only to
+          preselect Quick View; they are never silently added from the card.
 
           This is `card-option.liquid`'s rule applied per value rather than to
           the selected one, which is why it is written out here — the snippet
@@ -118,21 +121,19 @@
           every state the card could be put into.
         endcomment
         assign chosen = blank
-        assign dearest_any = blank
+        assign first_any = blank
         for variant in product.variants
           if variant.options[opt_index] == value
-            if dearest_any == blank or variant.price > dearest_any.price
-              assign dearest_any = variant
+            if first_any == blank
+              assign first_any = variant
             endif
-            if variant.available
-              if chosen == blank or variant.price > chosen.price
-                assign chosen = variant
-              endif
+            if chosen == blank and variant.available
+              assign chosen = variant
             endif
           endif
         endfor
         if chosen == blank
-          assign chosen = dearest_any
+          assign chosen = first_any
         endif
 
         assign is_selected = false
@@ -155,20 +156,20 @@
         {{- chosen.price | money -}}
       {%- endcapture -%}
 
-      <a
-        class="{% if is_pills %}card__pill{% else %}card__swatch{% endif %}{% if is_selected %} is-selected{% endif %}"
-        href="{{ product.url }}?variant={{ chosen.id }}"
-        data-card-metal
-        data-metal-value="{{ value | escape }}"
-        data-metal-id="{{ chosen.id }}"
-        data-metal-available="{{ chosen.available }}"
-        data-metal-meta="{{ value | escape }}"
-        data-metal-price="{{ value_price_html | escape }}"
-        {% unless is_pills %}data-tip="{{ value | escape }}"{% endunless %}
-        aria-label="{{ value | escape }}"
-        aria-current="{% if is_selected %}true{% else %}false{% endif %}"
-        {% if is_pills == false and forloop.index0 >= 3 %}hidden{% endif %}
-      >
+        <a
+          class="{% if is_pills %}card__pill{% else %}card__swatch{% endif %}{% if is_selected %} is-selected{% endif %}"
+          href="{{ product.url }}?variant={{ chosen.id }}"
+          data-card-option
+          data-option-value="{{ value | escape }}"
+          data-option-id="{{ chosen.id }}"
+          data-option-available="{{ chosen.available }}"
+          data-option-meta="{{ value | escape }}"
+          data-option-price="{{ value_price_html | escape }}"
+          {% unless is_pills %}data-tip="{{ value | escape }}"{% endunless %}
+          aria-label="{{ value | escape }}"
+          aria-current="{% if is_selected %}true{% else %}false{% endif %}"
+          {% if is_pills == false and forloop.index0 >= 3 %}hidden{% endif %}
+        >
         {%- comment -%}
           `selected` is deliberately not passed to the dot. The wrapping link
           carries the state and `.card__swatch.is-selected .swatch-dot` draws
@@ -176,13 +177,13 @@
           well left two rings after a pick: the script moves the class on the
           link and never on the dot.
         {%- endcomment -%}
-        {%- if is_pills -%}
-          {{- value -}}
-        {%- else -%}
-          {% render 'metal-swatch', option_value: value, size: 80 %}
-        {%- endif -%}
-      </a>
-    {%- endfor -%}
+          {%- if is_pills -%}
+            {{- value -}}
+          {%- else -%}
+            {% render 'option-swatch', option_value: value, size: 80 %}
+          {%- endif -%}
+        </a>
+      {%- endfor -%}
 
     {%- comment -%}
       The design's "+N". Before a width is known it shows three —
@@ -190,14 +191,15 @@
       renders, and the script re-fits once it can measure. Pills wrap instead of
       clipping, so they need none of it.
     {%- endcomment -%}
-    {%- unless is_pills -%}
-      {%- assign value_total = ordered_values.size -%}
-      <span
-        class="card__swatch-more"
-        data-card-swatch-more
-        {% if value_total <= 3 %}hidden{% endif %}
-      >{% if value_total > 3 %}+{{ value_total | minus: 3 }}{% endif %}</span>
-    {%- endunless -%}
+      {%- unless is_pills -%}
+        {%- assign value_total = ordered_values.size -%}
+        <span
+          class="card__swatch-more"
+          data-card-swatch-more
+          {% if value_total <= 3 %}hidden{% endif %}
+        >{% if value_total > 3 %}+{{ value_total | minus: 3 }}{% endif %}</span>
+      {%- endunless -%}
+    </div>
   </div>
 {%- endif -%}
 
@@ -207,25 +209,16 @@
   "tag": null,
   "settings": [
     {
-      "type": "header",
-      "content": "t:blocks.all.content_source_header"
-    },
-    {
-      "type": "product",
-      "id": "product",
-      "label": "t:blocks.all.product_source.label",
-      "info": "t:blocks.all.product_source.info"
-    },
-    {
       "type": "select",
       "id": "control",
       "label": "t:blocks.product_card_variants.control.label",
       "info": "t:blocks.product_card_variants.control.info",
       "options": [
+        { "value": "auto", "label": "t:blocks.product_card_variants.control.auto" },
         { "value": "swatches", "label": "t:blocks.product_card_variants.control.swatches" },
         { "value": "pills", "label": "t:blocks.product_card_variants.control.pills" }
       ],
-      "default": "swatches"
+      "default": "auto"
     },
     {
       "type": "select",
@@ -243,8 +236,7 @@
     {
       "name": "t:blocks.product_card_variants.name",
       "settings": {
-        "product": "{{ closest.product }}",
-        "control": "swatches",
+        "control": "auto",
         "swatch_shape": "round"
       }
     }

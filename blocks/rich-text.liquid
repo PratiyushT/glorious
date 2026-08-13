@@ -1,30 +1,16 @@
 {%- comment -%}
-  An ordinary heading driven by one of the theme's ten text presets.
+  The one global block for formatted, multi-paragraph text.
 
-  **Not `title`, and the difference is the face.** `title` is `.display` — the
-  oversized edge-to-edge section title, with its own gap rule against whatever
-  follows it. This block is used inside a column of prose. A section wanting
-  the editorial title treatment lists `title`; a section wanting a heading in
-  running text lists this.
+  This remains separate from Text because Shopify stores a `richtext` setting
+  as block HTML: paragraphs, lists, links, and emphasis rather than one inline
+  value. Both setting types support compatible dynamic sources.
 
-  **Size and level are two decisions, not one.** The size is a look and the
-  level is the document's outline, and conflating them is how a page ends up
-  with an `<h2>` wherever a large heading was wanted. rich-text's local block
-  emitted `<h2>` whatever visual size was chosen. Preset and heading level are
-  separate settings here, with the same guard against an arbitrary tag name as
-  `blocks/title.liquid`.
-
-  `"tag": null` because the block owns its element, as every text block here
-  does — a generated wrapper would become the flex item in a `.stack` and the
-  heading would stop being a sibling of the paragraphs it belongs with.
+  `"tag": null` because the block owns its element — a wrapper would break the
+  `.section-lede + .grid-auto` family of adjacency rules the same way it would
+  for a heading.
 {%- endcomment -%}
 
 {%- liquid
-  assign heading_tag = block.settings.heading_level | default: 'h2'
-  unless heading_tag == 'h1' or heading_tag == 'h2' or heading_tag == 'h3' or heading_tag == 'div'
-    assign heading_tag = 'h2'
-  endunless
-
   assign align_class = ''
   if block.settings.alignment != blank and block.settings.alignment != 'inherit'
     assign align_class = ' align-' | append: block.settings.alignment
@@ -32,25 +18,23 @@
 -%}
 
 {%- if block.settings.text != blank -%}
-  <{{ heading_tag }}
-    class="h2{{ align_class }}"
+  <div
+    class="rte measure{{ align_class }}"
     style="{% render 'text-style', preset: block.settings.style, font_style: block.settings.override_font, font_size: block.settings.override_size, color: block.settings.color, line_height: block.settings.override_leading, text_case: block.settings.override_case, letter_spacing: block.settings.override_tracking %}"
     {{ block.shopify_attributes }}
   >
     {{- block.settings.text -}}
-  </{{ heading_tag }}>
+  </div>
 {%- endif -%}
 
 {% schema %}
 {
-  "name": "t:blocks.heading.name",
+  "name": "t:blocks.rich_text.name",
   "tag": null,
   "settings": [
     {
-      "type": "inline_richtext",
-      "id": "text",
-      "label": "t:sections.all.heading.label",
-      "default": "Say something that matters"
+      "type": "header",
+      "content": "t:blocks.all.text_header"
     },
     {
       "type": "select",
@@ -69,7 +53,7 @@
         { "value": "small", "label": "t:settings_schema.typography.presets.small.header" },
         { "value": "caption", "label": "t:settings_schema.typography.presets.caption.header" }
       ],
-      "default": "heading_2"
+      "default": "paragraph"
     },
     {
       "type": "header",
@@ -160,19 +144,6 @@
     },
     {
       "type": "select",
-      "id": "heading_level",
-      "label": "t:sections.all.heading_level.label",
-      "info": "t:sections.all.heading_level.info",
-      "options": [
-        { "value": "h1", "label": "t:settings_schema.heading_level.h1" },
-        { "value": "h2", "label": "t:settings_schema.heading_level.h2" },
-        { "value": "h3", "label": "t:settings_schema.heading_level.h3" },
-        { "value": "div", "label": "t:settings_schema.heading_level.div" }
-      ],
-      "default": "h2"
-    },
-    {
-      "type": "select",
       "id": "alignment",
       "label": "t:sections.all.content_alignment.label",
       "info": "t:sections.all.content_alignment.info",
@@ -183,14 +154,19 @@
         { "value": "right", "label": "t:settings_schema.options.right" }
       ],
       "default": "inherit"
+    },
+    {
+      "type": "richtext",
+      "id": "text",
+      "label": "t:sections.all.text.label",
+      "default": "<p>Say what the shop is for, in a sentence or two. Body copy sits in the reading measure so a line never runs wider than the eye can follow.</p>"
     }
   ],
   "presets": [
     {
-      "name": "t:blocks.heading.name",
+      "name": "t:blocks.rich_text.name",
       "settings": {
-        "text": "Say something that matters",
-        "style": "heading_2"
+        "text": "<p>Say what the shop is for, in a sentence or two. Body copy sits in the reading measure so a line never runs wider than the eye can follow.</p>"
       }
     }
   ]

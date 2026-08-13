@@ -1,0 +1,62 @@
+{%- comment -%}
+  Shared renderer for the global Text block and its private contextual-value
+  variants. The private variants own their value, but inherit every typography,
+  semantic, alignment, layout, and spacing control from Text.
+
+  Accepts:
+  - block: the theme block whose settings and editor attributes are rendered
+  - content: the text or contextual value to render
+  - marker: optional data attribute name used by the owning component
+{%- endcomment -%}
+
+{%- liquid
+  assign align_class = ''
+  if block.settings.alignment != blank and block.settings.alignment != 'inherit'
+    assign align_class = ' align-' | append: block.settings.alignment
+  endif
+
+  comment
+    A guard rather than interpolating whatever is stored: an unknown value would
+    print as a tag name and Liquid would emit `<foo>`.
+  endcomment
+  assign tags = 'span,p,h1,h2,h3,h4,h5,h6,blockquote,figcaption' | split: ','
+  assign tag = 'p'
+  if tags contains block.settings.element
+    assign tag = block.settings.element
+  endif
+-%}
+
+{%- if content != blank -%}
+  {%- case block.settings.layout -%}
+    {%- when 'display' -%}
+      <{{ tag }}
+        class="text-block display reveal{{ align_class }}"
+        {% if marker != blank %}{{ marker }}{% endif %}
+        style="{% render 'block-spacing', padding: block.settings.padding %}{% render 'text-style', preset: block.settings.style, font_style: block.settings.override_font, font_size: block.settings.override_size, color: block.settings.color, line_height: block.settings.override_leading, text_case: block.settings.override_case, letter_spacing: block.settings.override_tracking %}"
+        {{ block.shopify_attributes }}
+      >{{ content }}</{{ tag }}>
+    {%- when 'eyebrow' -%}
+      <div
+        class="section-eyebrow reveal{{ align_class }}"
+        {% if marker != blank %}{{ marker }}{% endif %}
+        style="{% render 'block-spacing', padding: block.settings.padding %}"
+        {{ block.shopify_attributes }}
+      >
+        <{{ tag }} class="text-block micro" style="{% render 'text-style', preset: block.settings.style, font_style: block.settings.override_font, font_size: block.settings.override_size, color: block.settings.color, line_height: block.settings.override_leading, text_case: block.settings.override_case, letter_spacing: block.settings.override_tracking %}">{{ content }}</{{ tag }}>
+      </div>
+    {%- when 'lede' -%}
+      <{{ tag }}
+        class="text-block section-lede reveal{{ align_class }}"
+        {% if marker != blank %}{{ marker }}{% endif %}
+        style="{% render 'block-spacing', padding: block.settings.padding %}{% render 'text-style', preset: block.settings.style, font_style: block.settings.override_font, font_size: block.settings.override_size, color: block.settings.color, line_height: block.settings.override_leading, text_case: block.settings.override_case, letter_spacing: block.settings.override_tracking %}"
+        {{ block.shopify_attributes }}
+      >{{ content }}</{{ tag }}>
+    {%- else -%}
+      <{{ tag }}
+        class="text-block{{ align_class }}"
+        {% if marker != blank %}{{ marker }}{% endif %}
+        style="{% render 'block-spacing', padding: block.settings.padding %}{% render 'text-style', preset: block.settings.style, font_style: block.settings.override_font, font_size: block.settings.override_size, color: block.settings.color, line_height: block.settings.override_leading, text_case: block.settings.override_case, letter_spacing: block.settings.override_tracking %}"
+        {{ block.shopify_attributes }}
+      >{{ content }}</{{ tag }}>
+  {%- endcase -%}
+{%- endif -%}

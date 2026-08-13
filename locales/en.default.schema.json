@@ -237,7 +237,7 @@
       },
       "error": {
         "label": "Error",
-        "info": "Used by form errors and the remove control in the bag."
+        "info": "Used by form errors and the remove control in the cart."
       },
       "page_scheme": {
         "label": "Page colour scheme",
@@ -353,9 +353,6 @@
         "media": "Pin the media, scroll the panel",
         "details": "Scroll only the details"
       },
-      "quick_view_add_label": {
-        "label": "Add button label"
-      },
       "quick_view_reassurance": {
         "label": "Reassurance line"
       },
@@ -376,16 +373,20 @@
       "paragraph": "How this shop qualifies its prices. The words are stated once here; where they are shown is a Cart setting.",
       "tax_note_text": {
         "label": "Tax note",
-        "info": "Follows the subtotal in the bag and on the cart page — \"inc. all taxes and fees\", \"plus shipping\", whatever is true of this shop. Leave it empty to say nothing."
+        "info": "Follows the subtotal in the cart drawer and on the cart page — \"inc. all taxes and fees\", \"plus shipping\", whatever is true of this shop. Leave it empty to say nothing."
       }
     },
     "cart": {
       "name": "Cart",
-      "paragraph": "The drawer and the cart page are alternatives, not both — whichever is chosen here is where the bag action goes. Every setting below applies to both.",
+      "paragraph": "The cart drawer and cart page are alternatives, not both. Every setting below applies to both.",
+      "cart_name": {
+        "label": "Cart name",
+        "info": "The customer-facing name shown throughout the storefront. For example: Cart, Bag, or Basket."
+      },
       "features_header": "Cart features",
       "show_tax_note": {
         "label": "Show the tax note",
-        "info": "Puts the Tax note after the subtotal. It used to follow every price in the theme; it is the bag's alone now."
+        "info": "Puts the Tax note after the cart subtotal."
       },
       "cart_note": {
         "label": "Allow note to seller",
@@ -405,11 +406,11 @@
       },
       "cart_empty_link": {
         "label": "Empty cart button link",
-        "info": "Where the button in an empty bag goes. Defaults to all products."
+        "info": "Where the button in an empty cart goes. Defaults to all products."
       },
       "cart_type": {
-        "label": "Opening the bag",
-        "info": "Without JavaScript the bag always falls back to the cart page.",
+        "label": "Opening the cart",
+        "info": "Without JavaScript the cart always falls back to the cart page.",
         "drawer": "Slide out a drawer",
         "page": "Go to the cart page"
       },
@@ -419,7 +420,7 @@
       },
       "cart_unit_price": {
         "label": "Show the price of one",
-        "info": "A line reads the price of a single piece rather than price × quantity. Applies to the bag drawer and the cart page."
+        "info": "A line reads the price of a single piece rather than price × quantity. Applies to the cart drawer and the cart page."
       },
       "cart_image_ratio": {
         "label": "Image shape",
@@ -527,15 +528,6 @@
   },
   "blocks": {
     "all": {
-      "content_source_header": "Content source",
-      "product_source": {
-        "label": "Product",
-        "info": "Inherits the nearest product when one is available. Choose a product to use this block anywhere else."
-      },
-      "collection_source": {
-        "label": "Collection",
-        "info": "Inherits the nearest collection when one is available. Choose a collection to use this block anywhere else."
-      },
       "spacing_header": "Spacing",
       "padding": {
         "label": "Padding"
@@ -585,7 +577,9 @@
         "h3": "Heading 3",
         "h4": "Heading 4",
         "h5": "Heading 5",
-        "h6": "Heading 6"
+        "h6": "Heading 6",
+        "blockquote": "Quotation",
+        "figcaption": "Figure caption"
       },
       "text_color": {
         "label": "Font color",
@@ -595,36 +589,114 @@
         "label": "Default"
       }
     },
-    "title": {
-      "name": "Title"
+    "text": {
+      "name": "Text",
+      "layout": {
+        "label": "Layout",
+        "info": "Choose the spacing treatment. Typography still comes from the selected text preset.",
+        "standard": "Standard",
+        "display": "Display title",
+        "eyebrow": "Eyebrow",
+        "lede": "Lede"
+      }
     },
-    "subheading": {
-      "name": "Subheading"
+    "rich_text": {
+      "name": "Rich text"
     },
-    "paragraph": {
-      "name": "Paragraph"
+    "collection_count_text": {
+      "name": "Count"
+    },
+    "hotspot_count_text": {
+      "name": "Hotspot count"
+    },
+    "collection_card_header": {
+      "name": "Header"
+    },
+    "collection_card_group": {
+      "name": "Group"
+    },
+    "product_card_group": {
+      "name": "Group"
+    },
+    "hotspot_card": {
+      "name": "Card"
+    },
+    "hotspot_actions": {
+      "name": "Actions"
+    },
+    "interactive_media_list_header": {
+      "name": "Product list header"
+    },
+    "interactive_media": {
+      "name": "Interactive media",
+      "label": {
+        "label": "Look name",
+        "info": "Used as the tab label when this section contains more than one interactive media block."
+      },
+      "media_header": "Media layout",
+      "media_width": {
+        "label": "Width",
+        "small": "Small",
+        "medium": "Medium",
+        "large": "Large",
+        "full": "Full width"
+      },
+      "media_alignment": {
+        "label": "Alignment"
+      },
+      "media_ratio": {
+        "label": "Shape"
+      },
+      "media_fit": {
+        "label": "Media fit"
+      },
+      "inherit_media": "Use Media block setting",
+      "pin_style": {
+        "label": "Hotspot style",
+        "dot": "Dot",
+        "number": "Numbered",
+        "plus": "Plus"
+      },
+      "pulse": {
+        "label": "Pulse until a hotspot is chosen"
+      },
+      "show_list": {
+        "label": "Show the synchronized product list"
+      }
+    },
+    "hotspot": {
+      "name": "Hotspot",
+      "product": {
+        "label": "Product"
+      },
+      "position_header": "Position",
+      "x": {
+        "label": "From the left"
+      },
+      "y": {
+        "label": "From the top"
+      },
+      "timing_header": "Film timing",
+      "appears_at": {
+        "label": "Appears at (seconds)"
+      },
+      "disappears_at": {
+        "label": "Disappears at (seconds)"
+      },
+      "timing_info": "Only applies to video. Leave empty to keep the hotspot visible for the whole film."
     },
     "collection_card": {
-      "name": "Collection card"
+      "name": "Collection card",
+      "hover_reveal": {
+        "label": "Show hover reveal",
+        "info": "Shows the collection action over the photograph when the card is hovered or focused."
+      },
+      "hover_reveal_label": {
+        "label": "Hover reveal label"
+      }
     },
     "collection_card_image": {
-      "name": "Collection — Image"
-    },
-    "collection_card_title": {
-      "name": "Collection — Title",
-      "fallback": {
-        "label": "Fallback name",
-        "info": "Shown only where a slot has no collection to name."
-      }
-    },
-    "collection_card_count": {
-      "name": "Collection — Card count"
-    },
-    "collection_card_reveal": {
-      "name": "Collection — Hover reveal",
-      "label": {
-        "label": "Label"
-      }
+      "name": "Media"
     },
     "product_card": {
       "name": "Product card",
@@ -672,7 +744,7 @@
       }
     },
     "product_card_image": {
-      "name": "Product — Media",
+      "name": "Media",
       "image_fit": {
         "label": "Image fit",
         "info": "Fit shows the whole product against the card. Fill crops it to the frame."
@@ -682,24 +754,11 @@
         "info": "A number — 1.15 enlarges by 15% — for photography shot with margin around the product. Connect it to a metafield with the dynamic-source button to give each product its own. Leave it empty for no correction."
       }
     },
-    "product_card_title": {
-      "name": "Product — Title"
-    },
     "product_card_price": {
-      "name": "Product — Price"
-    },
-    "product_card_option_name": {
-      "name": "Product — Chosen option"
-    },
-    "product_card_text": {
-      "name": "Product — Text",
-      "text": {
-        "label": "Text",
-        "info": "Type a line, or connect it to a product metafield with the dynamic-source button. A single character works too — a \"·\" between two blocks inside a group."
-      }
+      "name": "Price"
     },
     "product_card_option_values": {
-      "name": "Product — Option values",
+      "name": "Option values",
       "option_name": {
         "label": "Option name",
         "info": "Which of the product's options to list — \"Karat\", \"Size\", \"Length\". Matched on the name, so it finds the right one whether it is first or third on a given product, and prints nothing on a product that has no such option. The words around the list are a Text block beside this one."
@@ -709,10 +768,11 @@
       }
     },
     "product_card_variants": {
-      "name": "Product — Option control",
+      "name": "Option control",
       "control": {
         "label": "Shown as",
-        "info": "Swatches paint from the option value's own colour in admin and clip to the card's width. Written values wrap instead.",
+        "info": "Auto uses native Shopify swatches when this option has them and written values otherwise.",
+        "auto": "Auto",
         "swatches": "Swatches",
         "pills": "Written values"
       },
@@ -723,31 +783,49 @@
       }
     },
     "product_card_add": {
-      "name": "Product — Add to Bag",
-      "label": {
-        "label": "Label"
+      "name": "Add to cart",
+      "variant_action": {
+        "label": "Products with variants",
+        "info": "Choose what this card action does when a product has more than one variant. Direct-add choices use available variants only.",
+        "choose_options": "Open Choose options",
+        "first_available": "Add first available variant",
+        "highest_available": "Add highest-priced available variant"
+      },
+      "labels_header": "Button wording",
+      "add_label": {
+        "label": "Add label override",
+        "info": "Leave empty to use the translated Add to cart label and the cart name from Theme settings."
+      },
+      "choose_options_label": {
+        "label": "Choose options label override",
+        "info": "Leave empty to use the translated Choose options label."
+      },
+      "sold_out_label": {
+        "label": "Sold out label override",
+        "info": "Leave empty to use the translated Sold out label."
       }
     },
-    "prose": {
-      "name": "Paragraph (rich text)"
-    },
-    "buttons": {
-      "name": "Buttons",
-      "second_header": "Second button",
-      "link_source": {
-        "label": "Link to",
-        "info": "Anything but Custom falls back to Theme settings → Shop details when no link is set. This section's collection uses the collection the section is showing.",
-        "custom": "Custom",
-        "collection": "This section's collection",
-        "address": "Shop location",
-        "phone": "Shop telephone",
-        "email": "Shop email"
-      }
-    },
-    "heading": {
-      "name": "Heading",
-      "size": {
-        "label": "Size"
+    "button": {
+      "name": "Button",
+      "inherit": "Use theme setting",
+      "color_info": "Leave empty to use the current color scheme.",
+      "background_color": {
+        "label": "Background color"
+      },
+      "text_color": {
+        "label": "Text color"
+      },
+      "border_color": {
+        "label": "Border and arrow color"
+      },
+      "underline_color": {
+        "label": "Underline color"
+      },
+      "arrow_color": {
+        "label": "Arrow color"
+      },
+      "border_width": {
+        "label": "Border width"
       }
     },
     "border": {
@@ -893,20 +971,15 @@
         "never": "Fluid",
         "tablet": "On tablet and smaller",
         "mobile": "On phone only"
-      }
-    },
-    "product_count": {
-      "name": "Collection — Count label",
-      "info": "Inherits the nearest collection, then the collection chosen for this section. Choose a collection to use the block anywhere else."
-    },
-    "quote": {
-      "name": "Quote",
-      "text": {
-        "label": "Quote"
       },
-      "author": {
-        "label": "Attribution"
+      "content_alignment_mobile": {
+        "label": "Stacked content alignment",
+        "info": "When this row switches to one column, align its content independently from the desktop setting.",
+        "inherit": "Use desktop alignment"
       }
+    },
+    "testimonial": {
+      "name": "Testimonial"
     },
     "icon": {
       "name": "Icon",
@@ -920,6 +993,17 @@
       "icon_size": {
         "label": "Icon size",
         "info": "Use the theme setting or choose another responsive preset for this icon."
+      },
+      "hover_animation": {
+        "label": "Hover animation",
+        "info": "Runs when the icon or the link, button, or Group containing it is hovered. Reduced-motion preferences turn it off.",
+        "none": "None",
+        "lift": "Lift",
+        "nudge": "Nudge right",
+        "grow": "Grow",
+        "rotate": "Rotate",
+        "bounce": "Bounce",
+        "pulse": "Pulse"
       },
       "color": {
         "label": "Icon color override",
@@ -944,6 +1028,20 @@
       "background_color": {
         "label": "Frame background override",
         "info": "Leave empty to derive a subtle background from the current accent and surface colors."
+      },
+      "groups": {
+        "trust_service": "Trust and service",
+        "jewelry": "Jewelry",
+        "symbols_gifts": "Symbols and gifts",
+        "nature": "Nature",
+        "contact_location": "Contact and location",
+        "commerce": "Commerce",
+        "media_social": "Media and sharing",
+        "clothing_accessories": "Clothing and accessories",
+        "food_drink": "Food and drink",
+        "travel_hospitality": "Travel and hospitality",
+        "lifestyle_technology": "Lifestyle and technology",
+        "interface": "Interface"
       },
       "icons": {
         "shipping": "Insured shipping",
@@ -1035,7 +1133,7 @@
         "check": "Check",
         "account": "Account",
         "search": "Search",
-        "cart": "Bag",
+        "cart": "Cart",
         "menu": "Menu",
         "close": "Close",
         "eye": "View",
@@ -1138,20 +1236,11 @@
       "button_style": {
         "label": "Button style"
       },
-      "button_style_2": {
-        "label": "Second button style"
-      },
       "button_size": {
         "label": "Button size"
       },
-      "button_size_2": {
-        "label": "Second button size"
-      },
       "button_radius": {
         "label": "Button shape"
-      },
-      "button_radius_2": {
-        "label": "Second button shape"
       },
       "heading_level": {
         "label": "Heading level",
@@ -1208,8 +1297,8 @@
       "show_search": {
         "label": "Show search"
       },
-      "show_bag": {
-        "label": "Show bag"
+      "show_cart": {
+        "label": "Show cart"
       },
       "search_header": "Search",
       "search_paragraph": "The overlay searches as the visitor types. With it switched off the search action goes to the search page instead.",
@@ -1226,7 +1315,7 @@
         "info": "Shown in the overlay before anything is typed."
       },
       "menu_header": "Menu overlay",
-      "menu_paragraph": "Menu rows are numbered automatically in the order they appear here. Bag and Search are added last when they are switched on above.",
+      "menu_paragraph": "Menu rows are numbered automatically in the order they appear here. Cart and Search are added last when they are switched on above.",
       "blocks": {
         "link": {
           "name": "Menu row"
@@ -1329,6 +1418,9 @@
       "show_arcs": {
         "label": "Show decorative arcs"
       },
+      "intro": {
+        "label": "Introduction"
+      },
       "portrait_header": "Portrait",
       "image": {
         "label": "Portrait image",
@@ -1340,12 +1432,6 @@
         "label": "Switch heading"
       },
       "blocks": {
-        "heading": {
-          "name": "Heading",
-          "size": {
-            "label": "Size"
-          }
-        },
         "hero_detail": {
           "name": "Gemstone detail",
           "label_label": "Label",
@@ -1358,73 +1444,19 @@
             "info": "The pieces the carousel shows while this metal is selected."
           }
         },
-        "text": {
-          "name": "Text"
-        },
         "hero_cta": {
-          "name": "Buttons",
+          "name": "Button",
           "button_label": {
             "label": "Primary button"
           },
           "button_link": {
             "label": "Primary link"
-          },
-          "button_label_2": {
-            "label": "Secondary button"
-          },
-          "button_link_2": {
-            "label": "Secondary link"
           }
         }
       }
     },
     "lookbook": {
-      "name": "Lookbook",
-      "hint": {
-        "label": "Hint under the stage"
-      },
-      "points_header": "Points",
-      "pin_style": {
-        "label": "Point style",
-        "dot": "Dot",
-        "number": "Numbered",
-        "plus": "Plus"
-      },
-      "pulse": {
-        "label": "Pulse until a point is chosen"
-      },
-      "list_header": "In this look",
-      "show_list": {
-        "label": "Show the piece list beside the stage"
-      },
-      "point": {
-        "product_1": "Point 1 — piece",
-        "product_2": "Point 2 — piece",
-        "product_3": "Point 3 — piece",
-        "product_4": "Point 4 — piece",
-        "x": "From the left",
-        "y": "From the top",
-        "in": "Appears at (seconds)",
-        "out": "Disappears at (seconds)"
-      },
-      "blocks": {
-        "scene": {
-          "name": "Look",
-          "label": {
-            "label": "Tab label"
-          },
-          "tag": {
-            "label": "Caption",
-            "info": "Shown in the corner of the stage."
-          },
-          "video": {
-            "label": "Film",
-            "info": "Used instead of the image. Plays muted and looped while the stage is on screen."
-          },
-          "points_header": "Points",
-          "points_paragraph": "Place each point as a percentage across and down the stage. The seconds only apply to a film — leave them empty and the point is always shown."
-        }
-      }
+      "name": "Lookbook"
     },
     "featured_products": {
       "name": "Products list",
@@ -1513,7 +1545,7 @@
           "name": "Paragraph"
         },
         "buttons": {
-          "name": "Buttons"
+          "name": "Button"
         }
       }
     },
@@ -1568,7 +1600,7 @@
       }
     },
     "cart_drawer": {
-      "name": "Bag drawer",
+      "name": "Cart drawer",
       "paragraph": "Shown only while the cart is set to a drawer in Theme settings → Cart.",
       "promise_label": {
         "label": "Reassurance label",

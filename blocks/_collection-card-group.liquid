@@ -1,59 +1,9 @@
 {%- comment -%}
-  A layout group — the one block that arranges other blocks.
+  Collection-card-only Group. Normal Media is deliberately absent; the card uses its private Media block.
 
-  **This is the primitive the theme was missing.** Merchant blocks render as one
-  flat sibling flow, so until now anything the design puts *side by side* could
-  not be built from blocks at all: the products list's eyebrow and its "View
-  All" share one `space-between` row, and as plain blocks they fell onto two
-  lines. Every workaround for that was a section-specific rule in the
-  stylesheet. A group replaces all of them with something a merchant can see and
-  move.
-
-  It belongs to no section. Any section that renders `{% content_for 'blocks' %}`
-  can list `group`, and the group takes `@theme` — every theme block there is —
-  so what goes inside it is the merchant's business, not the section's.
-
-  **Horizontal is the default, deliberately.** A vertical group adds nothing
-  over simply placing the blocks one after another, which is what a flat flow
-  already gives; the reason to reach for a group is to put things on one row.
-  Vertical earns its place only *nested inside a horizontal group* — a column
-  of two things sitting on a row — because inside a row that free stacking is
-  gone.
-
-  **Responsive settings are horizontal-only and say so with `visible_if`**, rather
-  than sitting in the panel doing nothing:
-
-    - `gap` resolves to `column-gap`, which a column never uses — a stacked
-      group takes its spacing from the section, by design.
-    - `wrap` is meaningless in a column: wrapping one needs a bounded height,
-      and nothing here gives it one.
-    - `stack_below` exists to turn a row into a column, so it has nothing to
-      say to a group that already is one.
-    - `content_alignment_mobile` only appears when that row is actually set to
-      stack; otherwise there is no second layout to align.
-
-  Desktop content alignment inherits from the section unless the Group sets
-  its own. The mobile/tablet choice inherits that desktop answer by default,
-  and can replace it only inside the same container query that stacks the row.
-
-  The children's own vertical margins are zeroed, the same way
-  `.collection-list__content` zeroes them: a gap and a margin add, so a block
-  carrying both would space itself twice. They keep those margins everywhere
-  else, which is why this is done here rather than at the source.
-{%- endcomment -%}
-
-{%- comment -%}
-  **Two elements, and that is not a wrapper for its own sake.** The group has
-  to answer a question about its own width — "am I narrow enough to stack?" —
-  and a container cannot be styled by a query against itself. So the outer
-  element *is* the container and the inner one is the row that responds. This
-  theme has hit that trap twice already, on `.row-carousel__frame` and on
-  `.quick-view__frame`: put both on one element and it parses, uploads and
-  silently never fires.
-
-  A container query rather than a media query, deliberately. The group should
-  stack when *it* is narrow — in a half-width column on a desktop just as much
-  as on a phone — which is a question about the block, not the screen.
+  It uses the same markup, responsive controls, borders, spacing and
+  layout-group-style renderer as global Group. Its curated child list is what
+  keeps context-specific card blocks private and excludes generic Media.
 {%- endcomment -%}
 
 {%- liquid
@@ -89,9 +39,9 @@
 
 {% schema %}
 {
-  "name": "t:blocks.group.name",
+  "name": "t:blocks.collection_card_group.name",
   "tag": null,
-  "blocks": [{ "type": "@theme" }, { "type": "@app" }],
+  "blocks": [{ "type": "text" }, { "type": "rich-text" }, { "type": "button" }, { "type": "icon" }, { "type": "border" }, { "type": "_collection-count-text" }, { "type": "_collection-card-group" }],
   "settings": [
     {
       "type": "select",
@@ -327,7 +277,7 @@
   ],
   "presets": [
     {
-      "name": "t:blocks.group.name",
+      "name": "t:blocks.collection_card_group.name",
       "settings": {
         "direction": "horizontal",
         "distribute": "between",
@@ -351,3 +301,4 @@
   ]
 }
 {% endschema %}
+

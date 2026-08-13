@@ -8,13 +8,13 @@
   `snippets/product-card.liquid` all three live in one Liquid scope, so the
   swatch loop works the variant out once and the price and the button read it.
   Split into blocks, that loop would have to be written three times, and three
-  copies of "the dearest available variant in the chosen metal" is three
-  chances for the figure on the card to stop agreeing with what the button
-  posts. That is the exact trap CLAUDE.md records under "Product card": one
-  price shown, another in the bag.
+  copies of the option/variant rule is three chances for the figure on the
+  card to stop agreeing with the action. That is the exact trap CLAUDE.md
+  records under "Product card": one price shown, another variant opened or
+  added.
 
   A snippet cannot hand a value back, so it **prints** and the caller captures
-  and splits — the same shape as `metal-order.liquid` and `space-step.liquid`.
+  and splits — the same shape as `space-step.liquid`.
 
       {%- capture card_option_raw -%}
         {% render 'card-option', product: product, source: block.settings.option %}
@@ -29,11 +29,10 @@
     value      the value that position currently carries, or empty.
     variant_id the variant the card prices and adds.
 
-  **The variant is the dearest available one carrying that value**, which is
-  the rule already recorded for the card: the card offers no karat or size
-  control, so adding has to choose, and it chooses the dearest — available
-  first, because a sold-out variant cannot be bought. Where the whole value is
-  sold out the dearest overall stands in and the button says Sold out.
+  **The initial variant is Shopify's selected-or-first-available variant.**
+  Merchant variant order therefore remains authoritative and a generic theme
+  never invents a preference for the most expensive size, colour, flavour, or
+  material.
 
   **Every card block calls it with the default, and that is a constraint rather
   than a habit.** A block cannot read its parent's settings and cannot read a
@@ -59,11 +58,11 @@
   assign opt = blank
 
   comment
-    A nominated position is taken as given. `auto` is the design's own rule for
-    the card — the metal, matched on the option's name — because "Colour is
-    chosen on the card itself: the name, the price and what goes in the bag all
-    follow it." Matching on the name rather than on a table of metals is the
-    same rule `metal-swatch.liquid` is written to.
+    A nominated position is taken as given. `auto` prefers the first option
+    that carries a native Shopify swatch; where none does, it uses the first
+    option in the merchant's own order. This works for Colour, Material,
+    Flavour, Size, or any other naming convention without a translated-name
+    table baked into the theme.
   endcomment
   if source != blank and source != 'auto'
     assign want = source | plus: 0 | minus: 1
@@ -76,13 +75,24 @@
     endfor
   else
     for option in product.options_with_values
-      assign option_down = option.name | downcase
-      if option_down contains 'metal'
+      assign option_has_swatch = false
+      for option_value in option.values
+        if option_value.swatch.color != blank or option_value.swatch.image != blank
+          assign option_has_swatch = true
+          break
+        endif
+      endfor
+      if option_has_swatch
         assign opt = option
         assign opt_index = forloop.index0
         break
       endif
     endfor
+
+    if opt == blank and product.options_with_values.first != blank
+      assign opt = product.options_with_values.first
+      assign opt_index = 0
+    endif
   endif
 
   if opt.values.size < 1
@@ -96,35 +106,6 @@
     assign value = current.options[opt_index]
   endif
 
-  comment
-    Dearest available, then dearest overall. Where the card stands on no option
-    the whole variant list is the group, which is the answer for a piece with
-    nothing to choose.
-  endcomment
-  assign chosen = blank
-  assign dearest_any = blank
-  for variant in product.variants
-    assign in_group = true
-    if opt_index >= 0
-      unless variant.options[opt_index] == value
-        assign in_group = false
-      endunless
-    endif
-
-    if in_group
-      if dearest_any == blank or variant.price > dearest_any.price
-        assign dearest_any = variant
-      endif
-      if variant.available
-        if chosen == blank or variant.price > chosen.price
-          assign chosen = variant
-        endif
-      endif
-    endif
-  endfor
-
-  if chosen == blank
-    assign chosen = dearest_any
-  endif
+  assign chosen = current | default: product.variants.first
 -%}
 {{- opt_index }}||{{ value }}||{{ chosen.id -}}

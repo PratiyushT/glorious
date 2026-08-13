@@ -1,8 +1,10 @@
 {%- comment -%}
-  Product card — Add to Bag.
+  Private to Hotspot; explicitly targeted there and nowhere else.
+
+  Product card — add to cart.
 
   A plain product form, so adding works without scripting. `theme.js`
-  intercepts it when the bag drawer is on, posts it in the background and
+  intercepts it when the cart drawer is on, posts it in the background and
   slides the drawer out.
 
   **What it posts is `snippets/card-option.liquid`'s answer**, the same one the
@@ -34,10 +36,8 @@
 
 {%- liquid
   assign product = closest.product
-  if block.settings.product != blank
-    assign product = block.settings.product
-  endif
-  assign label = block.settings.label | default: 'Add to Bag'
+  assign cart_name = settings.cart_name | default: 'Cart'
+  assign label = 'products.add_to_cart' | t: cart_name: cart_name
   assign sold_out_label = 'products.sold_out' | t
 
   assign chosen = blank
@@ -61,6 +61,7 @@
 {%- if product == blank -%}
   <span class="btn btn--square card__add" aria-disabled="true" {{ block.shopify_attributes }}>
     {{- label -}}
+    <span class="lookbook-card__add-icon" aria-hidden="true">{% render 'icon', icon: 'plus' %}</span>
   </span>
 {%- elsif product.available -%}
   {%- form 'product', product, id: form_id, class: 'card__add-form', data-cart-add: '' -%}
@@ -74,11 +75,13 @@
       {{ block.shopify_attributes }}
     >
       {{- label -}}
+      <span class="lookbook-card__add-icon" aria-hidden="true">{% render 'icon', icon: 'plus' %}</span>
     </button>
   {%- endform -%}
 {%- else -%}
   <span class="btn btn--square card__add" aria-disabled="true" {{ block.shopify_attributes }}>
     {{- sold_out_label -}}
+    <span class="lookbook-card__add-icon" aria-hidden="true">{% render 'icon', icon: 'plus' %}</span>
   </span>
 {%- endif -%}
 
@@ -86,30 +89,10 @@
 {
   "name": "t:blocks.product_card_add.name",
   "tag": null,
-  "settings": [
-    {
-      "type": "header",
-      "content": "t:blocks.all.content_source_header"
-    },
-    {
-      "type": "product",
-      "id": "product",
-      "label": "t:blocks.all.product_source.label",
-      "info": "t:blocks.all.product_source.info"
-    },
-    {
-      "type": "text",
-      "id": "label",
-      "label": "t:blocks.product_card_add.label.label",
-      "default": "Add to Bag"
-    }
-  ],
+  "settings": [],
   "presets": [
     {
-      "name": "t:blocks.product_card_add.name",
-      "settings": {
-        "product": "{{ closest.product }}"
-      }
+      "name": "t:blocks.product_card_add.name"
     }
   ]
 }

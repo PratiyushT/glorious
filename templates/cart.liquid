@@ -1,9 +1,10 @@
+{%- assign cart_name = settings.cart_name | default: 'Cart' -%}
 <div class="page-width simple-template">
   <div class="stack">
-    <h1 class="h3">{{ 'cart.title' | t }}</h1>
+    <h1 class="h3">{{ 'cart.title' | t: cart_name: cart_name }}</h1>
 
     {%- if cart.item_count == 0 -%}
-      <p class="text-muted">{{ 'cart.empty' | t }}</p>
+      <p class="text-muted">{{ 'cart.empty' | t: cart_name: cart_name }}</p>
       {%- liquid
         assign pp = all_products['exquisite-round-diamond-chain-bracelet']
         assign mo = blank
@@ -62,7 +63,7 @@
                   {% render 'line-options', item: item, class: 'card__meta' %}
                   {%- comment -%}
                     A line never carries the note — it is said once, on the
-                    subtotal below, exactly as the bag drawer says it. And the
+                    subtotal below, exactly as the cart drawer says it. And the
                     figure is the price of one piece rather than price ×
                     quantity, for the reason given in the drawer.
                   {%- endcomment -%}

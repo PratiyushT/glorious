@@ -1,6 +1,10 @@
 {%- comment -%}
   Collection list — the "Our Products" panel.
 
+  Its repeated private card explicitly targets the private collection-header
+  layout, which is the only parent allowed to offer collection-count Text. Its
+  Media and Group are likewise Collection-card-only private blocks.
+
   Renamed from `category-grid`, and rebuilt on theme blocks. Two things follow
   from that and neither is optional:
 
@@ -30,6 +34,18 @@
   endif
 
   assign collection_list = section.settings.collections
+
+  comment
+    A newly added section still needs to show what its card composition looks
+    like before the merchant chooses collections. Use the configured column
+    count as the onboarding count, then index the list in the single loop each
+    layout already owns. An empty index intentionally hands the card a blank
+    collection, which its media and link already handle with safe placeholders.
+  endcomment
+  assign card_count = collection_list.size
+  if card_count == 0
+    assign card_count = section.settings.columns
+  endif
 
   comment
     The carousel's accessible name. There is no heading setting to borrow from
@@ -82,16 +98,23 @@
         same.
       {%- endcomment -%}
       {%- capture cells -%}
-        {%- for collection in collection_list -%}
+        {%- for i in (1..card_count) -%}
+          {%- liquid
+            assign card_collection = blank
+            assign card_index = forloop.index0
+            for collection_item in collection_list offset: card_index limit: 1
+              assign card_collection = collection_item
+            endfor
+          -%}
           <div class="row-carousel__cell" data-row-cell>
-            {% content_for 'block', type: '_collection-card', id: 'collection-card', closest.collection: collection %}
+            {% content_for 'block', type: '_collection-card', id: 'collection-card', closest.collection: card_collection %}
           </div>
         {%- endfor -%}
       {%- endcapture -%}
 
       {%- render 'row-carousel',
         cells: cells,
-        count: collection_list.size,
+        count: card_count,
         motion: section.settings.carousel_motion,
         arrows: section.settings.carousel_arrows,
         label: carousel_label,
@@ -106,9 +129,16 @@
           is: the card then fills it rather than sizing to its own content, so
           a row of cards whose titles wrap differently still ends level.
         {%- endcomment -%}
-        {%- for collection in collection_list -%}
+        {%- for i in (1..card_count) -%}
+          {%- liquid
+            assign card_collection = blank
+            assign card_index = forloop.index0
+            for collection_item in collection_list offset: card_index limit: 1
+              assign card_collection = collection_item
+            endfor
+          -%}
           <div class="collection-list__cell reveal" style="--reveal-delay: {{ forloop.index0 | times: 80 }}ms;">
-            {% content_for 'block', type: '_collection-card', id: 'collection-card', closest.collection: collection %}
+            {% content_for 'block', type: '_collection-card', id: 'collection-card', closest.collection: card_collection %}
           </div>
         {%- endfor -%}
       </div>
@@ -121,9 +151,8 @@
   "name": "t:sections.collection_list.name",
   "tag": "div",
   "blocks": [
-    { "type": "title" },
-    { "type": "subheading" },
-    { "type": "paragraph" }
+    { "type": "text" },
+    { "type": "rich-text" }
   ],
   "settings": [
     {
@@ -277,18 +306,30 @@
       },
       "blocks": [
         {
-          "type": "title",
-          "settings": { "text": "Our Products" }
+          "type": "text",
+          "settings": { "text": "Our Products", "style": "title", "layout": "display", "element": "h2" }
         },
         {
           "type": "_collection-card",
           "static": true,
           "id": "collection-card",
           "blocks": [
-            { "type": "collection-card-title" },
-            { "type": "collection-card-count" },
-            { "type": "collection-card-image" },
-            { "type": "collection-card-reveal" }
+            {
+              "type": "_collection-card-header",
+              "settings": { "direction": "horizontal", "distribute": "between", "align": "baseline", "wrap": false, "items_width": "natural", "stack_below": "never", "gap": "small", "padding": "small", "show_borders": true, "border_top": false, "border_right": false, "border_bottom": true, "border_left": false },
+              "blocks": [
+                {
+                  "type": "_collection-card-group",
+                  "settings": { "direction": "horizontal", "distribute": "start", "align": "baseline", "wrap": false, "items_width": "natural", "stack_below": "never", "gap": "tiny" },
+                  "blocks": [
+                    { "type": "text", "settings": { "text": "{{ closest.collection.title }}", "style": "heading_4", "element": "span", "override_case": "uppercase", "override_tracking": "wider" } },
+                    { "type": "icon", "settings": { "icon": "arrow-right", "icon_size": "2xs", "show_frame": false, "hover_animation": "nudge" } }
+                  ]
+                },
+                { "type": "_collection-count-text", "settings": { "style": "caption", "element": "span", "override_tracking": "wider" } }
+              ]
+            },
+            { "type": "_collection-card-media" }
           ]
         }
       ]
@@ -300,18 +341,30 @@
       },
       "blocks": [
         {
-          "type": "title",
-          "settings": { "text": "Our Products" }
+          "type": "text",
+          "settings": { "text": "Our Products", "style": "title", "layout": "display", "element": "h2" }
         },
         {
           "type": "_collection-card",
           "static": true,
           "id": "collection-card",
           "blocks": [
-            { "type": "collection-card-title" },
-            { "type": "collection-card-count" },
-            { "type": "collection-card-image" },
-            { "type": "collection-card-reveal" }
+            {
+              "type": "_collection-card-header",
+              "settings": { "direction": "horizontal", "distribute": "between", "align": "baseline", "wrap": false, "items_width": "natural", "stack_below": "never", "gap": "small", "padding": "small", "show_borders": true, "border_top": false, "border_right": false, "border_bottom": true, "border_left": false },
+              "blocks": [
+                {
+                  "type": "_collection-card-group",
+                  "settings": { "direction": "horizontal", "distribute": "start", "align": "baseline", "wrap": false, "items_width": "natural", "stack_below": "never", "gap": "tiny" },
+                  "blocks": [
+                    { "type": "text", "settings": { "text": "{{ closest.collection.title }}", "style": "heading_4", "element": "span", "override_case": "uppercase", "override_tracking": "wider" } },
+                    { "type": "icon", "settings": { "icon": "arrow-right", "icon_size": "2xs", "show_frame": false, "hover_animation": "nudge" } }
+                  ]
+                },
+                { "type": "_collection-count-text", "settings": { "style": "caption", "element": "span", "override_tracking": "wider" } }
+              ]
+            },
+            { "type": "_collection-card-media" }
           ]
         }
       ]

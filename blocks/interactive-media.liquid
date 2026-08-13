@@ -1,0 +1,272 @@
+{%- comment -%}
+  A reusable media composition with timed, product-aware hotspots.
+
+  Media and captions are global child blocks; hotspots are private to this
+  component. The fixed list header is a private Group-compatible layout because
+  it alone may contain the contextual hotspot-count Text. Its title remains a
+  global Text block, and the fixed action remains a global Button.
+{%- endcomment -%}
+
+{%- liquid
+  assign media_width = block.settings.media_width | default: 'large'
+  assign media_alignment = block.settings.media_alignment | default: 'center'
+  assign media_ratio = block.settings.media_ratio | default: 'inherit'
+  assign media_fit = block.settings.media_fit | default: 'inherit'
+
+  case media_width
+    when 'small'
+      assign media_max_width = '400px'
+      assign media_column = '400px'
+    when 'medium'
+      assign media_max_width = '480px'
+      assign media_column = '480px'
+    when 'full'
+      assign media_max_width = '100%'
+      assign media_column = '1fr'
+    else
+      assign media_max_width = '560px'
+      assign media_column = '560px'
+  endcase
+
+  case media_alignment
+    when 'left'
+      assign media_justify = 'start'
+    when 'right'
+      assign media_justify = 'end'
+    else
+      assign media_justify = 'center'
+  endcase
+-%}
+
+<div
+  class="interactive-media"
+  data-look-scene-root
+  data-look-label="{{ block.settings.label | escape }}"
+  data-count-one="{{ 'lookbook.pieces_count.one' | t: count: '__count__' | escape }}"
+  data-count-other="{{ 'lookbook.pieces_count.other' | t: count: '__count__' | escape }}"
+  data-pin-style="{{ block.settings.pin_style }}"
+  data-media-ratio="{{ media_ratio }}"
+  data-media-fit="{{ media_fit }}"
+  {% if block.settings.pulse %}data-pulse{% endif %}
+  {% if block.settings.show_list %}data-show-list{% endif %}
+  style="--interactive-media-max-width: {{ media_max_width }}; --interactive-media-column: {{ media_column }}; --interactive-media-justify: {{ media_justify }};{% unless media_ratio == 'inherit' %} --interactive-media-ratio: {{ media_ratio }};{% endunless %}"
+  {{ block.shopify_attributes }}
+>
+  <div class="lookbook__grid">
+    <div class="lookbook__main">
+      <div class="lookbook__stage" data-look-stage>
+        <span class="lookbook__scrim" aria-hidden="true"></span>
+        {% content_for 'blocks' %}
+      </div>
+
+      <div class="lookbook-film" data-look-film hidden>
+        <button class="lookbook-film__play" type="button" data-look-play aria-label="{{ 'lookbook.play' | t }}">
+          <span aria-hidden="true" data-look-play-glyph>
+            <span data-look-play-icon>{% render 'icon', icon: 'play' %}</span>
+            <span data-look-pause-icon hidden>{% render 'icon', icon: 'pause' %}</span>
+          </span>
+        </button>
+        <div class="lookbook-film__bar" data-look-bar>
+          <span class="lookbook-film__track" aria-hidden="true"></span>
+          <span class="lookbook-film__fill" data-look-fill aria-hidden="true"></span>
+          <span class="lookbook-film__marks" data-look-marks aria-hidden="true"></span>
+        </div>
+        <span class="lookbook-film__time" data-look-time>0:00 / 0:00</span>
+      </div>
+    </div>
+
+    {%- if block.settings.show_list -%}
+      <aside class="lookbook__list">
+        <div class="lookbook__list-inner">
+          {% content_for "block", type: "_interactive-media-list-header", id: "list-header" %}
+          <div class="lookbook__rows" data-look-rows></div>
+          <div class="lookbook__list-foot">
+            {% content_for "block", type: "button", id: "list-button" %}
+          </div>
+        </div>
+      </aside>
+    {%- endif -%}
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "t:blocks.interactive_media.name",
+  "tag": null,
+  "blocks": [
+    { "type": "@theme" },
+    { "type": "media" },
+    { "type": "text" },
+    { "type": "_hotspot" },
+    { "type": "_interactive-media-list-header" }
+  ],
+  "settings": [
+    {
+      "type": "text",
+      "id": "label",
+      "label": "t:blocks.interactive_media.label.label",
+      "info": "t:blocks.interactive_media.label.info",
+      "default": "Look"
+    },
+    {
+      "type": "header",
+      "content": "t:blocks.interactive_media.media_header"
+    },
+    {
+      "type": "select",
+      "id": "media_width",
+      "label": "t:blocks.interactive_media.media_width.label",
+      "options": [
+        { "value": "small", "label": "t:blocks.interactive_media.media_width.small" },
+        { "value": "medium", "label": "t:blocks.interactive_media.media_width.medium" },
+        { "value": "large", "label": "t:blocks.interactive_media.media_width.large" },
+        { "value": "full", "label": "t:blocks.interactive_media.media_width.full" }
+      ],
+      "default": "large"
+    },
+    {
+      "type": "select",
+      "id": "media_alignment",
+      "label": "t:blocks.interactive_media.media_alignment.label",
+      "options": [
+        { "value": "left", "label": "t:settings_schema.options.left" },
+        { "value": "center", "label": "t:settings_schema.options.center" },
+        { "value": "right", "label": "t:settings_schema.options.right" }
+      ],
+      "default": "center",
+      "visible_if": "{{ block.settings.media_width != 'full' }}"
+    },
+    {
+      "type": "select",
+      "id": "media_ratio",
+      "label": "t:blocks.interactive_media.media_ratio.label",
+      "options": [
+        { "value": "inherit", "label": "t:blocks.interactive_media.inherit_media" },
+        { "value": "1 / 1", "label": "t:settings_schema.options.square" },
+        { "value": "4 / 5", "label": "t:settings_schema.options.portrait" },
+        { "value": "3 / 4", "label": "t:settings_schema.options.tall_portrait" },
+        { "value": "4 / 3", "label": "t:settings_schema.options.landscape" },
+        { "value": "16 / 9", "label": "t:settings_schema.options.wide" }
+      ],
+      "default": "inherit"
+    },
+    {
+      "type": "select",
+      "id": "media_fit",
+      "label": "t:blocks.interactive_media.media_fit.label",
+      "options": [
+        { "value": "inherit", "label": "t:blocks.interactive_media.inherit_media" },
+        { "value": "cover", "label": "t:settings_schema.options.cover" },
+        { "value": "contain", "label": "t:settings_schema.options.contain" }
+      ],
+      "default": "inherit"
+    },
+    {
+      "type": "select",
+      "id": "pin_style",
+      "label": "t:blocks.interactive_media.pin_style.label",
+      "options": [
+        { "value": "dot", "label": "t:blocks.interactive_media.pin_style.dot" },
+        { "value": "number", "label": "t:blocks.interactive_media.pin_style.number" },
+        { "value": "plus", "label": "t:blocks.interactive_media.pin_style.plus" }
+      ],
+      "default": "dot"
+    },
+    {
+      "type": "checkbox",
+      "id": "pulse",
+      "label": "t:blocks.interactive_media.pulse.label",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_list",
+      "label": "t:blocks.interactive_media.show_list.label",
+      "default": true
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:blocks.interactive_media.name",
+      "settings": {
+        "label": "Look",
+        "media_width": "large",
+        "media_alignment": "center",
+        "media_ratio": "inherit",
+        "media_fit": "inherit",
+        "pin_style": "dot",
+        "pulse": true,
+        "show_list": true
+      },
+      "blocks": [
+        {
+          "type": "media",
+          "settings": {
+            "ratio": "4 / 5",
+            "fit": "cover",
+            "autoplay": true,
+            "loop": true,
+            "reveal": false,
+            "padding": "none"
+          }
+        },
+        {
+          "type": "text",
+          "settings": {
+            "text": "The Look",
+            "style": "caption",
+            "element": "span",
+            "override_case": "uppercase",
+            "override_tracking": "wider"
+          }
+        },
+        { "type": "_hotspot" },
+        {
+          "type": "_interactive-media-list-header",
+          "id": "list-header",
+          "static": true,
+          "settings": {
+            "direction": "horizontal",
+            "distribute": "between",
+            "align": "baseline",
+            "wrap": false,
+            "stack_below": "never",
+            "gap": "small",
+            "padding": "none"
+          },
+          "blocks": [
+            {
+              "type": "text",
+              "settings": {
+                "text": "In this look",
+                "style": "subheading",
+                "element": "span",
+                "override_case": "uppercase",
+                "override_tracking": "wider"
+              }
+            },
+            {
+              "type": "_hotspot-count-text",
+              "settings": {
+                "style": "caption",
+                "element": "span"
+              }
+            }
+          ]
+        },
+        {
+          "type": "button",
+          "id": "list-button",
+          "static": true,
+          "settings": {
+            "button_label": "Shop all pieces",
+            "button_link": "/collections/all",
+            "button_style": "link",
+            "button_size": "sm"
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

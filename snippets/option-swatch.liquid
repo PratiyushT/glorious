@@ -1,0 +1,33 @@
+{%- comment -%}
+  One generic product-option swatch.
+
+  The paint comes only from the product option value's native Shopify swatch.
+  The theme does not infer a colour from names, so a new colour, material,
+  flavour, pattern, or finish never requires a code change. A value without a
+  configured swatch keeps the visible hairline and accessible label supplied by
+  its wrapping control.
+
+  Accepts:
+    option_value - product_option_value drop.
+    size         - requested swatch-image width; defaults to 120px.
+    selected     - standalone selected state. Card controls put state on the
+                   wrapping link instead.
+{%- endcomment -%}
+
+{%- liquid
+  assign swatch_paint = blank
+  assign swatch = option_value.swatch
+
+  if swatch.color != blank
+    assign swatch_paint = swatch.color
+  elsif swatch.image != blank
+    assign swatch_width = size | default: 120
+    assign swatch_url = swatch.image | image_url: width: swatch_width
+    assign swatch_paint = swatch_url | prepend: "url('" | append: "')"
+  endif
+-%}
+
+<span
+  class="swatch-dot{% if selected %} is-selected{% endif %}"
+  {%- if swatch_paint != blank %} style="--option-swatch: {{ swatch_paint }};"{% endif -%}
+></span>

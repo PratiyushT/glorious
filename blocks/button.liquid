@@ -1,0 +1,153 @@
+{%- comment -%}
+  One action, one block.
+
+  The destination is always the block's Link setting. There is no secondary
+  source picker and no hidden fallback to shop details: what the merchant sees
+  in this block is the complete action.
+
+  Per-button geometry and colours are optional overrides. Blank colours and
+  `inherit` scale values leave the active theme settings in charge.
+{%- endcomment -%}
+
+{%- liquid
+  assign button_link = block.settings.button_link
+  assign external = false
+  if button_link contains '://'
+    assign external = true
+  endif
+-%}
+
+{%- render 'button',
+  label: block.settings.button_label,
+  link: button_link,
+  new_tab: external,
+  style: block.settings.button_style,
+  size: block.settings.button_size,
+  radius: block.settings.button_radius,
+  border_width: block.settings.button_border_width,
+  background_color: block.settings.background_color,
+  text_color: block.settings.text_color,
+  border_color: block.settings.border_color,
+  underline_color: block.settings.underline_color,
+  arrow_color: block.settings.arrow_color,
+  attributes: block.shopify_attributes -%}
+
+{% schema %}
+{
+  "name": "t:blocks.button.name",
+  "tag": null,
+  "settings": [
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "t:sections.all.link_label.label",
+      "default": "Our Full Story"
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "t:sections.all.link.label"
+    },
+    {
+      "type": "select",
+      "id": "button_style",
+      "label": "t:sections.all.button_style.label",
+      "options": [
+        { "value": "filled", "label": "t:settings_schema.button_style.filled" },
+        { "value": "outline", "label": "t:settings_schema.button_style.outline" },
+        { "value": "link", "label": "t:settings_schema.button_style.link" },
+        { "value": "quiet", "label": "t:settings_schema.button_style.quiet" },
+        { "value": "arrow", "label": "t:settings_schema.button_style.arrow" },
+        { "value": "arrow_outline", "label": "t:settings_schema.button_style.arrow_outline" }
+      ],
+      "default": "filled"
+    },
+    {
+      "type": "select",
+      "id": "button_size",
+      "label": "t:sections.all.button_size.label",
+      "options": [
+        { "value": "inherit", "label": "t:settings_schema.button_size.inherit" },
+        { "value": "xs", "label": "t:settings_schema.button_size.xs" },
+        { "value": "sm", "label": "t:settings_schema.button_size.sm" },
+        { "value": "md", "label": "t:settings_schema.button_size.md" },
+        { "value": "lg", "label": "t:settings_schema.button_size.lg" },
+        { "value": "xl", "label": "t:settings_schema.button_size.xl" }
+      ],
+      "default": "inherit"
+    },
+    {
+      "type": "select",
+      "id": "button_radius",
+      "label": "t:sections.all.button_radius.label",
+      "options": [
+        { "value": "inherit", "label": "t:settings_schema.button_radius.inherit" },
+        { "value": "square", "label": "t:settings_schema.button_radius.square" },
+        { "value": "soft", "label": "t:settings_schema.button_radius.soft" },
+        { "value": "rounded", "label": "t:settings_schema.button_radius.rounded" },
+        { "value": "pill", "label": "t:settings_schema.button_radius.pill" }
+      ],
+      "default": "inherit",
+      "visible_if": "{{ block.settings.button_style == 'filled' or block.settings.button_style == 'outline' or block.settings.button_style == 'arrow_outline' }}"
+    },
+    {
+      "type": "select",
+      "id": "button_border_width",
+      "label": "t:blocks.button.border_width.label",
+      "options": [
+        { "value": "inherit", "label": "t:blocks.button.inherit" },
+        { "value": "xs", "label": "t:settings_schema.buttons.button_border_width.options__xs" },
+        { "value": "sm", "label": "t:settings_schema.buttons.button_border_width.options__sm" },
+        { "value": "md", "label": "t:settings_schema.buttons.button_border_width.options__md" },
+        { "value": "lg", "label": "t:settings_schema.buttons.button_border_width.options__lg" },
+        { "value": "xl", "label": "t:settings_schema.buttons.button_border_width.options__xl" }
+      ],
+      "default": "inherit",
+      "visible_if": "{{ block.settings.button_style == 'outline' or block.settings.button_style == 'arrow_outline' }}"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "t:blocks.button.background_color.label",
+      "info": "t:blocks.button.color_info",
+      "visible_if": "{{ block.settings.button_style == 'filled' }}"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "t:blocks.button.text_color.label",
+      "info": "t:blocks.button.color_info"
+    },
+    {
+      "type": "color",
+      "id": "border_color",
+      "label": "t:blocks.button.border_color.label",
+      "info": "t:blocks.button.color_info",
+      "visible_if": "{{ block.settings.button_style == 'outline' or block.settings.button_style == 'arrow_outline' }}"
+    },
+    {
+      "type": "color",
+      "id": "underline_color",
+      "label": "t:blocks.button.underline_color.label",
+      "info": "t:blocks.button.color_info",
+      "visible_if": "{{ block.settings.button_style == 'link' or block.settings.button_style == 'quiet' }}"
+    },
+    {
+      "type": "color",
+      "id": "arrow_color",
+      "label": "t:blocks.button.arrow_color.label",
+      "info": "t:blocks.button.color_info",
+      "visible_if": "{{ block.settings.button_style == 'arrow' }}"
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:blocks.button.name",
+      "settings": {
+        "button_label": "Our Full Story",
+        "button_style": "filled"
+      }
+    }
+  ]
+}
+{% endschema %}

@@ -1,4 +1,6 @@
 {%- comment -%}
+  Private to Product card; explicitly targeted there and nowhere else.
+
   Product card — the photograph.
 
   Every photograph the piece has is a slide, however many that is, and only the
@@ -42,10 +44,6 @@
 
 {%- liquid
   assign product = closest.product
-  if block.settings.product != blank
-    assign product = block.settings.product
-  endif
-
   assign img_loading = 'lazy'
   assign img_sizes = '(max-width: 700px) 70vw, 460px'
 
@@ -216,16 +214,6 @@
   "tag": null,
   "settings": [
     {
-      "type": "header",
-      "content": "t:blocks.all.content_source_header"
-    },
-    {
-      "type": "product",
-      "id": "product",
-      "label": "t:blocks.all.product_source.label",
-      "info": "t:blocks.all.product_source.info"
-    },
-    {
       "type": "select",
       "id": "image_ratio",
       "label": "t:sections.all.image_ratio.label",
@@ -258,11 +246,9 @@
   ],
   "presets": [
     {
-      "name": "t:blocks.product_card_image.name",
-      "settings": {
-        "product": "{{ closest.product }}"
-      }
+      "name": "t:blocks.product_card_image.name"
     }
   ]
 }
 {% endschema %}
+

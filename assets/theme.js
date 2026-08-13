@@ -815,7 +815,7 @@
      match. Capture runs before the delegated handlers below, so the sequence
      was: the app schedules a navigation, this theme opens the overlay, the
      timer fires. That is the drawer flashing open and the page going to /cart
-     anyway — and the same for search, quick view and the metal swatches.
+     anyway — and the same for search, quick view and card option controls.
 
      The app does check `if (event.defaultPrevented) return`, so claiming the
      click first is enough; we do not have to fight it. Hence a capture listener
@@ -833,7 +833,7 @@
     if (typeof event.button === 'number' && event.button !== 0) return;
 
     var el = event.target.closest && event.target.closest(
-      '[data-drawer-open],[data-search-open],[data-quick-view],[data-card-metal],[data-overlay-open]'
+      '[data-drawer-open],[data-search-open],[data-quick-view],[data-card-option],[data-card-metal],[data-overlay-open]'
     );
     if (!el) return;
 
@@ -841,6 +841,7 @@
       (el.hasAttribute('data-drawer-open') && cartDrawer() && overlays.cart) ||
       (el.hasAttribute('data-search-open') && overlays.search) ||
       (el.hasAttribute('data-quick-view') && quickOverlay()) ||
+      el.hasAttribute('data-card-option') ||
       el.hasAttribute('data-card-metal') ||
       (el.hasAttribute('data-overlay-open') && overlays[el.dataset.overlayOpen]);
 
@@ -2303,14 +2304,13 @@
      then the stylesheet is running the two-photograph hover on its own, so a
      card whose script never arrives still behaves. */
 
-  /* ---- Card metal swatches ---------------------------------------------
-     Design revision 13's metal control. Picking a metal moves the caption, the
-     price and what goes in the bag — and deliberately not the photograph, which
-     is the design's own rule: "we shoot one metal".
+  /* ---- Card option controls --------------------------------------------
+     Picking the featured option moves the caption, the price and the variant
+     the action opens or posts — and deliberately not the photograph.
 
-     Every swatch is a real link to the piece at that metal, so without this the
+     Every option is a real link to the matching variant, so without this the
      pick still works; it simply navigates. Liquid has already rendered each
-     metal's caption and price markup onto the link, so a pick costs no request
+     option's caption and price markup onto the link, so a pick costs no request
      and no arithmetic in the browser.
 
      How many swatches fit is a question about the card's own width, not the
@@ -2321,7 +2321,7 @@
   var swatchFit = null;
 
   function fitSwatches(row) {
-    var swatches = Array.prototype.slice.call(row.querySelectorAll('[data-card-metal]'));
+    var swatches = Array.prototype.slice.call(row.querySelectorAll('[data-card-option],[data-card-metal]'));
     var more = row.querySelector('[data-card-swatch-more]');
     if (!swatches.length) return;
 
@@ -2340,8 +2340,8 @@
       fits = Math.max(1, Math.floor((avail - moreWidth) / hit));
     }
 
-    /* The design drops the row when fewer than two metals show. This theme
-       keeps it — a lone swatch still states the metal, which is worth the row.
+    /* Keep a lone value visible: it still states the configured option, which
+       is worth the row.
        So the only floor is the one above: at least one always shows. */
     if (fits >= swatches.length) return;
 
@@ -2353,7 +2353,49 @@
     }
   }
 
-  function initCardMetals(scope) {
+  function setCardVariantHref(link, variantId) {
+    if (!link || !variantId) return;
+    var href = link.getAttribute('href') || '';
+    link.setAttribute('href', href.split('?')[0] + '?variant=' + variantId);
+  }
+
+  function applyCardAddStrategy(card) {
+    var action = card.querySelector('[data-card-add-strategy]');
+    if (!action) return;
+
+    var variantId = action.dataset.cardAddVariantId;
+    var optionValue = action.dataset.cardAddOptionValue;
+    var optionLinks = Array.prototype.slice.call(
+      card.querySelectorAll('[data-card-option],[data-card-metal]')
+    );
+
+    if (optionValue) {
+      optionLinks.forEach(function (option) {
+        var value = option.dataset.optionValue || option.dataset.metalValue;
+        var on = value === optionValue;
+        option.classList.toggle('is-selected', on);
+        option.setAttribute('aria-current', on ? 'true' : 'false');
+      });
+
+      var meta = card.querySelector('[data-card-meta]');
+      if (meta && !meta.hasAttribute('data-card-meta-fixed')) meta.textContent = optionValue;
+    }
+
+    var price = card.querySelector('[data-card-price]');
+    if (price && action.dataset.cardAddPrice) price.innerHTML = action.dataset.cardAddPrice;
+
+    var addId = card.querySelector('[data-card-add-id]');
+    if (addId && variantId) addId.value = variantId;
+
+    card.querySelectorAll('[data-quick-view]').forEach(function (quick) {
+      setCardVariantHref(quick, variantId);
+    });
+
+    setCardVariantHref(card.querySelector('a.card__title'), variantId);
+    card.setAttribute('data-card-strategy-ready', '');
+  }
+
+  function initCardOptions(scope) {
     scope.querySelectorAll('[data-card-swatches]').forEach(function (row) {
       if (!bindOnce(row, 'boundSwatches')) return;
 
@@ -2366,16 +2408,18 @@
       if (swatchFit) swatchFit.observe(row);
       fitSwatches(row);
     });
+
+    scope.querySelectorAll('[data-card]').forEach(applyCardAddStrategy);
   }
 
   document.addEventListener('click', function (event) {
-    var swatch = event.target.closest && event.target.closest('[data-card-metal]');
+    var swatch = event.target.closest && event.target.closest('[data-card-option],[data-card-metal]');
     if (!swatch) return;
 
     var card = swatch.closest('[data-card]');
     if (!card) return;
 
-    /* A swatch is a real link to the piece at that metal, so the browser's own
+    /* A value is a real link to the matching variant, so the browser's own
        gestures have to keep working: ctrl/cmd-click opens it in a tab, shift a
        window, alt downloads, and a middle click is a tab too. Calling
        preventDefault on those swallowed a navigation the visitor asked for. */
@@ -2384,7 +2428,7 @@
 
     event.preventDefault();
 
-    card.querySelectorAll('[data-card-metal]').forEach(function (other) {
+    card.querySelectorAll('[data-card-option],[data-card-metal]').forEach(function (other) {
       var on = other === swatch;
       other.classList.toggle('is-selected', on);
       other.setAttribute('aria-current', on ? 'true' : 'false');
@@ -2392,17 +2436,18 @@
 
     var meta = card.querySelector('[data-card-meta]');
     if (meta && !meta.hasAttribute('data-card-meta-fixed')) {
-      meta.textContent = swatch.dataset.metalMeta || '';
+      meta.textContent = swatch.dataset.optionMeta || swatch.dataset.metalMeta || '';
     }
 
     var price = card.querySelector('[data-card-price]');
-    if (price) price.innerHTML = swatch.dataset.metalPrice || '';
+    if (price) price.innerHTML = swatch.dataset.optionPrice || swatch.dataset.metalPrice || '';
 
-    /* The piece the caption now describes is the piece the button must add. */
+    /* Keep every action on the variant the caption and price now describe. */
+    var optionId = swatch.dataset.optionId || swatch.dataset.metalId;
     var addId = card.querySelector('[data-card-add-id]');
-    if (addId) addId.value = swatch.dataset.metalId || addId.value;
+    if (addId) addId.value = optionId || addId.value;
 
-    /* A metal can be sold out while the one Liquid rendered was not, and the
+    /* An option value can be sold out while the one Liquid rendered was not, and the
        button is only a button — nothing else would stop it posting a variant
        that cannot be bought. Liquid hands over both labels so the swap needs no
        string here.
@@ -2414,7 +2459,8 @@
        which is what this falls back to. */
     var add = card.querySelector('.card__add');
     if (add && add.tagName === 'BUTTON') {
-      var sold = swatch.dataset.metalAvailable === 'false';
+      var optionAvailable = swatch.dataset.optionAvailable || swatch.dataset.metalAvailable;
+      var sold = optionAvailable === 'false';
       add.disabled = sold;
       add.setAttribute('aria-disabled', sold ? 'true' : 'false');
 
@@ -2425,20 +2471,19 @@
     }
 
     /* The quick view opens whatever its href points at, so it follows too. */
-    var quick = card.querySelector('[data-quick-view]');
-    if (quick && swatch.dataset.metalId) {
-      var quickHref = quick.getAttribute('href') || '';
-      quick.setAttribute('href', quickHref.split('?')[0] + '?variant=' + swatch.dataset.metalId);
+    if (optionId) {
+      card.querySelectorAll('[data-quick-view]').forEach(function (quick) {
+        setCardVariantHref(quick, optionId);
+      });
     }
 
     /* And the piece the card opens. Only the query is replaced, so a card
        whose link already carried one is not doubled. */
     var title = card.querySelector('a.card__title');
-    if (title && swatch.dataset.metalId) {
+    if (title && optionId) {
       /* The attribute, not the property: reading .href resolves it against the
          document and would rewrite every card's link as an absolute URL. */
-      var href = title.getAttribute('href') || '';
-      title.setAttribute('href', href.split('?')[0] + '?variant=' + swatch.dataset.metalId);
+      setCardVariantHref(title, optionId);
     }
   });
 
@@ -3828,10 +3873,10 @@
   }
 
   /* ---- Lookbook -------------------------------------------------------
-     Every scene, point, card and list row is already in the document —
-     Liquid rendered them all. Nothing here builds markup; it only decides
-     what is shown. A visitor without scripting still gets the first look
-     and real links to every piece in it.
+     Liquid renders every global look, hotspot, product card and product row.
+     The controller moves rows into their synchronized list, assigns their
+     stored-order numbers, and creates a tab rail only for multiple looks; it
+     never recreates product money, URLs, images or forms.
 
      On a film, a point can carry an in and an out second, and appears as
      its piece comes on screen. */
@@ -3840,263 +3885,261 @@
     scope.querySelectorAll('[data-lookbook]').forEach(function (root) {
       if (!bindOnce(root, 'boundLookbook')) return;
 
-      var tabs = Array.prototype.slice.call(root.querySelectorAll('[data-look-tab]'));
-      var stage = root.querySelector('[data-look-stage]');
-      var film = root.querySelector('[data-look-film]');
-      if (!stage) return;
+      var scenes = Array.prototype.slice.call(root.querySelectorAll('[data-look-scene-root]'));
+      var rail = root.querySelector('[data-look-rail]');
+      if (!scenes.length) return;
 
-      var scene = 0;
-      var pin = null;
+      function setupScene(sceneRoot) {
+        var stage = sceneRoot.querySelector('[data-look-stage]');
+        var rowsHost = sceneRoot.querySelector('[data-look-rows]');
+        var film = sceneRoot.querySelector('[data-look-film]');
+        var hotspots = Array.prototype.slice.call(sceneRoot.querySelectorAll('[data-look-hotspot]'));
+        var activeIndex = null;
 
-      function all(selector) {
-        return Array.prototype.slice.call(root.querySelectorAll(selector));
-      }
+        hotspots.forEach(function (hotspot, index) {
+          var number = String(index + 1);
+          var padded = number.length < 2 ? '0' + number : number;
+          var marker = hotspot.querySelector('[data-look-pin]');
+          var card = hotspot.querySelector('[data-look-card]');
+          var row = hotspot.querySelector('[data-look-row-source]');
 
-      function inScene(selector, index) {
-        return all(selector).filter(function (el) {
-          return parseInt(el.dataset.lookPinScene || el.dataset.lookCardScene ||
-                          el.dataset.lookRowScene, 10) === index;
+          if (marker) {
+            marker.dataset.lookIndex = number;
+            var markerNumber = marker.querySelector('[data-look-number]');
+            if (markerNumber) markerNumber.textContent = number;
+          }
+          if (card) card.dataset.lookIndex = number;
+          if (row) {
+            row.dataset.lookIndex = number;
+            var rowNumber = row.querySelector('[data-look-row-number]');
+            if (rowNumber) rowNumber.textContent = padded;
+            if (rowsHost) {
+              rowsHost.appendChild(row);
+              row.hidden = false;
+            }
+          }
         });
-      }
 
-      function video() {
-        var panel = root.querySelector('[data-look-scene="' + scene + '"]');
-        return panel ? panel.querySelector('video') : null;
-      }
-
-      /* ---- Points and cards ---- */
-
-      function closeCard() {
-        pin = null;
-        all('[data-look-card]').forEach(function (c) { c.hidden = true; });
-        all('.lookbook-pin').forEach(function (p) { p.classList.remove('is-active'); });
-        all('.lookbook-row').forEach(function (r) { r.classList.remove('is-active'); });
-      }
-
-      function openPin(index) {
-        if (pin === index) { closeCard(); return; }
-        closeCard();
-        pin = index;
-
-        var card = root.querySelector(
-          '[data-look-card="' + index + '"][data-look-card-scene="' + scene + '"]'
-        );
-        if (card) card.hidden = false;
-
-        var marker = root.querySelector(
-          '[data-look-pin="' + index + '"][data-look-pin-scene="' + scene + '"]'
-        );
-        if (marker) marker.classList.add('is-active');
-
-        var row = root.querySelector(
-          '[data-look-row="' + index + '"][data-look-row-scene="' + scene + '"]'
-        );
-        if (row) row.classList.add('is-active');
-      }
-
-      /* ---- Film timing ----
-         A point with no window is simply always there. */
-
-      function applyTiming() {
-        var v = video();
-        if (!v) return;
-        var t = v.currentTime || 0;
-
-        inScene('.lookbook-pin', scene).forEach(function (marker) {
-          var from = parseFloat(marker.dataset.lookIn) || 0;
-          var to = parseFloat(marker.dataset.lookOut) || 0;
-          if (!to) return;
-          var index = parseInt(marker.dataset.lookPin, 10);
-          marker.hidden = !(t >= from && t <= to) && pin !== index;
+        var count = hotspots.length;
+        sceneRoot.querySelectorAll('[data-hotspot-count-text]').forEach(function (text) {
+          var template = count === 1 ? sceneRoot.dataset.countOne : sceneRoot.dataset.countOther;
+          text.textContent = (template || '__count__ pieces').replace('__count__', String(count));
         });
-      }
 
-      function clock(seconds) {
-        if (!isFinite(seconds)) seconds = 0;
-        var m = Math.floor(seconds / 60);
-        var s = Math.floor(seconds % 60);
-        return m + ':' + (s < 10 ? '0' : '') + s;
-      }
+        function markerFor(index) {
+          return sceneRoot.querySelector('[data-look-pin][data-look-index="' + index + '"]');
+        }
 
-      function paintFilm() {
-        var v = video();
-        if (!film) return;
+        function closeCard() {
+          activeIndex = null;
+          sceneRoot.querySelectorAll('[data-look-card]').forEach(function (card) { card.hidden = true; });
+          sceneRoot.querySelectorAll('[data-look-pin]').forEach(function (marker) {
+            marker.classList.remove('is-active');
+            marker.setAttribute('aria-expanded', 'false');
+          });
+          sceneRoot.querySelectorAll('.lookbook-row').forEach(function (row) { row.classList.remove('is-active'); });
+        }
 
-        film.hidden = !v;
-        if (!v) return;
+        function openPin(index) {
+          if (activeIndex === index) { closeCard(); return; }
+          closeCard();
+          activeIndex = index;
 
-        var fill = film.querySelector('[data-look-fill]');
-        var time = film.querySelector('[data-look-time]');
-        var playIcon = film.querySelector('[data-look-play-icon]');
-        var pauseIcon = film.querySelector('[data-look-pause-icon]');
-        var dur = v.duration || 0;
+          var card = sceneRoot.querySelector('[data-look-card][data-look-index="' + index + '"]');
+          var marker = markerFor(index);
+          var row = sceneRoot.querySelector('.lookbook-row[data-look-index="' + index + '"]');
+          if (card) card.hidden = false;
+          if (marker) {
+            marker.classList.add('is-active');
+            marker.setAttribute('aria-expanded', 'true');
+          }
+          if (row) row.classList.add('is-active');
+        }
 
-        if (fill) fill.style.width = (dur ? (v.currentTime / dur) * 100 : 0) + '%';
-        if (time) time.textContent = clock(v.currentTime) + ' / ' + clock(dur);
-        if (playIcon) playIcon.hidden = !v.paused;
-        if (pauseIcon) pauseIcon.hidden = v.paused;
+        function video() {
+          return stage ? stage.querySelector('.media-block video') : null;
+        }
 
-        applyTiming();
-      }
+        function applyTiming() {
+          var media = video();
+          if (!media) return;
+          var time = media.currentTime || 0;
+          sceneRoot.querySelectorAll('[data-look-pin]').forEach(function (marker) {
+            var from = parseFloat(marker.dataset.lookIn) || 0;
+            var to = parseFloat(marker.dataset.lookOut) || 0;
+            var visible = (!from || time >= from) && (!to || time <= to);
+            marker.hidden = !visible && activeIndex !== marker.dataset.lookIndex;
+          });
+        }
 
-      function paintMarks() {
-        var v = video();
-        var marks = film && film.querySelector('[data-look-marks]');
-        if (!marks) return;
+        function clock(seconds) {
+          if (!isFinite(seconds)) seconds = 0;
+          var minutes = Math.floor(seconds / 60);
+          var remaining = Math.floor(seconds % 60);
+          return minutes + ':' + (remaining < 10 ? '0' : '') + remaining;
+        }
 
-        marks.innerHTML = '';
-        var dur = v && v.duration;
-        if (!dur) return;
+        function paintFilm() {
+          var media = video();
+          if (!film) return;
+          film.hidden = !media;
+          if (!media) return;
+          var fill = film.querySelector('[data-look-fill]');
+          var time = film.querySelector('[data-look-time]');
+          var playIcon = film.querySelector('[data-look-play-icon]');
+          var pauseIcon = film.querySelector('[data-look-pause-icon]');
+          var duration = media.duration || 0;
+          if (fill) fill.style.width = (duration ? (media.currentTime / duration) * 100 : 0) + '%';
+          if (time) time.textContent = clock(media.currentTime) + ' / ' + clock(duration);
+          if (playIcon) playIcon.hidden = !media.paused;
+          if (pauseIcon) pauseIcon.hidden = media.paused;
+          applyTiming();
+        }
 
-        inScene('.lookbook-pin', scene).forEach(function (marker) {
-          var from = parseFloat(marker.dataset.lookIn) || 0;
-          if (!from) return;
-          var tick = document.createElement('span');
-          tick.style.left = (from / dur) * 100 + '%';
-          marks.appendChild(tick);
+        function paintMarks() {
+          var media = video();
+          var marks = film && film.querySelector('[data-look-marks]');
+          if (!marks) return;
+          marks.innerHTML = '';
+          if (!media || !media.duration) return;
+          sceneRoot.querySelectorAll('[data-look-pin]').forEach(function (marker) {
+            var from = parseFloat(marker.dataset.lookIn) || 0;
+            if (!from) return;
+            var tick = document.createElement('span');
+            tick.style.left = (from / media.duration) * 100 + '%';
+            marks.appendChild(tick);
+          });
+        }
+
+        sceneRoot.addEventListener('click', function (event) {
+          var marker = event.target.closest('[data-look-pin]');
+          if (marker) { openPin(marker.dataset.lookIndex); return; }
+          if (event.target.closest('[data-look-card-close]')) { closeCard(); return; }
+          var pick = event.target.closest('[data-look-row-pick]');
+          if (pick) {
+            var row = pick.closest('.lookbook-row');
+            if (row) openPin(row.dataset.lookIndex);
+          }
         });
+
+        sceneRoot.addEventListener('mouseover', function (event) {
+          var row = event.target.closest('.lookbook-row');
+          if (!row || row.classList.contains('is-active')) return;
+          var marker = markerFor(row.dataset.lookIndex);
+          if (marker) marker.classList.add('is-active');
+        });
+
+        sceneRoot.addEventListener('mouseout', function (event) {
+          var row = event.target.closest('.lookbook-row');
+          if (!row || row.classList.contains('is-active')) return;
+          var marker = markerFor(row.dataset.lookIndex);
+          if (marker && marker.dataset.lookIndex !== activeIndex) marker.classList.remove('is-active');
+        });
+
+        if (film) {
+          var play = film.querySelector('[data-look-play]');
+          var bar = film.querySelector('[data-look-bar]');
+          if (play) {
+            play.addEventListener('click', function () {
+              var media = video();
+              if (!media) return;
+              if (media.paused) {
+                watchVideoLqip(media, true);
+                requestVideoLqipPlayback(media, false);
+              } else {
+                media.pause();
+              }
+              paintFilm();
+            });
+          }
+          if (bar) {
+            bar.addEventListener('click', function (event) {
+              var media = video();
+              if (!media || !media.duration) return;
+              var box = bar.getBoundingClientRect();
+              media.currentTime = Math.min(1, Math.max(0, (event.clientX - box.left) / box.width)) * media.duration;
+              paintFilm();
+            });
+          }
+        }
+
+        if (stage) {
+          stage.addEventListener('timeupdate', paintFilm, true);
+          stage.addEventListener('loadedmetadata', function () { paintMarks(); paintFilm(); }, true);
+          stage.addEventListener('play', paintFilm, true);
+          stage.addEventListener('pause', paintFilm, true);
+          if ('IntersectionObserver' in window) {
+            new IntersectionObserver(function (entries) {
+              entries.forEach(function (entry) {
+                var media = video();
+                if (!media) return;
+                if (entry.isIntersecting && !sceneRoot.hidden && !reduceMotion.matches) {
+                  watchVideoLqip(media, true);
+                  requestVideoLqipPlayback(media, false);
+                } else {
+                  media.pause();
+                }
+              });
+            }, { threshold: 0.4 }).observe(stage);
+          }
+        }
+
+        paintFilm();
+        return { closeCard: closeCard, paintFilm: paintFilm, video: video };
       }
 
-      /* ---- Scenes ---- */
+      var controllers = scenes.map(setupScene);
+      var tabs = [];
 
       function show(index) {
-        scene = index;
-        closeCard();
-
-        tabs.forEach(function (tab, i) {
-          tab.classList.toggle('is-active', i === index);
-          tab.setAttribute('aria-selected', String(i === index));
+        scenes.forEach(function (sceneRoot, sceneIndex) {
+          var active = sceneIndex === index;
+          sceneRoot.hidden = !active;
+          if (!active) {
+            controllers[sceneIndex].closeCard();
+            var media = controllers[sceneIndex].video();
+            if (media) media.pause();
+          } else {
+            controllers[sceneIndex].paintFilm();
+          }
         });
-
-        all('[data-look-scene]').forEach(function (panel) {
-          var on = parseInt(panel.dataset.lookScene, 10) === index;
-          panel.hidden = !on;
-          var v = panel.querySelector('video');
-          if (v && !on) v.pause();
+        tabs.forEach(function (tab, tabIndex) {
+          tab.classList.toggle('is-active', tabIndex === index);
+          tab.setAttribute('aria-selected', String(tabIndex === index));
+          tab.tabIndex = tabIndex === index ? 0 : -1;
         });
-
-        all('[data-look-tag]').forEach(function (tag) {
-          tag.hidden = parseInt(tag.dataset.lookTag, 10) !== index;
-        });
-
-        all('.lookbook-pin').forEach(function (marker) {
-          marker.hidden = parseInt(marker.dataset.lookPinScene, 10) !== index;
-        });
-
-        all('[data-look-rows]').forEach(function (rows) {
-          rows.hidden = parseInt(rows.dataset.lookRows, 10) !== index;
-        });
-
-        all('[data-look-count]').forEach(function (count) {
-          count.hidden = parseInt(count.dataset.lookCount, 10) !== index;
-        });
-
-        var v = video();
-        if (v) {
-          v.muted = true;
-          v.setAttribute('playsinline', '');
-          v.loop = true;
-          if (v.readyState >= 1) { paintMarks(); paintFilm(); }
-        }
-        paintFilm();
       }
 
-      /* ---- Wiring ---- */
-
-      tabs.forEach(function (tab, i) {
-        tab.addEventListener('click', function () { show(i); });
-      });
-
-      root.addEventListener('click', function (event) {
-        var marker = event.target.closest('.lookbook-pin');
-        if (marker) {
-          openPin(parseInt(marker.dataset.lookPin, 10));
-          return;
-        }
-
-        if (event.target.closest('[data-look-card-close]')) { closeCard(); return; }
-
-        var pick = event.target.closest('[data-look-row-pick]');
-        if (pick) {
-          var row = pick.closest('.lookbook-row');
-          if (row) openPin(parseInt(row.dataset.lookRow, 10));
-        }
-      });
-
-      /* Hovering a row lights its point, and the other way round. */
-      root.addEventListener('mouseover', function (event) {
-        var row = event.target.closest('.lookbook-row');
-        if (!row || row.classList.contains('is-active')) return;
-        var marker = root.querySelector(
-          '[data-look-pin="' + row.dataset.lookRow + '"][data-look-pin-scene="' + scene + '"]'
-        );
-        if (marker) marker.classList.add('is-active');
-      });
-
-      root.addEventListener('mouseout', function (event) {
-        var row = event.target.closest('.lookbook-row');
-        if (!row || row.classList.contains('is-active')) return;
-        var marker = root.querySelector(
-          '[data-look-pin="' + row.dataset.lookRow + '"][data-look-pin-scene="' + scene + '"]'
-        );
-        if (marker && parseInt(marker.dataset.lookPin, 10) !== pin) {
-          marker.classList.remove('is-active');
-        }
-      });
-
-      document.addEventListener('keydown', function (event) {
-        if (event.key === 'Escape' && pin !== null) closeCard();
-      });
-
-      if (film) {
-        var play = film.querySelector('[data-look-play]');
-        var bar = film.querySelector('[data-look-bar]');
-
-        if (play) {
-          play.addEventListener('click', function () {
-            var v = video();
-            if (!v) return;
-            if (v.paused) {
-              watchVideoLqip(v, true);
-              requestVideoLqipPlayback(v, false);
-            } else {
-              v.pause();
-            }
-            paintFilm();
-          });
-        }
-
-        if (bar) {
-          bar.addEventListener('click', function (event) {
-            var v = video();
-            if (!v || !v.duration) return;
-            var box = bar.getBoundingClientRect();
-            v.currentTime = Math.min(1, Math.max(0, (event.clientX - box.left) / box.width)) * v.duration;
-            paintFilm();
-          });
-        }
+      if (scenes.length > 1 && rail) {
+        rail.hidden = false;
+        scenes.forEach(function (sceneRoot, index) {
+          var tab = document.createElement('button');
+          var tabId = root.id + '-tab-' + index;
+          var panelId = root.id + '-panel-' + index;
+          tab.className = 'lookbook__tab';
+          tab.type = 'button';
+          tab.role = 'tab';
+          tab.id = tabId;
+          tab.textContent = sceneRoot.dataset.lookLabel || ('Look ' + (index + 1));
+          tab.setAttribute('aria-controls', panelId);
+          tab.addEventListener('click', function () { show(index); });
+          sceneRoot.id = panelId;
+          sceneRoot.setAttribute('role', 'tabpanel');
+          sceneRoot.setAttribute('aria-labelledby', tabId);
+          rail.appendChild(tab);
+          tabs.push(tab);
+        });
       }
 
-      stage.addEventListener('timeupdate', paintFilm, true);
-      stage.addEventListener('loadedmetadata', function () { paintMarks(); paintFilm(); }, true);
-      stage.addEventListener('play', paintFilm, true);
-      stage.addEventListener('pause', paintFilm, true);
+      root.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape') controllers.forEach(function (controller) { controller.closeCard(); });
+      });
 
-      /* Play only while the stage is actually on screen. */
-      if ('IntersectionObserver' in window) {
-        new IntersectionObserver(function (entries) {
-          entries.forEach(function (entry) {
-            var v = video();
-            if (!v) return;
-            if (entry.isIntersecting && !reduceMotion.matches) {
-              watchVideoLqip(v, true);
-              requestVideoLqipPlayback(v, false);
-            } else {
-              v.pause();
-            }
-          });
-        }, { threshold: 0.4 }).observe(stage);
-      }
+      root.addEventListener('shopify:block:select', function (event) {
+        var sceneRoot = event.target.closest && event.target.closest('[data-look-scene-root]');
+        var index = scenes.indexOf(sceneRoot);
+        if (index >= 0) show(index);
+      });
 
       show(0);
     });
@@ -4276,7 +4319,7 @@
     initLookbook(scope);
     blurUp(scope);
     initCards(scope);
-    initCardMetals(scope);
+    initCardOptions(scope);
     initOverlays(scope);
     initCookieChoice(scope);
   }

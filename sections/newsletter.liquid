@@ -111,22 +111,19 @@
   ],
   "blocks": [
     { "type": "@app" },
-    { "type": "heading" },
-    { "type": "prose" },
-    { "type": "subheading" },
-    { "type": "paragraph" },
-    { "type": "title" }
+    { "type": "text" },
+    { "type": "rich-text" }
   ],
   "presets": [
     {
       "name": "t:sections.newsletter.name",
       "blocks": [
         {
-          "type": "heading",
-          "settings": { "text": "Stay in touch", "style": "heading_2" }
+          "type": "text",
+          "settings": { "text": "Stay in touch", "style": "heading_2", "element": "h2" }
         },
         {
-          "type": "prose",
+          "type": "rich-text",
           "settings": { "text": "<p>Occasional email about new arrivals. No noise.</p>" }
         }
       ]

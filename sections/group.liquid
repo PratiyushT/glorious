@@ -21,11 +21,11 @@
       assign width_class = 'group-section__width--edge'
   endcase
 
-  assign alignment_css = '--section-align: left; --section-align-jc: flex-start;'
+  assign alignment_css = '--group-content-align: left; --group-content-items: flex-start; --section-align: left; --section-align-jc: flex-start;'
   if section.settings.content_alignment == 'center'
-    assign alignment_css = '--section-align: center; --section-align-jc: center;'
+    assign alignment_css = '--group-content-align: center; --group-content-items: center; --section-align: center; --section-align-jc: center;'
   elsif section.settings.content_alignment == 'right'
-    assign alignment_css = '--section-align: right; --section-align-jc: flex-end;'
+    assign alignment_css = '--group-content-align: right; --group-content-items: flex-end; --section-align: right; --section-align-jc: flex-end;'
   endif
 -%}
 
@@ -38,7 +38,8 @@
     <div
       class="layout-group group-section__layout"
       data-direction="{{ section.settings.direction }}"
-      data-stack="{{ section.settings.stack_below }}"
+      data-stack="{% if section.settings.direction == 'horizontal' %}{{ section.settings.stack_below }}{% else %}never{% endif %}"
+      data-mobile-align="{{ section.settings.content_alignment_mobile | default: 'inherit' }}"
       data-items="{{ section.settings.items_width }}"
       data-wrap="{{ section.settings.wrap }}"
     >
@@ -230,6 +231,20 @@
       "default": "left"
     },
     {
+      "type": "select",
+      "id": "content_alignment_mobile",
+      "label": "t:blocks.group.content_alignment_mobile.label",
+      "info": "t:blocks.group.content_alignment_mobile.info",
+      "options": [
+        { "value": "inherit", "label": "t:blocks.group.content_alignment_mobile.inherit" },
+        { "value": "left", "label": "t:settings_schema.options.left" },
+        { "value": "center", "label": "t:settings_schema.options.center" },
+        { "value": "right", "label": "t:settings_schema.options.right" }
+      ],
+      "default": "inherit",
+      "visible_if": "{{ section.settings.direction == 'horizontal' and section.settings.stack_below != 'never' }}"
+    },
+    {
       "type": "header",
       "content": "t:sections.all.spacing_header"
     },
@@ -306,10 +321,10 @@
             "align_vertical": "start"
           },
           "blocks": [
-            { "type": "subheading", "settings": { "text": "Subheading" } },
-            { "type": "heading", "settings": { "text": "Say something that matters" } },
-            { "type": "prose" },
-            { "type": "buttons" }
+            { "type": "text", "settings": { "text": "Subheading", "style": "subheading", "layout": "eyebrow", "element": "span" } },
+            { "type": "text", "settings": { "text": "Say something that matters", "style": "heading_2", "element": "h2" } },
+            { "type": "rich-text" },
+            { "type": "button" }
           ]
         }
       ]
@@ -335,8 +350,8 @@
             "vertical_gap": "tiny"
           },
           "blocks": [
-            { "type": "subheading", "settings": { "text": "Made with intention" } },
-            { "type": "title", "settings": { "text": "Why choose us", "heading_level": "h2" } }
+            { "type": "text", "settings": { "text": "Made with intention", "style": "subheading", "layout": "eyebrow", "element": "span" } },
+            { "type": "text", "settings": { "text": "Why choose us", "style": "title", "layout": "display", "element": "h2" } }
           ]
         },
         {
@@ -362,8 +377,8 @@
               },
               "blocks": [
                 { "type": "icon", "settings": { "icon": "diamond" } },
-                { "type": "heading", "settings": { "text": "Considered materials", "style": "heading_5", "heading_level": "h3" } },
-                { "type": "paragraph", "settings": { "text": "Explain the materials, standards, or details that make the product distinct.", "style": "small" } }
+                { "type": "text", "settings": { "text": "Considered materials", "style": "heading_5", "element": "h3" } },
+                { "type": "text", "settings": { "text": "Explain the materials, standards, or details that make the product distinct.", "style": "small", "layout": "lede" } }
               ]
             },
             {
@@ -377,8 +392,8 @@
               },
               "blocks": [
                 { "type": "icon", "settings": { "icon": "support" } },
-                { "type": "heading", "settings": { "text": "Personal service", "style": "heading_5", "heading_level": "h3" } },
-                { "type": "paragraph", "settings": { "text": "Tell customers how your team supports them before and after their purchase.", "style": "small" } }
+                { "type": "text", "settings": { "text": "Personal service", "style": "heading_5", "element": "h3" } },
+                { "type": "text", "settings": { "text": "Tell customers how your team supports them before and after their purchase.", "style": "small", "layout": "lede" } }
               ]
             },
             {
@@ -392,8 +407,8 @@
               },
               "blocks": [
                 { "type": "icon", "settings": { "icon": "shipping" } },
-                { "type": "heading", "settings": { "text": "Secure delivery", "style": "heading_5", "heading_level": "h3" } },
-                { "type": "paragraph", "settings": { "text": "Set clear expectations for delivery, protection, and receiving the order.", "style": "small" } }
+                { "type": "text", "settings": { "text": "Secure delivery", "style": "heading_5", "element": "h3" } },
+                { "type": "text", "settings": { "text": "Set clear expectations for delivery, protection, and receiving the order.", "style": "small", "layout": "lede" } }
               ]
             }
           ]

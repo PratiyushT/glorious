@@ -13,11 +13,12 @@
   appear in the tab order behind the page.
 
   Accepts:
-    section, menu_id, link_blocks, bag_number, search_number, cart_drawer,
+    section, menu_id, link_blocks, cart_number, search_number, cart_drawer,
     search_overlay
 {%- endcomment -%}
 
 {%- liquid
+  assign cart_name = settings.cart_name | default: 'Cart'
   assign cat_blocks = section.blocks | where: 'type', 'category'
   assign social_blocks = section.blocks | where: 'type', 'social'
   assign social = social_blocks.first
@@ -27,8 +28,8 @@
     shortcuts and the footer together, after everything else.
   endcomment
   assign tail_row = link_blocks.size
-  if bag_number > tail_row
-    assign tail_row = bag_number
+  if cart_number > tail_row
+    assign tail_row = cart_number
   endif
   if search_number > tail_row
     assign tail_row = search_number
@@ -74,22 +75,22 @@
         place instead — so the row still goes somewhere useful when scripting
         is unavailable.
       {%- endcomment -%}
-      {%- if bag_number > 0 -%}
-        <li class="nav-menu__item" style="--row: {{ bag_number | minus: 1 }};">
+      {%- if cart_number > 0 -%}
+        <li class="nav-menu__item" style="--row: {{ cart_number | minus: 1 }};">
           <a
             class="nav-menu__link"
             href="{{ routes.cart_url }}"
             {% if cart_drawer %}data-drawer-open data-from-menu{% endif %}
           >
             <span class="nav-menu__num" aria-hidden="true">
-              {{ bag_number | prepend: '0' | slice: -2, 2 }}
+              {{ cart_number | prepend: '0' | slice: -2, 2 }}
             </span>
-            {{ 'navigation.your_bag' | t }}
+            {{ 'navigation.your_cart' | t: cart_name: cart_name }}
             <span class="nav-menu__aside">
               {%- if cart.item_count > 0 -%}
-                {{ 'navigation.bag_count' | t: count: cart.item_count }}
+                {{ 'navigation.cart_count' | t: count: cart.item_count }}
               {%- else -%}
-                {{ 'navigation.bag_empty' | t }}
+                {{ 'navigation.cart_empty' | t }}
               {%- endif -%}
             </span>
           </a>

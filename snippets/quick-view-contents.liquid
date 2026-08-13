@@ -3,7 +3,7 @@
   in the product's own context.
 
   theme.js asks Shopify for `<product url>?section_id=<this section>` and swaps
-  the result into the overlay, exactly as the bag drawer is re-rendered after a
+  the result into the overlay, exactly as the cart drawer is re-rendered after a
   cart change. Money, translation and image sizing therefore stay in Liquid, and
   the panel is a rendering of the product rather than a copy of it assembled in
   the browser.
@@ -210,7 +210,9 @@
   endcomment
   assign supports_engraving = product.metafields.custom.engraving_available.value
   assign form_id = 'quick-view-form-' | append: product.id
-  assign add_label = settings.quick_view_add_label | default: 'Add to Bag'
+  assign cart_name = settings.cart_name | default: 'Cart'
+  assign cart_name_lower = cart_name | downcase
+  assign add_label = 'products.add_to_cart' | t: cart_name: cart_name
 -%}
 
 {%- comment -%}
@@ -375,7 +377,7 @@
       What scrolls, where the merchant has asked for only the details to.
 
       The piece's name, its price and the two things a visitor does with it —
-      Add to Bag and View full details — stay put; the axes and the
+      Add to cart and View full details — stay put; the axes and the
       specification are what moves. The wrapper is `display: contents` in every
       other case, so it changes no geometry at all under the design's own
       whole-panel scroll: the rows remain flex items of .quick-view__info
@@ -576,7 +578,7 @@
           disabled
         >
 
-        <p class="quick-view__opt-note">{{ 'products.custom_engraving_hint' | t }}</p>
+        <p class="quick-view__opt-note">{{ 'products.custom_engraving_hint' | t: cart_name: cart_name_lower }}</p>
       </div>
     {%- endif -%}
 

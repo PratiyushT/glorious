@@ -1,5 +1,5 @@
 {%- comment -%}
-  Everything inside the bag drawer panel.
+  Everything inside the cart drawer panel.
 
   Kept apart from the section shell because this is the part that gets replaced
   after a quantity change: theme.js asks Shopify to re-render the section and
@@ -16,6 +16,7 @@
   or arithmetic done in the browser.
 {%- endcomment -%}
 {%- liquid
+  assign cart_name = settings.cart_name | default: 'Cart'
   comment
     A line's photograph is framed the way a product card's is, from the same
     kind of pair of settings — Theme settings → Cart. The design's thumbnail is
@@ -35,19 +36,19 @@
 {%- comment -%}
   The count, and the sentence that announces it. Both come from the markup
   Shopify has just re-rendered, so neither the number nor its pluralisation is
-  worked out in JavaScript — the same rule the product card's Add to Bag
+  worked out in JavaScript — the same rule the product card's add label
   labels follow.
 {%- endcomment -%}
 <div
   class="drawer__count-source"
   data-cart-count-value="{{ cart.item_count }}"
-  data-cart-announce="{{ 'navigation.bag_count' | t: count: cart.item_count }}"
+  data-cart-announce="{{ 'navigation.cart_status' | t: count: cart.item_count, cart_name: cart_name }}"
   hidden
 ></div>
 
 <div class="drawer__head">
   <span class="drawer__title">
-    {{ 'cart.title_bag' | t }}
+    {{ 'cart.title_drawer' | t: cart_name: cart_name }}
     {%- if cart.item_count > 0 -%}
       <span class="drawer__count">{{ cart.item_count }}</span>
     {%- endif -%}
@@ -61,10 +62,10 @@
 <div class="drawer__body" data-drawer-scroller>
   {%- if cart.item_count == 0 -%}
     <div class="drawer-empty">
-      <p class="drawer-empty__title">{{ 'cart.empty' | t }}</p>
+      <p class="drawer-empty__title">{{ 'cart.empty' | t: cart_name: cart_name }}</p>
       <p class="drawer-empty__text">{{ 'cart.empty_text' | t }}</p>
       {%- comment -%}
-        Where an empty bag sends a shopper is the merchant's, and it falls back
+        Where an empty cart sends a shopper is the merchant's, and it falls back
         to all products rather than to a fragment — this theme does not ship a
         control that looks live and goes nowhere.
       {%- endcomment -%}

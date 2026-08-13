@@ -1,0 +1,52 @@
+{%- comment -%}
+  A testimonial is private structure, not a third global text block. Its quote
+  and attribution are ordinary global Text or Rich text children, so both can
+  use dynamic sources and the same typography controls as text everywhere else.
+
+  The figure itself remains the carousel item because an extra generated block
+  wrapper would prevent the testimonial figures from overlapping in one grid
+  cell for the cross-fade.
+{%- endcomment -%}
+
+<figure class="quote" data-quote {{ block.shopify_attributes }}>
+  {% content_for 'blocks' %}
+</figure>
+
+{% schema %}
+{
+  "name": "t:blocks.testimonial.name",
+  "tag": null,
+  "blocks": [
+    { "type": "text" },
+    { "type": "rich-text" }
+  ],
+  "presets": [
+    {
+      "name": "t:blocks.testimonial.name",
+      "blocks": [
+        {
+          "type": "text",
+          "settings": {
+            "text": "“The craftsmanship is extraordinary and the service even more so.”",
+            "style": "paragraph",
+            "element": "blockquote",
+            "override_font": "accent",
+            "override_size": "2xl",
+            "override_leading": "normal"
+          }
+        },
+        {
+          "type": "text",
+          "settings": {
+            "text": "Manjit Kaur — Google Review",
+            "style": "caption",
+            "element": "figcaption",
+            "override_case": "uppercase",
+            "override_tracking": "wider"
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

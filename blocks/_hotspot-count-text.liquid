@@ -1,108 +1,21 @@
 {%- comment -%}
-  Product card — every value one of the product's options carries.
-
-  "18K, 22K". The words around it are not here: this block renders the list and
-  a `product-card-text` beside it in a `group` says "Available in", which is the
-  same composition the caption uses. A shop that wants "Comes in", "Sizes:" or
-  nothing at all types it there rather than asking the theme for a setting.
-
-  **The option is named by the merchant, and matched rather than positioned.** A
-  text setting — "Karat", "Size", "Length" — matched case-insensitively against
-  each option's name. Position would be simpler and is wrong on a mixed
-  catalogue: one product ordered Metal, Karat and another Karat, Metal cannot
-  both be served by "the second option". A name finds the right one either way,
-  and renders nothing on a product with no such option, which is the honest
-  answer for a catalogue where only some pieces carry it.
-
-  **The order is the merchant's own.** The block before this sorted numerically
-  — pulling the first number out of each value and zero-padding it so "9K"
-  sorted before "22K". That is right for karats and arbitrary for everything
-  else: "Brushed, Polished" has no number, and S/M/L/XL sorts wrongly under
-  every rule except the one the merchant already applied in admin.
-
-  **Every value is listed, whatever the stock.** An option value exists because
-  the piece can be made that way, so a sold-out one is still something the shop
-  offers; filtering on `available` would make the sentence flicker as inventory
-  moved.
-
-  Its style and element controls are `product-card-text`'s, from the same
-  `snippets/text-style.liquid` — a merchant setting one half of a row should not
-  find the other half cannot be set the same way.
+  Interactive-media-only Text value. JavaScript replaces the localized initial
+  value with the number of private hotspots nested in its owning scene. The
+  shared renderer gives it every global Text presentation control.
 {%- endcomment -%}
 
-{%- liquid
-  assign product = closest.product
-  if block.settings.product != blank
-    assign product = block.settings.product
-  endif
-  assign wanted = block.settings.option_name | downcase | strip
-
-  assign values_option = blank
-  if wanted != blank
-    for option in product.options_with_values
-      assign option_down = option.name | downcase
-      if option_down contains wanted
-        assign values_option = option
-        break
-      endif
-    endfor
-  endif
-
-  assign separator = block.settings.separator | default: ', '
-
-  assign values_list = ''
-  if values_option != blank
-    for value in values_option.values
-      if forloop.first
-        assign values_list = value | append: ''
-      else
-        assign values_list = values_list | append: separator | append: value
-      endif
-    endfor
-  endif
-
-  assign tags = 'span,p,h1,h2,h3,h4,h5,h6' | split: ','
-  assign tag = 'span'
-  if tags contains block.settings.element
-    assign tag = block.settings.element
-  endif
--%}
-
-{%- if values_list != blank -%}
-  <{{ tag }}
-    class="card__meta card__text"
-    style="{% render 'text-style', preset: block.settings.style, font_style: block.settings.override_font, font_size: block.settings.override_size, color: block.settings.color, line_height: block.settings.override_leading, text_case: block.settings.override_case, letter_spacing: block.settings.override_tracking %}"
-    {{ block.shopify_attributes }}
-  >{{ values_list }}</{{ tag }}>
-{%- endif -%}
+{%- assign hotspot_count = 'lookbook.pieces_count' | t: count: 0 -%}
+{% render 'text-block',
+  block: block,
+  content: hotspot_count,
+  marker: 'data-hotspot-count-text'
+%}
 
 {% schema %}
 {
-  "name": "t:blocks.product_card_option_values.name",
+  "name": "t:blocks.hotspot_count_text.name",
   "tag": null,
   "settings": [
-    {
-      "type": "header",
-      "content": "t:blocks.all.content_source_header"
-    },
-    {
-      "type": "product",
-      "id": "product",
-      "label": "t:blocks.all.product_source.label",
-      "info": "t:blocks.all.product_source.info"
-    },
-    {
-      "type": "text",
-      "id": "option_name",
-      "label": "t:blocks.product_card_option_values.option_name.label",
-      "info": "t:blocks.product_card_option_values.option_name.info"
-    },
-    {
-      "type": "text",
-      "id": "separator",
-      "label": "t:blocks.product_card_option_values.separator.label",
-      "default": ", "
-    },
     {
       "type": "header",
       "content": "t:blocks.all.text_header"
@@ -124,7 +37,20 @@
         { "value": "small", "label": "t:settings_schema.typography.presets.small.header" },
         { "value": "caption", "label": "t:settings_schema.typography.presets.caption.header" }
       ],
-      "default": "caption"
+      "default": "paragraph"
+    },
+    {
+      "type": "select",
+      "id": "layout",
+      "label": "t:blocks.text.layout.label",
+      "info": "t:blocks.text.layout.info",
+      "options": [
+        { "value": "standard", "label": "t:blocks.text.layout.standard" },
+        { "value": "display", "label": "t:blocks.text.layout.display" },
+        { "value": "eyebrow", "label": "t:blocks.text.layout.eyebrow" },
+        { "value": "lede", "label": "t:blocks.text.layout.lede" }
+      ],
+      "default": "standard"
     },
     {
       "type": "select",
@@ -139,9 +65,11 @@
         { "value": "h3", "label": "t:blocks.all.text_element.h3" },
         { "value": "h4", "label": "t:blocks.all.text_element.h4" },
         { "value": "h5", "label": "t:blocks.all.text_element.h5" },
-        { "value": "h6", "label": "t:blocks.all.text_element.h6" }
+        { "value": "h6", "label": "t:blocks.all.text_element.h6" },
+        { "value": "blockquote", "label": "t:blocks.all.text_element.blockquote" },
+        { "value": "figcaption", "label": "t:blocks.all.text_element.figcaption" }
       ],
-      "default": "span"
+      "default": "p"
     },
     {
       "type": "header",
@@ -229,13 +157,47 @@
         { "value": "wider", "label": "t:settings_schema.typography.tracking.wider" }
       ],
       "default": "inherit"
+    },
+    {
+      "type": "select",
+      "id": "alignment",
+      "label": "t:sections.all.content_alignment.label",
+      "info": "t:sections.all.content_alignment.info",
+      "options": [
+        { "value": "inherit", "label": "t:settings_schema.options.inherit" },
+        { "value": "left", "label": "t:settings_schema.options.left" },
+        { "value": "center", "label": "t:settings_schema.options.center" },
+        { "value": "right", "label": "t:settings_schema.options.right" }
+      ],
+      "default": "inherit"
+    },
+    {
+      "type": "header",
+      "content": "t:blocks.all.spacing_header"
+    },
+    {
+      "type": "select",
+      "id": "padding",
+      "label": "t:blocks.all.padding.label",
+      "options": [
+        { "value": "none", "label": "t:blocks.all.step.none" },
+        { "value": "minimal", "label": "t:blocks.all.step.minimal" },
+        { "value": "tiny", "label": "t:blocks.all.step.tiny" },
+        { "value": "small", "label": "t:blocks.all.step.small" },
+        { "value": "medium", "label": "t:blocks.all.step.medium" },
+        { "value": "large", "label": "t:blocks.all.step.large" },
+        { "value": "xlarge", "label": "t:blocks.all.step.xlarge" }
+      ],
+      "default": "none"
     }
   ],
   "presets": [
     {
-      "name": "t:blocks.product_card_option_values.name",
+      "name": "t:blocks.hotspot_count_text.name",
       "settings": {
-        "product": "{{ closest.product }}"
+        "style": "caption",
+        "layout": "standard",
+        "padding": "none"
       }
     }
   ]

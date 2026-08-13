@@ -1,0 +1,218 @@
+{%- comment -%}
+  Private to Product card; explicitly targeted there and nowhere else.
+
+  Product card — add to cart.
+
+  A plain product form, so adding works without scripting. `theme.js`
+  intercepts it when the cart drawer is on, posts it in the background and
+  slides the drawer out.
+
+  The merchant chooses how products with variants behave: open Choose options,
+  add Shopify's first available variant, or add the highest-priced available
+  variant. Choose options is the portable default. The two direct-add modes are
+  explicit merchant decisions rather than assumptions hidden in the theme.
+
+  The highest-priced mode publishes its selected id, option value and exact
+  price on the button. `theme.js` applies that state to the separate option and
+  Price blocks as soon as the card initializes. Without scripting, its form is
+  replaced by a real Choose options link, so the fallback can never display one
+  price and submit another.
+
+  `data-card-add-id` is the hook an option pick moves, and `.card__add` is the
+  element whose label and disabled state it swaps — both read from the
+  `[data-card]` root, so this block can sit anywhere in the card.
+
+  **Both labels ride on the button, not on the card root**, and that follows
+  from the label being this block's setting. An option value can be sold out while the
+  one Liquid rendered was not, so `theme.js` has to swap between them without a
+  translation string of its own — and it used to read them off the root, which
+  was correct only while the words came from a theme setting both could see. A
+  block cannot hand its setting to its parent, so the attributes moved to where
+  the setting is. `theme.js` prefers the button's and falls back to the root's,
+  which is what keeps the legacy snippet card working unchanged.
+
+  **The form carries an id of its own.** Shopify derives one from the product,
+  so a page rendering the same piece twice — this card and a collection row,
+  say — would put two elements with the same id in the document, which is both
+  a scored accessibility failure and a real defect. The lookbook already had to
+  pass one for exactly this reason; see "Duplicate ids" in CLAUDE.md.
+{%- endcomment -%}
+
+{%- liquid
+  assign product = closest.product
+  assign cart_name = settings.cart_name | default: 'Cart'
+  assign label = 'products.add_to_cart' | t: cart_name: cart_name
+  assign choose_options_label = 'products.choose_options' | t
+  assign sold_out_label = 'products.sold_out' | t
+  if block.settings.add_label != blank
+    assign label = block.settings.add_label
+  endif
+  if block.settings.choose_options_label != blank
+    assign choose_options_label = block.settings.choose_options_label
+  endif
+  if block.settings.sold_out_label != blank
+    assign sold_out_label = block.settings.sold_out_label
+  endif
+  assign variant_action = block.settings.variant_action | default: 'choose_options'
+
+  assign chosen = blank
+  assign option_index = -1
+  if product != blank
+    capture card_option_raw
+      render 'card-option', product: product
+    endcapture
+    assign card_option = card_option_raw | strip | split: '||'
+    assign option_index = card_option[0] | plus: 0
+    assign chosen_id = card_option | last | plus: 0
+    for variant in product.variants
+      if variant.id == chosen_id
+        assign chosen = variant
+        break
+      endif
+    endfor
+
+    if variant_action == 'highest_available'
+      assign highest_available = blank
+      for variant in product.variants
+        if variant.available
+          if highest_available == blank or variant.price > highest_available.price
+            assign highest_available = variant
+          endif
+        endif
+      endfor
+      if highest_available != blank
+        assign chosen = highest_available
+      endif
+    endif
+  endif
+
+  assign form_id = 'card_form_' | append: product.id | append: '_' | append: block.id
+
+  assign has_variant_choices = false
+  if product != blank and product.variants.size > 1
+    assign has_variant_choices = true
+  endif
+
+  assign opens_options = false
+  if has_variant_choices and variant_action == 'choose_options'
+    assign opens_options = true
+  endif
+
+  assign strategy_option_value = ''
+  if option_index >= 0 and chosen != blank
+    assign strategy_option_value = chosen.options[option_index]
+  endif
+
+  capture chosen_price_html
+    if chosen.compare_at_price > chosen.price
+      echo '<s>'
+      echo chosen.compare_at_price | money
+      echo '</s>'
+    endif
+    echo chosen.price | money
+  endcapture
+-%}
+
+{%- if product == blank -%}
+  <span class="btn btn--square card__add" aria-disabled="true" {{ block.shopify_attributes }}>
+    {{- label -}}
+  </span>
+{%- elsif product.available == false -%}
+  <span class="btn btn--square card__add" aria-disabled="true" {{ block.shopify_attributes }}>
+    {{- sold_out_label -}}
+  </span>
+{%- elsif opens_options -%}
+  <a
+    class="btn btn--square card__add"
+    href="{{ product.url }}?variant={{ chosen.id }}"
+    data-quick-view
+    {{ block.shopify_attributes }}
+  >
+    {{- choose_options_label -}}
+  </a>
+{%- else -%}
+  {%- assign form_class = 'card__add-form' -%}
+  {%- if has_variant_choices and variant_action == 'highest_available' -%}
+    {%- assign form_class = form_class | append: ' card__add-form--requires-js' -%}
+  {%- endif -%}
+
+  {%- form 'product', product, id: form_id, class: form_class, data-cart-add: '' -%}
+    <input type="hidden" name="id" value="{{ chosen.id }}" data-card-add-id>
+    <button
+      type="submit"
+      name="add"
+      class="btn btn--square card__add"
+      data-add-label="{{ label | escape }}"
+      data-sold-out-label="{{ sold_out_label | escape }}"
+      {% if has_variant_choices and variant_action == 'highest_available' %}
+        data-card-add-strategy="highest_available"
+        data-card-add-variant-id="{{ chosen.id }}"
+        data-card-add-option-value="{{ strategy_option_value | escape }}"
+        data-card-add-price="{{ chosen_price_html | strip | escape }}"
+      {% endif %}
+      {{ block.shopify_attributes }}
+    >
+      {{- label -}}
+    </button>
+  {%- endform -%}
+
+  {%- if has_variant_choices and variant_action == 'highest_available' -%}
+    <a
+      class="btn btn--square card__add card__add-fallback"
+      href="{{ product.url }}?variant={{ chosen.id }}"
+      data-quick-view
+    >
+      {{- choose_options_label -}}
+    </a>
+  {%- endif -%}
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "t:blocks.product_card_add.name",
+  "tag": null,
+  "settings": [
+    {
+      "type": "select",
+      "id": "variant_action",
+      "label": "t:blocks.product_card_add.variant_action.label",
+      "info": "t:blocks.product_card_add.variant_action.info",
+      "options": [
+        { "value": "choose_options", "label": "t:blocks.product_card_add.variant_action.choose_options" },
+        { "value": "first_available", "label": "t:blocks.product_card_add.variant_action.first_available" },
+        { "value": "highest_available", "label": "t:blocks.product_card_add.variant_action.highest_available" }
+      ],
+      "default": "choose_options"
+    },
+    {
+      "type": "header",
+      "content": "t:blocks.product_card_add.labels_header"
+    },
+    {
+      "type": "text",
+      "id": "add_label",
+      "label": "t:blocks.product_card_add.add_label.label",
+      "info": "t:blocks.product_card_add.add_label.info",
+      "visible_if": "{{ block.settings.variant_action != 'choose_options' }}"
+    },
+    {
+      "type": "text",
+      "id": "choose_options_label",
+      "label": "t:blocks.product_card_add.choose_options_label.label",
+      "info": "t:blocks.product_card_add.choose_options_label.info",
+      "visible_if": "{{ block.settings.variant_action == 'choose_options' or block.settings.variant_action == 'highest_available' }}"
+    },
+    {
+      "type": "text",
+      "id": "sold_out_label",
+      "label": "t:blocks.product_card_add.sold_out_label.label",
+      "info": "t:blocks.product_card_add.sold_out_label.info"
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:blocks.product_card_add.name"
+    }
+  ]
+}
+{% endschema %}

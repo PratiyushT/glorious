@@ -1,5 +1,6 @@
 {%- comment -%}
-  Testimonials. Quotes cross-fade in place; the dots are real buttons so the
+  Testimonials. Private, explicitly targeted testimonial items made from global Text/Rich text
+  children cross-fade in place; the dots are real buttons so the
   set is reachable by keyboard. With JavaScript off, the first quote shows and
   the rest follow it in the document rather than disappearing.
 
@@ -136,16 +137,34 @@
   ],
   "blocks": [
     {
-      "type": "quote"
+      "type": "_testimonial"
     }
   ],
   "presets": [
     {
       "name": "t:sections.testimonials.name",
       "blocks": [
-        { "type": "quote" },
-        { "type": "quote", "settings": { "author": "Nisarg P — Google Review" } },
-        { "type": "quote", "settings": { "author": "Rahul Jogula — Google Review" } }
+        {
+          "type": "_testimonial",
+          "blocks": [
+            { "type": "text", "settings": { "text": "“The craftsmanship is extraordinary and the service even more so.”", "style": "paragraph", "element": "blockquote", "override_font": "accent", "override_size": "2xl", "override_leading": "normal" } },
+            { "type": "text", "settings": { "text": "Manjit Kaur — Google Review", "style": "caption", "element": "figcaption", "override_case": "uppercase", "override_tracking": "wider" } }
+          ]
+        },
+        {
+          "type": "_testimonial",
+          "blocks": [
+            { "type": "text", "settings": { "text": "“They took the time to get every detail right. It shows.”", "style": "paragraph", "element": "blockquote", "override_font": "accent", "override_size": "2xl", "override_leading": "normal" } },
+            { "type": "text", "settings": { "text": "Nisarg P — Google Review", "style": "caption", "element": "figcaption", "override_case": "uppercase", "override_tracking": "wider" } }
+          ]
+        },
+        {
+          "type": "_testimonial",
+          "blocks": [
+            { "type": "text", "settings": { "text": "“Beautiful pieces and genuinely warm people behind the counter.”", "style": "paragraph", "element": "blockquote", "override_font": "accent", "override_size": "2xl", "override_leading": "normal" } },
+            { "type": "text", "settings": { "text": "Rahul Jogula — Google Review", "style": "caption", "element": "figcaption", "override_case": "uppercase", "override_tracking": "wider" } }
+          ]
+        }
       ]
     }
   ]

@@ -2,6 +2,9 @@
   Featured products — the "Most Loved" row. A display heading, a micro label
   and a link out, above a grid that reflows on available width.
 
+  The repeated Product card targets only its private Media, data, action, and
+  Group blocks. Generic Media is intentionally unavailable inside that card.
+
   The row is either that grid — unchanged, and the default — or a carousel of
   the same cards. The carousel is **not in the design**: the design's own
   homepage lays Most Loved out as a grid and has no slider anywhere. What is
@@ -98,9 +101,9 @@
     merchant can see it, move it, and use the same thing anywhere else — which
     is why this is not a rule in the stylesheet named after this section.
 
-    "View All" is a `buttons` block now rather than a bespoke link, with its
-    destination set to "This section's collection", so it still needs no URL
-    typed in to be right and it gains the design's six button variants.
+    "View All" is a `button` block now rather than a bespoke link, with its
+    destination stored in its ordinary Link setting. There is no second source
+    picker or section-aware fallback hidden behind the block.
 
     The section owns the vertical rhythm: one `gap` spaces every direct child,
     each header block and the row itself. That also retires `.display +
@@ -193,14 +196,10 @@
   "tag": "div",
   "blocks": [
     { "type": "@app" },
-    { "type": "title" },
-    { "type": "subheading" },
-    { "type": "paragraph" },
-    { "type": "product-count" },
+    { "type": "text" },
+    { "type": "rich-text" },
     { "type": "group" },
-    { "type": "buttons" },
-    { "type": "prose" },
-    { "type": "heading" }
+    { "type": "button" }
   ],
   "settings": [
     {
@@ -363,18 +362,17 @@
     {
       "name": "t:sections.featured_products.name",
       "blocks": [
-        { "type": "title", "settings": { "text": "Most Loved" } },
+        { "type": "text", "settings": { "text": "Most Loved", "style": "title", "layout": "display", "element": "h2" } },
         {
           "type": "group",
           "blocks": [
-            { "type": "subheading", "settings": { "text": "Our most loved creations" } },
+            { "type": "text", "settings": { "text": "Our most loved creations", "style": "subheading", "layout": "eyebrow", "element": "span" } },
             {
-              "type": "buttons",
+              "type": "button",
               "settings": {
                 "button_label": "View All",
-                "button_link_source": "collection",
-                "button_style": "arrow",
-                "button_label_2": ""
+                "button_link": "/collections/all",
+                "button_style": "arrow"
               }
             }
           ]
@@ -384,12 +382,11 @@
           "static": true,
           "id": "product-card",
           "blocks": [
-            { "type": "product-card-image" },
-            { "type": "product-card-title" },
-            { "type": "product-card-option-name" },
-            { "type": "product-card-variants" },
-            { "type": "product-card-price" },
-            { "type": "product-card-add" }
+            { "type": "_product-card-media" },
+            { "type": "text", "settings": { "text": "{{ closest.product.title }}", "style": "small", "element": "h3", "override_case": "uppercase", "override_tracking": "wide" } },
+            { "type": "_product-card-option-control" },
+            { "type": "_product-card-price" },
+            { "type": "_product-card-add", "settings": { "variant_action": "choose_options" } }
           ]
         }
       ]

@@ -1,12 +1,12 @@
 {%- comment -%}
-  Bag drawer.
+  Cart drawer.
 
   Only rendered when the theme's cart setting is set to the drawer — the two
-  are exclusive, so a store either slides the bag out or sends the visitor to
+  are exclusive, so a store either slides the cart out or sends the visitor to
   the cart page, never both.
 
-  Lives in the header group because it belongs to the nav: the bag action, the
-  menu's bag row and any add-to-bag on the page all open this one element.
+  Lives in the header group because it belongs to the nav: the cart action, the
+  menu's cart row and any add-to-cart action on the page open this one element.
 
   theme.js keeps it in step with the cart by asking Shopify to re-render this
   section after each change, so quantities, line prices and the subtotal are
@@ -14,6 +14,7 @@
 {%- endcomment -%}
 
 {%- if settings.cart_type == 'drawer' -%}
+  {%- assign cart_name = settings.cart_name | default: 'Cart' -%}
   <div
     class="drawer"
     data-overlay="cart"
@@ -29,7 +30,7 @@
       class="drawer__panel scheme-{{ section.settings.color_scheme }}"
       role="dialog"
       aria-modal="true"
-      aria-label="{{ 'cart.title_bag' | t }}"
+      aria-label="{{ 'cart.title_drawer' | t: cart_name: cart_name }}"
     >
       <div class="drawer__inner" data-drawer-contents>
         {% render 'cart-drawer-contents', section: section %}

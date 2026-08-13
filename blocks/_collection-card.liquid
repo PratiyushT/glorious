@@ -16,16 +16,15 @@
   Its name is underscored because it is **private**: a merchant never adds it,
   the section places it. Only its children are in an "Add block" list.
 
-  **The children are placed by CSS, not by their order in the tree.** The design
-  fixes this card's composition — the name and the count on one row, a hairline
-  under them, the photograph below with the hover band over it — so each child
-  claims a named grid area and adding or removing one switches that part on or
-  off without rearranging the rest. The band and the photograph deliberately
-  share the media area, which is how the band covers the photograph exactly
-  while remaining a sibling a merchant can remove on its own.
+  The heading row is a real layout-block composition, not card-specific CSS:
+  its private header wrapper uses the global Group layout contract, a nested
+  global Group holds the global Text name and Icon arrow, and a private
+  collection-count Text supplies the contextual value without leaking a mode
+  into the global Text block.
 
-  The rule is the card's own, not a block: it is the design's join between the
-  head and the photograph rather than a part anyone would want to drop.
+  The hover reveal is a behavior of the card, not content in the block tree.
+  Its switch and label therefore live on this Collection card and the card
+  emits the overlay itself.
 {%- endcomment -%}
 
 {%- liquid
@@ -35,7 +34,14 @@
 
 <a class="cat-card" href="{{ url }}" {{ block.shopify_attributes }}>
   {% content_for 'blocks' %}
-  <span class="cat-card__rule" aria-hidden="true"></span>
+  {%- if block.settings.show_hover_reveal -%}
+    <span class="cat-card__reveal" aria-hidden="true">
+      <span class="cat-card__reveal-row">
+        <span class="cat-card__reveal-label">{{ block.settings.hover_reveal_label }}</span>
+        <span class="cat-card__reveal-arrow">{% render 'icon', icon: 'arrow-right' %}</span>
+      </span>
+    </span>
+  {%- endif -%}
 </a>
 
 {% schema %}
@@ -43,11 +49,24 @@
   "name": "t:blocks.collection_card.name",
   "tag": null,
   "blocks": [
-    { "type": "collection-card-image" },
-    { "type": "collection-card-title" },
-    { "type": "collection-card-count" },
-    { "type": "collection-card-reveal" }
+    { "type": "_collection-card-media" },
+    { "type": "_collection-card-header" }
   ],
-  "settings": []
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "show_hover_reveal",
+      "label": "t:blocks.collection_card.hover_reveal.label",
+      "info": "t:blocks.collection_card.hover_reveal.info",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "hover_reveal_label",
+      "label": "t:blocks.collection_card.hover_reveal_label.label",
+      "default": "View pieces",
+      "visible_if": "{{ block.settings.show_hover_reveal }}"
+    }
+  ]
 }
 {% endschema %}

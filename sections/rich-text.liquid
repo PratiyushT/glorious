@@ -1,24 +1,7 @@
 {%- comment -%}
-  Rich text. Constrained to the reading width so paragraphs never stretch past
-  a comfortable line length, however wide the screen gets.
-
-  On theme blocks. Its three local types were `heading`, `text` and `button`,
-  and only one of them needed to be built:
-
-  - `text` was a `richtext` in a `.rte`, which is exactly `prose`.
-  - `button` was one button, which `buttons` already renders — and renders
-    better, since it offers the design's six variants and a second button
-    rather than the three styles this section knew about.
-  - `heading` had no equivalent. `title` is `.display`, a different face for a
-    different job, so `blocks/heading.liquid` is new.
-
-  **`blocks/text.liquid` was the obvious name for the second one and would have
-  broken the homepage.** `hero` still declares a *local* block called `text`,
-  and a theme block's name is global: the moment the file existed the hero
-  would have been read as a theme-block section and failed on the local types
-  it has left. Mapping to `prose` avoids the name entirely. `heading` and
-  `button` were safe to take only because the sole local blocks of those names
-  are this section's own, and they go in this same commit.
+  A reading-width composition surface. Text handles any single inline value;
+  Rich text handles paragraphs, lists, links, and emphasis. Both can connect
+  their content setting to a compatible dynamic source.
 {%- endcomment -%}
 
 <section
@@ -93,17 +76,18 @@
   ],
   "blocks": [
     { "type": "@app" },
-    { "type": "heading" },
-    { "type": "prose" },
-    { "type": "buttons" },
-    { "type": "title" },
-    { "type": "subheading" },
-    { "type": "paragraph" }
+    { "type": "text" },
+    { "type": "rich-text" },
+    { "type": "button" }
   ],
   "presets": [
     {
       "name": "t:sections.rich_text.name",
-      "blocks": [{ "type": "heading" }, { "type": "prose" }, { "type": "buttons" }]
+      "blocks": [
+        { "type": "text", "settings": { "text": "Say something that matters", "style": "heading_2", "element": "h2" } },
+        { "type": "rich-text" },
+        { "type": "button" }
+      ]
     }
   ]
 }

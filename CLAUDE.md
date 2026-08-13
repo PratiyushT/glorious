@@ -30,21 +30,14 @@ type name. The server resolves that collision before it reports a missing local
 type, so the error often names an innocent neighbour rather than the duplicate.
 Keep public block names globally unique.
 
-**And the upload order bites twice, not once.** `CLAUDE.md` already records
-that a template validates against the *server's* copy of a section schema. Two
-separate instances of it in this one change:
-
-1. After renaming the hero's block types, the template still failed — naming
+**And upload order still matters.** A template validates against the *server's*
+copy of a section schema. After renaming the hero's block types, the template
+still failed — naming
    `gemstone`, the stored *key* of the renamed block — because the server still
    held the old `hero.liquid`. Forcing that file to re-upload with a real
    content change fixed it.
-2. `templates/index.json` was pushed carrying `button_link_source` before
-   `blocks/buttons.liquid` declared it, so Shopify **dropped the setting as
-   unknown** and the block fell back to its schema default. The block renders,
-   the section renders, nothing errors — the setting is simply gone. Re-pushing
-   the template afterwards did not recover it in a running `theme dev` session.
 
-The remedy for both is the one already recorded: push `blocks/*` first, then
+The remedy is the one already recorded: push `blocks/*` first, then
 templates, or restart `shopify theme dev`, which does both in one pass.
 
 ### Homepage block catalogue
@@ -57,33 +50,43 @@ responsible for being safe wherever a merchant can add it.
 The homepage blocks fall into four contracts:
 
 - **Global composition blocks** are public and require no resource context:
-  `title`, `heading`, `subheading`, `paragraph`, `prose`, `buttons`,
-  `border`, `media`, `icon`, `group`, and `quote`. Quote hiding and overlap are
-  added only by `.quotes`; standalone instances remain visible and complete.
-- **Resource-aware public blocks** inherit the nearest resource but also expose
-  a source picker, so the same block works in an unrestricted Group elsewhere.
-  Product: `product-card-image`, `product-card-title`, `product-card-option-name`,
-  `product-card-option-values`, `product-card-variants`, `product-card-text`,
-  `product-card-price`, and `product-card-add`. Collection:
-  `collection-card-image`, `collection-card-title`, `collection-card-count`,
-  and `product-count`. Presets connect the picker to `{{ closest.product }}` or
-  `{{ closest.collection }}`; Liquid keeps a closest context fallback so
-  existing stored blocks migrate without new settings. `collection-card-reveal`
-  carries no collection data, but belongs to the same editor family and is
-  visible as a standalone band rather than relying on a card hover to appear.
+  `text`, `rich-text`, `button`, `border`, `media`, `icon`, and `group`. Text
+  covers every single inline value; Rich text is reserved for paragraphs,
+  lists, links, and emphasis. Both content settings support compatible dynamic
+  sources. A testimonial is private `_testimonial` structure whose quotation
+  and attribution are global Text/Rich text children; there is no third public
+  Quote text block.
+- **Card-local data and behavior blocks are private.** Product card explicitly
+  targets `_product-card-media`, `_product-card-option-values`,
+  `_product-card-option-control`, `_product-card-price`, and
+  `_product-card-add`; none has a resource picker because each always uses the
+  card's `closest.product`. Collection card likewise owns
+  `_collection-card-media` and `_collection-count-text`, both fixed to
+  `closest.collection`. Their editor names are simply Media, Option values,
+  Option control, Price, Add to cart, and Count—the parent already supplies the
+  context, so a `Product —` or `Collection —` prefix adds noise.
+- **Card-local Group blocks preserve layout without leaking private children.**
+  `_product-card-group` and `_collection-card-group` use the exact global Group
+  markup and settings but explicitly target only their card's valid children.
+  Generic Media is excluded; media in either card is its owner-specific private
+  block. The ordinary global Group remains unrestricted everywhere else.
 - **Private composition shells** begin with an underscore and are rendered
   statically by their sections: `_product-card` and `_collection-card`. They
-  establish the card grid, link, quick-view, and interaction context, but are
+  establish the card layout, link, quick-view, and interaction context, but are
   implementation structure rather than merchant-addable blocks.
-- **Section-local blocks** exist only where their layout gives them meaning:
-  Hero's `text`, `hero_detail`, `metal`, and `hero_cta`, plus Lookbook's
-  `scene`. They are not candidates for a public block with the same type name;
-  see the global-name collision above.
+- **Context-local blocks** exist only where their data or interaction gives them
+  meaning: Hero's `hero_detail`, `metal`, and `hero_cta`; private collection
+  count/header blocks; and Interactive media's private Hotspot and count/header
+  blocks. Lookbook remains a global composition whose reusable
+  `interactive-media` block replaced `scene`. The
+  Hero introduction is a section field because it occupies one fixed,
+  art-directed position; it is not a third text block.
 
-The editor makes the resource-aware family explicit by prefixing its public
-names with `Product —` or `Collection —`. That label is guidance, not a
-restriction: a merchant can still add any of them to Group and either inherit
-the nearest source or choose one directly.
+Underscore targeting is the restriction, not a label. Product-card blocks are
+accepted only by Product card and its private Group; collection-card blocks are
+accepted only by Collection card, its header, and its private Group. Hotspot
+has separate private Price/Add blocks and private Group-compatible wrappers, so
+it does not reopen the Product-card family through Lookbook.
 
 ### Section conversions
 
@@ -95,40 +98,30 @@ the history below explains the block contracts that migration preserved.
   either its own blocks or theme blocks and never both. That is the constraint
   that sets the whole phase's order.
 
-- **`buttons` keeps its type name, and that is the migration.** A block type is
-  a data contract: every stored instance in `templates/index.json` says
-  `"type": "buttons"`, so a theme block of the same name adopts them silently.
-  Renaming would have discarded them.
+- **One action is one `button` block.** The former paired `buttons` instances
+  were migrated into horizontal Groups containing two Button blocks. This
+  keeps the original rows while giving each action one complete, independent
+  editor surface.
 
-- **`prose` is a new type and had to be**, so its stored blocks are migrated in
-  the same commit. about's local `paragraph` was a `richtext` rendered into
-  `.rte.measure`; the shared `paragraph` block is a `textarea` rendered into
-  `.section-lede`. They are not the same component, and letting the stored
-  blocks land on the wrong one is not a styling difference — a `textarea`
-  prints its contents inside a `<p>`, so the `<p>…</p>` a richtext setting
-  stores becomes a paragraph nested in a paragraph, which the parser unnests
-  into something the CSS no longer matches. Verified after conversion: three
-  `.rte.measure` blocks, no `p p` on the page.
+- **Rich text is distinct from Text because its stored value is block HTML.**
+  About's paragraphs remain `richtext` values rendered into `.rte.measure`;
+  single inline values use Text. They share typography controls without
+  nesting rich-text `<p>` markup inside another paragraph.
 
-- **The three duplicate `buttons` schemas are what this collapsed.** The markup
-  was already shared through `snippets/button.liquid`, but a schema cannot be
-  shared between sections, so the ten settings stayed written out three times.
-  Craft, About, and Visit now all consume the same public block.
+- **Craft, About, and Visit consume the same public `button` block.** The
+  shared snippet still owns the storefront anchor, while the singular block
+  owns one label, one Link, one style, and its relevant overrides.
 
-**`featured-products` is not the cheap first conversion the block audit
-suggested.** It has no local blocks, so there is nothing to collapse — and its
-header cannot become blocks without losing the design. Its subheading and its
-"view all" link share one `justify-content: space-between` row, which is the
-design's own arrangement, and merchant-added blocks can only render as one flat
-sibling flow: made into blocks they would fall onto two rows. Converting it
-means either keeping that row as section settings or giving the section a
-static block, as the collection list does for its card.
+**`featured-products` keeps its composed header through Group.** Its eyebrow
+and View All action share a horizontal `space-between` Group, while the display
+title remains a sibling before it. The arrangement is stored composition, not
+section-specific heading fields.
 
 **The former Promises area is now composition rather than a component.** The
 homepage section is an ordinary `group` instance. Its header is a nested Group
-containing `title` and `subheading`; its item row is another Group containing
-five bordered Groups. Each item is assembled from `icon`, `subheading` (the
-editable number), `border`, `heading`, and `paragraph`.
+containing two Text blocks; its item row is another Group containing five
+bordered Groups. Each item is assembled from Icon, Text (including the editable
+number), and Border.
 
 - There is no `sections/promises.liquid`, `blocks/promise.liquid`, Promise
   schema, CSS counter, or card-specific layout. A merchant can remove the
@@ -167,8 +160,8 @@ editable number), `border`, `heading`, and `paragraph`.
   and container-based stacking presets. There are no feature-specific
   breakpoints, width sliders, or orphan rules.
 - The Group section's **Feature grid** preset is the reusable entry point for
-  other templates. It seeds three bordered Groups made only from Icon, Heading
-  and Paragraph blocks; it does not introduce another section or block type.
+  other templates. It seeds three bordered Groups made only from Icon and Text
+  blocks; it does not introduce another section or block type.
 
 
 **`section.blocks` survives the conversion, but only as a tally.** This governs
@@ -224,55 +217,23 @@ active quote and the selected dot agreeing.
   in `grid-area: 1 / 1` to cross-fade them; a generated wrapper would take that
   cell and the quotes inside it would stack vertically instead of overlapping.
 
-**`rich-text` had three local types and needed one new file.** `text` was a
-`richtext` in a `.rte`, which is `prose`. `button` was one button, which
-`buttons` already renders — and renders better, offering the design's six
-variants, a size, a radius and a second button against the three styles this
-section knew. Only `heading` had no equivalent.
+**`rich-text` exposes only Text, Rich text, and Button.** Text owns the visual
+preset, semantic element, and one of four spatial treatments: Standard,
+Display title, Eyebrow, or Lede. Rich text owns paragraph/list/link markup. The
+two content setting types both accept compatible dynamic sources, so there is
+no resource-specific text block.
 
-- **`blocks/text.liquid` was the obvious name and would have broken the
-  homepage.** `hero` still declares a *local* block called `text`, and a theme
-  block's name is global: the moment that file existed the hero would have been
-  read as a theme-block section and failed on the local types it has left —
-  naming an innocent one, as it did last time. Mapping to `prose` avoids the
-  name entirely.
-
-  `heading` and `button` were checked the same way and were safe, because the
-  only local blocks of those names are rich-text's own and they go in the same
-  commit. **Check before creating any `blocks/<name>.liquid`**: parse each
-  section's schema and list the types that carry their own `name`/`settings` —
-  a grep for `"type": "x"` is useless here, because setting types and block
-  types are spelled identically.
-
-- **`heading` is not `title`, and the split is size against level.** `title` is
-  `.display`, the oversized edge-to-edge section title. `heading` is
-  `.h2`/`.h3`/`.h4`, the scale used inside running text. The local block emitted
-  an `<h2>` element whatever size was chosen, so "Small" gave
-  `<h2 class="h4">` — the right look at the wrong level. Size and level are
-  separate settings now, `h2` default on both, so the untouched render is
-  byte-identical.
-
-  Verified against a scratch template: a default heading block comes out
-  `<h2 class="h2">` exactly as before, a configured one `<h3 class="h3">`, at
-  51.2px and 37.9px — `--fs-section` and `--fs-2xl`. `prose` lands as
-  `.rte.measure`, nesting a `max-width` inside the same `max-width`, which is a
-  no-op. Both buttons render at 53.6px, above the 44px floor.
-
-- **Nothing stores a rich-text block**, so this is the one conversion in the
-  phase with no data contract to honour and the type names were free. That is
-  also why it has no rendered surface to check: it is in no template. The
-  measurements above came from a `templates/page.<name>.json` stood up against
-  `/pages/contact?view=<name>` and deleted afterwards — the way to verify a
-  section the homepage does not carry. `/pages/contact` is the one page handle
-  this store actually has; about, cookies and disclaimer are all 404.
+The Hero formerly occupied the global `text` handle with a local block. Its
+introduction is now a fixed section field, which matches its fixed position and
+frees `blocks/text.liquid` for every composable section. When adding a public
+block handle, still check section-local block types first; setting types and
+block types use the same spelling in schema files.
 
 **`newsletter` had no local blocks either, and converting it added
 composability rather than collapsing anything.** That makes it a different job
 from the rest of the phase and it is worth being explicit, because
-`featured-products` is in the same position and is still *not* convertible —
-its two header parts share one `space-between` row. This section's header was a
-plain vertical stack with nothing sharing a row, so `subheading`, `heading`,
-`prose`, `paragraph` and `title` drop straight in and three section settings go.
+its form remains section-owned while the copy above it is composable. The
+section accepts only Text and Rich text for that copy.
 
 - **The form stays the section's own and always comes last.** It is what the
   section is *for*, a merchant should not be able to remove or reorder it, and
@@ -286,44 +247,38 @@ plain vertical stack with nothing sharing a row, so `subheading`, `heading`,
   stack holds nothing but the form and it still works — which is the case worth
   checking, since the copy is now optional in a way it never was.
 
-**`lookbook` cannot convert, and this is the one that closes the phase.** Its
-`scene` stays a local block. The reason is structural rather than awkward:
+**`lookbook` is fully converted to global blocks.** The old local `scene`
+block and its four numbered product slots are gone.
 
-- **The section renders each scene seven times, into seven different places.**
-  The tab into `.lookbook__rail`; the panel, the tag chip, the pins and the
-  cards into `.lookbook__stage`; the piece count into `.lookbook__list-head`;
-  the rows into `.lookbook__list-inner`. `content_for 'blocks'` renders a block
-  **once**, as one contiguous chunk in one flat flow. There is no arrangement
-  of it that puts a scene's tab in the rail and its pins over the stage.
+- **The section is only a composition surface.** It renders
+  `content_for 'blocks'` once and owns only its colour scheme, outer spacing,
+  and the empty tab rail that progressive enhancement fills when there is more
+  than one look. Its heading, eyebrow and lede are global Text blocks in a
+  global Group.
+- **One look is one public `interactive-media` block.** Its campaign asset is
+  the global Media block, its corner caption is global Text, and each product
+  point is a private nested `_hotspot` block. Interactive media explicitly
+  accepts it; the underscore keeps it out of every other global block picker.
+- **The private Hotspot has only interaction settings:** product, x/y position, and
+  optional video in/out seconds. Its open product card is a merchant-composed
+  tree of the same global Group, Media, Text, Product Price, Button and Product
+  Add-to-cart blocks used elsewhere, rendered with the hotspot product as
+  `closest.product`.
+- **The synchronized row is rendered once in Liquid.** JavaScript moves that
+  already-rendered row from its Hotspot into the look's list, numbers the
+  hotspots in stored order, and switches whole Interactive media roots. It does
+  not recreate product money, URLs, forms or images.
+- **Fixed list positions still use the global primitives where they apply.**
+  The header is a static private Group-compatible layout containing global Text
+  plus private `_hotspot-count-text`; that private boundary prevents the count
+  from appearing in general Text or Group pickers. The footer action is the
+  static global Button. Static means their relationship cannot be broken by
+  reordering, not that their content or presentation is hardcoded.
+- **This solves the old seven-render problem by moving the boundary.** The
+  parent no longer tries to render one Scene into tabs, stage, cards, counts and
+  rows. Each Interactive media block renders one contiguous, complete look,
+  and the rail switches those complete roots.
 
-- **`section.blocks` cannot cover the other six**, which is what rules out the
-  obvious escape. It is a tally and nothing more — no settings at all — so the
-  section could not reach a scene's products, coordinates, image or video from
-  out there. The `has_video` pre-scan alone is impossible: it reads
-  `block.settings.video` before rendering anything.
-
-- **A static block does not help either.** `content_for 'block'` is
-  static-only, needs an id known when the section is written, and still renders
-  once in one place. Scenes are merchant-added, so there is no fixed list to
-  loop.
-
-- **And the header cannot convert on its own**, which is what settles it. A
-  section holds either its own blocks or theme blocks, never both — so while
-  `scene` is local, `subheading`/`title`/`paragraph` cannot be blocks here.
-
-**That constraint has a name, and it was confirmed rather than assumed.**
-Listing one theme block beside `scene` fails `theme check` with
-`ValidLocalBlocks` — *"Sections cannot use theme blocks together with locally
-scoped blocks."* The second error in the same run is the more useful one:
-`JSONMissingBlock: Theme block 'blocks/scene.liquid' does not exist`. One theme
-block in the array **reclassifies every block in the section as a theme
-block**, and the stored local types are then looked for in `blocks/`.
-
-That is the mechanism behind the hero collision recorded further down, stated
-exactly: the hero was not confused by two of its types resolving to files, it
-was *re-read as a theme-block section* because any did — and then reported the
-one type that had no file. The error naming an innocent block is that
-reclassification, not a quirk.
 
 ### The product card as blocks
 
@@ -373,35 +328,36 @@ that reaches for a parent would tie the two cards' structures together again.
 
   So the option is **derived, identically, in all three**, through
   `snippets/card-option.liquid` — which prints `index||value||variant_id` and
-  is captured and split, the same shape as `metal-order.liquid`.
-  `product-card-variants` therefore offers **no option picker**, only how the
-  values are drawn and whether the chosen one is named. Same rule the quick
-  view's axes are written to: *which control an axis gets is derived, not
-  tabled.*
+  is captured and split. Auto chooses the first option carrying a native
+  Shopify swatch and otherwise the first option in the merchant's own order;
+  it never matches a catalogue-specific option name.
+  `_product-card-option-control` therefore offers **no option picker**, only how the
+  values are drawn. Auto draws native swatches when they exist and written
+  values otherwise. Same rule the quick view's axes are written to: *which
+  control an axis gets is derived, not tabled.*
 
 - **The theme must not assume a jewellery store, and the caption is where that
   assumption lived.** It was one element built in Liquid — the chosen metal,
   then `custom.total_carat_weight`, joined with " · " and suffixed "ct". A shop
   selling anything else got a hardcoded metafield lookup resolving to nothing
-  and no way to put its own fact there. **The caption is composed now**: a
-  `group` holding `product-card-option-name`, a `product-card-text` carrying
-  the separator, a second bound to whatever metafield the shop keeps, and a
-  third for the unit.
+  and no way to put its own fact there. **The caption is composed now** from
+  Text blocks bound to whatever metafield the shop keeps plus any literal unit.
+  The live chosen option name belongs to `_product-card-option-control`, because it is
+  control state updated by the same script that updates the selected swatch,
+  price, and add-to-bag variant.
 
-  That is four blocks where there was one string, and it is the right trade. It
-  renders identically — "Yellow Gold · 1.5 ct", still following the pick,
-  because the name block is the `[data-card-meta]` the script writes into — and
-  none of it is in the theme.
+  The chosen value remains `[data-card-meta]`, which the script writes into; it
+  is simply no longer presented as a second Product text block.
 
   This was written the other way one commit earlier, on the argument that the
   design states the caption as `metalName(sel) + ' · ' + carat` and only the
-  control knows what was picked. The first half is a fact about *this* design;
-  the second is answered by making the name its own block. **Fidelity to the
-  design is not a licence to bake its catalogue in.**
+  control knows what was picked. The control now owns only its live value;
+  merchant facts remain ordinary Text. **Fidelity to the design is not a
+  licence to bake its catalogue in.**
 
   **"Available in 18K, 22K" went the same way.**
-  `blocks/product-card-option-values.liquid` renders the list and nothing else;
-  the words beside it are a `product-card-text` in a `group`, so a shop types
+  `blocks/_product-card-option-values.liquid` renders the list and nothing else;
+  the words beside it are a Text block in `_product-card-group`, so a shop types
   "Comes in" or "Sizes:" rather than asking the theme for a setting. Three
   things stopped being assumptions:
 
@@ -429,28 +385,20 @@ that reaches for a parent would tie the two cards' structures together again.
   giving the values block its own optional label and giving up the composition.
   Neither is built; the trade was made deliberately.
 
-  **One jewellery assumption remains and is not fixed here.**
-  `snippets/card-option.liquid` finds the card's option by matching "metal" in
-  its name. It is load-bearing — it decides which variant the price and the
-  button answer for — and generalising it to "the first option carrying a
-  native swatch" would change which variant this shop's cards stand on, since
-  only 4 of 12 products have the Color metafield connected. A deliberate
-  leftover, not an oversight.
+  **Variant-card action is an explicit Add-to-cart block setting.** Its default
+  is a real "Choose options" product link that scripting upgrades to Quick View
+  on the selected variant. A merchant may instead choose Shopify's first
+  available variant or the highest-priced available variant. The latter
+  publishes its id, option value and rendered price for `theme.js` to synchronize
+  across the separate option, Price and Add blocks; without scripting it falls
+  back to Choose options rather than showing one price and posting another.
 
-- **`product-card-text` is one block for every fixed thing a card says**, and
-  it replaced two that were the same element with different words. It prints a
-  typed line or a dynamic source, and every type control — font, size, letter
-  case, colour — is an **override that emits nothing when unset**, so
-  `.card__meta`'s rule stays the single description of what a caption looks
-  like rather than being restated in Liquid.
-
-  **Its sizes are the theme's `--product-*` tokens, not lengths.** A merchant
-  picks "as large as the price", not a number, so a shop that retunes its type
-  scale moves this with it. One rung is named for a relationship rather than an
-  element: "Beside the price" is `calc(var(--product-price-size) * 0.75)`,
-  which is `.price-tax`'s own `0.75em` stated where the note is no longer
-  inside the price element to inherit it from. Without it the note rendered
-  11.9px against the 11.26px the same note has on a collection page.
+- **Text is also the one block for every fixed thing a card says.** Inside a
+  composed card, `.card--composed .text-block` supplies the compact meta-line
+  contract; its Caption preset and any explicit overrides still win. There is
+  no Product Text schema and no dead Product picker. A dynamic source resolves
+  against the card's `closest.product`, while literal separators and units use
+  the exact same global block.
 
 - **The tax note is a text block now, and that is how the global one gets
   retired.** `theme.js` replaces `[data-card-price]`'s whole `innerHTML` on a
@@ -632,7 +580,7 @@ that reaches for a parent would tie the two cards' structures together again.
   untouched.
 
 - **Swatch shape is one published property, not a second kind of dot.**
-  `product-card-variants` writes `--swatch-radius` on the row and `.swatch-dot`
+  `_product-card-option-control` writes `--swatch-radius` on the row and `.swatch-dot`
   reads it with a `50%` fallback, so the dot stays round everywhere else it is
   drawn — the quick view and the product page both leave it alone. Square
   resolves to `var(--radius-base, 0)` rather than a literal. Verified square:
@@ -645,7 +593,7 @@ that reaches for a parent would tie the two cards' structures together again.
   'closest.product.metafields.custom.total_carat_weight' must end with '.value'
   when not using a metafield filter"*, which proves the `closest.product` root
   was accepted and only the leaf was wrong. That is what makes
-  `product-card-text` able to carry a shop's own facts at all.
+  the global Text block able to carry a shop's own product facts at all.
 
 - **`UniqueStaticBlockId` fails a section that names the same static block id
   twice in one branch**, which the real-cards / placeholder-cards pair did.
@@ -835,13 +783,13 @@ Liquid implementations.
 
 - Craft, About, and Visit are three stored instances of `type: "group"`, not
   three section files. Their content is composed from nested Group blocks,
-  Media, Border, text, and Buttons.
+  Media, Border, text, and Button blocks.
 - **Group owns optional borders.** `show_borders` defaults off. Turning it on
   reveals width, color override, and independent top/right/bottom/left toggles.
   The border is painted on `.layout-group`; `.layout-group__inner` remains the
   unchanged flex layout, so a border choice cannot alter direction or
   distribution. Craft's specification rows and Visit's address/hours are
-  ordinary Groups containing Subheading and Paragraph blocks. There is no
+  ordinary Groups containing Text blocks using Eyebrow and Lede layouts. There is no
   Detail block or value-source selector.
 - `items_width` is the one addition the two-column migration needed. Natural is
   the Group block's backward-compatible default; Equal makes direct row
@@ -860,23 +808,10 @@ Liquid implementations.
   deliberate child-margin reset cannot erase it. Visit's old section-level
   `show_rule` is now a removable Border block.
 
-**"View All" is a `buttons` block now, not a bespoke link.** `buttons` gained a
-`collection` link source — "This section's collection" — which reads
-`section.settings.collection`. So the destination still needs no URL typed to
-be right, and the control gains the design's six variants; it renders
-`btn btn--arrow` pointing at the row's own collection.
-
-**A theme block can read its parent section, and that was measured before being
-relied on.** `section.settings`, `section.id` and `section.blocks.size` all
-resolve inside a block; `section.type` does not, and `closest.collection` is
-empty where no collection is in context. Static blocks are not counted in
-`section.blocks.size`.
-
-This is a deliberate exception to the rule stated on `title` and `subheading`
-that a block reads nothing from its parent. That rule holds for blocks that
-belong to *every* section; it does not hold for a block whose whole job is to
-describe the row it sits in. Both exceptions degrade rather than break — a
-section with no `collection` setting falls through to all products.
+**"View All" is a `button` block now, not a bespoke link.** Its destination is
+the normal Link setting, exactly like every other Button. The removed "Link
+to" source picker has no replacement fallback; the editor shows the complete
+destination contract in one place.
 
 ### Duplicate ids
 
@@ -908,12 +843,10 @@ an `aria-labelledby` binds to whichever came first.
   the product, and the lookbook renders a form for the same piece on its card
   *and* in its list row. `{% form %}` takes an `id`, so both now pass one.
 
-**`.lookbook__scene` claimed `role="tabpanel"` with no tablist in the
-document.** The rail is rendered `{% if scenes.size > 1 %}`, so a single-scene
-lookbook — which is what the home page has — had a tabpanel labelled by a tab
-id that existed nowhere. Both the role and the `aria-labelledby` are now
-conditional on there being more than one scene. One scene is not a tabbed
-interface.
+**A single look is not exposed as a tab panel.** The global-block Lookbook
+creates tabs only when it finds more than one Interactive media root. Only then
+does it add `role="tabpanel"`, `aria-labelledby`, and matching tab ids; the
+one-look homepage remains ordinary content with no dangling tab relationship.
 
 Verified after: **zero duplicate ids on the home page**, no dangling ARIA
 reference, and no theme `<img>` without an `alt`.
@@ -945,8 +878,8 @@ accepted it, and the footer rendered its social row and all four columns with
 no Liquid error.
 
 So **accepting apps never requires converting a section.** The two are
-independent, and a section that can never convert — `lookbook`, `hero`,
-`header`, `footer` — can still take app blocks. Anything read here that ties
+independent, and a section that remains local — `hero`, `header`, `footer` —
+can still take app blocks. Anything read here that ties
 the two together is wrong.
 
 **The Theme Store's actual requirement is narrower than "every section".** It
@@ -1055,12 +988,12 @@ outline started at level three, under nothing.
   spaces every section title differently from its neighbour. This is the same
   shape as the note about `.display` having no bottom gap of its own.
 
-- **The level is a merchant setting**, on `blocks/title.liquid` and on the
+- **The level is a merchant setting**, on `blocks/text.liquid` and on the
   three sections that render `.display` from a section setting — h1 / h2 / h3 /
   not-a-heading, defaulting to h2. A Liquid guard rejects anything else rather
   than interpolating an arbitrary tag name.
 
-  `"tag": null` on the title block still holds and matters more than before:
+  `"tag": null` on Text still holds and matters more than before:
   the block owns its one element, a generated wrapper would break the
   `.display + .grid-auto` adjacency, and changing the tag keeps both — it is
   still a single element, and the gap rule matches on the class.
@@ -1135,12 +1068,22 @@ Two traps, both hit here:
   referenced in Liquid and defined nowhere — where `theme check` returned `[]`,
   since it does not read that file.
 
-### Buttons
+### Button block
 
-**The design's four variants, chosen per button.** `snippets/button.liquid`
-renders every one; the four `buttons` blocks — hero, craft, about, visit — used
-to write their own markup and *hardcode* which variant they emitted, so a
-merchant could change the words and the destination and nothing else.
+**One block renders one action.** `blocks/button.liquid` owns one label, one
+Link and one style. Two actions are two Button blocks in a horizontal Group;
+there is no paired Buttons block and no automatic destination source.
+
+`snippets/button.liquid` renders the six available styles and optional local
+overrides. Blank colors and `Use theme setting` preserve the current scheme and
+global Button settings. Editor visibility follows the selected style:
+
+- Filled: background and text colors.
+- Outline: text, border color, border width, and shape.
+- Link / Quiet link: text and underline colors.
+- Arrow: text and arrow colors.
+- Arrow outline: text plus one shared border-and-arrow color, border width, and
+  shape.
 
 The design states its own model: *"Four variants carry every action across the
 store. Pill geometry, uppercase Karla at .15em, and a single gold accent.
@@ -1160,9 +1103,10 @@ Nothing else."*
   it nowhere. It is a min-height rather than a padding floor so the link
   variants, which have no padding at all, still meet it without growing their
   type. Verified across 23 specimens: none under 44.
-- **Size and radius are inline custom properties, not classes.** `.btn` reads
-  `var(--btn-radius, var(--button-radius))`, so a button given neither renders
-  byte-identically to before the snippet existed. That is what makes the
+- **Size, radius, border width, and color overrides are inline custom
+  properties, not classes.** `.btn` reads theme variables as fallbacks, so a
+  button given none renders byte-identically to before the snippet existed.
+  That is what makes the
   per-button control additive rather than a migration — the global setting is
   the default, not the law. Same cascade as the text alignment above.
 - **`inherit` is the sentinel for "leave it to the theme setting"**, and the
@@ -1192,6 +1136,13 @@ Nothing else."*
 **Two levels, and the block wins.** A section carries `content_alignment` and
 its text blocks follow; a block carries its own `alignment`, defaulting to
 `inherit`, and overrides the section when set.
+
+A Group block also carries desktop content alignment, defaulting to inherit.
+Both the Group block and Group section expose a separate **Stacked content
+alignment** only when a horizontal row is configured to collapse. The same
+container query that changes the row to one column applies that mobile/tablet
+alignment, so it responds to the Group's available width rather than the
+device name. `Use desktop alignment` preserves the desktop choice.
 
 - **The section publishes a custom property; it does not wrap anything.**
   `--section-align` and `--section-align-jc` go on the section root, and
@@ -1437,30 +1388,26 @@ see the search overlay below.
 
 ### Conventions
 
-- **Shop details remain the source for navigation and contact destinations.**
+- **Shop details remain the source for shared shop contact facts.**
   `shop_address`, `shop_address_link`, `shop_phone`, and `shop_email` live under
   "Shop details". The Visit section's visible text is intentionally ordinary
   block content instead of another setting source.
 
   Consequences worth knowing:
-  - **No literal map, telephone, or email destination belongs outside
-    `config/`.** Visible editorial copy may be stored in its own text block;
-    navigation destinations remain centralized.
+  - Shop address, telephone, and email settings remain the shared source for
+    header and footer contact information. A Button does not read them: its
+    ordinary Link field is its only destination.
   - `shop_address_link` lives in `settings_data.json`, not as a schema default.
     Shopify's `url` setting type takes no `default`, so the shipped value has
     to be stored rather than declared — which is why the other three carry both
     a schema default *and* a stored value.
-  - Visit's visible address and hours are literal Paragraph blocks inside
-    bordered Groups. They deliberately have no source selector. Contact-button
-    destinations can still fall back to shop settings when their URL is blank,
-    but displayed text is edited where it appears.
+  - Visit's visible address and hours are literal Text blocks inside
+    bordered Groups. They deliberately have no source selector. Its actions
+    also store explicit Link values and do not fall back to theme settings.
   - `tel:` hrefs strip spaces, dashes and parentheses at each call site
     (`+1 (555) 010-9988` → `tel:+15550109988`). A `{% render %}` snippet cannot
     hand a value back to its caller, so this is one filter chain repeated in two
     places rather than shared.
-  - Visit's "Get Directions" falls back to `shop_address_link` when its own
-    button link is empty, which is why `templates/index.json` no longer stores
-    a map URL.
 - **No `href="#"`. A button without a destination is not rendered.** The
   pattern `{{ block.settings.button_link | default: '#' }}` shipped a control
   that looks live and goes nowhere; five of them were on the homepage. Every
@@ -1476,8 +1423,7 @@ see the search overlay below.
   The five destinations were never invented; they are the design's own, and
   the theme had simply never carried them over: Bespoke Commissions and Old
   Gold, Renewed → `#visit`, Our Full Story → the About page, The Craft →
-  `#craft`, Contact Us → the contact page. Contact Us instead falls back to
-  `mailto:` the shop email, as asked; setting its link overrides that.
+  `#craft`, and the Visit actions → their explicit map and email Links.
 - **Anchored sections carry an `anchor` setting, not a hardcoded `id`.**
   `visit` and `craft` have one (defaulting to the design's own names) because
   things link to them — the bag drawer's "Salon", and Craft's and About's
@@ -1624,39 +1570,42 @@ see the search overlay below.
 
 ### Lookbook
 
-The design's "Shop the look" — a stage carrying a film or a campaign
-photograph, marked with points that open the piece they sit on, and a list of
-everything in the look beside it. Sits between Most Loved and Our Products,
-as on the design's homepage.
+The design's Shop the look is global composition rather than a special content
+model. The section sits between Most Loved and Our Products on the homepage,
+but its two behavior blocks are reusable outside that section.
 
-- **Nothing is built in JavaScript.** Every scene's panel, every point, every
-  card and every list row is rendered by Liquid; the script only decides what
-  is shown. Money, translation and image sizing stay in Liquid, and a visitor
-  without scripting still gets the first look and real links to every piece.
-- **The design's edit mode is deliberately not ported.** Dragging points into
-  place and scrubbing their timing is authoring, not storefront — those are
-  block settings here, so the merchant places points in the theme editor.
-- Points are **flat numbered settings** (`product_1`, `x_1`, `y_1`, `in_1`,
-  `out_1`, …) because Shopify sections cannot nest blocks. Four per scene, the
-  design's count; the footer's link columns use the same convention.
-- `in`/`out` are seconds and only mean anything on a film — empty means the
-  point is always shown. They also place the ticks on the seek bar.
-- Like the hero, this section carries the design's literals in its own
-  properties rather than the spacing scale: the stage is art-directed against
-  the viewport height and the points are percentages of it.
+- **`interactive-media` is the complete look.** It accepts ordinary global
+  child blocks. Direct Media and Text children occupy the stage, while nested
+  Hotspots supply the product interaction. Multiple Interactive media siblings
+  become accessible tabs; a single one has no tab semantics.
+- **`_hotspot` is one selected product and belongs only to Interactive media.**
+  It is a private targeted block, so it is absent from general global block
+  pickers. Coordinates are percentages of the
+  stage. Optional appears/disappears seconds control a video window; empty
+  endpoints mean unbounded. The card below the marker is a nested global-block
+  composition rendered with `closest.product`.
+- **Rows stay synchronized without duplicate product configuration.** Each
+  Hotspot renders its Liquid product row once. `theme.js` moves it to the
+  parent list and assigns the visible number from stored block order, so
+  reordering Hotspots updates marker and list together.
+- **The count is private Text.** `_hotspot-count-text` is targeted only by the
+  Interactive media list header and filled by its controller. It uses the same
+  renderer and every Text typography, colour, semantic-element and spacing
+  control without exposing a contextual source selector on global Text.
+- **The editor owns authoring.** Position and timing are block settings; the
+  storefront has no dragging or edit mode. The Media child still owns its
+  source, autoplay, looping and decorative frame. Interactive media owns the
+  stage width and alignment, and can either inherit the Media child's shape and
+  fit or override them for this composition.
 - **The list column sticks beside the stage.** `.lookbook__list-inner` is
-  `position: sticky; top: 86px` above 61.25rem (980px), the design's own
-  `listPos: wide && listOn ? 'sticky' : 'static'` with `listTop: '86px'` and
-  `wide = w >= 980`. Below that it is static and the grid drops to one column,
-  as the design does.
+  `position: sticky; top: 86px` above 61.25rem (980px). Below that the
+  interaction becomes one column.
+- **The stage has no independent canvas height or background.** When shape is
+  inherited, the Media child stays in flow and its ratio is the hotspot
+  coordinate surface. An explicit Interactive media shape makes that chosen
+  frame the surface instead. Either way there is no fixed 4:5 box left below
+  a shorter image.
 
-  It shipped not sticking, and **the rule was never the problem** — it computed
-  correctly with 326px of room. `overflow-x: hidden` on `html` and on `body`
-  had made both scroll containers. See "Things that cost time once".
-- `width: min(100%, 62vh)` on `.lookbook__main` **is the design's own** (its
-  stage column is `<div style="min-width:0;width:min(100%,62vh)">`), so the
-  stage measuring narrower than the 560px track on a short viewport is correct,
-  not a porting error. Do not "fix" it to fill the column.
 
 ### Homepage sections
 
@@ -1708,7 +1657,7 @@ name>`; the second preset is "Carousel".
 - **The section can keep the carousel *because* it does the looping.**
   Merchant-added blocks can only ever render as one flat sibling flow —
   `content_for 'blocks'` renders them all, and `content_for 'block'` is
-  static-only, so there is no way to wrap a subset. A Title block and a card
+  static-only, so there is no way to wrap a subset. A display-layout Text block and a card
   could therefore never share a section with a moving track. Rendering the card
   from the section's own loop sidesteps that entirely: the section still wraps
   each card in `.row-carousel__cell`, and `snippets/row-carousel.liquid` is
@@ -1718,23 +1667,17 @@ name>`; the second preset is "Carousel".
   its cells, because the carousel snippet takes markup; the grid — the default —
   renders inline so it cannot depend on `{% content_for %}` surviving a
   `{% capture %}`. Keep the two the same.
-- **The card is a grid of named areas, not a flex column**, and that is what
-  makes the design's arrangement independent of block order. Each part claims
-  its area (`title`, `count`, `rule`, `media`), so dragging the count above the
-  title in the editor cannot move it out of the head row, and removing a part
-  leaves the rest where they were. This is the "fixed structure, blocks toggle
-  parts" reading, chosen over full composability on request.
+- **The card header is a layout-block composition, not card-specific CSS
+  placement.** Its private Group-compatible wrapper spreads a nested global
+  name-and-arrow Group from private `_collection-count-text`. The name is
+  global Text, the arrow is global Icon, and the header owns their gaps,
+  alignment, padding, responsive behavior, and bottom border. The private count
+  uses the shared Text renderer and all Text typography and spacing controls;
+  only its collection-derived value is fixed by context.
 
-  The photograph and the hover band **share the `media` area**. That is how the
-  band covers the photograph exactly while staying its *sibling*, which is what
-  lets either be removed on its own — so the band states its own `z-index`
-  rather than relying on document order, and repeats the photograph's 16px
-  margin so the two boxes coincide.
-
-  Verified against the flex card it replaces, at a 439px column: card 439×637,
-  title text at (35,21), the 0.7em arrow at (189,30), the count at (387,39),
-  the rule at (35,73)×369, the media at (1,90) 437×547, the band and its row
-  identical. Every measured value matches.
+  The photograph and the optional hover band share the card's `media` area.
+  Hover reveal is a Collection card setting, not a removable block: turning it
+  on exposes only its label setting, and turning it off emits no overlay.
 - **The `reveal` and its 80ms stagger live on a cell wrapper, not on the card**,
   because a theme block cannot know its place among its siblings — `forloop`
   only exists out in the section. `.collection-list__cell` is that wrapper and
@@ -1753,8 +1696,8 @@ name>`; the second preset is "Carousel".
   the next reader is misled.
 
   The classes follow the same rule. `.lookbook__intro` became **`.section-lede`**
-  when the paragraph block became its second caller — same values, so the
-  lookbook is untouched but for the class name.
+  when the paragraph block became its second caller. The current Lookbook uses
+  that treatment through the global Text block's Lede layout.
 - **The subheading is `.section-eyebrow`, not `.section-header`.** That one is
   the row Most Loved uses to carry a micro label *and* a "view all" link, and
   it is spaced for the link: 16.5 above and 44 below a label only 18px tall.
@@ -3252,10 +3195,16 @@ The markup contract:
 - The whole thing wraps a real GET form to the search route, and the nav's
   search action is a real link to it, so it degrades to the search page.
 
-### Bag drawer and the cart setting
+### Cart drawer and cart naming
 
 - `settings.cart_type` picks **one** of drawer or cart page — they are
   alternatives, never both. The drawer section renders nothing on `page`.
+- **`settings.cart_name` is the storefront noun and defaults to `Cart`.** A
+  merchant may set Bag, Basket, or another term; navigation, the drawer and
+  page headings, empty states, engraving help, accessibility labels, and every
+  Add to action derive from this one value. Theme-editor groups, setting labels,
+  ids, and help text always call the feature Cart. Do not add another button
+  label setting that can disagree with it.
 - **Revision 14's whole change to the drawer is the footer, and it is about
   tax.** The "Subtotal" label gained the note inline — `Subtotal inc. all taxes
   and fees`, lighter (ink 45%), untracked next to the label's own 0.18em, and
@@ -3504,7 +3453,7 @@ said. The old **Pricing** group held only that one checkbox and is gone.
 - **The `short` parameter went with the card.** There were two wordings because
   a card's price line is one row beside the figure at 15px and the longer
   sentence wrapped it. Nothing narrow renders this any more.
-- **A card can still say something beside its price** — a `product-card-text`
+- **A card can still say something beside its price** — a Text
   block in the price row, which is what carried "inc. all taxes" there for one
   commit. That is the merchant composing a line, not the theme applying a
   shop-wide rule, and it is the difference worth keeping in view: the setting
@@ -3516,20 +3465,21 @@ said. The old **Pricing** group held only that one checkbox and is gone.
 ### Cart settings
 
 **The drawer and the cart page are alternatives, and every Cart setting acts on
-both.** A bag should not be able to do different things depending on which the
+both.** A cart should not be able to do different things depending on which the
 shop has chosen, so each of these is the same setting reading the same object
 in `snippets/cart-drawer-contents.liquid` and in `templates/cart.liquid`.
 
 | | |
 | --- | --- |
+| `cart_name` | the customer-facing noun — Cart by default |
 | `cart_type` | drawer or page — never both |
-| `cart_drawer_on_add` | the drawer opens on Add to Bag |
+| `cart_drawer_on_add` | the drawer opens after an add |
 | `show_tax_note` | the Tax note follows the subtotal |
 | `cart_note` | a message to the seller, submitted with the order |
 | `cart_discounts` | lists cart-level discounts above the subtotal |
 | `cart_installments` | `payment_terms` |
 | `cart_accelerated_checkout` | `payment_button` |
-| `cart_empty_link` | where an empty bag's button goes |
+| `cart_empty_link` | where an empty cart's button goes |
 
 - **The drawer's actions became `{% form 'cart', cart %}`, and that is what
   makes three of these possible at all.** `payment_terms` and `payment_button`
@@ -3581,7 +3531,7 @@ the checkout button is intact, and the subtotal carries the note.
   and the `comment` is never closed, which is what the error says:
 
   ```
-  blocks/product-card-variants.liquid
+  blocks/_product-card-option-control.liquid
   Liquid syntax error (line 99): 'comment' tag was never closed
   ```
 

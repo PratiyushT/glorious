@@ -1,58 +1,97 @@
 {%- comment -%}
-  A micro eyebrow, as a block.
+  Private to Product card; explicitly targeted there and nowhere else.
 
-  **Named for what it is, not for where it first appeared.** Any section can
-  list `subheading` in its `blocks` array and get this; it reads nothing from
-  its parent and emits no class belonging to one. Same rule the row carousel is
-  written to — a shared thing named after one of its callers is how the next
-  reader is misled.
+  Product card — every value one of the product's options carries.
 
-  `.section-eyebrow` rather than `.section-header`: that one is the row Most
-  Loved uses to carry a micro label *and* a "view all" link, and it is spaced
-  for a row with a link in it. On its own the label wants far less air — see
-  base.css for the numbers and what they replaced.
+  "18K, 22K". The words around it are not here: this block renders the list and
+  a Text block beside it in a `group` says "Available in", which is the
+  same composition the caption uses. A shop that wants "Comes in", "Sizes:" or
+  nothing at all types it there rather than asking the theme for a setting.
 
-  **The default text is not decoration.** A block that renders nothing until it
-  is filled in is invisible the moment it is added: nothing appears in the
-  preview and the editor has no element to select or highlight, so it reads as
-  "the block does not work". Both the setting and the preset carry text for
-  that reason — the preset is what a merchant's "Add block" actually seeds
-  from.
+  **The option is named by the merchant, and matched rather than positioned.** A
+  text setting — "Karat", "Size", "Length" — matched case-insensitively against
+  each option's name. Position would be simpler and is wrong on a mixed
+  catalogue: one product ordered Metal, Karat and another Karat, Metal cannot
+  both be served by "the second option". A name finds the right one either way,
+  and renders nothing on a product with no such option, which is the honest
+  answer for a catalogue where only some pieces carry it.
+
+  **The order is the merchant's own.** The block before this sorted numerically
+  — pulling the first number out of each value and zero-padding it so "9K"
+  sorted before "22K". That is right for karats and arbitrary for everything
+  else: "Brushed, Polished" has no number, and S/M/L/XL sorts wrongly under
+  every rule except the one the merchant already applied in admin.
+
+  **Every value is listed, whatever the stock.** An option value exists because
+  the piece can be made that way, so a sold-out one is still something the shop
+  offers; filtering on `available` would make the sentence flicker as inventory
+  moved.
+
+  Its style and element controls are Text's, from the same
+  `snippets/text-style.liquid` — a merchant setting one half of a row should not
+  find the other half cannot be set the same way.
 {%- endcomment -%}
 
-
 {%- liquid
-  assign align_class = ''
-  if block.settings.alignment != blank and block.settings.alignment != 'inherit'
-    assign align_class = ' align-' | append: block.settings.alignment
+  assign product = closest.product
+  assign wanted = block.settings.option_name | downcase | strip
+
+  assign values_option = blank
+  if wanted != blank
+    for option in product.options_with_values
+      assign option_down = option.name | downcase
+      if option_down contains wanted
+        assign values_option = option
+        break
+      endif
+    endfor
   endif
 
-  comment
-    A guard rather than interpolating whatever is stored: an unknown value would
-    print as a tag name and Liquid would emit `<foo>`. Same shape as the level
-    guard on `blocks/title.liquid`.
-  endcomment
+  assign separator = block.settings.separator | default: ', '
+
+  assign values_list = ''
+  if values_option != blank
+    for value in values_option.values
+      if forloop.first
+        assign values_list = value | append: ''
+      else
+        assign values_list = values_list | append: separator | append: value
+      endif
+    endfor
+  endif
+
   assign tags = 'span,p,h1,h2,h3,h4,h5,h6' | split: ','
   assign tag = 'span'
   if tags contains block.settings.element
     assign tag = block.settings.element
   endif
 -%}
-{%- if block.settings.text != blank -%}
-  <div
-    class="section-eyebrow reveal{{ align_class }}"
-    style="{% render 'block-spacing', padding: block.settings.padding %}"
+
+{%- if values_list != blank -%}
+  <{{ tag }}
+    class="card__meta card__text"
+    style="{% render 'text-style', preset: block.settings.style, font_style: block.settings.override_font, font_size: block.settings.override_size, color: block.settings.color, line_height: block.settings.override_leading, text_case: block.settings.override_case, letter_spacing: block.settings.override_tracking %}"
     {{ block.shopify_attributes }}
-  >
-    <{{ tag }} class="micro" style="{% render 'text-style', preset: block.settings.style, font_style: block.settings.override_font, font_size: block.settings.override_size, color: block.settings.color, line_height: block.settings.override_leading, text_case: block.settings.override_case, letter_spacing: block.settings.override_tracking %}">{{ block.settings.text }}</{{ tag }}>
-  </div>
+  >{{ values_list }}</{{ tag }}>
 {%- endif -%}
 
 {% schema %}
 {
-  "name": "t:blocks.subheading.name",
+  "name": "t:blocks.product_card_option_values.name",
   "tag": null,
   "settings": [
+    {
+      "type": "text",
+      "id": "option_name",
+      "label": "t:blocks.product_card_option_values.option_name.label",
+      "info": "t:blocks.product_card_option_values.option_name.info"
+    },
+    {
+      "type": "text",
+      "id": "separator",
+      "label": "t:blocks.product_card_option_values.separator.label",
+      "default": ", "
+    },
     {
       "type": "header",
       "content": "t:blocks.all.text_header"
@@ -74,7 +113,7 @@
         { "value": "small", "label": "t:settings_schema.typography.presets.small.header" },
         { "value": "caption", "label": "t:settings_schema.typography.presets.caption.header" }
       ],
-      "default": "subheading"
+      "default": "caption"
     },
     {
       "type": "select",
@@ -179,53 +218,11 @@
         { "value": "wider", "label": "t:settings_schema.typography.tracking.wider" }
       ],
       "default": "inherit"
-    },
-    {
-      "type": "select",
-      "id": "alignment",
-      "label": "t:sections.all.content_alignment.label",
-      "info": "t:sections.all.content_alignment.info",
-      "options": [
-        { "value": "inherit", "label": "t:settings_schema.options.inherit" },
-        { "value": "left", "label": "t:settings_schema.options.left" },
-        { "value": "center", "label": "t:settings_schema.options.center" },
-        { "value": "right", "label": "t:settings_schema.options.right" }
-      ],
-      "default": "inherit"
-    },
-    {
-      "type": "text",
-      "id": "text",
-      "label": "t:sections.all.subheading.label",
-      "default": "Subheading"
-    },
-    {
-      "type": "header",
-      "content": "t:blocks.all.spacing_header"
-    },
-    {
-      "type": "select",
-      "id": "padding",
-      "label": "t:blocks.all.padding.label",
-      "options": [
-        { "value": "none", "label": "t:blocks.all.step.none" },
-        { "value": "minimal", "label": "t:blocks.all.step.minimal" },
-        { "value": "tiny", "label": "t:blocks.all.step.tiny" },
-        { "value": "small", "label": "t:blocks.all.step.small" },
-        { "value": "medium", "label": "t:blocks.all.step.medium" },
-        { "value": "large", "label": "t:blocks.all.step.large" },
-        { "value": "xlarge", "label": "t:blocks.all.step.xlarge" }
-      ],
-      "default": "none"
     }
   ],
   "presets": [
     {
-      "name": "t:blocks.subheading.name",
-      "settings": {
-        "text": "Subheading",
-        "padding": "none"
-      }
+      "name": "t:blocks.product_card_option_values.name"
     }
   ]
 }

@@ -21,6 +21,10 @@
   dragged into and every other child flows underneath in the order the merchant
   chose.
 
+  The card-wide product link is structural markup here. Product names are
+  ordinary Text blocks connected to `closest.product.title`; the link must not
+  require a second Product Title block just to make the card clickable.
+
   **`snippets/product-card.liquid` is untouched and stays the card everywhere
   else.** The collection and search templates still render it, so the theme
   carries one card built two ways for as long as those templates are what they
@@ -127,6 +131,10 @@
 >
   {% content_for 'blocks' %}
 
+  {%- if product != blank -%}
+    <a class="card__link" href="{{ product.url }}" aria-label="{{ product.title | escape }}"></a>
+  {%- endif -%}
+
   {%- comment -%}
     A real link to the piece, which `theme.js` upgrades into the overlay.
     Without scripting it lands on the product page: the same information, one
@@ -167,15 +175,17 @@
   "name": "t:blocks.product_card.name",
   "tag": null,
   "blocks": [
-    { "type": "product-card-image" },
-    { "type": "product-card-title" },
-    { "type": "product-card-option-name" },
-    { "type": "product-card-option-values" },
-    { "type": "product-card-variants" },
-    { "type": "product-card-text" },
-    { "type": "product-card-price" },
-    { "type": "product-card-add" },
-    { "type": "group" }
+    { "type": "_product-card-media" },
+    { "type": "_product-card-option-values" },
+    { "type": "_product-card-option-control" },
+    { "type": "text" },
+    { "type": "rich-text" },
+    { "type": "button" },
+    { "type": "icon" },
+    { "type": "border" },
+    { "type": "_product-card-price" },
+    { "type": "_product-card-add" },
+    { "type": "_product-card-group" }
   ],
   "settings": [
     {

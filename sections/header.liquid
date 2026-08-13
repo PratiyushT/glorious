@@ -18,6 +18,7 @@
 {%- liquid
   assign menu_id = 'nav-menu-' | append: section.id
   assign link_blocks = section.blocks | where: 'type', 'link'
+  assign cart_name = settings.cart_name | default: 'Cart'
 
   assign cart_drawer = false
   if settings.cart_type == 'drawer'
@@ -31,11 +32,11 @@
     so the count has to follow whatever the merchant has switched on.
   endcomment
   assign n = link_blocks.size
-  assign bag_number = 0
+  assign cart_number = 0
   assign search_number = 0
-  if section.settings.show_bag
+  if section.settings.show_cart
     assign n = n | plus: 1
-    assign bag_number = n
+    assign cart_number = n
   endif
   if section.settings.show_search
     assign n = n | plus: 1
@@ -128,14 +129,14 @@
       </a>
     {%- endif -%}
 
-    {%- if section.settings.show_bag -%}
+    {%- if section.settings.show_cart -%}
       <a
         class="nav__action"
         href="{{ routes.cart_url }}"
         {% if cart_drawer %}data-drawer-open{% endif %}
       >
         {% render 'icon', icon: 'nav-bag' %}
-        <span class="nav__action-label">{{ 'navigation.bag' | t }}</span>
+        <span class="nav__action-label">{{ cart_name }}</span>
         <span
           class="nav__count"
           data-cart-count
@@ -173,7 +174,7 @@
   section: section,
   menu_id: menu_id,
   link_blocks: link_blocks,
-  bag_number: bag_number,
+  cart_number: cart_number,
   search_number: search_number,
   cart_drawer: cart_drawer,
   search_overlay: search_overlay
@@ -282,8 +283,8 @@
     },
     {
       "type": "checkbox",
-      "id": "show_bag",
-      "label": "t:sections.header.show_bag.label",
+      "id": "show_cart",
+      "label": "t:sections.header.show_cart.label",
       "default": true
     },
     {

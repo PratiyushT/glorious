@@ -15,7 +15,7 @@
         "contact_link": "/pages/contact",
         "show_account": true,
         "show_search": true,
-        "show_bag": true,
+        "show_cart": true,
         "search_overlay": true,
         "search_popular": "Emerald, Halo, Hoop earrings, Pendant"
       },

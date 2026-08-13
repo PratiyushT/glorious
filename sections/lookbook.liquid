@@ -1,519 +1,51 @@
 {%- comment -%}
-  The Lookbook — the design's "Shop the look" section.
+  Lookbook is now a composition surface, not a bespoke scene schema.
 
-  A stage that carries either a film or a campaign photograph, marked with
-  points that open the piece they sit on, and a list of everything in the
-  look beside it.
-
-  Everything is rendered server-side and JavaScript only changes which parts
-  are shown: every scene's panel, every pin, every card and every list row is
-  in the document from the start. That keeps money, translation and image
-  sizing in Liquid, and it means a visitor without scripting still sees the
-  first look, its pieces, and real links to all of them.
-
-  The design's prototype has an edit mode for dragging points into place and
-  scrubbing their timing. That is authoring, not storefront: here the same
-  values are block settings, so the merchant places points in the theme
-  editor instead.
-
-  Pins are flat numbered settings rather than nested blocks because Shopify
-  sections cannot nest blocks; the footer's link columns already use that
-  convention.
-
-  Points carry an optional in and out second. Those only mean anything on a
-  film — leave them empty and the point is simply always there.
+  Every visible item is a global theme block. A look is an Interactive media
+  block, its photograph/film and caption are ordinary Media/Text blocks, and
+  each product point is a reusable Hotspot block. The section owns only the
+  colour scheme, outer spacing, and the optional scene-tab host.
 {%- endcomment -%}
 
-{%- liquid
-  assign scenes = section.blocks | where: 'type', 'scene'
-  assign pin_slots = 4
+<section
+  class="lookbook section scheme-{{ section.settings.color_scheme }}"
+  id="lookbook-{{ section.id }}"
+  style="{% render 'section-style', padding_top: section.settings.padding_top, padding_bottom: section.settings.padding_bottom %}"
+  data-lookbook
+>
+  <div class="lookbook__inner">
+    <div
+      class="lookbook__rail"
+      role="tablist"
+      aria-label="{{ 'lookbook.scenes' | t }}"
+      data-look-rail
+      hidden
+    ></div>
 
-  comment
-    The film controls only exist if some scene actually carries a video.
-  endcomment
-  assign has_video = false
-  for block in scenes
-    if block.settings.video != blank
-      assign has_video = true
-      break
-    endif
-  endfor
--%}
-
-{%- if scenes.size > 0 -%}
-  <section
-    class="lookbook section scheme-{{ section.settings.color_scheme }}"
-    id="lookbook"
-    style="{% render 'section-style', padding_top: section.settings.padding_top, padding_bottom: section.settings.padding_bottom %}"
-    data-lookbook
-    data-pin-style="{{ section.settings.pin_style }}"
-    {% if section.settings.pulse %}data-pulse{% endif %}
-  >
-    <div class="lookbook__inner">
-      {%- if section.settings.subheading != blank -%}
-        <span class="lookbook__eyebrow reveal">{{ section.settings.subheading }}</span>
-      {%- endif -%}
-
-      {%- if section.settings.heading != blank -%}
-        <h2 class="lookbook__title reveal">{{ section.settings.heading }}</h2>
-      {%- endif -%}
-
-      {%- if section.settings.text != blank -%}
-        <p class="section-lede reveal">{{ section.settings.text }}</p>
-      {%- endif -%}
-
-      {%- comment -%} The scene rail. One scene needs no switch. {%- endcomment -%}
-      {%- if scenes.size > 1 -%}
-        <div class="lookbook__rail" role="tablist" aria-label="{{ 'lookbook.scenes' | t }}">
-          {%- for block in scenes -%}
-            <button
-              class="lookbook__tab{% if forloop.first %} is-active{% endif %}"
-              type="button"
-              role="tab"
-              id="look-tab-{{ section.id }}-{{ forloop.index0 }}"
-              aria-controls="look-panel-{{ section.id }}-{{ forloop.index0 }}"
-              aria-selected="{% if forloop.first %}true{% else %}false{% endif %}"
-              data-look-tab="{{ forloop.index0 }}"
-              {{ block.shopify_attributes }}
-            >
-              {{ block.settings.label | default: block.settings.tag }}
-            </button>
-          {%- endfor -%}
-        </div>
-      {%- endif -%}
-
-      <div class="lookbook__grid">
-        <div class="lookbook__main">
-          <div class="lookbook__stage" data-look-stage>
-            {%- for block in scenes -%}
-              {%- assign scene_index = forloop.index0 -%}
-              {%- comment -%}
-                The tab roles only exist when there is a rail to carry them.
-                The rail is rendered `{% if scenes.size > 1 %}`, so with a
-                single scene there were no tabs — and the panel still claimed
-                `role="tabpanel"` and pointed `aria-labelledby` at a tab id that
-                was in no document. That is a tabpanel with no tablist and a
-                dangling ARIA reference, which is exactly what the accessibility
-                audit flags. One scene is not a tabbed interface; it is a
-                picture.
-              {%- endcomment -%}
-              <div
-                class="lookbook__scene"
-                id="look-panel-{{ section.id }}-{{ scene_index }}"
-                {%- if scenes.size > 1 %}
-                  role="tabpanel"
-                  aria-labelledby="look-tab-{{ section.id }}-{{ scene_index }}"
-                {%- endif %}
-                data-look-scene="{{ scene_index }}"
-                {% unless forloop.first %}hidden{% endunless %}
-              >
-                {%- if block.settings.video != blank -%}
-                  {%- assign video_lqip = block.settings.video.preview_image | image_url: width: 40 -%}
-                  {{
-                    block.settings.video
-                    | video_tag:
-                      controls: false,
-                      muted: true,
-                      loop: true,
-                      preload: 'metadata',
-                      image_size: '1200x',
-                      data-video-lqip: video_lqip
-                  }}
-                  {% render 'video-lqip-frame', lqip: video_lqip %}
-                {%- elsif block.settings.image != blank -%}
-                  <img
-                    src="{{ block.settings.image | image_url: width: 1200 }}"
-                    data-image-lqip="{{ block.settings.image | image_url: width: 40 }}"
-                    srcset="{{ block.settings.image | image_url: width: 500 }} 500w, {{ block.settings.image | image_url: width: 800 }} 800w, {{ block.settings.image | image_url: width: 1200 }} 1200w"
-                    sizes="(min-width: 61.25rem) 35rem, 100vw"
-                    alt="{{ block.settings.image.alt | escape }}"
-                    width="{{ block.settings.image.width }}"
-                    height="{{ block.settings.image.height }}"
-                    loading="{% if forloop.first %}eager{% else %}lazy{% endif %}"
-                  >
-                {%- else -%}
-                  {{ 'lifestyle-1' | placeholder_svg_tag: 'placeholder-svg' }}
-                {%- endif -%}
-              </div>
-            {%- endfor -%}
-
-            <span class="lookbook__scrim" aria-hidden="true"></span>
-
-            {%- for block in scenes -%}
-              {%- if block.settings.tag != blank -%}
-                <span
-                  class="lookbook__tag"
-                  data-look-tag="{{ forloop.index0 }}"
-                  {% unless forloop.first %}hidden{% endunless %}
-                >{{ block.settings.tag }}</span>
-              {%- endif -%}
-            {%- endfor -%}
-
-            {%- comment -%}
-              Every scene's pins are in the document; only the active scene's
-              are shown. On a film a pin can also carry an in and out second,
-              and appears as its piece comes on screen.
-            {%- endcomment -%}
-            {%- for block in scenes -%}
-              {%- assign scene_index = forloop.index0 -%}
-              {%- for i in (1..pin_slots) -%}
-                {%- liquid
-                  assign product_key = 'product_' | append: i
-                  assign x_key = 'x_' | append: i
-                  assign y_key = 'y_' | append: i
-                  assign in_key = 'in_' | append: i
-                  assign out_key = 'out_' | append: i
-                  assign pin_product = block.settings[product_key]
-                -%}
-                {%- if pin_product != blank -%}
-                  <button
-                    class="lookbook-pin"
-                    type="button"
-                    style="--x: {{ block.settings[x_key] }}%; --y: {{ block.settings[y_key] }}%;"
-                    data-look-pin="{{ i }}"
-                    data-look-pin-scene="{{ scene_index }}"
-                    data-look-in="{{ block.settings[in_key] | default: 0 }}"
-                    data-look-out="{{ block.settings[out_key] | default: 0 }}"
-                    aria-label="{{ 'lookbook.show_piece' | t: title: pin_product.title }}"
-                    {% unless forloop.parentloop.first %}hidden{% endunless %}
-                  >
-                    <span class="lookbook-pin__ring" aria-hidden="true"></span>
-                    <span class="lookbook-pin__dot" aria-hidden="true">
-                      <span class="lookbook-pin__number">{{ i }}</span>
-                      <span class="lookbook-pin__plus">{% render 'icon', icon: 'plus' %}</span>
-                    </span>
-                  </button>
-                {%- endif -%}
-              {%- endfor -%}
-            {%- endfor -%}
-
-            {%- comment -%} One card per pin, shown when its pin is chosen. {%- endcomment -%}
-            {%- for block in scenes -%}
-              {%- assign scene_index = forloop.index0 -%}
-              {%- for i in (1..pin_slots) -%}
-                {%- liquid
-                  assign product_key = 'product_' | append: i
-                  assign pin_product = block.settings[product_key]
-                -%}
-                {%- if pin_product != blank -%}
-                  {%- liquid
-                    assign kind = pin_product.type | default: pin_product.vendor
-                    if pin_product.price_varies
-                      assign price_from = pin_product.price_min | money
-                      assign price_label = 'products.from_price' | t: price: price_from
-                    else
-                      assign price_label = pin_product.price | money
-                    endif
-                    assign variant = pin_product.selected_or_first_available_variant
-                    assign metal = blank
-                    for option in pin_product.options_with_values
-                      assign option_name = option.name | downcase
-                      if option_name == 'metal'
-                        assign metal = variant.options[forloop.index0]
-                        break
-                      endif
-                    endfor
-                  -%}
-                  <div
-                    class="lookbook-card"
-                    data-look-card="{{ i }}"
-                    data-look-card-scene="{{ scene_index }}"
-                    role="dialog"
-                    aria-label="{{ pin_product.title | escape }}"
-                    hidden
-                  >
-                    <div class="lookbook-card__top">
-                      <span class="lookbook-card__thumb">
-                        {%- if pin_product.featured_media -%}
-                          <img
-                            src="{{ pin_product.featured_media | image_url: width: 128 }}"
-                            data-image-lqip="{{ pin_product.featured_media | image_url: width: 40 }}"
-                            alt=""
-                            width="64"
-                            height="64"
-                            loading="lazy"
-                          >
-                        {%- endif -%}
-                      </span>
-
-                      <span class="lookbook-card__body">
-                        {%- if kind != blank -%}
-                          <span class="lookbook-card__cat">{{ kind }}</span>
-                        {%- endif -%}
-                        <span class="lookbook-card__name">{{ pin_product.title }}</span>
-                        {%- if metal != blank -%}
-                          <span class="lookbook-card__metal">{{ metal }}</span>
-                        {%- endif -%}
-                      </span>
-
-                      <button class="lookbook-card__close" type="button" data-look-card-close>
-                        <span class="visually-hidden">{{ 'navigation.close' | t }}</span>
-                        <span aria-hidden="true">{% render 'icon', icon: 'close' %}</span>
-                      </button>
-                    </div>
-
-                    <div class="lookbook-card__foot">
-                      <span class="lookbook-card__price">
-                        {{- price_label -}}
-                      </span>
-                      <span class="lookbook-card__actions">
-                        <a class="lookbook-card__details" href="{{ pin_product.url }}">
-                          {{ 'lookbook.details' | t }}
-                        </a>
-                        {%- if pin_product.available -%}
-                          {%- comment -%}
-                            Shopify derives a product form's id from the
-                            product, and the lookbook renders a form for the
-                            same piece twice — once on its card and once in the
-                            list row. Left alone that is two `product_form_<id>`
-                            elements sharing an id, which is invalid and is what
-                            the label/aria machinery would resolve against.
-                          {%- endcomment -%}
-                          {%- assign card_form_id = 'lookbook-card-' | append: scene_index | append: '-' | append: i | append: '-' | append: pin_product.id -%}
-                          {%- form 'product', pin_product, id: card_form_id, class: 'lookbook-card__add-form', data-cart-add: '' -%}
-                            <input type="hidden" name="id" value="{{ variant.id }}">
-                            <button
-                              class="lookbook-card__add"
-                              type="submit"
-                              name="add"
-                              aria-label="{{ 'lookbook.add' | t: title: pin_product.title }}"
-                            >
-                              {%- comment -%}
-                                The icon carries an SVG mask id, so every render
-                                of it on a page needs its own. A filter cannot
-                                be used on a render argument, so it is built
-                                here — see snippets/icon.liquid.
-                              {%- endcomment -%}
-                              {%- assign add_uid = 'lbcard-' | append: scene_index | append: '-' | append: i -%}
-                              {% render 'icon', icon: 'bag-plus', uid: add_uid %}
-                            </button>
-                          {%- endform -%}
-                        {%- endif -%}
-                      </span>
-                    </div>
-                  </div>
-                {%- endif -%}
-              {%- endfor -%}
-            {%- endfor -%}
-          </div>
-
-          {%- if has_video -%}
-            <div class="lookbook-film" data-look-film hidden>
-              <button class="lookbook-film__play" type="button" data-look-play aria-label="{{ 'lookbook.play' | t }}">
-                <span aria-hidden="true" data-look-play-glyph>
-                  <span data-look-play-icon>{% render 'icon', icon: 'play' %}</span>
-                  <span data-look-pause-icon hidden>{% render 'icon', icon: 'pause' %}</span>
-                </span>
-              </button>
-
-              <div class="lookbook-film__bar" data-look-bar>
-                <span class="lookbook-film__track" aria-hidden="true"></span>
-                <span class="lookbook-film__fill" data-look-fill aria-hidden="true"></span>
-                <span class="lookbook-film__marks" data-look-marks aria-hidden="true"></span>
-              </div>
-
-              <span class="lookbook-film__time" data-look-time>0:00 / 0:00</span>
-            </div>
-          {%- endif -%}
-
-          {%- if section.settings.hint != blank -%}
-            <p class="lookbook__hint">{{ section.settings.hint }}</p>
-          {%- endif -%}
-        </div>
-
-        {%- if section.settings.show_list -%}
-          <aside class="lookbook__list">
-            <div class="lookbook__list-inner">
-              <div class="lookbook__list-head">
-                <span class="lookbook__list-title">{{ 'lookbook.in_this_look' | t }}</span>
-                {%- comment -%}
-                  One count per scene rather than a number assembled in the
-                  browser — pluralisation is the locale file's job.
-                {%- endcomment -%}
-                {%- for block in scenes -%}
-                  {%- liquid
-                    assign pin_count = 0
-                    for i in (1..pin_slots)
-                      assign product_key = 'product_' | append: i
-                      if block.settings[product_key] != blank
-                        assign pin_count = pin_count | plus: 1
-                      endif
-                    endfor
-                  -%}
-                  <span
-                    class="lookbook__list-count"
-                    data-look-count="{{ forloop.index0 }}"
-                    {% unless forloop.first %}hidden{% endunless %}
-                  >{{ 'lookbook.pieces_count' | t: count: pin_count }}</span>
-                {%- endfor -%}
-              </div>
-
-              {%- for block in scenes -%}
-                {%- assign scene_index = forloop.index0 -%}
-                <div
-                  class="lookbook__rows"
-                  data-look-rows="{{ scene_index }}"
-                  {% unless forloop.first %}hidden{% endunless %}
-                >
-                  {%- for i in (1..pin_slots) -%}
-                    {%- liquid
-                      assign product_key = 'product_' | append: i
-                      assign pin_product = block.settings[product_key]
-                    -%}
-                    {%- if pin_product != blank -%}
-                      {%- liquid
-                        assign kind = pin_product.type | default: pin_product.vendor
-                        if pin_product.price_varies
-                          assign row_price_from = pin_product.price_min | money
-                          assign row_price = 'products.from_price' | t: price: row_price_from
-                        else
-                          assign row_price = pin_product.price | money
-                        endif
-                        if kind != blank
-                          assign row_meta = kind | append: ' · ' | append: row_price
-                        else
-                          assign row_meta = row_price
-                        endif
-                        assign row_variant = pin_product.selected_or_first_available_variant
-                      -%}
-                      <div class="lookbook-row" data-look-row="{{ i }}" data-look-row-scene="{{ scene_index }}">
-                        <button class="lookbook-row__main" type="button" data-look-row-pick>
-                          <span class="lookbook-row__thumb">
-                            {%- if pin_product.featured_media -%}
-                              <img
-                                src="{{ pin_product.featured_media | image_url: width: 112 }}"
-                                data-image-lqip="{{ pin_product.featured_media | image_url: width: 40 }}"
-                                alt=""
-                                width="56"
-                                height="56"
-                                loading="lazy"
-                              >
-                            {%- endif -%}
-                          </span>
-                          <span class="lookbook-row__body">
-                            <span class="lookbook-row__line">
-                              <span class="lookbook-row__num">{{ i | prepend: '0' | slice: -2, 2 }}</span>
-                              <span class="lookbook-row__name">{{ pin_product.title }}</span>
-                            </span>
-                            <span class="lookbook-row__meta">
-                              {{- row_meta -}}
-                            </span>
-                          </span>
-                        </button>
-
-                        {%- if pin_product.available -%}
-                          {%- assign row_form_id = 'lookbook-row-' | append: scene_index | append: '-' | append: i | append: '-' | append: pin_product.id -%}
-                          {%- form 'product', pin_product, id: row_form_id, class: 'lookbook-row__add-form', data-cart-add: '' -%}
-                            <input type="hidden" name="id" value="{{ row_variant.id }}">
-                            <button
-                              class="lookbook-row__add"
-                              type="submit"
-                              name="add"
-                              aria-label="{{ 'lookbook.add' | t: title: pin_product.title }}"
-                            >
-                              {%- assign row_uid = 'lbrow-' | append: scene_index | append: '-' | append: i -%}
-                              {% render 'icon', icon: 'bag-plus', uid: row_uid %}
-                            </button>
-                          {%- endform -%}
-                        {%- endif -%}
-                      </div>
-                    {%- endif -%}
-                  {%- endfor -%}
-                </div>
-              {%- endfor -%}
-
-              {%- if section.settings.link_label != blank -%}
-                <div class="lookbook__list-foot">
-                  <a class="lookbook__all" href="{{ section.settings.link | default: routes.all_products_collection_url }}">
-                    {{ section.settings.link_label }}
-                    <span aria-hidden="true">{% render 'icon', icon: 'arrow-right' %}</span>
-                  </a>
-                </div>
-              {%- endif -%}
-            </div>
-          </aside>
-        {%- endif -%}
-      </div>
-    </div>
-  </section>
-{%- endif -%}
+    {% content_for 'blocks' %}
+  </div>
+</section>
 
 {% schema %}
 {
   "name": "t:sections.lookbook.name",
-  "tag": "div",
+  "tag": "section",
+  "class": "section-wrapper",
+  "blocks": [
+    { "type": "@theme" },
+    { "type": "@app" },
+    { "type": "interactive-media" },
+    { "type": "group" },
+    { "type": "text" },
+    { "type": "rich-text" },
+    { "type": "button" }
+  ],
   "settings": [
     {
       "type": "color_scheme",
       "id": "color_scheme",
       "label": "t:sections.all.color_scheme.label",
       "default": "scheme_2"
-    },
-    {
-      "type": "text",
-      "id": "subheading",
-      "label": "t:sections.all.subheading.label",
-      "default": "Shop the look"
-    },
-    {
-      "type": "text",
-      "id": "heading",
-      "label": "t:sections.all.heading.label",
-      "default": "The Lookbook"
-    },
-    {
-      "type": "textarea",
-      "id": "text",
-      "label": "t:sections.all.text.label",
-      "default": "Tap a point to see the piece it marks. In the film, points appear as each piece comes on screen."
-    },
-    {
-      "type": "text",
-      "id": "hint",
-      "label": "t:sections.lookbook.hint.label",
-      "default": "Tap a point to see the piece"
-    },
-    {
-      "type": "header",
-      "content": "t:sections.lookbook.points_header"
-    },
-    {
-      "type": "select",
-      "id": "pin_style",
-      "label": "t:sections.lookbook.pin_style.label",
-      "options": [
-        { "value": "dot", "label": "t:sections.lookbook.pin_style.dot" },
-        { "value": "number", "label": "t:sections.lookbook.pin_style.number" },
-        { "value": "plus", "label": "t:sections.lookbook.pin_style.plus" }
-      ],
-      "default": "dot"
-    },
-    {
-      "type": "checkbox",
-      "id": "pulse",
-      "label": "t:sections.lookbook.pulse.label",
-      "default": true
-    },
-    {
-      "type": "header",
-      "content": "t:sections.lookbook.list_header"
-    },
-    {
-      "type": "checkbox",
-      "id": "show_list",
-      "label": "t:sections.lookbook.show_list.label",
-      "default": true
-    },
-    {
-      "type": "text",
-      "id": "link_label",
-      "label": "t:sections.all.link_label.label",
-      "default": "Shop all pieces"
-    },
-    {
-      "type": "url",
-      "id": "link",
-      "label": "t:sections.all.link.label"
     },
     {
       "type": "header",
@@ -525,8 +57,6 @@
       "label": "t:sections.all.padding_top.label",
       "options": [
         { "value": "none", "label": "t:sections.all.space_step.none" },
-        { "value": "2xs", "label": "t:sections.all.space_step.2xs" },
-        { "value": "xs", "label": "t:sections.all.space_step.xs" },
         { "value": "sm", "label": "t:sections.all.space_step.sm" },
         { "value": "md", "label": "t:sections.all.space_step.md" },
         { "value": "lg", "label": "t:sections.all.space_step.lg" },
@@ -541,8 +71,6 @@
       "label": "t:sections.all.padding_bottom.label",
       "options": [
         { "value": "none", "label": "t:sections.all.space_step.none" },
-        { "value": "2xs", "label": "t:sections.all.space_step.2xs" },
-        { "value": "xs", "label": "t:sections.all.space_step.xs" },
         { "value": "sm", "label": "t:sections.all.space_step.sm" },
         { "value": "md", "label": "t:sections.all.space_step.md" },
         { "value": "lg", "label": "t:sections.all.space_step.lg" },
@@ -552,77 +80,49 @@
       "default": "xl"
     }
   ],
-  "blocks": [
-    {
-      "type": "scene",
-      "name": "t:sections.lookbook.blocks.scene.name",
-      "settings": [
-        {
-          "type": "text",
-          "id": "label",
-          "label": "t:sections.lookbook.blocks.scene.label.label",
-          "default": "Evening"
-        },
-        {
-          "type": "text",
-          "id": "tag",
-          "label": "t:sections.lookbook.blocks.scene.tag.label",
-          "info": "t:sections.lookbook.blocks.scene.tag.info",
-          "default": "Look 01 · Evening"
-        },
-        {
-          "type": "image_picker",
-          "id": "image",
-          "label": "t:sections.all.image.label"
-        },
-        {
-          "type": "video",
-          "id": "video",
-          "label": "t:sections.lookbook.blocks.scene.video.label",
-          "info": "t:sections.lookbook.blocks.scene.video.info"
-        },
-        {
-          "type": "header",
-          "content": "t:sections.lookbook.blocks.scene.points_header"
-        },
-        {
-          "type": "paragraph",
-          "content": "t:sections.lookbook.blocks.scene.points_paragraph"
-        },
-
-        { "type": "product", "id": "product_1", "label": "t:sections.lookbook.point.product_1" },
-        { "type": "range", "id": "x_1", "label": "t:sections.lookbook.point.x", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
-        { "type": "range", "id": "y_1", "label": "t:sections.lookbook.point.y", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 30 },
-        { "type": "number", "id": "in_1", "label": "t:sections.lookbook.point.in" },
-        { "type": "number", "id": "out_1", "label": "t:sections.lookbook.point.out" },
-
-        { "type": "product", "id": "product_2", "label": "t:sections.lookbook.point.product_2" },
-        { "type": "range", "id": "x_2", "label": "t:sections.lookbook.point.x", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
-        { "type": "range", "id": "y_2", "label": "t:sections.lookbook.point.y", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
-        { "type": "number", "id": "in_2", "label": "t:sections.lookbook.point.in" },
-        { "type": "number", "id": "out_2", "label": "t:sections.lookbook.point.out" },
-
-        { "type": "product", "id": "product_3", "label": "t:sections.lookbook.point.product_3" },
-        { "type": "range", "id": "x_3", "label": "t:sections.lookbook.point.x", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
-        { "type": "range", "id": "y_3", "label": "t:sections.lookbook.point.y", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 70 },
-        { "type": "number", "id": "in_3", "label": "t:sections.lookbook.point.in" },
-        { "type": "number", "id": "out_3", "label": "t:sections.lookbook.point.out" },
-
-        { "type": "product", "id": "product_4", "label": "t:sections.lookbook.point.product_4" },
-        { "type": "range", "id": "x_4", "label": "t:sections.lookbook.point.x", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
-        { "type": "range", "id": "y_4", "label": "t:sections.lookbook.point.y", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 85 },
-        { "type": "number", "id": "in_4", "label": "t:sections.lookbook.point.in" },
-        { "type": "number", "id": "out_4", "label": "t:sections.lookbook.point.out" }
-      ]
-    }
-  ],
   "presets": [
     {
       "name": "t:sections.lookbook.name",
       "blocks": [
-        { "type": "scene" },
-        { "type": "scene", "settings": { "label": "Bridal", "tag": "Look 02 · Bridal" } },
-        { "type": "scene", "settings": { "label": "Gold Hour", "tag": "Look 03 · Gold hour" } }
+        {
+          "type": "group",
+          "settings": {
+            "direction": "vertical",
+            "align_vertical": "stretch",
+            "vertical_gap": "tiny",
+            "padding": "none"
+          },
+          "blocks": [
+            {
+              "type": "text",
+              "settings": {
+                "text": "Shop the look",
+                "style": "subheading",
+                "layout": "eyebrow",
+                "element": "span"
+              }
+            },
+            {
+              "type": "text",
+              "settings": {
+                "text": "The Lookbook",
+                "style": "title",
+                "layout": "display",
+                "element": "h2"
+              }
+            },
+            {
+              "type": "text",
+              "settings": {
+                "text": "Tap a point to see the piece it marks.",
+                "style": "paragraph",
+                "layout": "lede",
+                "element": "p"
+              }
+            }
+          ]
+        },
+        { "type": "interactive-media" }
       ]
     }
   ]
