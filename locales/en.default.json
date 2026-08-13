@@ -209,6 +209,90 @@
       "text": "New stories will appear here when they are published."
     }
   },
+  "customer": {
+    "account": "Account",
+    "account_title": "Welcome, {{ name }}",
+    "email": "Email",
+    "password": "Password",
+    "password_confirm": "Confirm password",
+    "first_name": "First name",
+    "last_name": "Last name",
+    "logout": "Sign out",
+    "login": {
+      "title": "Welcome back",
+      "subtext": "Sign in to view orders, delivery details, and saved addresses.",
+      "submit": "Sign in",
+      "link": "Already have an account? Sign in"
+    },
+    "register": {
+      "title": "Create your account",
+      "subtext": "Keep order history and delivery details together in one secure place.",
+      "submit": "Create account",
+      "link": "Create an account"
+    },
+    "recover": {
+      "link": "Forgot your password?",
+      "subtext": "Enter your email and Shopify will send a reset link.",
+      "submit": "Send reset link",
+      "success": "Check your inbox for a password reset link."
+    },
+    "guest": {
+      "title": "Continue as a guest",
+      "submit": "Continue"
+    },
+    "activate": {
+      "title": "Activate your account",
+      "subtext": "Choose a password to finish setting up your account.",
+      "submit": "Activate account",
+      "decline": "Decline invitation"
+    },
+    "reset": {
+      "title": "Reset your password",
+      "subtext": "Choose a new password for your account.",
+      "submit": "Reset password"
+    },
+    "orders": {
+      "title": "Order history",
+      "order": "Order",
+      "date": "Date",
+      "payment": "Payment",
+      "fulfillment": "Fulfillment",
+      "total": "Total",
+      "empty": "You haven't placed an order yet."
+    },
+    "order": {
+      "placed": "Placed on {{ date }}",
+      "back": "Back to account",
+      "cancelled": "Cancelled on {{ date }}",
+      "product": "Product",
+      "sku": "SKU",
+      "price": "Price",
+      "quantity": "Quantity",
+      "subtotal": "Subtotal",
+      "total": "Total",
+      "billing_address": "Billing address",
+      "shipping_address": "Shipping address"
+    },
+    "addresses": {
+      "title": "Addresses",
+      "default": "Default address",
+      "empty": "No address has been saved yet.",
+      "add": "Add a new address",
+      "add_submit": "Add address",
+      "edit": "Edit",
+      "update": "Update address",
+      "delete": "Delete",
+      "company": "Company",
+      "address1": "Address",
+      "address2": "Apartment, suite, etc.",
+      "city": "City",
+      "country": "Country / region",
+      "province": "State / province",
+      "zip": "Postal code",
+      "phone": "Phone",
+      "set_default": "Set as default address"
+    }
+  },
   "onboarding": {
     "product_title": "Example product"
   },

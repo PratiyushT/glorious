@@ -3622,6 +3622,24 @@ the checkout button is intact, and the subtotal carries the note.
   preset with a pixel slider; its narrow/medium/wide choices are intentionally
   stable responsive art direction.
 
+### Customer accounts
+
+- The Header uses Shopify's native `<shopify-account>` component whenever
+  customer accounts are enabled. It is not replaced by a hand-built drawer and
+  it is never hidden at compact widths: current Theme Store requirements demand
+  the component on desktop and mobile.
+- `customer_account_menu` is a menu picker whose default is
+  `customer-account-main-menu`, keeping the storefront sheet and hosted account
+  navigation on the same merchant-managed links.
+- Shopify's new customer accounts redirect away from the theme and are branded
+  in Checkout and accounts. The seven `templates/customers/*.json` files are
+  compatibility surfaces for stores still using legacy accounts; they retain
+  native Shopify forms and objects rather than emulating authentication,
+  orders, addresses or returns in theme JavaScript.
+- Self-serve returns belong to new customer accounts. Do not add a theme form
+  that pretends to create return requests: a legacy order page can display the
+  order faithfully, while Shopify or an account app owns the actual workflow.
+
 ### Things that cost time once
 
 - **A tag delimiter inside a `{% liquid %}` block closes it — inside a

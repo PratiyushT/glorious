@@ -5451,6 +5451,19 @@ a {
   opacity: 0.7;
 }
 
+.nav__account-component {
+  display: flex;
+  flex: 0 0 auto;
+  color: inherit;
+  --shopify-account-signed-in-avatar-size: 2rem;
+  --shopify-account-signed-in-avatar-color-background: var(--c-heading);
+  --shopify-account-signed-in-avatar-color-text: var(--c-surface);
+}
+
+.nav__account-component::part(signed-out-avatar) {
+  color: inherit;
+}
+
 .nav__count {
   margin-inline-start: -0.15em;
   color: var(--c-accent);
@@ -5496,10 +5509,6 @@ a {
    it gets it for free by simply not matching the container query. */
 @media (max-width: 35rem) {
   .nav__menu-label { display: none; }
-}
-
-@media (max-width: 23.75rem) {
-  .nav__action--account { display: none; }
 }
 
 /* The pill is too narrow for the wordmark, but it cannot be display:none —

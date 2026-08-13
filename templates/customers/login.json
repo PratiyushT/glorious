@@ -1,0 +1,4 @@
+{
+  "sections": { "main": { "type": "main-customer", "settings": { "color_scheme": "scheme_1", "title_style": "heading_2", "orders_per_page": 10, "addresses_per_page": 8, "padding_top": "lg", "padding_bottom": "xl" } } },
+  "order": ["main"]
+}

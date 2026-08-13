@@ -1,0 +1,208 @@
+.customer-page {
+  color: var(--c-text);
+  background: var(--c-bg);
+}
+
+.customer-page__inner {
+  display: grid;
+  width: min(100%, var(--customer-width, 56rem));
+  margin-inline: auto;
+  gap: var(--step-large);
+}
+
+.customer-page__inner--wide {
+  --customer-width: var(--page-width);
+}
+
+.customer-page__header,
+.customer-form,
+.customer-panel,
+.customer-address,
+.customer-order-summary {
+  display: grid;
+  gap: var(--step-medium);
+}
+
+.customer-page__header h1,
+.customer-page__header p,
+.customer-panel h2,
+.customer-panel h3 {
+  margin: 0;
+}
+
+.customer-page__actions,
+.customer-inline-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--step-small);
+}
+
+.customer-form__grid,
+.customer-account-grid,
+.customer-addresses {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--step-medium);
+}
+
+.customer-form__field {
+  display: grid;
+  gap: var(--step-minimal);
+}
+
+.customer-form__field--wide {
+  grid-column: 1 / -1;
+}
+
+.customer-form__field label,
+.customer-table th,
+.customer-kicker {
+  font-size: var(--text-caption-size);
+  letter-spacing: var(--track-wide);
+  text-transform: uppercase;
+}
+
+.customer-form__field .field {
+  width: 100%;
+}
+
+.customer-panel,
+.customer-address {
+  padding: var(--step-medium);
+  border: 1px solid var(--c-hairline);
+}
+
+.customer-panel--plain {
+  padding: 0;
+  border: 0;
+}
+
+.customer-errors {
+  padding: var(--step-small);
+  border: 1px solid currentColor;
+  color: var(--c-error, #8a2c22);
+}
+
+.customer-success {
+  padding: var(--step-small);
+  border: 1px solid currentColor;
+  color: var(--c-success, #23623a);
+}
+
+.customer-recovery summary,
+.customer-address-editor summary {
+  cursor: pointer;
+  font-size: var(--text-caption-size);
+  letter-spacing: var(--track-wide);
+  text-decoration: underline;
+  text-underline-offset: .25em;
+  text-transform: uppercase;
+}
+
+.customer-recovery[open] summary,
+.customer-address-editor[open] summary {
+  margin-block-end: var(--step-medium);
+}
+
+.customer-table-wrap {
+  max-width: 100%;
+  overflow-x: auto;
+  border: 1px solid var(--c-hairline);
+}
+
+.customer-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.customer-table th,
+.customer-table td {
+  padding: var(--step-small);
+  border-block-end: 1px solid var(--c-hairline);
+  text-align: start;
+  vertical-align: top;
+}
+
+.customer-table tr:last-child td {
+  border-block-end: 0;
+}
+
+.customer-table tfoot th,
+.customer-table tfoot td {
+  border-block-start: 1px solid var(--c-hairline);
+  border-block-end: 0;
+}
+
+.customer-table a {
+  color: inherit;
+}
+
+.customer-address address,
+.customer-order-summary address {
+  font-style: normal;
+}
+
+.customer-address__default {
+  justify-self: start;
+  padding: .35em .7em;
+  border: 1px solid var(--c-hairline);
+  border-radius: 999px;
+  font-size: var(--text-caption-size);
+  letter-spacing: var(--track-wide);
+  text-transform: uppercase;
+}
+
+.customer-pagination {
+  display: flex;
+  justify-content: center;
+}
+
+@media (max-width: 46.9375rem) {
+  .customer-form__grid,
+  .customer-account-grid,
+  .customer-addresses {
+    grid-template-columns: 1fr;
+  }
+
+  .customer-form__field--wide {
+    grid-column: auto;
+  }
+
+  .customer-table--responsive thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+  }
+
+  .customer-table--responsive,
+  .customer-table--responsive tbody,
+  .customer-table--responsive tr,
+  .customer-table--responsive td {
+    display: block;
+    width: 100%;
+  }
+
+  .customer-table--responsive tr {
+    padding: var(--step-small);
+    border-block-end: 1px solid var(--c-hairline);
+  }
+
+  .customer-table--responsive td {
+    display: grid;
+    grid-template-columns: minmax(7rem, 40%) 1fr;
+    gap: var(--step-small);
+    padding: var(--step-minimal) 0;
+    border: 0;
+  }
+
+  .customer-table--responsive td::before {
+    content: attr(data-label);
+    color: var(--c-muted);
+    font-size: var(--text-caption-size);
+    letter-spacing: var(--track-wide);
+    text-transform: uppercase;
+  }
+}

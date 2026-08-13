@@ -19,6 +19,7 @@
   assign menu_id = 'nav-menu-' | append: section.id
   assign link_blocks = section.blocks | where: 'type', 'link'
   assign cart_name = settings.cart_name | default: 'Cart'
+  assign account_menu_handle = section.settings.customer_account_menu.handle | default: 'customer-account-main-menu'
 
   assign cart_drawer = false
   if settings.cart_type == 'drawer'
@@ -107,11 +108,13 @@
       </a>
     {%- endif -%}
 
-    {%- if section.settings.show_account -%}
-      <a class="nav__action nav__action--account" href="{{ routes.account_url }}">
-        {% render 'icon', icon: 'nav-account' %}
-        <span class="nav__action-label">{{ 'accessibility.account' | t }}</span>
-      </a>
+    {%- if section.settings.show_account and shop.customer_accounts_enabled -%}
+      <shopify-account class="nav__account-component" menu="{{ account_menu_handle }}">
+        <span slot="signed-out-avatar" class="nav__action nav__action--account">
+          {% render 'icon', icon: 'nav-account' %}
+          <span class="nav__action-label">{{ 'accessibility.account' | t }}</span>
+        </span>
+      </shopify-account>
     {%- endif -%}
 
     {%- comment -%}
@@ -274,6 +277,14 @@
       "id": "show_account",
       "label": "t:sections.header.show_account.label",
       "default": true
+    },
+    {
+      "type": "link_list",
+      "id": "customer_account_menu",
+      "label": "t:sections.header.customer_account_menu.label",
+      "info": "t:sections.header.customer_account_menu.info",
+      "default": "customer-account-main-menu",
+      "visible_if": "{{ section.settings.show_account }}"
     },
     {
       "type": "checkbox",

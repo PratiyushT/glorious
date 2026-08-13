@@ -1355,6 +1355,10 @@
       "show_account": {
         "label": "Show account"
       },
+      "customer_account_menu": {
+        "label": "Customer account menu",
+        "info": "Controls the links in Shopify's account sheet. The default menu is shared with customer account pages."
+      },
       "show_search": {
         "label": "Show search"
       },
@@ -1724,6 +1728,11 @@
       "summary_wide": "Wide",
       "empty_message": "Empty-cart message",
       "empty_button_label": "Empty-cart button label"
+    },
+    "main_customer": {
+      "name": "Customer account",
+      "orders_per_page": "Orders per page",
+      "addresses_per_page": "Addresses per page"
     },
     "main_list_collections": {
       "name": "Collection index"
