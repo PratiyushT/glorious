@@ -887,11 +887,9 @@
         "label": "Space between blocks",
         "info": "Applies while the blocks sit side by side. Stacked, the space comes from the section so the rhythm matches everything above and below."
       },
-      "vertical_gap": {
-        "label": "Vertical spacing",
-        "info": "Override the section's block spacing for this stacked Group.",
-        "inherit": "Use section spacing"
-      },
+      "vertical_gap_label": "Vertical spacing",
+      "vertical_gap_info": "Override the section's block spacing for this stacked Group.",
+      "vertical_gap_inherit": "Use section spacing",
       "stack_below": {
         "label": "Stack when narrow",
         "info": "Measured on the group's own width rather than the screen's, so a group in a narrow column stacks on a desktop too.",
