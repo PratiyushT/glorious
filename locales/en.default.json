@@ -309,7 +309,9 @@
     }
   },
   "onboarding": {
-    "product_title": "Example product"
+    "product_title": "Example product",
+    "product_vendor": "Product brand",
+    "product_description": "Select a product to show its media, options, price, and buying controls."
   },
   "404": {
     "title": "Page not found",

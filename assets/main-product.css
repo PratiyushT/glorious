@@ -189,6 +189,11 @@
   text-wrap: balance;
 }
 
+.featured-product .product-details__title a {
+  color: inherit;
+  text-decoration: none;
+}
+
 .product-price {
   display: flex;
   align-items: baseline;

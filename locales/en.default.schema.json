@@ -1880,6 +1880,17 @@
       "autoplay_video": { "label": "Autoplay hosted video" },
       "details_width": { "label": "Maximum details width" }
     },
+    "featured_product": {
+      "name": "Featured product",
+      "product": {
+        "label": "Product"
+      },
+      "details_width": {
+        "narrow": "Narrow",
+        "standard": "Standard",
+        "wide": "Wide"
+      }
+    },
     "pickup_availability": { "name": "Pickup availability" },
     "main_search": {
       "name": "Search results",
