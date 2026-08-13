@@ -1,0 +1,93 @@
+{{ 'content-pages.css' | asset_url | stylesheet_tag }}
+
+{%- liquid
+  assign current_policy = shop.privacy_policy
+  if request.path contains '/refund-policy'
+    assign current_policy = shop.refund_policy
+  elsif request.path contains '/shipping-policy'
+    assign current_policy = shop.shipping_policy
+  elsif request.path contains '/terms-of-service'
+    assign current_policy = shop.terms_of_service
+  elsif request.path contains '/subscription-policy'
+    assign current_policy = shop.subscription_policy
+  endif
+
+  assign width_class = 'content-surface__inner--reading'
+  if section.settings.content_width == 'narrow'
+    assign width_class = 'content-surface__inner--narrow'
+  elsif section.settings.content_width == 'page'
+    assign width_class = ''
+  endif
+-%}
+
+<section
+  class="section content-surface scheme-{{ section.settings.color_scheme }}"
+  style="{% render 'section-style', padding_top: section.settings.padding_top, padding_bottom: section.settings.padding_bottom %}"
+>
+  <div class="page-width content-surface__inner {{ width_class }} align-{{ section.settings.content_alignment }}" style="{% render 'block-spacing', gap: section.settings.block_gap %}">
+    {% content_for 'blocks' %}
+
+    {%- if section.settings.show_title -%}
+      <h1 style="{% render 'text-style', preset: section.settings.title_style %}">{{ current_policy.title }}</h1>
+    {%- endif -%}
+
+    <div class="content-prose rte">{{ current_policy.body }}</div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "t:sections.main_policy.name",
+  "blocks": [{ "type": "@theme" }, { "type": "@app" }],
+  "settings": [
+    { "type": "color_scheme", "id": "color_scheme", "label": "t:sections.all.color_scheme.label", "default": "scheme_1" },
+    {
+      "type": "select", "id": "content_width", "label": "t:sections.group.content_width.label",
+      "options": [
+        { "value": "narrow", "label": "t:sections.group.content_width.narrow" },
+        { "value": "reading", "label": "t:sections.group.content_width.reading" },
+        { "value": "page", "label": "t:sections.group.content_width.page" }
+      ], "default": "reading"
+    },
+    {
+      "type": "select", "id": "content_alignment", "label": "t:sections.all.content_alignment.label",
+      "options": [
+        { "value": "left", "label": "t:settings_schema.options.left" },
+        { "value": "center", "label": "t:settings_schema.options.center" },
+        { "value": "right", "label": "t:settings_schema.options.right" }
+      ], "default": "left"
+    },
+    { "type": "checkbox", "id": "show_title", "label": "t:sections.main_policy.show_title", "default": true },
+    {
+      "type": "select", "id": "title_style", "label": "t:blocks.all.text_preset.label",
+      "options": [
+        { "value": "title", "label": "t:settings_schema.typography.presets.title.header" },
+        { "value": "heading_1", "label": "t:settings_schema.typography.presets.heading_1.header" },
+        { "value": "heading_2", "label": "t:settings_schema.typography.presets.heading_2.header" },
+        { "value": "heading_3", "label": "t:settings_schema.typography.presets.heading_3.header" }
+      ], "default": "title", "visible_if": "{{ section.settings.show_title }}"
+    },
+    {
+      "type": "select", "id": "block_gap", "label": "t:sections.group.block_gap.label",
+      "options": [
+        { "value": "tiny", "label": "t:blocks.all.step.tiny" }, { "value": "small", "label": "t:blocks.all.step.small" },
+        { "value": "medium", "label": "t:blocks.all.step.medium" }, { "value": "large", "label": "t:blocks.all.step.large" },
+        { "value": "xlarge", "label": "t:blocks.all.step.xlarge" }
+      ], "default": "large"
+    },
+    { "type": "header", "content": "t:sections.all.spacing_header" },
+    { "type": "select", "id": "padding_top", "label": "t:sections.all.padding_top.label", "options": [
+      { "value": "none", "label": "t:sections.all.space_step.none" }, { "value": "2xs", "label": "t:sections.all.space_step.2xs" },
+      { "value": "xs", "label": "t:sections.all.space_step.xs" }, { "value": "sm", "label": "t:sections.all.space_step.sm" },
+      { "value": "md", "label": "t:sections.all.space_step.md" }, { "value": "lg", "label": "t:sections.all.space_step.lg" },
+      { "value": "xl", "label": "t:sections.all.space_step.xl" }, { "value": "max", "label": "t:sections.all.space_step.max" }
+    ], "default": "lg" },
+    { "type": "select", "id": "padding_bottom", "label": "t:sections.all.padding_bottom.label", "options": [
+      { "value": "none", "label": "t:sections.all.space_step.none" }, { "value": "2xs", "label": "t:sections.all.space_step.2xs" },
+      { "value": "xs", "label": "t:sections.all.space_step.xs" }, { "value": "sm", "label": "t:sections.all.space_step.sm" },
+      { "value": "md", "label": "t:sections.all.space_step.md" }, { "value": "lg", "label": "t:sections.all.space_step.lg" },
+      { "value": "xl", "label": "t:sections.all.space_step.xl" }, { "value": "max", "label": "t:sections.all.space_step.max" }
+    ], "default": "xl" }
+  ]
+}
+{% endschema %}

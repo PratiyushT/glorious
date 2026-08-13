@@ -201,7 +201,12 @@
     "choose_quote": "Choose a quote"
   },
   "blogs": {
-    "read_more": "Read more"
+    "read_more": "Read more",
+    "article_navigation": "More articles",
+    "empty": {
+      "title": "No articles yet",
+      "text": "New stories will appear here when they are published."
+    }
   },
   "onboarding": {
     "product_title": "Example product"

@@ -1,0 +1,21 @@
+{
+  "sections": {
+    "main": {
+      "type": "contact-form",
+      "blocks": {
+        "eyebrow": { "type": "text", "settings": { "text": "Contact", "style": "subheading", "layout": "eyebrow", "element": "span" } },
+        "title": { "type": "text", "settings": { "text": "Tell us what you're looking for.", "style": "heading_2", "element": "h1" } },
+        "body": { "type": "rich-text", "settings": { "text": "<p>Share a little about what you need and the team will reply with the next step.</p>", "style": "paragraph" } }
+      },
+      "block_order": ["eyebrow", "title", "body"],
+      "settings": {
+        "color_scheme": "scheme_1", "content_width": "reading", "block_gap": "tiny",
+        "show_phone": true, "show_subject": true, "first_name_label": "First name", "last_name_label": "Last name",
+        "email_label": "Email", "phone_label": "Phone", "subject_label": "Subject", "message_label": "Message",
+        "button_label": "Send message", "success_message": "Thanks for reaching out. We'll be in touch soon.",
+        "padding_top": "lg", "padding_bottom": "xl"
+      }
+    }
+  },
+  "order": ["main"]
+}

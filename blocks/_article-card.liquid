@@ -1,0 +1,88 @@
+{%- liquid
+  assign card_article = closest.article
+  assign card_ratio = block.settings.image_ratio | replace: '/', ' / '
+  assign card_excerpt = card_article.excerpt_or_content | strip_html
+-%}
+
+<article
+  class="article-card"
+  style="--article-card-ratio: {{ card_ratio }}; --article-card-fit: {{ block.settings.image_fit }};"
+  {{ block.shopify_attributes }}
+>
+  {%- if block.settings.show_image -%}
+    <a class="article-card__media" href="{{ card_article.url }}" tabindex="-1" aria-hidden="true">
+      {%- if card_article.image -%}
+        {%- assign article_lqip = card_article.image | image_url: width: 40 -%}
+        {{
+          card_article.image
+          | image_url: width: 1200
+          | image_tag:
+            widths: '320,480,640,800,1000,1200',
+            sizes: '(min-width: 63rem) 33vw, (min-width: 47rem) 50vw, 100vw',
+            loading: 'lazy',
+            alt: card_article.image.alt,
+            data-image-lqip: article_lqip
+        }}
+      {%- else -%}
+        {{ 'image' | placeholder_svg_tag: 'placeholder-svg' }}
+      {%- endif -%}
+    </a>
+  {%- endif -%}
+
+  {%- if block.settings.show_date or block.settings.show_author -%}
+    <div class="article-card__meta">
+      {%- if block.settings.show_date -%}<time datetime="{{ card_article.published_at | date: '%Y-%m-%d' }}">{{ card_article.published_at | date: '%b %e, %Y' }}</time>{%- endif -%}
+      {%- if block.settings.show_author and card_article.author != blank -%}<span>{{ card_article.author }}</span>{%- endif -%}
+    </div>
+  {%- endif -%}
+
+  <h2 class="article-card__title"><a href="{{ card_article.url }}">{{ card_article.title }}</a></h2>
+
+  {%- if block.settings.show_excerpt and card_excerpt != blank -%}
+    <p class="article-card__excerpt">{{ card_excerpt | truncatewords: block.settings.excerpt_words }}</p>
+  {%- endif -%}
+
+  {%- if block.settings.show_read_more -%}
+    <a class="article-card__read-more" href="{{ card_article.url }}">{{ block.settings.read_more_label }}</a>
+  {%- endif -%}
+</article>
+
+{% schema %}
+{
+  "name": "t:blocks.article_card.name",
+  "tag": null,
+  "settings": [
+    { "type": "checkbox", "id": "show_image", "label": "t:blocks.article_card.show_image", "default": true },
+    {
+      "type": "select",
+      "id": "image_ratio",
+      "label": "t:blocks.article_card.image_ratio",
+      "options": [
+        { "value": "1/1", "label": "t:blocks.article_card.square" },
+        { "value": "4/3", "label": "t:blocks.article_card.landscape" },
+        { "value": "3/4", "label": "t:blocks.article_card.portrait" },
+        { "value": "16/9", "label": "t:blocks.article_card.wide" }
+      ],
+      "default": "4/3",
+      "visible_if": "{{ block.settings.show_image }}"
+    },
+    {
+      "type": "select",
+      "id": "image_fit",
+      "label": "t:blocks.article_card.image_fit",
+      "options": [
+        { "value": "cover", "label": "t:blocks.article_card.fill" },
+        { "value": "contain", "label": "t:blocks.article_card.fit" }
+      ],
+      "default": "cover",
+      "visible_if": "{{ block.settings.show_image }}"
+    },
+    { "type": "checkbox", "id": "show_date", "label": "t:blocks.article_card.show_date", "default": true },
+    { "type": "checkbox", "id": "show_author", "label": "t:blocks.article_card.show_author", "default": false },
+    { "type": "checkbox", "id": "show_excerpt", "label": "t:blocks.article_card.show_excerpt", "default": true },
+    { "type": "range", "id": "excerpt_words", "label": "t:blocks.article_card.excerpt_words", "min": 10, "max": 50, "step": 5, "default": 25, "visible_if": "{{ block.settings.show_excerpt }}" },
+    { "type": "checkbox", "id": "show_read_more", "label": "t:blocks.article_card.show_read_more", "default": true },
+    { "type": "text", "id": "read_more_label", "label": "t:blocks.article_card.read_more_label", "default": "Read article", "visible_if": "{{ block.settings.show_read_more }}" }
+  ]
+}
+{% endschema %}

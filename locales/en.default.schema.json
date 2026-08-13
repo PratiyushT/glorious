@@ -703,6 +703,24 @@
         "label": "Hover reveal label"
       }
     },
+    "article_card": {
+      "name": "Article card",
+      "show_image": "Show featured image",
+      "image_ratio": "Image ratio",
+      "square": "Square",
+      "landscape": "Landscape",
+      "portrait": "Portrait",
+      "wide": "Wide",
+      "image_fit": "Image fit",
+      "fill": "Fill",
+      "fit": "Fit",
+      "show_date": "Show published date",
+      "show_author": "Show author",
+      "show_excerpt": "Show excerpt",
+      "excerpt_words": "Excerpt length",
+      "show_read_more": "Show article link",
+      "read_more_label": "Article link label"
+    },
     "collection_card_image": {
       "name": "Media"
     },
@@ -1676,6 +1694,38 @@
       "products_to_show": {
         "label": "Products to show"
       }
+    },
+    "main_blog": {
+      "name": "Blog articles",
+      "articles_per_page": "Articles per page",
+      "columns": "Maximum columns"
+    },
+    "main_article": {
+      "name": "Article content",
+      "show_metadata": "Show published date",
+      "show_author": "Show author",
+      "show_image": "Show featured image",
+      "show_navigation": "Show previous and next articles"
+    },
+    "main_policy": {
+      "name": "Policy content",
+      "show_title": "Show policy title"
+    },
+    "main_list_collections": {
+      "name": "Collection index"
+    },
+    "contact_form": {
+      "name": "Contact form",
+      "show_phone": "Show phone field",
+      "show_subject": "Show subject field",
+      "first_name_label": "First name label",
+      "last_name_label": "Last name label",
+      "email_label": "Email label",
+      "phone_label": "Phone label",
+      "subject_label": "Subject label",
+      "message_label": "Message label",
+      "button_label": "Send button label",
+      "success_message": "Success message"
     },
     "main_collection": {
       "name": "Collection products",

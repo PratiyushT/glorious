@@ -3581,6 +3581,31 @@ Verified with a line in the bag: the note field renders on both surfaces with
 `name="note"` and a matching `label[for]`, the drawer's form posts to `/cart`,
 the checkout button is intact, and the subtotal carries the note.
 
+### Content and utility templates
+
+- **Ordinary pages, 404, blogs, articles and the collection index are JSON
+  templates.** Their headers and editable prose use the same global Group,
+  Text, Rich text and Button blocks as the home page. Do not put a second
+  page-heading system into a contextual section.
+- **Contextual sections own only contextual work.** `main-blog` loops Shopify
+  articles through one static `_article-card`; `main-list-collections` loops
+  Shopify collections through the existing static `_collection-card`;
+  `main-article` renders the article body and its native neighbour links; and
+  `contact-form` owns Shopify's `{% form 'contact' %}`. Everything surrounding
+  those objects remains merchant-composed blocks.
+- **The collection index reuses Collection card exactly.** Its title, count,
+  media, reveal and arrow therefore inherit one card contract instead of a
+  lookalike maintained by the template.
+- **`policy` is the platform exception.** Shopify rejects a JSON policy
+  template, so `templates/policy.liquid` contains one static `main-policy`
+  section. The section still exposes colour, measure, title preset, alignment,
+  spacing, app blocks and theme blocks; the Liquid filename is a Shopify
+  constraint, not permission to hardcode a branded policy page.
+- Replacing a remote Liquid template with a same-name JSON template is a
+  two-step development-theme migration: delete only the old Liquid filename
+  first, then upload the JSON file. A watcher that has already recorded the
+  collision must be restarted after the deletion.
+
 ### Things that cost time once
 
 - **A tag delimiter inside a `{% liquid %}` block closes it — inside a

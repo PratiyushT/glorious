@@ -1,0 +1,26 @@
+{
+  "sections": {
+    "header": {
+      "type": "group",
+      "blocks": {
+        "eyebrow": { "type": "text", "settings": { "text": "Journal", "style": "subheading", "layout": "eyebrow", "element": "span" } },
+        "title": { "type": "text", "settings": { "text": "{{ article.title }}", "style": "heading_1", "element": "h1" } },
+        "excerpt": { "type": "rich-text", "settings": { "text": "{{ article.excerpt }}", "style": "paragraph" } }
+      },
+      "block_order": ["eyebrow", "title", "excerpt"],
+      "settings": {
+        "color_scheme": "scheme_1", "content_width": "reading", "direction": "vertical", "align_vertical": "stretch",
+        "vertical_gap": "small", "content_alignment": "left", "block_gap": "small", "padding_top": "lg", "padding_bottom": "sm"
+      }
+    },
+    "main": {
+      "type": "main-article",
+      "settings": {
+        "color_scheme": "scheme_1", "content_width": "reading", "show_metadata": true, "show_author": true,
+        "show_image": true, "image_ratio": "16/9", "image_fit": "cover", "show_navigation": true,
+        "padding_top": "sm", "padding_bottom": "xl"
+      }
+    }
+  },
+  "order": ["header", "main"]
+}

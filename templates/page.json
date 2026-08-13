@@ -1,0 +1,18 @@
+{
+  "sections": {
+    "main": {
+      "type": "group",
+      "blocks": {
+        "title": { "type": "text", "settings": { "text": "{{ page.title }}", "style": "title", "layout": "display", "element": "h1" } },
+        "content": { "type": "rich-text", "settings": { "text": "{{ page.content }}", "style": "paragraph" } }
+      },
+      "block_order": ["title", "content"],
+      "settings": {
+        "color_scheme": "scheme_1", "content_width": "reading", "direction": "vertical",
+        "align_vertical": "stretch", "vertical_gap": "large", "content_alignment": "left",
+        "block_gap": "large", "padding_top": "lg", "padding_bottom": "xl"
+      }
+    }
+  },
+  "order": ["main"]
+}

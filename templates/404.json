@@ -1,0 +1,20 @@
+{
+  "sections": {
+    "main": {
+      "type": "group",
+      "blocks": {
+        "eyebrow": { "type": "text", "settings": { "text": "404", "style": "subheading", "layout": "eyebrow", "element": "span" } },
+        "title": { "type": "text", "settings": { "text": "This page has slipped away.", "style": "heading_1", "element": "h1" } },
+        "body": { "type": "rich-text", "settings": { "text": "<p>The address may have changed, or the page may no longer be available.</p>", "style": "paragraph", "alignment": "center" } },
+        "action": { "type": "button", "settings": { "button_label": "Continue shopping", "button_link": "/collections/all", "button_style": "filled" } }
+      },
+      "block_order": ["eyebrow", "title", "body", "action"],
+      "settings": {
+        "color_scheme": "scheme_1", "content_width": "narrow", "full_height": true,
+        "direction": "vertical", "align_vertical": "center", "vertical_gap": "small",
+        "content_alignment": "center", "block_gap": "small", "padding_top": "lg", "padding_bottom": "lg"
+      }
+    }
+  },
+  "order": ["main"]
+}

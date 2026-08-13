@@ -1,0 +1,120 @@
+{{ 'content-pages.css' | asset_url | stylesheet_tag }}
+
+{%- liquid
+  assign width_class = 'content-surface__inner--reading'
+  if section.settings.content_width == 'narrow'
+    assign width_class = 'content-surface__inner--narrow'
+  elsif section.settings.content_width == 'page'
+    assign width_class = ''
+  endif
+-%}
+
+<section
+  class="section content-surface scheme-{{ section.settings.color_scheme }}"
+  style="{% render 'section-style', padding_top: section.settings.padding_top, padding_bottom: section.settings.padding_bottom %}"
+>
+  <div class="page-width content-surface__inner {{ width_class }}">
+    <div class="content-surface__inner" style="{% render 'block-spacing', gap: section.settings.block_gap %}">
+      {% content_for 'blocks' %}
+    </div>
+
+    {%- form 'contact', class: 'contact-form' -%}
+      {%- if form.posted_successfully? -%}
+        <div class="form-status form-status--success" tabindex="-1" autofocus>{{ section.settings.success_message }}</div>
+      {%- endif -%}
+
+      {%- if form.errors -%}
+        <div class="form-status form-status--error" role="alert" tabindex="-1" autofocus>
+          {{ form.errors | default_errors }}
+        </div>
+      {%- endif -%}
+
+      <div class="contact-form__grid">
+        <div class="contact-form__field">
+          <label for="ContactForm-first-name-{{ section.id }}">{{ section.settings.first_name_label }}</label>
+          <input class="field" id="ContactForm-first-name-{{ section.id }}" type="text" name="contact[first_name]" autocomplete="given-name" value="{% if form.first_name %}{{ form.first_name }}{% elsif customer %}{{ customer.first_name }}{% endif %}">
+        </div>
+        <div class="contact-form__field">
+          <label for="ContactForm-last-name-{{ section.id }}">{{ section.settings.last_name_label }}</label>
+          <input class="field" id="ContactForm-last-name-{{ section.id }}" type="text" name="contact[last_name]" autocomplete="family-name" value="{% if form.last_name %}{{ form.last_name }}{% elsif customer %}{{ customer.last_name }}{% endif %}">
+        </div>
+        <div class="contact-form__field">
+          <label for="ContactForm-email-{{ section.id }}">{{ section.settings.email_label }}</label>
+          <input class="field" id="ContactForm-email-{{ section.id }}" type="email" name="contact[email]" autocomplete="email" autocapitalize="off" spellcheck="false" required aria-required="true" value="{% if form.email %}{{ form.email }}{% elsif customer %}{{ customer.email }}{% endif %}">
+        </div>
+        {%- if section.settings.show_phone -%}
+          <div class="contact-form__field">
+            <label for="ContactForm-phone-{{ section.id }}">{{ section.settings.phone_label }}</label>
+            <input class="field" id="ContactForm-phone-{{ section.id }}" type="tel" name="contact[phone]" autocomplete="tel" pattern="[0-9\-+() ]*" value="{{ form.phone }}">
+          </div>
+        {%- endif -%}
+        {%- if section.settings.show_subject -%}
+          <div class="contact-form__field contact-form__field--wide">
+            <label for="ContactForm-subject-{{ section.id }}">{{ section.settings.subject_label }}</label>
+            <input class="field" id="ContactForm-subject-{{ section.id }}" type="text" name="contact[subject]" value="{{ form.subject }}">
+          </div>
+        {%- endif -%}
+        <div class="contact-form__field contact-form__field--wide">
+          <label for="ContactForm-body-{{ section.id }}">{{ section.settings.message_label }}</label>
+          <textarea class="field" id="ContactForm-body-{{ section.id }}" name="contact[body]" required aria-required="true">{{ form.body }}</textarea>
+        </div>
+      </div>
+
+      <div><button class="btn btn--primary" type="submit">{{ section.settings.button_label }}</button></div>
+    {%- endform -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "t:sections.contact_form.name",
+  "enabled_on": { "templates": ["page"] },
+  "blocks": [{ "type": "@theme" }, { "type": "@app" }],
+  "settings": [
+    { "type": "color_scheme", "id": "color_scheme", "label": "t:sections.all.color_scheme.label", "default": "scheme_1" },
+    {
+      "type": "select", "id": "content_width", "label": "t:sections.group.content_width.label",
+      "options": [
+        { "value": "narrow", "label": "t:sections.group.content_width.narrow" }, { "value": "reading", "label": "t:sections.group.content_width.reading" },
+        { "value": "page", "label": "t:sections.group.content_width.page" }
+      ], "default": "reading"
+    },
+    { "type": "select", "id": "block_gap", "label": "t:sections.group.block_gap.label", "options": [
+      { "value": "none", "label": "t:blocks.all.step.none" }, { "value": "tiny", "label": "t:blocks.all.step.tiny" },
+      { "value": "small", "label": "t:blocks.all.step.small" }, { "value": "medium", "label": "t:blocks.all.step.medium" },
+      { "value": "large", "label": "t:blocks.all.step.large" }
+    ], "default": "tiny" },
+    { "type": "checkbox", "id": "show_phone", "label": "t:sections.contact_form.show_phone", "default": true },
+    { "type": "checkbox", "id": "show_subject", "label": "t:sections.contact_form.show_subject", "default": true },
+    { "type": "text", "id": "first_name_label", "label": "t:sections.contact_form.first_name_label", "default": "First name" },
+    { "type": "text", "id": "last_name_label", "label": "t:sections.contact_form.last_name_label", "default": "Last name" },
+    { "type": "text", "id": "email_label", "label": "t:sections.contact_form.email_label", "default": "Email" },
+    { "type": "text", "id": "phone_label", "label": "t:sections.contact_form.phone_label", "default": "Phone", "visible_if": "{{ section.settings.show_phone }}" },
+    { "type": "text", "id": "subject_label", "label": "t:sections.contact_form.subject_label", "default": "Subject", "visible_if": "{{ section.settings.show_subject }}" },
+    { "type": "text", "id": "message_label", "label": "t:sections.contact_form.message_label", "default": "Message" },
+    { "type": "text", "id": "button_label", "label": "t:sections.contact_form.button_label", "default": "Send message" },
+    { "type": "text", "id": "success_message", "label": "t:sections.contact_form.success_message", "default": "Thanks for reaching out. We'll be in touch soon." },
+    { "type": "header", "content": "t:sections.all.spacing_header" },
+    { "type": "select", "id": "padding_top", "label": "t:sections.all.padding_top.label", "options": [
+      { "value": "none", "label": "t:sections.all.space_step.none" }, { "value": "2xs", "label": "t:sections.all.space_step.2xs" },
+      { "value": "xs", "label": "t:sections.all.space_step.xs" }, { "value": "sm", "label": "t:sections.all.space_step.sm" },
+      { "value": "md", "label": "t:sections.all.space_step.md" }, { "value": "lg", "label": "t:sections.all.space_step.lg" },
+      { "value": "xl", "label": "t:sections.all.space_step.xl" }, { "value": "max", "label": "t:sections.all.space_step.max" }
+    ], "default": "lg" },
+    { "type": "select", "id": "padding_bottom", "label": "t:sections.all.padding_bottom.label", "options": [
+      { "value": "none", "label": "t:sections.all.space_step.none" }, { "value": "2xs", "label": "t:sections.all.space_step.2xs" },
+      { "value": "xs", "label": "t:sections.all.space_step.xs" }, { "value": "sm", "label": "t:sections.all.space_step.sm" },
+      { "value": "md", "label": "t:sections.all.space_step.md" }, { "value": "lg", "label": "t:sections.all.space_step.lg" },
+      { "value": "xl", "label": "t:sections.all.space_step.xl" }, { "value": "max", "label": "t:sections.all.space_step.max" }
+    ], "default": "xl" }
+  ],
+  "presets": [{
+    "name": "t:sections.contact_form.name",
+    "blocks": [
+      { "type": "text", "settings": { "text": "Contact", "style": "subheading", "layout": "eyebrow", "element": "span" } },
+      { "type": "text", "settings": { "text": "Tell us what you're looking for.", "style": "heading_2", "element": "h2" } },
+      { "type": "rich-text", "settings": { "text": "<p>Share a little about what you need and the team will reply with the next step.</p>" } }
+    ]
+  }]
+}
+{% endschema %}

@@ -1,0 +1,27 @@
+{
+  "sections": {
+    "header": {
+      "type": "group",
+      "blocks": {
+        "eyebrow": { "type": "text", "settings": { "text": "Journal", "style": "subheading", "layout": "eyebrow", "element": "span" } },
+        "title": { "type": "text", "settings": { "text": "{{ blog.title }}", "style": "title", "layout": "display", "element": "h1" } }
+      },
+      "block_order": ["eyebrow", "title"],
+      "settings": {
+        "color_scheme": "scheme_1", "content_width": "page", "direction": "vertical", "align_vertical": "stretch",
+        "vertical_gap": "tiny", "content_alignment": "left", "block_gap": "tiny", "padding_top": "lg", "padding_bottom": "sm"
+      }
+    },
+    "main": {
+      "type": "main-blog",
+      "blocks": {
+        "article-card": {
+          "type": "_article-card", "static": true,
+          "settings": { "show_image": true, "image_ratio": "4/3", "image_fit": "cover", "show_date": true, "show_author": false, "show_excerpt": true, "excerpt_words": 25, "show_read_more": true, "read_more_label": "Read article" }
+        }
+      },
+      "settings": { "color_scheme": "scheme_1", "articles_per_page": 12, "columns": 3, "gap": "theme", "padding_top": "sm", "padding_bottom": "xl" }
+    }
+  },
+  "order": ["header", "main"]
+}

@@ -1,0 +1,96 @@
+{{ 'content-pages.css' | asset_url | stylesheet_tag }}
+
+{%- liquid
+  assign width_class = 'content-surface__inner--reading'
+  if section.settings.content_width == 'narrow'
+    assign width_class = 'content-surface__inner--narrow'
+  elsif section.settings.content_width == 'page'
+    assign width_class = ''
+  endif
+  assign hero_ratio = section.settings.image_ratio | replace: '/', ' / '
+-%}
+
+<article
+  class="section content-surface scheme-{{ section.settings.color_scheme }}"
+  style="{% render 'section-style', padding_top: section.settings.padding_top, padding_bottom: section.settings.padding_bottom %}"
+>
+  <div class="page-width content-surface__inner {{ width_class }}">
+    {%- if section.settings.show_metadata -%}
+      <div class="article-byline">
+        <time datetime="{{ article.published_at | date: '%Y-%m-%d' }}">{{ article.published_at | date: '%b %e, %Y' }}</time>
+        {%- if section.settings.show_author and article.author != blank -%}<span>{{ article.author }}</span>{%- endif -%}
+      </div>
+    {%- endif -%}
+
+    {%- if section.settings.show_image and article.image -%}
+      <div class="article-hero" style="--article-hero-ratio: {{ hero_ratio }}; --article-hero-fit: {{ section.settings.image_fit }};">
+        {%- assign article_lqip = article.image | image_url: width: 40 -%}
+        {{ article.image | image_url: width: 2000 | image_tag: widths: '480,720,960,1200,1600,2000', sizes: '(min-width: 75rem) 72rem, 100vw', loading: 'eager', alt: article.image.alt, data-image-lqip: article_lqip }}
+      </div>
+    {%- endif -%}
+
+    <div class="content-prose rte">{{ article.content }}</div>
+
+    {%- if section.settings.show_navigation -%}
+      {%- if blog.previous_article or blog.next_article -%}
+        <nav class="article-navigation" aria-label="{{ 'blogs.article_navigation' | t }}">
+          <div>{%- if blog.previous_article -%}<a href="{{ blog.previous_article.url }}">← {{ blog.previous_article.title }}</a>{%- endif -%}</div>
+          <div>{%- if blog.next_article -%}<a href="{{ blog.next_article.url }}">{{ blog.next_article.title }} →</a>{%- endif -%}</div>
+        </nav>
+      {%- endif -%}
+    {%- endif -%}
+  </div>
+</article>
+
+{% schema %}
+{
+  "name": "t:sections.main_article.name",
+  "enabled_on": { "templates": ["article"] },
+  "settings": [
+    { "type": "color_scheme", "id": "color_scheme", "label": "t:sections.all.color_scheme.label", "default": "scheme_1" },
+    {
+      "type": "select", "id": "content_width", "label": "t:sections.group.content_width.label",
+      "options": [
+        { "value": "narrow", "label": "t:sections.group.content_width.narrow" },
+        { "value": "reading", "label": "t:sections.group.content_width.reading" },
+        { "value": "page", "label": "t:sections.group.content_width.page" }
+      ], "default": "reading"
+    },
+    { "type": "checkbox", "id": "show_metadata", "label": "t:sections.main_article.show_metadata", "default": true },
+    { "type": "checkbox", "id": "show_author", "label": "t:sections.main_article.show_author", "default": true, "visible_if": "{{ section.settings.show_metadata }}" },
+    { "type": "checkbox", "id": "show_image", "label": "t:sections.main_article.show_image", "default": true },
+    {
+      "type": "select", "id": "image_ratio", "label": "t:blocks.article_card.image_ratio",
+      "options": [
+        { "value": "16/9", "label": "t:blocks.article_card.wide" }, { "value": "4/3", "label": "t:blocks.article_card.landscape" },
+        { "value": "1/1", "label": "t:blocks.article_card.square" }, { "value": "3/4", "label": "t:blocks.article_card.portrait" }
+      ], "default": "16/9", "visible_if": "{{ section.settings.show_image }}"
+    },
+    {
+      "type": "select", "id": "image_fit", "label": "t:blocks.article_card.image_fit",
+      "options": [ { "value": "cover", "label": "t:blocks.article_card.fill" }, { "value": "contain", "label": "t:blocks.article_card.fit" } ],
+      "default": "cover", "visible_if": "{{ section.settings.show_image }}"
+    },
+    { "type": "checkbox", "id": "show_navigation", "label": "t:sections.main_article.show_navigation", "default": true },
+    { "type": "header", "content": "t:sections.all.spacing_header" },
+    {
+      "type": "select", "id": "padding_top", "label": "t:sections.all.padding_top.label",
+      "options": [
+        { "value": "none", "label": "t:sections.all.space_step.none" }, { "value": "2xs", "label": "t:sections.all.space_step.2xs" },
+        { "value": "xs", "label": "t:sections.all.space_step.xs" }, { "value": "sm", "label": "t:sections.all.space_step.sm" },
+        { "value": "md", "label": "t:sections.all.space_step.md" }, { "value": "lg", "label": "t:sections.all.space_step.lg" },
+        { "value": "xl", "label": "t:sections.all.space_step.xl" }, { "value": "max", "label": "t:sections.all.space_step.max" }
+      ], "default": "sm"
+    },
+    {
+      "type": "select", "id": "padding_bottom", "label": "t:sections.all.padding_bottom.label",
+      "options": [
+        { "value": "none", "label": "t:sections.all.space_step.none" }, { "value": "2xs", "label": "t:sections.all.space_step.2xs" },
+        { "value": "xs", "label": "t:sections.all.space_step.xs" }, { "value": "sm", "label": "t:sections.all.space_step.sm" },
+        { "value": "md", "label": "t:sections.all.space_step.md" }, { "value": "lg", "label": "t:sections.all.space_step.lg" },
+        { "value": "xl", "label": "t:sections.all.space_step.xl" }, { "value": "max", "label": "t:sections.all.space_step.max" }
+      ], "default": "xl"
+    }
+  ]
+}
+{% endschema %}
