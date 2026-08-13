@@ -63,9 +63,9 @@
                 data-product-media-control
                 data-media-id="{{ media.id }}"
                 aria-current="{% if media.id == selected_variant.featured_media.id or selected_variant.featured_media == blank and forloop.first %}true{% else %}false{% endif %}"
-                aria-label="{{ 'products.go_to_view' | t }} {{ forloop.index }}"
+                aria-label="{{ 'products.go_to_view' | t }} {{ forloop.index }}{% if media.media_type contains 'video' %}, {{ 'products.video_view' | t }}{% endif %}"
               >
-                {%- if media.media_type contains 'video' -%}<span>Video</span>{%- endif -%}
+                {%- if media.media_type contains 'video' -%}<span>{{ 'products.video_view' | t }}</span>{%- endif -%}
               </button>
             {%- endfor -%}
           </div>
