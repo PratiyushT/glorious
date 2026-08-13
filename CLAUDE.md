@@ -24,26 +24,11 @@ is.
 a *local* block of that name.** This is not documented anywhere obvious and it
 cost a broken homepage to find.
 
-The hero declares four local blocks — `text`, `detail`, `metal`, `buttons` —
-each with its own `name` and `settings`, which is a complete local definition.
-The moment `blocks/detail.liquid` and `blocks/buttons.liquid` existed, the
-whole template failed to upload with:
-
-```
-templates/index.json
-Invalid value for type in block 'metal'. Type must be defined in schema.
-```
-
-`metal` is the one hero block with no theme-block file of the same name. The
-server had started reading the hero as a *theme-block* section — because two of
-its four types now resolved to theme blocks — and then found no definition for
-the other two. **The error names the innocent block**, not the collision.
-
-So a shared theme block cannot take a name any surviving local block still
-uses. The hero's are genuinely hero-specific — its `detail` renders
-`.hero__choice`, not `.spec-row` — so they were renamed `hero_detail` and
-`hero_cta`, with their stored instances and locale namespaces migrated in the
-same commit.
+The hero's local blocks use explicit names — `text`, `hero_detail`, `metal`,
+and `hero_cta` — because a public theme block cannot reuse a surviving local
+type name. The server resolves that collision before it reports a missing local
+type, so the error often names an innocent neighbour rather than the duplicate.
+Keep public block names globally unique.
 
 **And the upload order bites twice, not once.** `CLAUDE.md` already records
 that a template validates against the *server's* copy of a section schema. Two
@@ -72,7 +57,7 @@ responsible for being safe wherever a merchant can add it.
 The homepage blocks fall into four contracts:
 
 - **Global composition blocks** are public and require no resource context:
-  `title`, `heading`, `subheading`, `paragraph`, `prose`, `buttons`, `detail`,
+  `title`, `heading`, `subheading`, `paragraph`, `prose`, `buttons`,
   `border`, `media`, `group`, `promise`, and `quote`. Promise numbering is added only by
   `.promises__grid`; Quote hiding and overlap are added only by `.quotes`.
   Standalone instances remain visible and complete.
@@ -856,10 +841,14 @@ Liquid implementations.
 
 - Craft, About, and Visit are three stored instances of `type: "group"`, not
   three section files. Their content is composed from nested Group blocks,
-  Media, Border, text, Detail rows, and Buttons.
-- Detail's `full_width_borders` is opt-in. It stretches the row to its parent
-  so the row's own hairlines reach both container edges; it does not set a
-  height, and a Detail row with the setting off can still hug its content.
+  Media, Border, text, and Buttons.
+- **Group owns optional borders.** `show_borders` defaults off. Turning it on
+  reveals width, color override, and independent top/right/bottom/left toggles.
+  The border is painted on `.layout-group`; `.layout-group__inner` remains the
+  unchanged flex layout, so a border choice cannot alter direction or
+  distribution. Craft's specification rows and Visit's address/hours are
+  ordinary Groups containing Subheading and Paragraph blocks. There is no
+  Detail block or value-source selector.
 - `items_width` is the one addition the two-column migration needed. Natural is
   the Group block's backward-compatible default; Equal makes direct row
   children share the available width. When the container stacks, equal-width
@@ -1034,27 +1023,17 @@ a block type is a data contract.
 | snippet | replaced | callers |
 | --- | --- | --- |
 | `button.liquid` | four hand-written button pairs | about, craft, visit |
-| `spec-row.liquid` | craft's `spec` and visit's `detail` | craft, visit |
 | `wordmark-mark.liquid` | three PNG cuts | the lockup |
 
-- **`.spec-row:last-child` draws the closing hairline, so every caller keeps
-  its rows in a wrapper of their own.** Rendered flat beside anything else — a
-  buttons block, say — the last row stops being the last child, the group loses
-  its bottom rule and whatever follows gains one. craft keeps them in
-  `.measure` and visit in a plain `div`. Verified after the collapse: both
-  wrappers hold only `.spec-row` children, and the 1px border lands on row 4 of
-  4 and row 2 of 2 respectively.
 - **The hero is not a caller of either, deliberately.** `.hero__choice` looks
   like a labelled row and is not one, and `.hero__cta` is not a `.btn`. The
   hero is art-directed against a fixed viewport height with its own `--hero-*`
   literals; sharing a component with it would mean either the hero drifts or
   the component grows a hero-shaped exception. Same reason its button settings
   were added and then reverted.
-- **A filter cannot be used on a `render` argument**, so every caller that
-  needs to know whether a link is off-site computes `link contains '://'` into
-  a variable first and passes that. `button.liquid` and `spec-row.liquid` both
-  take `new_tab` rather than working it out themselves, because a merchant's
-  absolute URL to their own domain should not open a new tab.
+- **A filter cannot be used on a `render` argument**, so a caller that needs to
+  know whether a link is off-site computes `link contains '://'` into a
+  variable first and passes that.
 
 ### Headings
 
@@ -1461,27 +1440,23 @@ see the search overlay below.
 
 ### Conventions
 
-- **The shop states its address, telephone and email once.** They are theme
-  settings — `shop_address`, `shop_address_link`, `shop_phone`, `shop_email`
-  under "Shop details" — because the same three facts appear in the menu
-  overlay, the footer's salon column and the Visit section, and a shop that
-  moves should have one place to say so. They were duplicated across a header
-  setting, a footer block and a `templates/index.json` block before, so the
-  address was stored four times and the map link three.
+- **Shop details remain the source for navigation and contact destinations.**
+  `shop_address`, `shop_address_link`, `shop_phone`, and `shop_email` live under
+  "Shop details". The Visit section's visible text is intentionally ordinary
+  block content instead of another setting source.
 
   Consequences worth knowing:
-  - **No literal address, telephone, email or map URL belongs outside
-    `config/`.** `grep -rn "MacArthur\|maps/place" --include=*.liquid
-    --include=*.json . | grep -v ^./config/` should come back empty.
+  - **No literal map, telephone, or email destination belongs outside
+    `config/`.** Visible editorial copy may be stored in its own text block;
+    navigation destinations remain centralized.
   - `shop_address_link` lives in `settings_data.json`, not as a schema default.
     Shopify's `url` setting type takes no `default`, so the shipped value has
     to be stored rather than declared — which is why the other three carry both
     a schema default *and* a stored value.
-  - The Visit section's detail row has a **`source`** select: `custom` uses the
-    block's own label/value/link, and `address` / `phone` / `email` take the
-    value from the theme settings and build their own `tel:` / `mailto:`. Only
-    the label stays the merchant's, so "Address" can still read "Find us". A
-    row whose resolved value is blank renders nothing rather than an empty rule.
+  - Visit's visible address and hours are literal Paragraph blocks inside
+    bordered Groups. They deliberately have no source selector. Contact-button
+    destinations can still fall back to shop settings when their URL is blank,
+    but displayed text is edited where it appears.
   - `tel:` hrefs strip spaces, dashes and parentheses at each call site
     (`+1 (555) 010-9988` → `tel:+15550109988`). A `{% render %}` snippet cannot
     hand a value back to its caller, so this is one filter chain repeated in two

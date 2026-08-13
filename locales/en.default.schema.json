@@ -729,30 +729,11 @@
       "link_source": {
         "label": "Link to",
         "info": "Anything but Custom falls back to Theme settings → Shop details when no link is set. This section's collection uses the collection the section is showing.",
-        "collection": "This section's collection"
-      }
-    },
-    "detail": {
-      "name": "Detail row",
-      "label": {
-        "label": "Label"
-      },
-      "source": {
-        "label": "Value from",
-        "info": "Anything but Custom takes the value, and its link, from Theme settings → Shop details.",
         "custom": "Custom",
+        "collection": "This section's collection",
         "address": "Shop location",
         "phone": "Shop telephone",
         "email": "Shop email"
-      },
-      "value": {
-        "label": "Value",
-        "info": "Used only when Value from is Custom."
-      },
-      "full_width_borders_label": "Full-width borders",
-      "full_width_borders_info": "Stretch this row so its top and bottom borders reach both edges of the parent container.",
-      "link": {
-        "label": "Link"
       }
     },
     "heading": {
@@ -892,6 +873,16 @@
       "vertical_gap_label": "Vertical spacing",
       "vertical_gap_info": "Override the section's block spacing for this stacked Group.",
       "vertical_gap_inherit": "Use section spacing",
+      "show_borders_label": "Show borders",
+      "show_borders_info": "Turn on border controls for this Group. This does not change how its blocks are arranged.",
+      "border_settings_header": "Border settings",
+      "border_width_label": "Border width",
+      "border_color_label": "Border color override",
+      "border_color_info": "Leave empty to use the current color scheme's border color.",
+      "border_top_label": "Top border",
+      "border_right_label": "Right border",
+      "border_bottom_label": "Bottom border",
+      "border_left_label": "Left border",
       "stack_below": {
         "label": "Stack when narrow",
         "info": "Measured on the group's own width rather than the screen's, so a group in a narrow column stacks on a desktop too.",
@@ -1228,7 +1219,9 @@
           }
         },
         "hero_detail": {
-          "name": "Detail row"
+          "name": "Gemstone detail",
+          "label_label": "Label",
+          "value_label": "Value"
         },
         "metal": {
           "name": "Metal",

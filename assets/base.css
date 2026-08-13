@@ -561,6 +561,15 @@ a {
   margin-block: 0;
 }
 
+/* Borders belong to the outer Group and never participate in its inner flex
+   layout. Each side resolves independently; color falls back to the active
+   scheme's hairline when the merchant leaves the override empty. */
+.layout-group--bordered {
+  border-style: solid;
+  border-color: var(--group-border-color, var(--c-hairline));
+  border-width: var(--group-border-top, 0) var(--group-border-right, 0) var(--group-border-bottom, 0) var(--group-border-left, 0);
+}
+
 /* Equal items are opt-in. Natural width remains the Group block's default so
    existing header rows and compact control groups do not suddenly become
    columns; the Group section uses equal items for its two-column compositions. */
@@ -4046,55 +4055,6 @@ a {
 
 .promise-card:hover .promise-card__corner {
   opacity: 1;
-}
-
-/* ---- Specification rows ------------------------------------------ */
-
-.spec-row {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
-  align-items: baseline;
-  gap: 0.3em var(--space-md);
-  padding-block: var(--space-2xs);
-  border-top: var(--border-width) solid var(--c-hairline);
-}
-
-/* Opt-in because a Detail row may intentionally hug a short value inside a
-   naturally aligned Group. Stretching the row lets its own top and closing
-   borders reach the parent edges without fixing or capping its height. */
-.spec-row--full-width {
-  align-self: stretch;
-  width: 100%;
-}
-
-/* The last row closes the group. `:not(:has(+ .spec-row))` rather than
-   `:last-child`, because as theme blocks these render in one flat sibling flow
-   with everything else the section holds — a trailing buttons block would take
-   `:last-child` from the rows, so the group would lose its closing rule and the
-   button row would gain one. This asks the question actually meant: is there
-   another row after this one. */
-.spec-row:not(:has(+ .spec-row)) {
-  border-bottom: var(--border-width) solid var(--c-hairline);
-}
-
-.spec-row__label {
-  font-size: var(--micro-size);
-  letter-spacing: calc(var(--micro-tracking) * 0.82);
-  text-transform: uppercase;
-  color: var(--c-muted);
-}
-
-.spec-row__value {
-  font-family: var(--font-display);
-  font-size: var(--fs-md);
-  color: var(--c-heading);
-  overflow-wrap: anywhere;
-}
-
-.spec-row__value a {
-  color: inherit;
-  text-decoration: none;
-  border-bottom: var(--border-width) solid color-mix(in srgb, var(--c-text) 25%, transparent);
 }
 
 /* ---- Testimonials ------------------------------------------------ */

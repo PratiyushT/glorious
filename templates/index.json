@@ -485,35 +485,79 @@
               }
             },
             "metal": {
-              "type": "detail",
+              "type": "group",
+              "blocks": {
+                "label": {
+                  "type": "subheading",
+                  "settings": { "text": "Metal", "override_size": "xs", "padding": "tiny" }
+                },
+                "value": {
+                  "type": "paragraph",
+                  "settings": { "text": "18-karat gold", "style": "heading_5", "element": "span", "override_size": "lg", "padding": "tiny" }
+                }
+              },
+              "block_order": ["label", "value"],
               "settings": {
-                "label": "Metal",
-                "value": "18-karat gold",
-                "full_width_borders": true
+                "direction": "horizontal", "reverse": false, "distribute": "start", "align": "baseline", "wrap": true,
+                "items_width": "equal", "min_item_width": 12, "stack_below": "never", "gap": "none", "vertical_gap": "inherit",
+                "show_borders": true, "group_border_width": 1, "border_top": true, "border_right": false, "border_bottom": false, "border_left": false
               }
             },
             "clarity": {
-              "type": "detail",
+              "type": "group",
+              "blocks": {
+                "label": {
+                  "type": "subheading",
+                  "settings": { "text": "Clarity", "override_size": "xs", "padding": "tiny" }
+                },
+                "value": {
+                  "type": "paragraph",
+                  "settings": { "text": "VVS and above", "style": "heading_5", "element": "span", "override_size": "lg", "padding": "tiny" }
+                }
+              },
+              "block_order": ["label", "value"],
               "settings": {
-                "label": "Clarity",
-                "value": "VVS and above",
-                "full_width_borders": true
+                "direction": "horizontal", "reverse": false, "distribute": "start", "align": "baseline", "wrap": true,
+                "items_width": "equal", "min_item_width": 12, "stack_below": "never", "gap": "none", "vertical_gap": "inherit",
+                "show_borders": true, "group_border_width": 1, "border_top": true, "border_right": false, "border_bottom": false, "border_left": false
               }
             },
             "colour": {
-              "type": "detail",
+              "type": "group",
+              "blocks": {
+                "label": {
+                  "type": "subheading",
+                  "settings": { "text": "Colour", "override_size": "xs", "padding": "tiny" }
+                },
+                "value": {
+                  "type": "paragraph",
+                  "settings": { "text": "F and above", "style": "heading_5", "element": "span", "override_size": "lg", "padding": "tiny" }
+                }
+              },
+              "block_order": ["label", "value"],
               "settings": {
-                "label": "Colour",
-                "value": "F and above",
-                "full_width_borders": true
+                "direction": "horizontal", "reverse": false, "distribute": "start", "align": "baseline", "wrap": true,
+                "items_width": "equal", "min_item_width": 12, "stack_below": "never", "gap": "none", "vertical_gap": "inherit",
+                "show_borders": true, "group_border_width": 1, "border_top": true, "border_right": false, "border_bottom": false, "border_left": false
               }
             },
             "certification": {
-              "type": "detail",
+              "type": "group",
+              "blocks": {
+                "label": {
+                  "type": "subheading",
+                  "settings": { "text": "Certification", "override_size": "xs", "padding": "tiny" }
+                },
+                "value": {
+                  "type": "paragraph",
+                  "settings": { "text": "IGI", "style": "heading_5", "element": "span", "override_size": "lg", "padding": "tiny" }
+                }
+              },
+              "block_order": ["label", "value"],
               "settings": {
-                "label": "Certification",
-                "value": "IGI",
-                "full_width_borders": true
+                "direction": "horizontal", "reverse": false, "distribute": "start", "align": "baseline", "wrap": true,
+                "items_width": "equal", "min_item_width": 12, "stack_below": "never", "gap": "none", "vertical_gap": "inherit",
+                "show_borders": true, "group_border_width": 1, "border_top": true, "border_right": false, "border_bottom": true, "border_left": false
               }
             },
             "buttons": {
@@ -793,23 +837,41 @@
                   }
                 },
                 "address": {
-                  "type": "detail",
+                  "type": "group",
+                  "blocks": {
+                    "label": {
+                      "type": "subheading",
+                      "settings": { "text": "Address", "override_size": "xs", "padding": "tiny" }
+                    },
+                    "value": {
+                      "type": "paragraph",
+                      "settings": { "text": "123 Example Street, City, State", "style": "heading_5", "element": "span", "override_size": "lg", "padding": "tiny" }
+                    }
+                  },
+                  "block_order": ["label", "value"],
                   "settings": {
-                    "label": "Address",
-                    "source": "address",
-                    "value": "",
-                    "link": "",
-                    "full_width_borders": true
+                    "direction": "horizontal", "reverse": false, "distribute": "start", "align": "baseline", "wrap": true,
+                    "items_width": "equal", "min_item_width": 12, "stack_below": "never", "gap": "none", "vertical_gap": "inherit",
+                    "show_borders": true, "group_border_width": 1, "border_top": true, "border_right": false, "border_bottom": false, "border_left": false
                   }
                 },
                 "hours": {
-                  "type": "detail",
+                  "type": "group",
+                  "blocks": {
+                    "label": {
+                      "type": "subheading",
+                      "settings": { "text": "Hours", "override_size": "xs", "padding": "tiny" }
+                    },
+                    "value": {
+                      "type": "paragraph",
+                      "settings": { "text": "Tue–Sat 11–7 · Sun 11–4 · Mon closed", "style": "heading_5", "element": "span", "override_size": "lg", "padding": "tiny" }
+                    }
+                  },
+                  "block_order": ["label", "value"],
                   "settings": {
-                    "label": "Hours",
-                    "source": "custom",
-                    "value": "Tue–Sat 11–7 · Sun 11–4 · Mon closed",
-                    "link": "",
-                    "full_width_borders": true
+                    "direction": "horizontal", "reverse": false, "distribute": "start", "align": "baseline", "wrap": true,
+                    "items_width": "equal", "min_item_width": 12, "stack_below": "never", "gap": "none", "vertical_gap": "inherit",
+                    "show_borders": true, "group_border_width": 1, "border_top": true, "border_right": false, "border_bottom": true, "border_left": false
                   }
                 },
                 "buttons": {

@@ -53,10 +53,13 @@
   as on a phone — which is a question about the block, not the screen.
 {%- endcomment -%}
 <div
-  class="layout-group"
+  class="layout-group{% if block.settings.show_borders %} layout-group--bordered{% endif %}"
   data-direction="{{ block.settings.direction }}"
   data-stack="{{ block.settings.stack_below }}"
   data-items="{{ block.settings.items_width }}"
+  {% if block.settings.show_borders %}
+    style="--group-border-width: {{ block.settings.group_border_width }}px; --group-border-color: {% if block.settings.border_color != blank %}{{ block.settings.border_color }}{% else %}var(--c-hairline){% endif %}; --group-border-top: {% if block.settings.border_top %}var(--group-border-width){% else %}0px{% endif %}; --group-border-right: {% if block.settings.border_right %}var(--group-border-width){% else %}0px{% endif %}; --group-border-bottom: {% if block.settings.border_bottom %}var(--group-border-width){% else %}0px{% endif %}; --group-border-left: {% if block.settings.border_left %}var(--group-border-width){% else %}0px{% endif %};"
+  {% endif %}
   {{ block.shopify_attributes }}
 >
   <div
@@ -220,6 +223,64 @@
         { "value": "maximum", "label": "t:blocks.all.step.maximum" }
       ],
       "default": "inherit"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_borders",
+      "label": "t:blocks.group.show_borders_label",
+      "info": "t:blocks.group.show_borders_info",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "t:blocks.group.border_settings_header",
+      "visible_if": "{{ block.settings.show_borders }}"
+    },
+    {
+      "type": "range",
+      "id": "group_border_width",
+      "label": "t:blocks.group.border_width_label",
+      "min": 1,
+      "max": 10,
+      "step": 1,
+      "unit": "px",
+      "default": 1,
+      "visible_if": "{{ block.settings.show_borders }}"
+    },
+    {
+      "type": "color",
+      "id": "border_color",
+      "label": "t:blocks.group.border_color_label",
+      "info": "t:blocks.group.border_color_info",
+      "visible_if": "{{ block.settings.show_borders }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "border_top",
+      "label": "t:blocks.group.border_top_label",
+      "default": true,
+      "visible_if": "{{ block.settings.show_borders }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "border_right",
+      "label": "t:blocks.group.border_right_label",
+      "default": true,
+      "visible_if": "{{ block.settings.show_borders }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "border_bottom",
+      "label": "t:blocks.group.border_bottom_label",
+      "default": true,
+      "visible_if": "{{ block.settings.show_borders }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "border_left",
+      "label": "t:blocks.group.border_left_label",
+      "default": true,
+      "visible_if": "{{ block.settings.show_borders }}"
     }
   ],
   "presets": [
@@ -235,7 +296,13 @@
         "min_item_width": 0,
         "stack_below": "mobile",
         "gap": "medium",
-        "vertical_gap": "inherit"
+        "vertical_gap": "inherit",
+        "show_borders": false,
+        "group_border_width": 1,
+        "border_top": true,
+        "border_right": true,
+        "border_bottom": true,
+        "border_left": true
       }
     }
   ]
