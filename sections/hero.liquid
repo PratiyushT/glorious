@@ -143,6 +143,7 @@
               alt="{{ section.settings.image.alt | escape }}"
               width="{{ section.settings.image.width }}"
               height="{{ section.settings.image.height }}"
+              style="object-position: {{ section.settings.image.presentation.focal_point }};"
               loading="eager"
               fetchpriority="high"
             >
