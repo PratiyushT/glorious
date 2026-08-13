@@ -2037,14 +2037,14 @@
             "type": "color",
             "id": "muted",
             "label": "t:settings_schema.colors.muted.label",
-            "default": "#75716B"
+            "default": "#6E6962"
           },
           {
             "type": "color",
             "id": "accent",
             "label": "t:settings_schema.colors.accent.label",
             "info": "t:settings_schema.colors.accent.info",
-            "default": "#9A7836"
+            "default": "#80601F"
           },
           {
             "type": "color",
@@ -2074,7 +2074,7 @@
             "type": "color",
             "id": "button_hover",
             "label": "t:settings_schema.colors.button_hover.label",
-            "default": "#9A7836"
+            "default": "#80601F"
           },
           {
             "type": "color",

@@ -20,9 +20,9 @@
       {%- unless page_title contains shop.name %} &ndash; {{ shop.name }}{% endunless -%}
     </title>
 
-    {%- if page_description -%}
-      <meta name="description" content="{{ page_description | escape }}">
-    {%- endif -%}
+    {%- assign meta_description = page_description | default: shop.description | default: shop.name -%}
+    <meta name="description" content="{{ meta_description | escape }}">
+    {% render 'social-meta-tags', description: meta_description %}
 
     <script>
       document.documentElement.classList.remove('no-js');

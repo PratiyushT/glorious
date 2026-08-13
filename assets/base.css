@@ -5252,22 +5252,32 @@ a {
 .quote-dots {
   display: flex;
   justify-content: center;
-  gap: var(--space-3xs);
+  gap: 0;
   margin-top: var(--space-sm);
 }
 
 .quote-dots button {
-  height: 2px;
-  width: var(--space-sm);
+  position: relative;
+  display: grid;
+  place-items: center;
+  height: 24px;
+  width: 44px;
   padding: 0;
   border: none;
-  background: color-mix(in srgb, var(--c-text) 25%, transparent);
+  background: transparent;
   cursor: pointer;
+}
+
+.quote-dots button::before {
+  content: '';
+  width: var(--space-sm);
+  height: 2px;
+  background: color-mix(in srgb, var(--c-text) 25%, transparent);
   transition: width var(--duration) var(--ease), background var(--duration) var(--ease-ui);
 }
 
-.quote-dots button[aria-selected="true"] {
-  width: var(--space-xl);
+.quote-dots button[aria-selected="true"]::before {
+  width: 44px;
   background: var(--c-accent);
 }
 
@@ -6887,7 +6897,7 @@ a.nav-menu__address:hover {
   padding-top: 22px;
   font-size: 0.75rem;
   letter-spacing: 0.14em;
-  color: color-mix(in srgb, var(--c-text) 42%, transparent);
+  color: color-mix(in srgb, var(--c-text) 68%, transparent);
 }
 
 @container (max-width: 36.85rem) {

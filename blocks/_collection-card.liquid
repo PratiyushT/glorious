@@ -30,9 +30,18 @@
 {%- liquid
   assign collection = closest.collection
   assign url = collection.url | default: routes.all_products_collection_url
+  assign accessible_label = collection.title | default: block.settings.hover_reveal_label
+  if accessible_label == blank
+    assign accessible_label = 'collections.all' | t
+  endif
 -%}
 
-<a class="cat-card" href="{{ url }}" {{ block.shopify_attributes }}>
+<a
+  class="cat-card"
+  href="{{ url }}"
+  aria-label="{{ accessible_label | escape }}"
+  {{ block.shopify_attributes }}
+>
   {% content_for 'blocks' %}
   {%- if block.settings.show_hover_reveal -%}
     <span class="cat-card__reveal" aria-hidden="true">

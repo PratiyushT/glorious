@@ -9,7 +9,7 @@
  */
 {
   "current": {
-    "wordmark": "VEYLIN",
+    "wordmark": "STORE NAME",
     "shop_address": "123 Example Street, City, State",
     "shop_address_link": "https://www.google.com/maps",
     "shop_phone": "+1 555 000 0000",
@@ -23,13 +23,13 @@
           "background_gradient": "",
           "text": "#191510",
           "heading": "#191510",
-          "muted": "#75716b",
-          "accent": "#9a7836",
+          "muted": "#6e6962",
+          "accent": "#80601f",
           "border": "#d5d1ca",
           "surface": "#ffffff",
           "button": "#191510",
           "button_label": "#f4f0e8",
-          "button_hover": "#9a7836",
+          "button_hover": "#80601f",
           "secondary_button_label": "#191510",
           "link": "#191510"
         }
@@ -57,13 +57,13 @@
           "background_gradient": "",
           "text": "#191510",
           "heading": "#191510",
-          "muted": "#75716b",
-          "accent": "#9a7836",
+          "muted": "#6e6962",
+          "accent": "#80601f",
           "border": "#ececeb",
           "surface": "#fbf8f2",
           "button": "#191510",
           "button_label": "#f4f0e8",
-          "button_hover": "#9a7836",
+          "button_hover": "#80601f",
           "secondary_button_label": "#191510",
           "link": "#191510"
         }
