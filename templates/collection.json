@@ -61,7 +61,7 @@
               "settings": {
                 "text": "{{ closest.product.title }}",
                 "style": "small",
-                "element": "h3",
+                "element": "h2",
                 "override_case": "uppercase",
                 "override_tracking": "wide"
               }

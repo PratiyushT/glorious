@@ -3199,7 +3199,7 @@ a {
 
 .catalog-result-count {
   margin-left: auto;
-  color: color-mix(in srgb, var(--c-text) 45%, transparent);
+  color: color-mix(in srgb, var(--c-text) 72%, transparent);
 }
 
 .catalog-grid {
