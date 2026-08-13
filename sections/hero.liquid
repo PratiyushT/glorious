@@ -22,7 +22,7 @@
   assign wordmark_source = settings.wordmark | default: shop.name | upcase
   assign wordmark_letters = wordmark_source | split: ''
 
-  assign metal_blocks = section.blocks | where: 'type', 'metal'
+  assign tab_blocks = section.blocks | where: 'type', 'collection_tab'
   assign detail_blocks = section.blocks | where: 'type', 'hero_detail'
   assign button_block = section.blocks | where: 'type', 'hero_cta' | first
 -%}
@@ -96,18 +96,18 @@
         {%- endfor -%}
 
         {%- comment -%}
-          The metal switch is what changes the carousel's pool. Each option
-          points at its own collection, which is how "white gold" and "yellow
-          gold" become two sets of pieces without a client-side catalogue.
+          Each tab changes the carousel's product pool. The selected collection
+          is rendered in Liquid, so every tab remains a real catalogue source
+          without relying on a client-side product feed.
         {%- endcomment -%}
-        {%- if metal_blocks.size > 0 -%}
-          <div class="hero__detail-label">{{ section.settings.metal_label }}</div>
-          <div class="hero__detail-row" role="group" aria-label="{{ section.settings.metal_label | escape }}">
-            {%- for block in metal_blocks -%}
+        {%- if tab_blocks.size > 0 -%}
+          <div class="hero__detail-label">{{ section.settings.tab_label }}</div>
+          <div class="hero__detail-row" role="group" aria-label="{{ section.settings.tab_label | escape }}">
+            {%- for block in tab_blocks -%}
               <button
                 class="hero__choice{% if forloop.first %} is-on{% endif %}"
                 type="button"
-                data-hero-metal="{{ forloop.index0 }}"
+                data-hero-tab="{{ forloop.index0 }}"
                 aria-pressed="{% if forloop.first %}true{% else %}false{% endif %}"
                 {{ block.shopify_attributes }}
               >
@@ -154,7 +154,7 @@
       </div>
 
       {%- comment -%}
-        Two pieces at a time out of the selected metal's collection. The whole
+        Two pieces at a time out of the selected tab's collection. The whole
         pool is rendered and the carousel shows a window of it, so stepping
         never waits on a request and the pieces are still real links without
         any scripting.
@@ -166,7 +166,7 @@
           </button>
 
           <div class="hero-carousel__window" data-hero-window>
-            {%- for block in metal_blocks -%}
+            {%- for block in tab_blocks -%}
               {%- assign pool = block.settings.collection -%}
               <div
                 class="hero-carousel__pool"
@@ -274,7 +274,7 @@
       "type": "richtext",
       "id": "intro",
       "label": "t:sections.hero.intro.label",
-      "default": "<p>Authentic handcrafted diamond jewelry with heritage character and refined radiance — IGI-certified stones, set in 18-karat gold.</p>"
+      "default": "<p>Thoughtfully made products with distinctive character, considered materials, and lasting quality.</p>"
     },
     {
       "type": "header",
@@ -296,9 +296,9 @@
     },
     {
       "type": "text",
-      "id": "metal_label",
-      "label": "t:sections.hero.metal_label.label",
-      "default": "Metal:"
+      "id": "tab_label",
+      "label": "t:sections.hero.tab_label.label",
+      "default": "Collection:"
     }
   ],
   "blocks": [
@@ -310,31 +310,31 @@
           "type": "text",
           "id": "label",
           "label": "t:sections.hero.blocks.hero_detail.label_label",
-          "default": "Gemstone:"
+          "default": "Featured:"
         },
         {
           "type": "text",
           "id": "value",
           "label": "t:sections.hero.blocks.hero_detail.value_label",
-          "default": "Diamond"
+          "default": "New arrivals"
         }
       ]
     },
     {
-      "type": "metal",
-      "name": "t:sections.hero.blocks.metal.name",
+      "type": "collection_tab",
+      "name": "t:sections.hero.blocks.collection_tab.name",
       "settings": [
         {
           "type": "text",
           "id": "label",
           "label": "t:sections.all.link_label.label",
-          "default": "Yellow Gold"
+          "default": "Featured"
         },
         {
           "type": "collection",
           "id": "collection",
-          "label": "t:sections.hero.blocks.metal.collection.label",
-          "info": "t:sections.hero.blocks.metal.collection.info"
+          "label": "t:sections.hero.blocks.collection_tab.collection.label",
+          "info": "t:sections.hero.blocks.collection_tab.collection.info"
         }
       ]
     },
@@ -362,7 +362,7 @@
       "name": "t:sections.hero.name",
       "blocks": [
         { "type": "hero_detail" },
-        { "type": "metal" },
+        { "type": "collection_tab" },
         { "type": "hero_cta" }
       ]
     }

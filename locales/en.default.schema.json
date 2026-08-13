@@ -1489,24 +1489,24 @@
       "portrait_header": "Portrait",
       "image": {
         "label": "Portrait image",
-        "info": "A dark portrait wearing the collection works best."
+        "info": "A strong portrait or lifestyle image works best."
       },
       "carousel_header": "Piece carousel",
-      "carousel_paragraph": "Add one metal per switch. Each carries its own collection, and the carousel shows two pieces at a time from whichever is selected.",
-      "metal_label": {
+      "carousel_paragraph": "Add one tab per collection. The carousel shows two products at a time from the selected collection.",
+      "tab_label": {
         "label": "Switch heading"
       },
       "blocks": {
         "hero_detail": {
-          "name": "Gemstone detail",
+          "name": "Product detail",
           "label_label": "Label",
           "value_label": "Value"
         },
-        "metal": {
-          "name": "Metal",
+        "collection_tab": {
+          "name": "Collection tab",
           "collection": {
             "label": "Collection",
-            "info": "The pieces the carousel shows while this metal is selected."
+            "info": "The products shown while this tab is selected."
           }
         },
         "hero_cta": {

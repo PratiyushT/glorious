@@ -12,24 +12,24 @@
     "hero": {
       "type": "hero",
       "blocks": {
-        "gemstone": {
+        "featured-detail": {
           "type": "hero_detail",
           "settings": {
-            "label": "Gemstone:",
-            "value": "Diamond"
+            "label": "Featured:",
+            "value": "New arrivals"
           }
         },
-        "metal-white": {
-          "type": "metal",
+        "collection-primary": {
+          "type": "collection_tab",
           "settings": {
-            "label": "White Gold",
+            "label": "Featured",
             "collection": ""
           }
         },
-        "metal-yellow": {
-          "type": "metal",
+        "collection-secondary": {
+          "type": "collection_tab",
           "settings": {
-            "label": "Yellow Gold",
+            "label": "New arrivals",
             "collection": ""
           }
         },
@@ -42,9 +42,9 @@
         }
       },
       "block_order": [
-        "gemstone",
-        "metal-white",
-        "metal-yellow",
+        "featured-detail",
+        "collection-primary",
+        "collection-secondary",
         "buttons"
       ],
       "settings": {
@@ -52,9 +52,9 @@
         "show_wordmark": true,
         "show_sparkles": true,
         "show_arcs": true,
-        "intro": "<p>Authentic handcrafted diamond jewelry with heritage character and refined radiance — IGI-certified stones, set in 18-karat gold.</p>",
+        "intro": "<p>Thoughtfully made products with distinctive character, considered materials, and lasting quality.</p>",
         "image": "shopify://shop_images/hero.webp",
-        "metal_label": "Metal:"
+        "tab_label": "Collection:"
       }
     },
     "most-loved": {

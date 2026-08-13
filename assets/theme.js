@@ -3548,25 +3548,25 @@
       }
 
       var pools = Array.prototype.slice.call(hero.querySelectorAll('[data-hero-pool]'));
-      var switches = Array.prototype.slice.call(hero.querySelectorAll('[data-hero-metal]'));
+      var switches = Array.prototype.slice.call(hero.querySelectorAll('[data-hero-tab]'));
       var carousel = hero.querySelector('[data-hero-carousel]');
       var windowEl = hero.querySelector('[data-hero-window]');
       var below = hero.querySelector('.hero-carousel__below');
       if (!pools.length || !windowEl) return;
 
       var VISIBLE = 2;
-      var metal = 0;
+      var activeTab = 0;
       var offset = 0;
 
       function cards() {
-        return Array.prototype.slice.call(pools[metal].querySelectorAll('[data-hero-card]'));
+        return Array.prototype.slice.call(pools[activeTab].querySelectorAll('[data-hero-card]'));
       }
 
       function paint(replay) {
-        pools.forEach(function (pool, i) { pool.hidden = i !== metal; });
+        pools.forEach(function (pool, i) { pool.hidden = i !== activeTab; });
         switches.forEach(function (btn, i) {
-          btn.classList.toggle('is-on', i === metal);
-          btn.setAttribute('aria-pressed', String(i === metal));
+          btn.classList.toggle('is-on', i === activeTab);
+          btn.setAttribute('aria-pressed', String(i === activeTab));
         });
 
         var list = cards();
@@ -3605,9 +3605,9 @@
           return;
         }
 
-        var pick = event.target.closest('[data-hero-metal]');
+        var pick = event.target.closest('[data-hero-tab]');
         if (pick) {
-          metal = parseInt(pick.dataset.heroMetal, 10);
+          activeTab = parseInt(pick.dataset.heroTab, 10);
           offset = 0;
           paint(true);
         }
