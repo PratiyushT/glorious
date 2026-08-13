@@ -11,7 +11,7 @@
         "info": "Set as individual letters spread edge to edge in the hero and footer."
       },
       "wordmark_mark": {
-        "label": "Wordmark centre mark",
+        "label": "Wordmark center mark",
         "info": "Optional emblem substituted for the first O."
       }
     },
@@ -240,7 +240,7 @@
         "info": "Used by form errors and the remove control in the cart."
       },
       "page_scheme": {
-        "label": "Page colour scheme",
+        "label": "Page color scheme",
         "info": "The scheme the page itself uses, behind every section."
       },
       "dark_scheme": {
@@ -249,7 +249,7 @@
       },
       "scrollbar_thumb": {
         "label": "Scrollbar",
-        "info": "One colour for light and dark alike, as the reference design has it."
+        "info": "One color for light and dark alike, as the reference design has it."
       },
       "scrollbar_thumb_hover": {
         "label": "Scrollbar on hover"
@@ -597,7 +597,7 @@
         "label": "Layout",
         "info": "Choose the spacing treatment. Typography still comes from the selected text preset.",
         "standard": "Standard",
-        "display": "Display title",
+        "display": "Display heading",
         "eyebrow": "Eyebrow",
         "lede": "Lede"
       }
@@ -806,14 +806,14 @@
       "name": "Option control",
       "target_by": {
         "label": "Target option by",
-        "info": "Automatic is portable across mixed catalogues. Name follows the merchant's Shopify option name. Position follows Shopify's option order.",
+        "info": "Automatic is portable across mixed catalogs. Name follows the merchant's Shopify option name. Position follows Shopify's option order.",
         "auto": "Automatic",
         "name": "Name",
         "position": "Position"
       },
       "option_name": {
         "label": "Option name",
-        "info": "Enter the option name exactly as it appears in Shopify, such as the shop's own name for colour, size, material, or flavour. Nothing is hard-coded by the theme. Products without this option show no control."
+        "info": "Enter the option name exactly as it appears in Shopify, such as the shop's own name for color, size, material, or flavor. Nothing is hard-coded by the theme. Products without this option show no control."
       },
       "option_position": {
         "label": "Option position",
@@ -985,7 +985,7 @@
         "label": "Position along the row",
         "info": "Where the blocks sit once they have been laid out.",
         "start": "Left",
-        "center": "Centre",
+        "center": "Center",
         "end": "Right",
         "between": "Spread apart"
       },
@@ -1000,7 +1000,7 @@
         "bottom": "Bottom",
         "equal_height": "Equal height",
         "left": "Left",
-        "centre": "Centre",
+        "centre": "Center",
         "right": "Right",
         "full_width": "Full width"
       },
@@ -1341,20 +1341,20 @@
     "header": {
       "name": "Header",
       "nav_mode": {
-        "paragraph": "The design gives the homepage a floating pill and the inner pages a full bar, so the two are set separately.",
-        "home_label": "On the homepage",
+        "paragraph": "The design gives the home page a floating pill and the inner pages a full bar, so the two are set separately.",
+        "home_label": "On the home page",
         "inner_label": "On every other page",
-        "info": "Expand on scroll uses the hero title as its cue where there is one, and the distance below otherwise.",
+        "info": "Expand on scroll uses the hero heading as its cue where there is one, and the distance below otherwise.",
         "bar": "Full-width bar",
         "morph": "Floating pill, expanding to a bar on scroll",
         "pill": "Floating pill"
       },
       "scroll_threshold": {
         "label": "Scroll distance before it expands",
-        "info": "Only used on pages with no hero title to measure against."
+        "info": "Only used on pages with no hero heading to measure against."
       },
       "overlay_home": {
-        "label": "Let the homepage hero sit under the bar",
+        "label": "Let the home page hero sit under the bar",
         "info": "The bar starts transparent over the hero and turns solid on scroll. Other templates always reserve its height."
       },
       "actions_header": "Actions",
@@ -1590,7 +1590,7 @@
       "search_header_color_scheme": "Search header color scheme",
       "header_layout": "Header layout",
       "search_header_layout": "Search header layout",
-      "reference_title": "Reference title",
+      "reference_title": "Reference heading",
       "reference_search_field": "Reference search field",
       "split_media_text": "Split media and text",
       "split_media_search": "Split media and search",
@@ -1598,10 +1598,10 @@
       "search_over_media": "Search over media",
       "stacked_media_text": "Stacked media and text",
       "stacked_media_search": "Stacked media and search",
-      "show_collection_title": "Show collection title",
+      "show_collection_title": "Show collection heading",
       "show_search_heading": "Show heading above search",
       "search_heading": "Search heading",
-      "title_size": "Title size",
+      "title_size": "Heading size",
       "heading_size": "Heading size",
       "heading": "Heading",
       "display": "Display",
@@ -1726,7 +1726,7 @@
       "name": "Recommended product list",
       "intent": {
         "label": "Recommendation type",
-        "info": "Related products are generated by Shopify. Complementary products are managed in Search & Discovery.",
+        "info": "Related products are generated by Shopify. Complementary products are managed in Search and Discovery.",
         "related": "Related products",
         "complementary": "Complementary products"
       },
@@ -1752,7 +1752,7 @@
     },
     "main_policy": {
       "name": "Policy content",
-      "show_title": "Show policy title"
+      "show_title": "Show policy heading"
     },
     "main_cart": {
       "name": "Cart",
@@ -1805,7 +1805,7 @@
       },
       "quick_links_source": {
         "label": "Quick links",
-        "info": "Show collection links, or use values from a Shopify filter configured in Search & Discovery.",
+        "info": "Show collection links, or use values from a Shopify filter configured in Search and Discovery.",
         "collections": "Collections",
         "filter": "Filter values",
         "none": "None"
@@ -1817,7 +1817,7 @@
       },
       "quick_filter_name": {
         "label": "Filter name",
-        "info": "Enter the filter label exactly as it appears in Shopify. No catalogue name is built into the theme."
+        "info": "Enter the filter label exactly as it appears in Shopify. No catalog name is built into the theme."
       },
       "quick_links_limit": {
         "label": "Maximum collection links"
@@ -1944,7 +1944,7 @@
       },
       "quick_filter_name": {
         "label": "Filter name",
-        "info": "Enter the filter label exactly as it appears in Shopify. No catalogue name is built into the theme."
+        "info": "Enter the filter label exactly as it appears in Shopify. No catalog name is built into the theme."
       },
       "quick_links_limit": {
         "label": "Maximum collection links"

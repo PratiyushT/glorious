@@ -10,9 +10,9 @@
 {
   "current": {
     "wordmark": "STORE NAME",
-    "shop_address": "123 Example Street, City, State",
-    "shop_phone": "+1 555 000 0000",
-    "shop_email": "hello@example.com",
+    "shop_address": "",
+    "shop_phone": "",
+    "shop_email": "",
     "cart_name": "Cart",
     "content_for_index": [],
     "color_schemes": {

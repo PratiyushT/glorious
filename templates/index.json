@@ -1750,7 +1750,7 @@
                       "type": "button",
                       "settings": {
                         "button_label": "Contact Us",
-                        "button_link": "mailto:hello@example.com",
+                        "button_link": "/pages/contact",
                         "button_style": "link"
                       }
                     }

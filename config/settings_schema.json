@@ -44,8 +44,7 @@
       {
         "type": "text",
         "id": "shop_address",
-        "label": "t:settings_schema.shop.shop_address.label",
-        "default": "123 Example Street, City, State"
+        "label": "t:settings_schema.shop.shop_address.label"
       },
       {
         "type": "url",
@@ -57,14 +56,12 @@
         "type": "text",
         "id": "shop_phone",
         "label": "t:settings_schema.shop.shop_phone.label",
-        "info": "t:settings_schema.shop.shop_phone.info",
-        "default": "+1 555 000 0000"
+        "info": "t:settings_schema.shop.shop_phone.info"
       },
       {
         "type": "text",
         "id": "shop_email",
-        "label": "t:settings_schema.shop.shop_email.label",
-        "default": "hello@example.com"
+        "label": "t:settings_schema.shop.shop_email.label"
       }
     ]
   },
