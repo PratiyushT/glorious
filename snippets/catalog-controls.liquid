@@ -1,0 +1,211 @@
+{%- comment -%}
+  Shared collection/search controls. Every label and value comes from Shopify's
+  native Filter and SortOption drops; the theme carries no catalogue-specific
+  facet names or value tables.
+
+  Accepts:
+    results              collection or search object
+    section_id           owning section id
+    context              collection or search
+    form_action          URL for GET forms
+    clear_url            URL with filters removed
+    sort_by              current sort value
+    quick_source         collections, filter, or none
+    quick_filter         selected Shopify filter drop
+    quick_links_limit    maximum collection links
+    show_filters         boolean
+    show_sort            boolean
+    search_terms         current search query
+{%- endcomment -%}
+
+{%- liquid
+  assign active_filter_count = 0
+  for filter in results.filters
+    assign active_filter_count = active_filter_count | plus: filter.active_values.size
+    if filter.type == 'price_range'
+      if filter.min_value.value != blank or filter.max_value.value != blank
+        assign active_filter_count = active_filter_count | plus: 1
+      endif
+    endif
+  endfor
+
+  assign current_sort = sort_by | default: results.default_sort_by
+  assign drawer_id = 'CatalogFilters-' | append: section_id
+  assign quick_links_limit_number = quick_links_limit | default: 6 | plus: 0
+-%}
+
+<div class="catalog-controls" data-catalog-controls>
+  <div class="catalog-controls__rail" data-catalog-rail>
+    {%- if quick_source == 'collections' -%}
+      <a
+        class="catalog-pill{% if context == 'collection' and results.handle == 'all' %} is-active{% endif %}"
+        href="{{ routes.all_products_collection_url }}"
+        data-catalog-link
+      >{{ 'collections.all' | t }}</a>
+
+      {%- assign rendered_links = 0 -%}
+      {%- for quick_collection in collections -%}
+        {%- unless quick_collection.handle == 'all' -%}
+          {%- if rendered_links < quick_links_limit_number -%}
+            <a
+              class="catalog-pill{% if context == 'collection' and quick_collection.handle == results.handle %} is-active{% endif %}"
+              href="{{ quick_collection.url }}"
+              data-catalog-link
+            >{{ quick_collection.title }}</a>
+            {%- assign rendered_links = rendered_links | plus: 1 -%}
+          {%- endif -%}
+        {%- endunless -%}
+      {%- endfor -%}
+    {%- elsif quick_source == 'filter' and quick_filter != blank -%}
+      <a
+        class="catalog-pill{% if quick_filter.active_values.size == 0 %} is-active{% endif %}"
+        href="{{ clear_url }}"
+        data-catalog-link
+        data-catalog-clear-param="{{ quick_filter.param_name | escape }}"
+      >{{ 'collections.all' | t }}</a>
+
+      {%- for value in quick_filter.values -%}
+        <a
+          class="catalog-pill{% if value.active %} is-active{% endif %}{% if value.count == 0 and value.active == false %} is-disabled{% endif %}"
+          href="{% if value.active %}{{ value.url_to_remove }}{% else %}{{ value.url_to_add }}{% endif %}"
+          data-catalog-link
+          {% if value.count == 0 and value.active == false %}aria-disabled="true"{% endif %}
+        >
+          {{- value.label -}}
+          <span class="visually-hidden"> ({{ value.count }})</span>
+        </a>
+      {%- endfor -%}
+    {%- endif -%}
+  </div>
+
+  <div class="catalog-controls__actions">
+    {%- if show_filters and results.filters.size > 0 -%}
+      <button class="catalog-control-button" type="button" data-catalog-filter-open aria-haspopup="dialog" aria-controls="{{ drawer_id }}">
+        {{- 'collections.filters.label' | t -}}
+        {%- if active_filter_count > 0 -%}
+          <span class="catalog-control-button__count">{{ active_filter_count }}</span>
+        {%- endif -%}
+      </button>
+    {%- endif -%}
+
+    {%- if show_sort and results.sort_options.size > 0 -%}
+      <form class="catalog-sort" action="{{ form_action }}" method="get" data-catalog-form>
+        {%- if context == 'search' -%}
+          <input type="hidden" name="q" value="{{ search_terms | escape }}">
+          <input type="hidden" name="options[prefix]" value="last">
+          <input type="hidden" name="type" value="product,page,article">
+        {%- endif -%}
+
+        {%- for filter in results.filters -%}
+          {%- for value in filter.active_values -%}
+            <input type="hidden" name="{{ value.param_name }}" value="{{ value.value | escape }}">
+          {%- endfor -%}
+          {%- if filter.type == 'price_range' -%}
+            {%- if filter.min_value.value != blank -%}
+              <input type="hidden" name="{{ filter.min_value.param_name }}" value="{{ filter.min_value.value | money_without_currency | replace: ',', '' | replace: ' ', '' }}">
+            {%- endif -%}
+            {%- if filter.max_value.value != blank -%}
+              <input type="hidden" name="{{ filter.max_value.param_name }}" value="{{ filter.max_value.value | money_without_currency | replace: ',', '' | replace: ' ', '' }}">
+            {%- endif -%}
+          {%- endif -%}
+        {%- endfor -%}
+
+        <label class="visually-hidden" for="CatalogSort-{{ section_id }}">{{ 'collections.sorting.label' | t }}</label>
+        <select id="CatalogSort-{{ section_id }}" class="catalog-sort__select" name="sort_by" data-catalog-sort>
+          {%- for option in results.sort_options -%}
+            <option value="{{ option.value | escape }}"{% if option.value == current_sort %} selected{% endif %}>{{ option.name }}</option>
+          {%- endfor -%}
+        </select>
+        <noscript><button class="catalog-control-button" type="submit">{{ 'collections.sorting.apply' | t }}</button></noscript>
+      </form>
+    {%- endif -%}
+  </div>
+</div>
+
+{%- if show_filters and results.filters.size > 0 -%}
+  <dialog class="catalog-filter-dialog" id="{{ drawer_id }}" data-catalog-filter-dialog>
+    <form class="catalog-filter-drawer scheme-{{ section.settings.color_scheme }}" action="{{ form_action }}" method="get" data-catalog-form>
+      <header class="catalog-filter-drawer__header">
+        <h2>{{ 'collections.filters.heading' | t }}</h2>
+        <button class="catalog-control-button" type="button" data-catalog-filter-close>{{ 'accessibility.close' | t }}</button>
+      </header>
+
+      <div class="catalog-filter-drawer__body">
+        {%- if context == 'search' -%}
+          <input type="hidden" name="q" value="{{ search_terms | escape }}">
+          <input type="hidden" name="options[prefix]" value="last">
+          <input type="hidden" name="type" value="product,page,article">
+        {%- endif -%}
+        <input type="hidden" name="sort_by" value="{{ current_sort | escape }}">
+
+        {%- for filter in results.filters -%}
+          <fieldset class="catalog-filter-group">
+            <legend>{{ filter.label }}</legend>
+
+            {%- case filter.type -%}
+              {%- when 'boolean', 'list' -%}
+                <div class="catalog-filter-options">
+                  {%- for value in filter.values -%}
+                    {%- assign input_id = section_id | append: '-' | append: filter.param_name | handle | append: '-' | append: forloop.index -%}
+                    <label class="catalog-filter-option" for="{{ input_id }}">
+                      <input
+                        id="{{ input_id }}"
+                        type="checkbox"
+                        name="{{ value.param_name }}"
+                        value="{{ value.value | escape }}"
+                        {% if value.active %}checked{% endif %}
+                        {% if value.count == 0 and value.active == false %}disabled{% endif %}
+                      >
+                      {%- if value.swatch.image != blank or value.swatch.color != blank -%}
+                        <span
+                          class="catalog-filter-option__swatch"
+                          style="{% if value.swatch.image != blank %}--filter-swatch-image: url('{{ value.swatch.image | image_url: width: 64 }}');{% elsif value.swatch.color != blank %}--filter-swatch-color: {{ value.swatch.color }};{% endif %}"
+                          aria-hidden="true"
+                        ></span>
+                      {%- elsif value.image != blank -%}
+                        {{ value.image | image_url: width: 64 | image_tag: class: 'catalog-filter-option__image', loading: 'lazy', alt: '' }}
+                      {%- endif -%}
+                      <span>{{ value.label }}</span>
+                      <span class="catalog-filter-option__count">{{ value.count }}</span>
+                    </label>
+                  {%- endfor -%}
+                </div>
+
+              {%- when 'price_range' -%}
+                {%- assign range_max = filter.range_max | money_without_currency | replace: ',', '' | replace: ' ', '' -%}
+                <div class="catalog-price-range">
+                  <label>
+                    <span>{{ 'collections.filters.from' | t }}</span>
+                    <input
+                      type="number"
+                      name="{{ filter.min_value.param_name }}"
+                      min="0"
+                      max="{{ range_max }}"
+                      placeholder="0"
+                      {% if filter.min_value.value != blank %}value="{{ filter.min_value.value | money_without_currency | replace: ',', '' | replace: ' ', '' }}"{% endif %}
+                    >
+                  </label>
+                  <label>
+                    <span>{{ 'collections.filters.to' | t }}</span>
+                    <input
+                      type="number"
+                      name="{{ filter.max_value.param_name }}"
+                      min="0"
+                      max="{{ range_max }}"
+                      placeholder="{{ range_max }}"
+                      {% if filter.max_value.value != blank %}value="{{ filter.max_value.value | money_without_currency | replace: ',', '' | replace: ' ', '' }}"{% endif %}
+                    >
+                  </label>
+                </div>
+            {%- endcase -%}
+          </fieldset>
+        {%- endfor -%}
+      </div>
+
+      <footer class="catalog-filter-drawer__footer">
+        <a class="btn btn--secondary" href="{{ clear_url }}" data-catalog-link>{{ 'collections.filters.clear' | t }}</a>
+        <button class="btn btn--primary" type="submit">{{ 'collections.filters.apply' | t }}</button>
+      </footer>
+    </form>
+  </dialog>
+{%- endif -%}

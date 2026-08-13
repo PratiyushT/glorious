@@ -1502,8 +1502,55 @@
     },
     "main_collection": {
       "name": "Collection products",
+      "header": {
+        "content": "Collection header"
+      },
+      "eyebrow": {
+        "label": "Eyebrow"
+      },
       "show_description": {
         "label": "Show collection description"
+      },
+      "navigation": {
+        "content": "Navigation and filtering"
+      },
+      "quick_links_source": {
+        "label": "Quick links",
+        "info": "Show collection links, or use values from a Shopify filter configured in Search & Discovery.",
+        "collections": "Collections",
+        "filter": "Filter values",
+        "none": "None"
+      },
+      "quick_filter_target": {
+        "label": "Choose filter by",
+        "auto": "Automatic",
+        "name": "Name"
+      },
+      "quick_filter_name": {
+        "label": "Filter name",
+        "info": "Enter the filter label exactly as it appears in Shopify. No catalogue name is built into the theme."
+      },
+      "quick_links_limit": {
+        "label": "Maximum collection links"
+      },
+      "show_filters": {
+        "label": "Show filters"
+      },
+      "show_sort": {
+        "label": "Show sorting"
+      },
+      "enable_ajax": {
+        "label": "Update results without reloading",
+        "info": "Uses Shopify's section rendering response while preserving working links and forms when JavaScript is unavailable."
+      },
+      "grid": {
+        "content": "Product grid"
+      },
+      "show_search": {
+        "label": "Show product search"
+      },
+      "search_placeholder": {
+        "label": "Search placeholder"
       },
       "products_per_page": {
         "label": "Products per page"
@@ -1514,6 +1561,78 @@
     },
     "main_search": {
       "name": "Search results",
+      "search": {
+        "content": "Search"
+      },
+      "search_placeholder": {
+        "label": "Search placeholder"
+      },
+      "popular_label": {
+        "label": "Popular searches label"
+      },
+      "popular_searches": {
+        "label": "Popular search terms",
+        "info": "Separate terms with commas."
+      },
+      "navigation": {
+        "content": "Navigation and filtering"
+      },
+      "quick_links_source": {
+        "label": "Quick links",
+        "info": "Use values from a Shopify filter, show collection links, or hide the row.",
+        "filter": "Filter values",
+        "collections": "Collections",
+        "none": "None"
+      },
+      "quick_filter_target": {
+        "label": "Choose filter by",
+        "auto": "Automatic",
+        "name": "Name"
+      },
+      "quick_filter_name": {
+        "label": "Filter name",
+        "info": "Enter the filter label exactly as it appears in Shopify. No catalogue name is built into the theme."
+      },
+      "quick_links_limit": {
+        "label": "Maximum collection links"
+      },
+      "show_filters": {
+        "label": "Show filters"
+      },
+      "show_sort": {
+        "label": "Show sorting"
+      },
+      "enable_ajax": {
+        "label": "Update results without reloading",
+        "info": "Uses Shopify's section rendering response while preserving working links and forms when JavaScript is unavailable."
+      },
+      "empty_search": {
+        "content": "Before a search"
+      },
+      "show_featured_when_empty": {
+        "label": "Show featured products"
+      },
+      "featured_collection": {
+        "label": "Featured collection"
+      },
+      "featured_label": {
+        "label": "Featured products label"
+      },
+      "featured_limit": {
+        "label": "Featured products to show"
+      },
+      "results": {
+        "content": "Results"
+      },
+      "resources_heading": {
+        "label": "Pages and articles heading"
+      },
+      "no_results_text": {
+        "label": "No results message"
+      },
+      "browse_label": {
+        "label": "Browse products link"
+      },
       "results_per_page": {
         "label": "Results per page"
       },

@@ -16,26 +16,30 @@
     "pagination": {
       "label": "Pagination",
       "previous": "Previous",
-      "next": "Next"
+      "previous_short": "Prev",
+      "next": "Next",
+      "page": "Page {{ number }}"
     },
     "search": {
       "search": "Search",
       "placeholder": "Search products",
-      "overlay_placeholder": "Search the maison",
+      "overlay_placeholder": "Search the store",
+      "clear": "Clear",
+      "results_for": "Results for “{{ terms }}”",
       "results_label": "Search results",
       "results_with_count": {
         "one": "{{ count }} result",
         "other": "{{ count }} results"
       },
       "no_results": "No matches for “{{ terms }}”",
-      "no_results_hint": "Check the spelling, or try a broader word — “ring”, “gold”, “emerald”.",
-      "browse_all": "Browse the full collection",
+      "no_results_hint": "Check the spelling or try a broader search.",
+      "browse_all": "Browse all products",
       "see_all": "See all results for “{{ terms }}”",
       "popular": "Popular",
       "keyboard_hint": "↑↓ navigate · ↵ open · esc close",
       "group_browse": "Browse",
-      "group_featured": "Featured pieces",
-      "group_products": "Pieces",
+      "group_featured": "Featured products",
+      "group_products": "Products",
       "group_pages": "Pages",
       "kind_collection": "Collection",
       "kind_page": "Page",
@@ -92,16 +96,31 @@
     "available_in": "Available in {{ list }}"
   },
   "collections": {
+    "all": "All",
     "view_all": "View all",
     "view_all_count": {
       "one": "View all {{ count }} piece",
       "other": "View all {{ count }} pieces"
     },
     "product_count": {
-      "one": "{{ count }} piece",
-      "other": "{{ count }} pieces"
+      "one": "{{ count }} product",
+      "other": "{{ count }} products"
     },
-    "empty": "No products found."
+    "empty": "No products found.",
+    "filters": {
+      "label": "Filter",
+      "heading": "Filters",
+      "from": "From",
+      "to": "To",
+      "clear": "Clear filters",
+      "apply": "Apply filters",
+      "empty_heading": "No products match these filters",
+      "empty_text": "Try removing a filter or choose a different option."
+    },
+    "sorting": {
+      "label": "Sort by",
+      "apply": "Apply sorting"
+    }
   },
   "cart": {
     "title": "{{ cart_name }}",

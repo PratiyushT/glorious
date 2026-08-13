@@ -132,7 +132,7 @@
   {%- elsif opens_options -%}
     <a
       class="btn btn--square card__add"
-      href="{{ product.url }}?variant={{ chosen.id }}"
+      href="{{ product.url }}{% if product.url contains '?' %}&{% else %}?{% endif %}variant={{ chosen.id }}"
       data-quick-view
       {{ block.shopify_attributes }}
     >
@@ -168,7 +168,7 @@
     {%- if has_variant_choices and variant_action == 'highest_available' -%}
       <a
         class="btn btn--square card__add card__add-fallback"
-        href="{{ product.url }}?variant={{ chosen.id }}"
+        href="{{ product.url }}{% if product.url contains '?' %}&{% else %}?{% endif %}variant={{ chosen.id }}"
         data-quick-view
       >
         {{- choose_options_label -}}

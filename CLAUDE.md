@@ -299,6 +299,23 @@ walking the tree. Nothing in it traverses `.card__body`, so the markup could be
 rearranged without touching a line of script. **Keep it that way**: a handler
 that reaches for a parent would tie the two cards' structures together again.
 
+**Collection and search share one native catalogue control system.**
+`snippets/catalog-controls.liquid` renders Shopify's `filters`, `sort_options`
+and active-value URLs; `snippets/catalog-pagination.liquid` renders Shopify's
+`paginate.parts`. The collection and search sections decide only which native
+result object to pass. Filter names and values come from Search & Discovery,
+and optional quick links may use collections, the first useful list filter, or
+a merchant-entered filter label. No catalogue vocabulary belongs in Liquid.
+
+- Every control is still a real GET link or form. `initCatalog` progressively
+  enhances those URLs with the Section Rendering endpoint, replaces only the
+  owning `[data-catalog-section]`, and updates browser history. Never build a
+  client-side filter table or calculate result counts in JavaScript.
+- A product URL returned by search already carries Shopify tracking query
+  parameters. Any card link adding `variant=` must use `&` when `product.url`
+  already contains `?`; blindly appending a second question mark breaks the
+  variant link only on search and recommendation-like contexts.
+
 - **There is no `.card__body`, and there cannot be.** Blocks render as one flat
   sibling flow, so the element carrying the caption's padding would have to be
   a block that swallowed its siblings. The padding moves onto the children

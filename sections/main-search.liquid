@@ -1,78 +1,184 @@
 {%- comment -%}
-  Main search — a Shopify 2.0 search template with one repeated Product card.
-
-  Product results receive `closest.product`; pages, articles and collections
-  keep a small resource link because they do not satisfy the Product card's
-  resource contract. Pagination remains over the complete mixed result set.
+  The reference search surface on Shopify's real search, filters, sorting and
+  mixed result types. Product results use the reusable Product card; pages and
+  articles remain distinct rows rather than pretending to be products.
 {%- endcomment -%}
 
-{%- assign search_input_id = 'search-input-' | append: section.id -%}
+{%- liquid
+  assign search_input_id = 'SearchInput-' | append: section.id
+  assign current_sort = search.sort_by | default: search.default_sort_by
+  assign quick_filter = blank
+  if search.performed and section.settings.quick_links_source == 'filter'
+    if section.settings.quick_filter_target == 'name' and section.settings.quick_filter_name != blank
+      assign wanted_filter_name = section.settings.quick_filter_name | strip | downcase
+      for filter in search.filters
+        assign candidate_filter_name = filter.label | strip | downcase
+        if filter.type == 'list' and candidate_filter_name == wanted_filter_name
+          assign quick_filter = filter
+          break
+        endif
+      endfor
+    else
+      for filter in search.filters
+        if filter.type == 'list' and filter.values.size > 1
+          assign quick_filter = filter
+          break
+        endif
+      endfor
+    endif
+  endif
+
+  assign quick_source = section.settings.quick_links_source
+  unless search.performed
+    if quick_source == 'filter'
+      assign quick_source = 'collections'
+    endif
+  endunless
+
+  assign encoded_terms = search.terms | url_encode
+  assign clear_url = routes.search_url | append: '?q=' | append: encoded_terms | append: '&options%5Bprefix%5D=last&type=product%2Cpage%2Carticle'
+  assign featured_collection = section.settings.featured_collection
+  if featured_collection == blank
+    assign featured_collection = collections.all
+  endif
+  assign popular_terms = section.settings.popular_searches | split: ','
+-%}
 
 <section
-  class="section scheme-{{ section.settings.color_scheme }}"
-  style="{% render 'section-style', padding_top: section.settings.padding_top, padding_bottom: section.settings.padding_bottom %}"
+  class="catalog-page catalog-page--search scheme-{{ section.settings.color_scheme }}"
+  data-catalog-section="{{ section.id }}"
+  data-catalog-ajax="{{ section.settings.enable_ajax }}"
+  style="{% render 'section-style', padding_top: section.settings.padding_top, padding_bottom: section.settings.padding_bottom %}{% render 'block-spacing', gap: section.settings.gap %} --catalog-columns: {{ section.settings.columns }}; --catalog-gap: var(--block-gap);"
 >
-  <div class="page-width stack stack--loose">
-    <header class="stack">
-      <h1 class="h3">{{ 'general.search.search' | t }}</h1>
-
-      <form action="{{ routes.search_url }}" method="get" role="search" class="form-row">
+  <div class="catalog-search-bar">
+    <div class="catalog-shell">
+      <form class="catalog-search-form" action="{{ routes.search_url }}" method="get" role="search" data-catalog-form>
         <input type="hidden" name="options[prefix]" value="last">
+        <input type="hidden" name="type" value="product,page,article">
         <label class="visually-hidden" for="{{ search_input_id }}">{{ 'general.search.search' | t }}</label>
         <input
-          class="field"
           id="{{ search_input_id }}"
           type="search"
           name="q"
           value="{{ search.terms | escape }}"
-          placeholder="{{ 'general.search.placeholder' | t }}"
+          placeholder="{{ section.settings.search_placeholder | escape }}"
+          autocomplete="off"
+          spellcheck="false"
         >
-        <button type="submit" class="btn btn--primary">{{ 'general.search.search' | t }}</button>
+        {%- if search.terms != blank -%}
+          <a class="catalog-search-form__clear" href="{{ routes.search_url }}" data-catalog-link>{{ 'general.search.clear' | t }}</a>
+        {%- endif -%}
       </form>
-    </header>
 
-    {%- if search.performed -%}
-      {%- if search.results_count > 0 -%}
-        <p class="text-sm text-muted">
-          {{ 'general.search.results_with_count' | t: count: search.results_count }}
-        </p>
+      {% render 'catalog-controls',
+        results: search,
+        section_id: section.id,
+        section: section,
+        context: 'search',
+        form_action: routes.search_url,
+        clear_url: clear_url,
+        sort_by: current_sort,
+        quick_source: quick_source,
+        quick_filter: quick_filter,
+        quick_links_limit: section.settings.quick_links_limit,
+        show_filters: section.settings.show_filters,
+        show_sort: section.settings.show_sort,
+        search_terms: search.terms
+      %}
+    </div>
+  </div>
 
-        {%- paginate search.results by section.settings.results_per_page -%}
-          <div
-            class="grid-auto grid-auto--products"
-            style="{% render 'block-spacing', gap: section.settings.gap %} --cols: {{ section.settings.columns }}; --gap: var(--block-gap);"
-          >
-            {%- for item in search.results -%}
-              {%- if item.object_type == 'product' -%}
-                {% content_for 'block', type: '_product-card', id: 'product-card', closest.product: item %}
-              {%- else -%}
-                <a class="card card--search-result" href="{{ item.url }}">
-                  <span class="card__title">{{ item.title }}</span>
-                </a>
+  <main class="catalog-main catalog-main--search">
+    <div class="catalog-shell">
+      {%- unless search.performed -%}
+        {%- if section.settings.popular_searches != blank -%}
+          <div class="search-popular">
+            <span>{{ section.settings.popular_label }}</span>
+            {%- for term in popular_terms -%}
+              {%- assign clean_term = term | strip -%}
+              {%- if clean_term != blank -%}
+                <a href="{{ routes.search_url }}?q={{ clean_term | url_encode }}&options%5Bprefix%5D=last&type=product%2Cpage%2Carticle" data-catalog-link>{{ clean_term }}</a>
               {%- endif -%}
             {%- endfor -%}
           </div>
+        {%- endif -%}
 
-          {%- if paginate.pages > 1 -%}
-            <nav class="btn-row" style="justify-content: center;" aria-label="{{ 'general.pagination.label' | t }}">
-              {%- if paginate.previous -%}
-                <a class="btn btn--secondary" href="{{ paginate.previous.url }}">
-                  {{ 'general.pagination.previous' | t }}
-                </a>
-              {%- endif -%}
-              {%- if paginate.next -%}
-                <a class="btn btn--secondary" href="{{ paginate.next.url }}">
-                  {{ 'general.pagination.next' | t }}
-                </a>
-              {%- endif -%}
-            </nav>
-          {%- endif -%}
-        {%- endpaginate -%}
+        {%- if section.settings.show_featured_when_empty and featured_collection != blank -%}
+          <div class="catalog-grid-header catalog-grid-header--featured">
+            <span class="catalog-kicker">{{ section.settings.featured_label }}</span>
+            <span class="catalog-result-count">{{ 'collections.product_count' | t: count: featured_collection.products_count }}</span>
+          </div>
+          <div class="catalog-grid" data-catalog-grid>
+            {%- for product in featured_collection.products limit: section.settings.featured_limit -%}
+              <div class="catalog-grid__item" style="--catalog-item-index: {{ forloop.index0 }};">
+                {% content_for 'block', type: '_product-card', id: 'featured-product-card', closest.product: product %}
+              </div>
+            {%- endfor -%}
+          </div>
+        {%- endif -%}
       {%- else -%}
-        <p class="text-muted">{{ 'general.search.no_results' | t: terms: search.terms }}</p>
-      {%- endif -%}
-    {%- endif -%}
-  </div>
+        {%- if search.results_count > 0 -%}
+          {%- paginate search.results by section.settings.results_per_page -%}
+            <div class="catalog-grid-header catalog-grid-header--results">
+              <span class="search-results-for">{{ 'general.search.results_for' | t: terms: search.terms }}</span>
+              <span class="catalog-result-count">{{ 'general.search.results_with_count' | t: count: search.results_count }}</span>
+            </div>
+
+            {%- assign product_result_count = 0 -%}
+            {%- for item in search.results -%}
+              {%- if item.object_type == 'product' -%}
+                {%- assign product_result_count = product_result_count | plus: 1 -%}
+              {%- endif -%}
+            {%- endfor -%}
+
+            {%- if product_result_count > 0 -%}
+              <div class="catalog-grid" data-catalog-grid>
+                {%- assign product_index = 0 -%}
+                {%- for item in search.results -%}
+                  {%- if item.object_type == 'product' -%}
+                    <div class="catalog-grid__item" style="--catalog-item-index: {{ product_index }};">
+                      {% content_for 'block', type: '_product-card', id: 'product-card', closest.product: item %}
+                    </div>
+                    {%- assign product_index = product_index | plus: 1 -%}
+                  {%- endif -%}
+                {%- endfor -%}
+              </div>
+            {%- endif -%}
+
+            {%- assign resource_result_count = search.results.size | minus: product_result_count -%}
+            {%- if resource_result_count > 0 -%}
+              <section class="search-resources">
+                <h2>{{ section.settings.resources_heading }}</h2>
+                <div>
+                  {%- for item in search.results -%}
+                    {%- unless item.object_type == 'product' -%}
+                      <a class="search-resource" href="{{ item.url }}">
+                        {%- if item.image != blank -%}
+                          {{ item.image | image_url: width: 120 | image_tag: width: 50, height: 50, loading: 'lazy', alt: '' }}
+                        {%- else -%}
+                          <span class="search-resource__placeholder" aria-hidden="true"><span></span></span>
+                        {%- endif -%}
+                        <span class="search-resource__title">{{ item.title }}</span>
+                        <span class="search-resource__type">{{ item.object_type | capitalize }}</span>
+                      </a>
+                    {%- endunless -%}
+                  {%- endfor -%}
+                </div>
+              </section>
+            {%- endif -%}
+
+            {% render 'catalog-pagination', paginate: paginate %}
+          {%- endpaginate -%}
+        {%- else -%}
+          <div class="search-empty">
+            <h1>{{ 'general.search.no_results' | t: terms: search.terms }}</h1>
+            <p>{{ section.settings.no_results_text }}</p>
+            <a href="{{ routes.all_products_collection_url }}">{{ section.settings.browse_label }}</a>
+          </div>
+        {%- endif -%}
+      {%- endunless -%}
+    </div>
+  </main>
 </section>
 
 {% schema %}
@@ -87,6 +193,146 @@
       "id": "color_scheme",
       "label": "t:sections.all.color_scheme.label",
       "default": "scheme_1"
+    },
+    {
+      "type": "header",
+      "content": "t:sections.main_search.search.content"
+    },
+    {
+      "type": "text",
+      "id": "search_placeholder",
+      "label": "t:sections.main_search.search_placeholder.label",
+      "default": "Search products and pages"
+    },
+    {
+      "type": "text",
+      "id": "popular_label",
+      "label": "t:sections.main_search.popular_label.label",
+      "default": "Popular"
+    },
+    {
+      "type": "textarea",
+      "id": "popular_searches",
+      "label": "t:sections.main_search.popular_searches.label",
+      "info": "t:sections.main_search.popular_searches.info",
+      "default": "New arrivals, Best sellers, Gifts, Sale"
+    },
+    {
+      "type": "header",
+      "content": "t:sections.main_search.navigation.content"
+    },
+    {
+      "type": "select",
+      "id": "quick_links_source",
+      "label": "t:sections.main_search.quick_links_source.label",
+      "info": "t:sections.main_search.quick_links_source.info",
+      "options": [
+        { "value": "filter", "label": "t:sections.main_search.quick_links_source.filter" },
+        { "value": "collections", "label": "t:sections.main_search.quick_links_source.collections" },
+        { "value": "none", "label": "t:sections.main_search.quick_links_source.none" }
+      ],
+      "default": "filter"
+    },
+    {
+      "type": "select",
+      "id": "quick_filter_target",
+      "label": "t:sections.main_search.quick_filter_target.label",
+      "visible_if": "{{ section.settings.quick_links_source == 'filter' }}",
+      "options": [
+        { "value": "auto", "label": "t:sections.main_search.quick_filter_target.auto" },
+        { "value": "name", "label": "t:sections.main_search.quick_filter_target.name" }
+      ],
+      "default": "auto"
+    },
+    {
+      "type": "text",
+      "id": "quick_filter_name",
+      "label": "t:sections.main_search.quick_filter_name.label",
+      "info": "t:sections.main_search.quick_filter_name.info",
+      "visible_if": "{{ section.settings.quick_links_source == 'filter' and section.settings.quick_filter_target == 'name' }}"
+    },
+    {
+      "type": "select",
+      "id": "quick_links_limit",
+      "label": "t:sections.main_search.quick_links_limit.label",
+      "options": [
+        { "value": "4", "label": "4" },
+        { "value": "6", "label": "6" },
+        { "value": "8", "label": "8" },
+        { "value": "12", "label": "12" }
+      ],
+      "default": "6"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_filters",
+      "label": "t:sections.main_search.show_filters.label",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_sort",
+      "label": "t:sections.main_search.show_sort.label",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_ajax",
+      "label": "t:sections.main_search.enable_ajax.label",
+      "info": "t:sections.main_search.enable_ajax.info",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "t:sections.main_search.empty_search.content"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_featured_when_empty",
+      "label": "t:sections.main_search.show_featured_when_empty.label",
+      "default": true
+    },
+    {
+      "type": "collection",
+      "id": "featured_collection",
+      "label": "t:sections.main_search.featured_collection.label"
+    },
+    {
+      "type": "text",
+      "id": "featured_label",
+      "label": "t:sections.main_search.featured_label.label",
+      "default": "Featured products"
+    },
+    {
+      "type": "range",
+      "id": "featured_limit",
+      "label": "t:sections.main_search.featured_limit.label",
+      "min": 4,
+      "max": 12,
+      "step": 1,
+      "default": 8
+    },
+    {
+      "type": "header",
+      "content": "t:sections.main_search.results.content"
+    },
+    {
+      "type": "text",
+      "id": "resources_heading",
+      "label": "t:sections.main_search.resources_heading.label",
+      "default": "Pages and articles"
+    },
+    {
+      "type": "textarea",
+      "id": "no_results_text",
+      "label": "t:sections.main_search.no_results_text.label",
+      "default": "Check the spelling or try a broader search."
+    },
+    {
+      "type": "text",
+      "id": "browse_label",
+      "label": "t:sections.main_search.browse_label.label",
+      "default": "Browse all products"
     },
     {
       "type": "range",
@@ -139,7 +385,7 @@
         { "value": "xl", "label": "t:sections.all.space_step.xl" },
         { "value": "max", "label": "t:sections.all.space_step.max" }
       ],
-      "default": "lg"
+      "default": "none"
     },
     {
       "type": "select",
@@ -155,7 +401,7 @@
         { "value": "xl", "label": "t:sections.all.space_step.xl" },
         { "value": "max", "label": "t:sections.all.space_step.max" }
       ],
-      "default": "lg"
+      "default": "none"
     }
   ],
   "presets": [
@@ -166,6 +412,18 @@
           "type": "_product-card",
           "static": true,
           "id": "product-card",
+          "blocks": [
+            { "type": "_product-card-media", "settings": { "image_ratio": "1/1", "image_fit": "contain" } },
+            { "type": "text", "settings": { "text": "{{ closest.product.title }}", "style": "small", "element": "h3", "override_case": "uppercase", "override_tracking": "wide" } },
+            { "type": "_product-card-option-control", "settings": { "target_by": "auto", "control": "auto", "swatch_shape": "round" } },
+            { "type": "_product-card-price" },
+            { "type": "_product-card-add", "settings": { "variant_action": "choose_options" } }
+          ]
+        },
+        {
+          "type": "_product-card",
+          "static": true,
+          "id": "featured-product-card",
           "blocks": [
             { "type": "_product-card-media", "settings": { "image_ratio": "1/1", "image_fit": "contain" } },
             { "type": "text", "settings": { "text": "{{ closest.product.title }}", "style": "small", "element": "h3", "override_case": "uppercase", "override_tracking": "wide" } },

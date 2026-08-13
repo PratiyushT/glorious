@@ -65,12 +65,21 @@
       },
       "settings": {
         "color_scheme": "scheme_1",
+        "eyebrow": "Explore the collection",
         "show_description": true,
+        "quick_links_source": "collections",
+        "quick_filter_target": "auto",
+        "quick_links_limit": "6",
+        "show_filters": true,
+        "show_sort": true,
+        "enable_ajax": true,
+        "show_search": true,
+        "search_placeholder": "Search products",
         "products_per_page": 24,
         "columns": 4,
         "gap": "large",
-        "padding_top": "lg",
-        "padding_bottom": "lg"
+        "padding_top": "none",
+        "padding_bottom": "none"
       }
     }
   },

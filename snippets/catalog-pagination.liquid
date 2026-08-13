@@ -1,0 +1,27 @@
+{%- if paginate.pages > 1 -%}
+  <nav class="catalog-pagination" aria-label="{{ 'general.pagination.label' | t }}">
+    {%- if paginate.previous -%}
+      <a href="{{ paginate.previous.url }}" data-catalog-link>← {{ 'general.pagination.previous_short' | t }}</a>
+    {%- else -%}
+      <span aria-disabled="true">← {{ 'general.pagination.previous_short' | t }}</span>
+    {%- endif -%}
+
+    <div class="catalog-pagination__pages">
+      {%- for part in paginate.parts -%}
+        {%- if part.is_link -%}
+          <a href="{{ part.url }}" data-catalog-link aria-label="{{ 'general.pagination.page' | t: number: part.title }}">{{ part.title }}</a>
+        {%- elsif part.title == paginate.current_page -%}
+          <span class="is-current" aria-current="page">{{ part.title }}</span>
+        {%- else -%}
+          <span>{{ part.title }}</span>
+        {%- endif -%}
+      {%- endfor -%}
+    </div>
+
+    {%- if paginate.next -%}
+      <a href="{{ paginate.next.url }}" data-catalog-link>{{ 'general.pagination.next' | t }} →</a>
+    {%- else -%}
+      <span aria-disabled="true">{{ 'general.pagination.next' | t }} →</span>
+    {%- endif -%}
+  </nav>
+{%- endif -%}

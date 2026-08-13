@@ -61,15 +61,89 @@
             "quick_view_desktop": true,
             "quick_view_compact": true
           }
+        },
+        "featured-product-card": {
+          "type": "_product-card",
+          "static": true,
+          "blocks": {
+            "media": {
+              "type": "_product-card-media",
+              "settings": {
+                "image_ratio": "1/1",
+                "image_fit": "contain"
+              }
+            },
+            "title": {
+              "type": "text",
+              "settings": {
+                "text": "{{ closest.product.title }}",
+                "style": "small",
+                "element": "h3",
+                "override_case": "uppercase",
+                "override_tracking": "wide"
+              }
+            },
+            "option": {
+              "type": "_product-card-option-control",
+              "settings": {
+                "target_by": "auto",
+                "control": "auto",
+                "swatch_shape": "round"
+              }
+            },
+            "price": {
+              "type": "_product-card-price",
+              "settings": {}
+            },
+            "add": {
+              "type": "_product-card-add",
+              "settings": {
+                "variant_action": "choose_options"
+              }
+            }
+          },
+          "block_order": [
+            "media",
+            "title",
+            "option",
+            "price",
+            "add"
+          ],
+          "settings": {
+            "text_align": "left",
+            "show_carousel": true,
+            "arrows_wide": "hover",
+            "arrows_compact": "swipe",
+            "hover_next": true,
+            "show_video": true,
+            "video_badge": "Video",
+            "quick_view_desktop": true,
+            "quick_view_compact": true
+          }
         }
       },
       "settings": {
         "color_scheme": "scheme_1",
+        "search_placeholder": "Search products and pages",
+        "popular_label": "Popular",
+        "popular_searches": "New arrivals, Best sellers, Gifts, Sale",
+        "quick_links_source": "filter",
+        "quick_filter_target": "auto",
+        "quick_links_limit": "6",
+        "show_filters": true,
+        "show_sort": true,
+        "enable_ajax": true,
+        "show_featured_when_empty": true,
+        "featured_label": "Featured products",
+        "featured_limit": 8,
+        "resources_heading": "Pages and articles",
+        "no_results_text": "Check the spelling or try a broader search.",
+        "browse_label": "Browse all products",
         "results_per_page": 24,
         "columns": 4,
         "gap": "large",
-        "padding_top": "lg",
-        "padding_bottom": "lg"
+        "padding_top": "none",
+        "padding_bottom": "none"
       }
     }
   },

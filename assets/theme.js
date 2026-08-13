@@ -4333,6 +4333,131 @@
     });
   }
 
+  /* ---- Catalog filters, sorting and pagination ------------------------
+     Collection and search both render one [data-catalog-section] root. A GET
+     form is the complete no-script contract; this enhancement asks Shopify's
+     Section Rendering endpoint for the same server-rendered result and swaps
+     only that root. Filter values, counts, sorting and URLs therefore remain
+     Shopify-authoritative rather than becoming a second client-side catalog. */
+
+  var catalogPopBound = false;
+  var catalogRequestController = null;
+
+  function catalogFormUrl(form) {
+    var url = new URL(form.action, window.location.origin);
+    var data = new FormData(form);
+
+    data.forEach(function (value, key) {
+      if (String(value).trim() !== '') url.searchParams.append(key, value);
+    });
+
+    return url;
+  }
+
+  function renderCatalog(root, targetUrl, pushState, scrollToResults) {
+    if (!root || root.dataset.catalogAjax !== 'true') {
+      window.location.assign(targetUrl);
+      return;
+    }
+
+    var publicUrl = new URL(targetUrl, window.location.origin);
+    var requestUrl = new URL(publicUrl.href);
+    requestUrl.searchParams.set('section_id', root.dataset.catalogSection);
+
+    if (catalogRequestController) catalogRequestController.abort();
+    catalogRequestController = typeof AbortController !== 'undefined' ? new AbortController() : null;
+
+    root.setAttribute('aria-busy', 'true');
+
+    fetch(requestUrl.href, catalogRequestController ? { signal: catalogRequestController.signal } : undefined)
+      .then(function (response) {
+        if (!response.ok) throw new Error('Catalog request failed');
+        return response.text();
+      })
+      .then(function (html) {
+        var documentFragment = new DOMParser().parseFromString(html, 'text/html');
+        var nextRoot = documentFragment.querySelector('[data-catalog-section="' + root.dataset.catalogSection + '"]');
+        if (!nextRoot) throw new Error('Catalog section missing');
+
+        if (pushState) window.history.pushState({}, '', publicUrl.href);
+        root.replaceWith(nextRoot);
+        nextRoot.dispatchEvent(new CustomEvent('shopify:section:load', { bubbles: true }));
+
+        if (scrollToResults) {
+          var target = nextRoot.querySelector('.catalog-main') || nextRoot;
+          var navOffset = document.querySelector('.nav') ? document.querySelector('.nav').getBoundingClientRect().height : 0;
+          var top = target.getBoundingClientRect().top + window.scrollY - navOffset;
+          window.scrollTo({ top: Math.max(0, top), behavior: reduceMotion.matches ? 'auto' : 'smooth' });
+        }
+      })
+      .catch(function (error) {
+        if (error && error.name === 'AbortError') return;
+        window.location.assign(publicUrl.href);
+      });
+  }
+
+  function initCatalog(scope) {
+    scope.querySelectorAll('[data-catalog-section]').forEach(function (root) {
+      if (!bindOnce(root, 'boundCatalog')) return;
+
+      root.addEventListener('click', function (event) {
+        var open = event.target.closest && event.target.closest('[data-catalog-filter-open]');
+        if (open) {
+          var dialog = root.querySelector('[data-catalog-filter-dialog]');
+          if (dialog && typeof dialog.showModal === 'function') dialog.showModal();
+          return;
+        }
+
+        var close = event.target.closest && event.target.closest('[data-catalog-filter-close]');
+        if (close) {
+          var openDialog = close.closest('dialog');
+          if (openDialog) openDialog.close();
+          return;
+        }
+
+        var link = event.target.closest && event.target.closest('[data-catalog-link]');
+        if (!link || link.getAttribute('aria-disabled') === 'true') return;
+        if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+        if (typeof event.button === 'number' && event.button !== 0) return;
+
+        var linkUrl = new URL(link.href, window.location.origin);
+        var clearParam = link.dataset.catalogClearParam;
+        if (clearParam) linkUrl.searchParams.delete(clearParam);
+
+        event.preventDefault();
+        renderCatalog(root, linkUrl.href, true, Boolean(link.closest('.catalog-pagination')));
+      });
+
+      root.addEventListener('click', function (event) {
+        var dialog = event.target.closest && event.target.closest('[data-catalog-filter-dialog]');
+        if (dialog && event.target === dialog) dialog.close();
+      });
+
+      root.addEventListener('change', function (event) {
+        var sort = event.target.closest && event.target.closest('[data-catalog-sort]');
+        if (sort && sort.form) sort.form.requestSubmit();
+      });
+
+      root.addEventListener('submit', function (event) {
+        var form = event.target.closest && event.target.closest('[data-catalog-form]');
+        if (!form) return;
+        event.preventDefault();
+
+        var dialog = form.closest('dialog');
+        if (dialog && dialog.open) dialog.close();
+        renderCatalog(root, catalogFormUrl(form).href, true, true);
+      });
+    });
+
+    if (!catalogPopBound) {
+      catalogPopBound = true;
+      window.addEventListener('popstate', function () {
+        var root = document.querySelector('[data-catalog-section]');
+        if (root) renderCatalog(root, window.location.href, false, false);
+      });
+    }
+  }
+
   /* ---- Localization --------------------------------------------------- */
 
   function initLocalization(scope) {
@@ -4357,6 +4482,7 @@
     blurUp(scope);
     initCards(scope);
     initCardOptions(scope);
+    initCatalog(scope);
     initOverlays(scope);
     initCookieChoice(scope);
   }

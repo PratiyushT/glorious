@@ -160,7 +160,7 @@
 
         <a
           class="{% if is_pills %}card__pill{% else %}card__swatch{% endif %}{% if is_selected %} is-selected{% endif %}"
-          href="{{ product.url }}?variant={{ chosen.id }}"
+          href="{{ product.url }}{% if product.url contains '?' %}&{% else %}?{% endif %}variant={{ chosen.id }}"
           data-card-option
           data-option-value="{{ value | escape }}"
           data-option-index="{{ opt_index }}"

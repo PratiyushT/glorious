@@ -703,7 +703,7 @@
 
             <a
               class="card__swatch{% if is_selected %} is-selected{% endif %}"
-              href="{{ product.url }}?variant={{ chosen.id }}"
+              href="{{ product.url }}{% if product.url contains '?' %}&{% else %}?{% endif %}variant={{ chosen.id }}"
               data-card-metal
               data-metal-value="{{ value | escape }}"
               data-metal-id="{{ chosen.id }}"

@@ -1,55 +1,114 @@
 {%- comment -%}
-  Main collection — the Shopify 2.0 collection template surface.
-
-  The section owns pagination and the repeated resource loop. One static
-  `_product-card` block is rendered for every product through
-  `closest.product`, so the merchant edits the card once for this template and
-  the editor shows it once with Shopify's repeated-block marker.
+  The reference collection surface, rebuilt on Shopify's native collection,
+  filter, sort and pagination drops. Collection links and Search & Discovery
+  values are merchant data; no industry names or facet values live here.
 {%- endcomment -%}
 
+{%- liquid
+  assign current_sort = collection.sort_by | default: collection.default_sort_by
+  assign quick_filter = blank
+  if section.settings.quick_links_source == 'filter'
+    if section.settings.quick_filter_target == 'name' and section.settings.quick_filter_name != blank
+      assign wanted_filter_name = section.settings.quick_filter_name | strip | downcase
+      for filter in collection.filters
+        assign candidate_filter_name = filter.label | strip | downcase
+        if filter.type == 'list' and candidate_filter_name == wanted_filter_name
+          assign quick_filter = filter
+          break
+        endif
+      endfor
+    else
+      for filter in collection.filters
+        if filter.type == 'list' and filter.values.size > 1
+          assign quick_filter = filter
+          break
+        endif
+      endfor
+    endif
+  endif
+-%}
+
 <section
-  class="section scheme-{{ section.settings.color_scheme }}"
-  style="{% render 'section-style', padding_top: section.settings.padding_top, padding_bottom: section.settings.padding_bottom %}"
+  class="catalog-page scheme-{{ section.settings.color_scheme }}"
+  data-catalog-section="{{ section.id }}"
+  data-catalog-ajax="{{ section.settings.enable_ajax }}"
+  style="{% render 'section-style', padding_top: section.settings.padding_top, padding_bottom: section.settings.padding_bottom %}{% render 'block-spacing', gap: section.settings.gap %} --catalog-columns: {{ section.settings.columns }}; --catalog-gap: var(--block-gap);"
 >
-  <div class="page-width stack stack--loose">
-    <header class="stack">
-      <h1 class="h3">{{ collection.title }}</h1>
+  <header class="catalog-hero">
+    <div class="catalog-shell">
+      <h1>{{ collection.title }}</h1>
 
-      {%- if section.settings.show_description and collection.description != blank -%}
-        <div class="rte measure">{{ collection.description }}</div>
+      {%- if section.settings.eyebrow != blank or section.settings.show_description and collection.description != blank -%}
+        <div class="catalog-hero__meta">
+          {%- if section.settings.eyebrow != blank -%}
+            <span class="catalog-kicker">{{ section.settings.eyebrow }}</span>
+          {%- endif -%}
+          {%- if section.settings.show_description and collection.description != blank -%}
+            <div class="catalog-hero__description rte">{{ collection.description }}</div>
+          {%- endif -%}
+        </div>
       {%- endif -%}
-    </header>
+    </div>
+  </header>
 
-    {%- paginate collection.products by section.settings.products_per_page -%}
-      {%- if collection.products.size > 0 -%}
-        <div
-          class="grid-auto grid-auto--products"
-          style="{% render 'block-spacing', gap: section.settings.gap %} --cols: {{ section.settings.columns }}; --gap: var(--block-gap);"
-        >
-          {%- for product in collection.products -%}
-            {% content_for 'block', type: '_product-card', id: 'product-card', closest.product: product %}
-          {%- endfor -%}
+  <div class="catalog-sticky-bar">
+    <div class="catalog-shell">
+      {% render 'catalog-controls',
+        results: collection,
+        section_id: section.id,
+        section: section,
+        context: 'collection',
+        form_action: collection.url,
+        clear_url: collection.url,
+        sort_by: current_sort,
+        quick_source: section.settings.quick_links_source,
+        quick_filter: quick_filter,
+        quick_links_limit: section.settings.quick_links_limit,
+        show_filters: section.settings.show_filters,
+        show_sort: section.settings.show_sort
+      %}
+    </div>
+  </div>
+
+  {%- paginate collection.products by section.settings.products_per_page -%}
+    <main class="catalog-main">
+      <div class="catalog-shell">
+        <div class="catalog-grid-header">
+          {%- if section.settings.show_search -%}
+            <form class="catalog-inline-search" action="{{ routes.search_url }}" method="get" role="search" data-catalog-form>
+              <input type="hidden" name="options[prefix]" value="last">
+              <input type="hidden" name="type" value="product,page,article">
+              {% render 'icon', icon: 'search', width: '14', height: '14' %}
+              <label class="visually-hidden" for="CollectionSearch-{{ section.id }}">{{ 'general.search.search' | t }}</label>
+              <input id="CollectionSearch-{{ section.id }}" type="search" name="q" placeholder="{{ section.settings.search_placeholder | escape }}">
+            </form>
+          {%- endif -%}
+
+          <span class="catalog-result-count">
+            {{- 'collections.product_count' | t: count: collection.products_count -}}
+          </span>
         </div>
 
-        {%- if paginate.pages > 1 -%}
-          <nav class="btn-row" style="justify-content: center;" aria-label="{{ 'general.pagination.label' | t }}">
-            {%- if paginate.previous -%}
-              <a class="btn btn--secondary" href="{{ paginate.previous.url }}">
-                {{ 'general.pagination.previous' | t }}
-              </a>
-            {%- endif -%}
-            {%- if paginate.next -%}
-              <a class="btn btn--secondary" href="{{ paginate.next.url }}">
-                {{ 'general.pagination.next' | t }}
-              </a>
-            {%- endif -%}
-          </nav>
+        {%- if collection.products.size > 0 -%}
+          <div class="catalog-grid" data-catalog-grid>
+            {%- for product in collection.products -%}
+              <div class="catalog-grid__item" style="--catalog-item-index: {{ forloop.index0 }};">
+                {% content_for 'block', type: '_product-card', id: 'product-card', closest.product: product %}
+              </div>
+            {%- endfor -%}
+          </div>
+
+          {% render 'catalog-pagination', paginate: paginate %}
+        {%- else -%}
+          <div class="catalog-empty">
+            <h2>{{ 'collections.filters.empty_heading' | t }}</h2>
+            <p>{{ 'collections.filters.empty_text' | t }}</p>
+            <a class="btn btn--primary" href="{{ collection.url }}" data-catalog-link>{{ 'collections.filters.clear' | t }}</a>
+          </div>
         {%- endif -%}
-      {%- else -%}
-        <p class="text-muted">{{ 'collections.empty' | t }}</p>
-      {%- endif -%}
-    {%- endpaginate -%}
-  </div>
+      </div>
+    </main>
+  {%- endpaginate -%}
 </section>
 
 {% schema %}
@@ -66,10 +125,102 @@
       "default": "scheme_1"
     },
     {
+      "type": "header",
+      "content": "t:sections.main_collection.header.content"
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "t:sections.main_collection.eyebrow.label",
+      "default": "Explore the collection"
+    },
+    {
       "type": "checkbox",
       "id": "show_description",
       "label": "t:sections.main_collection.show_description.label",
       "default": true
+    },
+    {
+      "type": "header",
+      "content": "t:sections.main_collection.navigation.content"
+    },
+    {
+      "type": "select",
+      "id": "quick_links_source",
+      "label": "t:sections.main_collection.quick_links_source.label",
+      "info": "t:sections.main_collection.quick_links_source.info",
+      "options": [
+        { "value": "collections", "label": "t:sections.main_collection.quick_links_source.collections" },
+        { "value": "filter", "label": "t:sections.main_collection.quick_links_source.filter" },
+        { "value": "none", "label": "t:sections.main_collection.quick_links_source.none" }
+      ],
+      "default": "collections"
+    },
+    {
+      "type": "select",
+      "id": "quick_filter_target",
+      "label": "t:sections.main_collection.quick_filter_target.label",
+      "visible_if": "{{ section.settings.quick_links_source == 'filter' }}",
+      "options": [
+        { "value": "auto", "label": "t:sections.main_collection.quick_filter_target.auto" },
+        { "value": "name", "label": "t:sections.main_collection.quick_filter_target.name" }
+      ],
+      "default": "auto"
+    },
+    {
+      "type": "text",
+      "id": "quick_filter_name",
+      "label": "t:sections.main_collection.quick_filter_name.label",
+      "info": "t:sections.main_collection.quick_filter_name.info",
+      "visible_if": "{{ section.settings.quick_links_source == 'filter' and section.settings.quick_filter_target == 'name' }}"
+    },
+    {
+      "type": "select",
+      "id": "quick_links_limit",
+      "label": "t:sections.main_collection.quick_links_limit.label",
+      "visible_if": "{{ section.settings.quick_links_source == 'collections' }}",
+      "options": [
+        { "value": "4", "label": "4" },
+        { "value": "6", "label": "6" },
+        { "value": "8", "label": "8" },
+        { "value": "12", "label": "12" }
+      ],
+      "default": "6"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_filters",
+      "label": "t:sections.main_collection.show_filters.label",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_sort",
+      "label": "t:sections.main_collection.show_sort.label",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_ajax",
+      "label": "t:sections.main_collection.enable_ajax.label",
+      "info": "t:sections.main_collection.enable_ajax.info",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "t:sections.main_collection.grid.content"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_search",
+      "label": "t:sections.main_collection.show_search.label",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "search_placeholder",
+      "label": "t:sections.main_collection.search_placeholder.label",
+      "default": "Search products"
     },
     {
       "type": "range",
@@ -122,7 +273,7 @@
         { "value": "xl", "label": "t:sections.all.space_step.xl" },
         { "value": "max", "label": "t:sections.all.space_step.max" }
       ],
-      "default": "lg"
+      "default": "none"
     },
     {
       "type": "select",
@@ -138,7 +289,7 @@
         { "value": "xl", "label": "t:sections.all.space_step.xl" },
         { "value": "max", "label": "t:sections.all.space_step.max" }
       ],
-      "default": "lg"
+      "default": "none"
     }
   ],
   "presets": [
