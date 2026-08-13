@@ -3606,6 +3606,22 @@ the checkout button is intact, and the subtotal carries the note.
   first, then upload the JSON file. A watcher that has already recorded the
   collision must be restarted after the deletion.
 
+### Cart page
+
+- `templates/cart.json` contains one contextual `main-cart` section. The cart
+  object, line-item options, properties, selling plans, discounts, quantities,
+  note, totals, tax note, payment terms and checkout submission stay native
+  Shopify data and forms; the theme only composes their presentation.
+- The cart page and cart drawer read the same Theme settings for the cart name,
+  unit-versus-line price, note, discounts, tax wording, installments and
+  accelerated checkout. They are two presentations of one cart contract.
+- Quantity discs only change the matching native `updates[]` input. The Update
+  button remains a normal cart-form submission, and Remove remains Shopify's
+  `url_to_remove`, so the page works without JavaScript.
+- Width and image decisions use named presets. Do not replace the summary-width
+  preset with a pixel slider; its narrow/medium/wide choices are intentionally
+  stable responsive art direction.
+
 ### Things that cost time once
 
 - **A tag delimiter inside a `{% liquid %}` block closes it — inside a

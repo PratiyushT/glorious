@@ -1,0 +1,15 @@
+{
+  "sections": {
+    "main": {
+      "type": "main-cart",
+      "settings": {
+        "color_scheme": "scheme_1", "title": "", "title_style": "heading_2", "show_count": true,
+        "show_vendor": true, "show_update_button": true, "summary_width": "medium",
+        "image_ratio": "1/1", "image_fit": "contain",
+        "empty_message": "Your cart is waiting for something good.", "empty_button_label": "Continue shopping",
+        "padding_top": "lg", "padding_bottom": "xl"
+      }
+    }
+  },
+  "order": ["main"]
+}

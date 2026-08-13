@@ -1711,6 +1711,20 @@
       "name": "Policy content",
       "show_title": "Show policy title"
     },
+    "main_cart": {
+      "name": "Cart",
+      "title": "Heading override",
+      "title_info": "Leave empty to use the cart name from Theme settings.",
+      "show_count": "Show item count",
+      "show_vendor": "Show product vendor",
+      "show_update_button": "Show update button",
+      "summary_width": "Summary width",
+      "summary_narrow": "Narrow",
+      "summary_medium": "Medium",
+      "summary_wide": "Wide",
+      "empty_message": "Empty-cart message",
+      "empty_button_label": "Empty-cart button label"
+    },
     "main_list_collections": {
       "name": "Collection index"
     },
