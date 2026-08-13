@@ -1,0 +1,79 @@
+{
+  "sections": {
+    "main": {
+      "type": "main-product",
+      "blocks": {
+        "breadcrumbs": { "type": "product_breadcrumbs", "settings": { "products_label": "All products" } },
+        "vendor": { "type": "product_vendor", "settings": {} },
+        "title": { "type": "product_title", "settings": {} },
+        "price": { "type": "product_price", "settings": { "show_shipping_policy": true } },
+        "description": { "type": "product_description", "settings": {} },
+        "variant-picker": { "type": "product_variant_picker", "settings": { "picker_type": "automatic", "swatch_shape": "round", "show_sold_out": true } },
+        "quantity": { "type": "product_quantity", "settings": {} },
+        "buy-buttons": { "type": "product_buy_buttons", "settings": { "show_dynamic_checkout": true, "show_installments": true, "show_gift_card_recipient": true } },
+        "pickup": { "type": "product_pickup", "settings": {} },
+        "sku": { "type": "product_sku", "settings": { "label": "SKU" } }
+      },
+      "block_order": ["breadcrumbs", "vendor", "title", "price", "description", "variant-picker", "quantity", "buy-buttons", "pickup", "sku"],
+      "settings": {
+        "color_scheme": "scheme_1",
+        "media_position": "left",
+        "desktop_width": "media_large",
+        "media_fit": "contain",
+        "show_arrows": true,
+        "show_dots": true,
+        "autoplay_video": false,
+        "details_width": 38
+      }
+    },
+    "recommendations": {
+      "type": "product-recommendations",
+      "blocks": {
+        "header": {
+          "type": "group",
+          "blocks": {
+            "copy": {
+              "type": "group",
+              "blocks": {
+                "eyebrow": { "type": "text", "settings": { "text": "You may also like", "style": "subheading", "layout": "eyebrow", "element": "span" } },
+                "title": { "type": "text", "settings": { "text": "While you're here.", "style": "heading_2", "element": "h2" } }
+              },
+              "block_order": ["eyebrow", "title"],
+              "settings": { "direction": "vertical", "align_vertical": "stretch", "vertical_gap": "tiny", "padding": "none" }
+            },
+            "view-all": { "type": "button", "settings": { "button_label": "View all products", "button_link": "/collections/all", "button_style": "link" } }
+          },
+          "block_order": ["copy", "view-all"],
+          "settings": { "direction": "horizontal", "distribute": "between", "align": "baseline", "wrap": true, "stack_below": "mobile", "gap": "medium", "padding": "none" }
+        },
+        "product-card": {
+          "type": "_product-card",
+          "static": true,
+          "blocks": {
+            "media": { "type": "_product-card-media", "settings": { "image_ratio": "1/1", "image_fit": "contain" } },
+            "title": { "type": "text", "settings": { "text": "{{ closest.product.title }}", "style": "small", "element": "h3", "override_case": "uppercase", "override_tracking": "wide" } },
+            "option": { "type": "_product-card-option-control", "settings": { "target_by": "auto", "control": "auto", "swatch_shape": "round" } },
+            "price": { "type": "_product-card-price", "settings": {} },
+            "add": { "type": "_product-card-add", "settings": { "variant_action": "choose_options", "button_style": "outline" } }
+          },
+          "block_order": ["media", "title", "option", "price", "add"],
+          "settings": { "text_align": "left", "show_carousel": true, "arrows_wide": "hover", "arrows_compact": "swipe", "hover_next": true, "show_video": true, "video_badge": "Video", "quick_view_desktop": true, "quick_view_compact": true }
+        }
+      },
+      "block_order": ["header"],
+      "settings": {
+        "intent": "related",
+        "accessibility_label": "Recommended products",
+        "content_alignment": "left",
+        "color_scheme": "scheme_1",
+        "layout": "grid",
+        "products_to_show": 4,
+        "gap": "large",
+        "full_height": false,
+        "padding_top": "lg",
+        "padding_bottom": "lg"
+      }
+    }
+  },
+  "order": ["main", "recommendations"]
+}

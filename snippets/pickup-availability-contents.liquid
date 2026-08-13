@@ -1,0 +1,45 @@
+{%- assign pickup_locations = product_variant.store_availabilities | where: 'pick_up_enabled', true -%}
+
+{%- if pickup_locations.size > 0 -%}
+  {%- assign first_location = pickup_locations.first -%}
+  <div class="pickup-availability__summary">
+    <span class="pickup-availability__mark{% if first_location.available %} is-available{% endif %}" aria-hidden="true"></span>
+    <div>
+      <p>
+        {%- if first_location.available -%}
+          {{- 'products.pickup.available_at' | t: location: first_location.location.name -}}
+        {%- else -%}
+          {{- 'products.pickup.unavailable_at' | t: location: first_location.location.name -}}
+        {%- endif -%}
+      </p>
+      {%- if first_location.available -%}<span>{{ first_location.pick_up_time }}</span>{%- endif -%}
+    </div>
+  </div>
+
+  <details class="pickup-availability__details">
+    <summary>
+      {%- if pickup_locations.size == 1 -%}
+        {{- 'products.pickup.view_store' | t -}}
+      {%- else -%}
+        {{- 'products.pickup.check_other_stores' | t -}}
+      {%- endif -%}
+    </summary>
+    <ul role="list">
+      {%- for availability in pickup_locations -%}
+        <li>
+          <h3>{{ availability.location.name }}</h3>
+          <p>
+            {%- if availability.available -%}
+              {{- 'products.pickup.available' | t }} · {{ availability.pick_up_time | downcase -}}
+            {%- else -%}
+              {{- 'products.pickup.unavailable' | t -}}
+            {%- endif -%}
+          </p>
+          {%- assign address = availability.location.address -%}
+          {%- if address != blank -%}<address>{{ address | format_address }}</address>{%- endif -%}
+          {%- if address.phone != blank -%}<a href="tel:{{ address.phone | replace: ' ', '' | escape }}">{{ address.phone }}</a>{%- endif -%}
+        </li>
+      {%- endfor -%}
+    </ul>
+  </details>
+{%- endif -%}

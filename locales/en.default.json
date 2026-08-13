@@ -91,9 +91,29 @@
     "custom_engraving": "Custom engraving (optional)",
     "custom_engraving_placeholder": "Up to 20 characters",
     "custom_engraving_hint": "Up to 20 characters. The text is saved with this item in your {{ cart_name }} and order.",
-    "tax_note": "inc. all taxes and fees",
-    "tax_note_short": "inc. all taxes",
-    "available_in": "Available in {{ list }}"
+    "available_in": "Available in {{ list }}",
+    "media_gallery": "Product media",
+    "breadcrumbs": "Breadcrumbs",
+    "zoom_image": "Zoom {{ title }}",
+    "shipping_policy": "Shipping policy",
+    "increase_quantity": "Increase quantity",
+    "decrease_quantity": "Decrease quantity",
+    "low_inventory": "Only {{ count }} left",
+    "pickup": {
+      "available_at": "Pickup available at {{ location }}",
+      "unavailable_at": "Pickup currently unavailable at {{ location }}",
+      "available": "Available for pickup",
+      "unavailable": "Currently unavailable",
+      "view_store": "View store information",
+      "check_other_stores": "Check other stores"
+    },
+    "recipient": {
+      "checkbox": "Send this as a gift",
+      "email": "Recipient email",
+      "name": "Recipient name (optional)",
+      "message": "Message (optional)",
+      "send_on": "Send on (optional)"
+    }
   },
   "collections": {
     "all": "All",

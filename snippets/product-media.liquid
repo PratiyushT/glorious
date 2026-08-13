@@ -1,0 +1,61 @@
+{%- comment -%}
+  One product media item for the main product gallery. Every Shopify media type
+  stays native; image, hosted video, external video, and 3D model all share the
+  same slide contract.
+
+  Accepts: media, loading, media_fit, autoplay_video
+{%- endcomment -%}
+
+{%- assign media_alt = media.alt | default: product.title -%}
+
+{%- case media.media_type -%}
+  {%- when 'image' -%}
+    {%- assign media_lqip = media.preview_image | image_url: width: 40 -%}
+    <button
+      class="product-gallery__zoom"
+      type="button"
+      data-product-zoom
+      data-zoom-src="{{ media.preview_image | image_url: width: 2400 }}"
+      aria-label="{{ 'products.zoom_image' | t: title: media_alt | escape }}"
+    >
+      {{
+        media.preview_image
+        | image_url: width: 2000
+        | image_tag:
+          widths: '480,720,960,1200,1600,2000',
+          sizes: '(min-width: 62.5rem) 60vw, 100vw',
+          loading: loading,
+          alt: media_alt,
+          data-image-lqip: media_lqip
+      }}
+    </button>
+
+  {%- when 'video' -%}
+    {%- assign video_lqip = media.preview_image | image_url: width: 40 -%}
+    {{
+      media
+      | video_tag:
+        controls: true,
+        autoplay: autoplay_video,
+        muted: autoplay_video,
+        loop: autoplay_video,
+        playsinline: true,
+        preload: 'metadata',
+        image_size: '2000x',
+        data-video-lqip: video_lqip
+    }}
+    {% render 'video-lqip-frame', lqip: video_lqip %}
+
+  {%- when 'external_video' -%}
+    {%- assign video_lqip = media.preview_image | image_url: width: 40 -%}
+    {{
+      media
+      | external_video_tag:
+        loading: loading,
+        data-video-lqip: video_lqip
+    }}
+    {% render 'video-lqip-frame', lqip: video_lqip %}
+
+  {%- when 'model' -%}
+    {{ media | model_viewer_tag: reveal: 'interaction', toggleable: true, data-model-id: media.id }}
+{%- endcase -%}

@@ -346,6 +346,41 @@ a merchant-entered filter label. No catalogue vocabulary belongs in Liquid.
   already contains `?`; blindly appending a second question mark breaks the
   variant link only on search and recommendation-like contexts.
 
+**The product template is JSON and the main product is a contextual block
+surface.** `templates/product.json` replaced the legacy Liquid template.
+`main-product` owns the two-column product stage and loops ordered local blocks
+for breadcrumbs, vendor, title, price, description, variant picker, quantity,
+buy buttons, pickup, SKU, inventory, merchant text, collapsibles, custom
+Liquid, and apps. Those blocks are contextual because their value is the
+current product or selected variant; ordinary editorial copy remains a global
+Text/Rich text concern elsewhere.
+
+- The picker loops `product.options_with_values`; no option name or position is
+  built into the section. Automatic presentation uses Shopify's native swatch
+  data when present and written pills otherwise, with explicit pill, swatch,
+  and dropdown presets still available.
+- One variant synchronization path updates the hidden form id, price, compare
+  price, unit price, SKU, availability wording, featured media, pickup request,
+  URL, and each option header's selected value. A checked control with a stale
+  header is a failed variant update, even if the price changed.
+- The gallery keeps image, hosted video, external video, and 3D model media
+  native. Images open the zoom dialog; navigation changes the one visible
+  media item and pauses video when it leaves the stage.
+- The selected variant and quantity are submitted through Shopify's product
+  form. Accelerated checkout, installments, gift-card recipients, pickup, and
+  a complete no-script form remain Shopify-native features, not simulated UI.
+- Tax wording remains cart-only. The product price may optionally link the
+  merchant's shipping policy, but must not grow a second tax-note control.
+
+**Recommended Product List is its own section, not a mode of Product List.**
+`product-recommendations` calls Shopify's recommendation endpoint with related
+or complementary intent, then renders the same static `_product-card`, global
+header blocks, grid/carousel layouts, motion, arrows, alignment, colour,
+height, gap, and padding system as Product List. Shopify's endpoint accepts at
+most ten results, so its count stops at 10 while ordinary Product List can
+render up to 50. Keep the two source contracts separate rather than exposing a
+50 control that the recommendation endpoint cannot honour.
+
 - **There is no `.card__body`, and there cannot be.** Blocks render as one flat
   sibling flow, so the element carrying the caption's padding would have to be
   a block that swallowed its siblings. The padding moves onto the children
@@ -922,10 +957,9 @@ the two together is wrong.
 
 **The Theme Store's actual requirement is narrower than "every section".** It
 is app-block support in the **main product section and the featured product
-section** — both on the product template, which is not built. Everywhere else
-is encouraged rather than required. So this is not a submission blocker today;
-it becomes one when the product template is built, and that section must carry
-`@app` from the start.
+section**. `main-product` now carries `@app` from the start and renders it in
+the same ordered details loop as its contextual product blocks. A future
+single-product Featured product section must keep the same contract.
 
 **The general `group` section carries it, as do `rich-text` and `newsletter`.**
 They are the sections whose `content_for 'blocks'` renders into an ordinary
@@ -3546,28 +3580,6 @@ in `snippets/cart-drawer-contents.liquid` and in `templates/cart.liquid`.
 Verified with a line in the bag: the note field renders on both surfaces with
 `name="note"` and a matching `label[for]`, the drawer's form posts to `/cart`,
 the checkout button is intact, and the subtotal carries the note.
-- **In the card it goes inside the `metal_price_html` capture**, not after it.
-  That capture is what the script writes into `[data-card-price]` on a metal
-  pick, so a note left outside would vanish at the first swatch click.
-- **In the quick view the note is a *sibling* of the figure**, not part of it —
-  `<span data-qv-price>` then the note. A pick rewrites the figure's own text
-  node and the note is never touched. The card cannot split them that way, which
-  is why it captures instead.
-- **`search-row` takes a `tax_note` flag rather than guessing.** Its `meta` is a
-  price for a product row but a kind label for a collection, page or article —
-  "Page inc. all taxes" would be nonsense.
-- The snippet emits a **real leading space**. Callers trim around the render, so
-  without it the markup is `$19.99<small>inc. all taxes</small>` — spaced by CSS
-  on screen, but one run-together word when read aloud or copied.
-- **Two wordings, on request.** `products.tax_note` — "inc. all taxes and fees"
-  — everywhere a price has room to be qualified in full. The **product card**
-  passes `short: true` and gets `products.tax_note_short`, "inc. all taxes",
-  because a card's price line is one row beside the figure at 15px and the
-  longer sentence wraps it onto two. Both live in `locales/en.default.json`
-  rather than in a setting: "inkl. MwSt." is a localisation, not a per-shop
-  style choice.
-- Not applied to `templates/gift_card.liquid`, whose figure is a **balance**
-  rather than a price.
 
 ### Things that cost time once
 

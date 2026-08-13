@@ -1,0 +1,11 @@
+product-recommendations {
+  display: block;
+}
+
+product-recommendations:empty {
+  display: none;
+}
+
+.recommendations-list__status {
+  min-height: 1px;
+}
