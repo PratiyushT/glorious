@@ -2365,20 +2365,34 @@
 
     var variantId = action.dataset.cardAddVariantId;
     var optionValue = action.dataset.cardAddOptionValue;
+    var optionValues = null;
+    if (action.dataset.cardAddOptionValues) {
+      try { optionValues = JSON.parse(action.dataset.cardAddOptionValues); } catch (error) { optionValues = null; }
+    }
     var optionLinks = Array.prototype.slice.call(
       card.querySelectorAll('[data-card-option],[data-card-metal]')
     );
 
-    if (optionValue) {
+    if (optionValues || optionValue) {
       optionLinks.forEach(function (option) {
         var value = option.dataset.optionValue || option.dataset.metalValue;
-        var on = value === optionValue;
+        var optionIndex = parseInt(option.dataset.optionIndex, 10);
+        var selectedValue = optionValues && !Number.isNaN(optionIndex)
+          ? optionValues[optionIndex]
+          : optionValue;
+        var on = value === selectedValue;
         option.classList.toggle('is-selected', on);
         option.setAttribute('aria-current', on ? 'true' : 'false');
       });
 
-      var meta = card.querySelector('[data-card-meta]');
-      if (meta && !meta.hasAttribute('data-card-meta-fixed')) meta.textContent = optionValue;
+      card.querySelectorAll('[data-card-option-control]').forEach(function (control) {
+        var optionIndex = parseInt(control.dataset.optionIndex, 10);
+        var selectedValue = optionValues && !Number.isNaN(optionIndex)
+          ? optionValues[optionIndex]
+          : optionValue;
+        var meta = control.querySelector('[data-card-meta]');
+        if (meta && !meta.hasAttribute('data-card-meta-fixed') && selectedValue) meta.textContent = selectedValue;
+      });
     }
 
     var price = card.querySelector('[data-card-price]');
@@ -2428,13 +2442,14 @@
 
     event.preventDefault();
 
-    card.querySelectorAll('[data-card-option],[data-card-metal]').forEach(function (other) {
+    var optionControl = swatch.closest('[data-card-option-control]') || card;
+    optionControl.querySelectorAll('[data-card-option],[data-card-metal]').forEach(function (other) {
       var on = other === swatch;
       other.classList.toggle('is-selected', on);
       other.setAttribute('aria-current', on ? 'true' : 'false');
     });
 
-    var meta = card.querySelector('[data-card-meta]');
+    var meta = optionControl.querySelector('[data-card-meta]');
     if (meta && !meta.hasAttribute('data-card-meta-fixed')) {
       meta.textContent = swatch.dataset.optionMeta || swatch.dataset.metalMeta || '';
     }
@@ -2444,6 +2459,28 @@
 
     /* Keep every action on the variant the caption and price now describe. */
     var optionId = swatch.dataset.optionId || swatch.dataset.metalId;
+    var optionValues = null;
+    if (swatch.dataset.optionValues) {
+      try { optionValues = JSON.parse(swatch.dataset.optionValues); } catch (error) { optionValues = null; }
+    }
+
+    if (optionValues) {
+      card.querySelectorAll('[data-card-option-control]').forEach(function (control) {
+        if (control === optionControl) return;
+        var optionIndex = parseInt(control.dataset.optionIndex, 10);
+        if (Number.isNaN(optionIndex)) return;
+        var selectedValue = optionValues[optionIndex];
+
+        control.querySelectorAll('[data-card-option]').forEach(function (other) {
+          var on = other.dataset.optionValue === selectedValue;
+          other.classList.toggle('is-selected', on);
+          other.setAttribute('aria-current', on ? 'true' : 'false');
+        });
+
+        var otherMeta = control.querySelector('[data-card-meta]');
+        if (otherMeta && !otherMeta.hasAttribute('data-card-meta-fixed')) otherMeta.textContent = selectedValue || '';
+      });
+    }
     var addId = card.querySelector('[data-card-add-id]');
     if (addId) addId.value = optionId || addId.value;
 

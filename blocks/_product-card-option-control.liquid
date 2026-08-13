@@ -18,14 +18,14 @@
   second Product text block. It stays independently styled in `.card__meta`,
   and `theme.js` updates it from the selected link's `data-option-meta` value.
 
-  **There is no option picker here, and that is a structural finding rather
-  than a simplification.** A theme block cannot read its parent's settings and
-  cannot read a sibling's, so a merchant-set "which option" would be visible to
-  this block alone — the price and the button resolve their variant
-  independently, and would go on answering for the option they derive. The row
-  would mark one value selected while the price beside it quoted another, with
-  nothing on screen to say why. So all three derive the option identically
-  through `snippets/card-option.liquid`.
+  The merchant can leave the target on Auto, enter one of the shop's own option
+  names, or nominate Shopify option 1, 2 or 3. No catalogue names are built
+  into the theme. A name or position the product does not have renders nothing.
+
+  Every value publishes both its option index and the complete variant it
+  resolves to. That lets `theme.js` keep another Option control, the price,
+  Quick view and the add action on the same variant even when two different
+  option axes are shown on one card.
 
   **Swatches paint from the option value's native Shopify swatch and from
   nowhere else.** Auto uses swatches when this option carries them and written
@@ -37,7 +37,7 @@
 {%- liquid
   assign product = closest.product
   capture card_option_raw
-    render 'card-option', product: product
+    render 'card-option', product: product, source_mode: block.settings.target_by, source_name: block.settings.option_name, source: block.settings.option_position
   endcapture
   assign card_option = card_option_raw | strip | split: '||'
   assign opt_index = card_option[0] | plus: 0
@@ -99,6 +99,8 @@
 {%- if card_option_drop != blank -%}
   <div
     class="card__option-control"
+    data-card-option-control
+    data-option-index="{{ opt_index }}"
     {{ block.shopify_attributes }}
   >
     <span class="card__meta" data-card-meta>{{ selected_value }}</span>
@@ -161,6 +163,8 @@
           href="{{ product.url }}?variant={{ chosen.id }}"
           data-card-option
           data-option-value="{{ value | escape }}"
+          data-option-index="{{ opt_index }}"
+          data-option-values="{{ chosen.options | json | escape }}"
           data-option-id="{{ chosen.id }}"
           data-option-available="{{ chosen.available }}"
           data-option-meta="{{ value | escape }}"
@@ -210,6 +214,38 @@
   "settings": [
     {
       "type": "select",
+      "id": "target_by",
+      "label": "t:blocks.product_card_variants.target_by.label",
+      "info": "t:blocks.product_card_variants.target_by.info",
+      "options": [
+        { "value": "auto", "label": "t:blocks.product_card_variants.target_by.auto" },
+        { "value": "name", "label": "t:blocks.product_card_variants.target_by.name" },
+        { "value": "position", "label": "t:blocks.product_card_variants.target_by.position" }
+      ],
+      "default": "auto"
+    },
+    {
+      "type": "text",
+      "id": "option_name",
+      "label": "t:blocks.product_card_variants.option_name.label",
+      "info": "t:blocks.product_card_variants.option_name.info",
+      "visible_if": "{{ block.settings.target_by == 'name' }}"
+    },
+    {
+      "type": "select",
+      "id": "option_position",
+      "label": "t:blocks.product_card_variants.option_position.label",
+      "info": "t:blocks.product_card_variants.option_position.info",
+      "visible_if": "{{ block.settings.target_by == 'position' }}",
+      "options": [
+        { "value": "1", "label": "t:blocks.product_card_variants.option_position.first" },
+        { "value": "2", "label": "t:blocks.product_card_variants.option_position.second" },
+        { "value": "3", "label": "t:blocks.product_card_variants.option_position.third" }
+      ],
+      "default": "1"
+    },
+    {
+      "type": "select",
       "id": "control",
       "label": "t:blocks.product_card_variants.control.label",
       "info": "t:blocks.product_card_variants.control.info",
@@ -236,6 +272,7 @@
     {
       "name": "t:blocks.product_card_variants.name",
       "settings": {
+        "target_by": "auto",
         "control": "auto",
         "swatch_shape": "round"
       }

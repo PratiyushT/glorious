@@ -2765,6 +2765,12 @@ a {
   display: none;
 }
 
+.card--search-result {
+  justify-content: flex-end;
+  min-height: 12rem;
+  padding: var(--card-pad);
+}
+
 .no-js .card__add-form--requires-js {
   display: none;
 }

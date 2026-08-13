@@ -161,6 +161,7 @@
             "metal": {
               "type": "_product-card-option-control",
               "settings": {
+                "target_by": "auto",
                 "control": "auto",
                 "swatch_shape": "round"
               }

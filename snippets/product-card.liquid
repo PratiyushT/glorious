@@ -18,13 +18,11 @@
   Only those first two slides are fetched up front, whatever the count; the
   rest are deferred behind data-src and fetched as the card is stepped to them.
 
-  **This is the card the collection and search templates draw, and it is not
-  the editable one.** `blocks/_product-card.liquid` is — its parts are theme
-  blocks, each with its own controls, and it is what Most Loved renders. There
-  is no "Product cards" theme settings group any more, so shape, fit and which
-  lines appear are this snippet's own defaults, fixed until those two templates
-  are rebuilt on the card block. Both cards share every class name and every
-  `data-card-*` hook, which is the contract `theme.js` binds to.
+  **This is retained only for the design-system diagnostic template.** Live
+  collection, search and Featured products surfaces use
+  `blocks/_product-card.liquid`, whose parts are editable theme blocks. Both
+  implementations share the `data-card-*` behavior contract so the diagnostic
+  remains useful while it exists.
 
   Accepts:
     product - product object. Renders a placeholder when blank.
@@ -42,12 +40,8 @@
     card that can be edited is `blocks/_product-card.liquid` — its parts are
     theme blocks with their own controls.
 
-    This snippet still draws the collection and search grids, which are not
-    built on blocks yet, so it carries the values that group used to hold as
-    its own defaults. They are what the shipped theme rendered, so nothing on
-    those two templates moved when the group went; but they are fixed now, and
-    the way to make them editable is to rebuild those templates on the card
-    block rather than to bring the settings back.
+    This snippet carries fixed values only for the design-system diagnostic.
+    Storefront product grids are built on the editable card block.
   endcomment
   assign card_image_ratio = '1/1'
   assign card_show_vendor = false

@@ -1,0 +1,77 @@
+{
+  "sections": {
+    "main": {
+      "type": "main-search",
+      "blocks": {
+        "product-card": {
+          "type": "_product-card",
+          "static": true,
+          "blocks": {
+            "media": {
+              "type": "_product-card-media",
+              "settings": {
+                "image_ratio": "1/1",
+                "image_fit": "contain"
+              }
+            },
+            "title": {
+              "type": "text",
+              "settings": {
+                "text": "{{ closest.product.title }}",
+                "style": "small",
+                "element": "h3",
+                "override_case": "uppercase",
+                "override_tracking": "wide"
+              }
+            },
+            "option": {
+              "type": "_product-card-option-control",
+              "settings": {
+                "target_by": "auto",
+                "control": "auto",
+                "swatch_shape": "round"
+              }
+            },
+            "price": {
+              "type": "_product-card-price",
+              "settings": {}
+            },
+            "add": {
+              "type": "_product-card-add",
+              "settings": {
+                "variant_action": "choose_options"
+              }
+            }
+          },
+          "block_order": [
+            "media",
+            "title",
+            "option",
+            "price",
+            "add"
+          ],
+          "settings": {
+            "text_align": "left",
+            "show_carousel": true,
+            "arrows_wide": "hover",
+            "arrows_compact": "swipe",
+            "hover_next": true,
+            "show_video": true,
+            "video_badge": "Video",
+            "quick_view_desktop": true,
+            "quick_view_compact": true
+          }
+        }
+      },
+      "settings": {
+        "color_scheme": "scheme_1",
+        "results_per_page": 24,
+        "columns": 4,
+        "gap": "large",
+        "padding_top": "lg",
+        "padding_bottom": "lg"
+      }
+    }
+  },
+  "order": ["main"]
+}

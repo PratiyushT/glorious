@@ -1,0 +1,181 @@
+{%- comment -%}
+  Main search — a Shopify 2.0 search template with one repeated Product card.
+
+  Product results receive `closest.product`; pages, articles and collections
+  keep a small resource link because they do not satisfy the Product card's
+  resource contract. Pagination remains over the complete mixed result set.
+{%- endcomment -%}
+
+{%- assign search_input_id = 'search-input-' | append: section.id -%}
+
+<section
+  class="section scheme-{{ section.settings.color_scheme }}"
+  style="{% render 'section-style', padding_top: section.settings.padding_top, padding_bottom: section.settings.padding_bottom %}"
+>
+  <div class="page-width stack stack--loose">
+    <header class="stack">
+      <h1 class="h3">{{ 'general.search.search' | t }}</h1>
+
+      <form action="{{ routes.search_url }}" method="get" role="search" class="form-row">
+        <input type="hidden" name="options[prefix]" value="last">
+        <label class="visually-hidden" for="{{ search_input_id }}">{{ 'general.search.search' | t }}</label>
+        <input
+          class="field"
+          id="{{ search_input_id }}"
+          type="search"
+          name="q"
+          value="{{ search.terms | escape }}"
+          placeholder="{{ 'general.search.placeholder' | t }}"
+        >
+        <button type="submit" class="btn btn--primary">{{ 'general.search.search' | t }}</button>
+      </form>
+    </header>
+
+    {%- if search.performed -%}
+      {%- if search.results_count > 0 -%}
+        <p class="text-sm text-muted">
+          {{ 'general.search.results_with_count' | t: count: search.results_count }}
+        </p>
+
+        {%- paginate search.results by section.settings.results_per_page -%}
+          <div
+            class="grid-auto grid-auto--products"
+            style="{% render 'block-spacing', gap: section.settings.gap %} --cols: {{ section.settings.columns }}; --gap: var(--block-gap);"
+          >
+            {%- for item in search.results -%}
+              {%- if item.object_type == 'product' -%}
+                {% content_for 'block', type: '_product-card', id: 'product-card', closest.product: item %}
+              {%- else -%}
+                <a class="card card--search-result" href="{{ item.url }}">
+                  <span class="card__title">{{ item.title }}</span>
+                </a>
+              {%- endif -%}
+            {%- endfor -%}
+          </div>
+
+          {%- if paginate.pages > 1 -%}
+            <nav class="btn-row" style="justify-content: center;" aria-label="{{ 'general.pagination.label' | t }}">
+              {%- if paginate.previous -%}
+                <a class="btn btn--secondary" href="{{ paginate.previous.url }}">
+                  {{ 'general.pagination.previous' | t }}
+                </a>
+              {%- endif -%}
+              {%- if paginate.next -%}
+                <a class="btn btn--secondary" href="{{ paginate.next.url }}">
+                  {{ 'general.pagination.next' | t }}
+                </a>
+              {%- endif -%}
+            </nav>
+          {%- endif -%}
+        {%- endpaginate -%}
+      {%- else -%}
+        <p class="text-muted">{{ 'general.search.no_results' | t: terms: search.terms }}</p>
+      {%- endif -%}
+    {%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "t:sections.main_search.name",
+  "enabled_on": {
+    "templates": ["search"]
+  },
+  "settings": [
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:sections.all.color_scheme.label",
+      "default": "scheme_1"
+    },
+    {
+      "type": "range",
+      "id": "results_per_page",
+      "label": "t:sections.main_search.results_per_page.label",
+      "min": 8,
+      "max": 48,
+      "step": 4,
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "columns",
+      "label": "t:sections.main_search.columns.label",
+      "min": 2,
+      "max": 5,
+      "step": 1,
+      "default": 4
+    },
+    {
+      "type": "select",
+      "id": "gap",
+      "label": "t:blocks.all.gap.label",
+      "info": "t:blocks.all.gap.info",
+      "options": [
+        { "value": "minimal", "label": "t:blocks.all.step.minimal" },
+        { "value": "tiny", "label": "t:blocks.all.step.tiny" },
+        { "value": "small", "label": "t:blocks.all.step.small" },
+        { "value": "medium", "label": "t:blocks.all.step.medium" },
+        { "value": "large", "label": "t:blocks.all.step.large" },
+        { "value": "xlarge", "label": "t:blocks.all.step.xlarge" }
+      ],
+      "default": "large"
+    },
+    {
+      "type": "header",
+      "content": "t:sections.all.spacing_header"
+    },
+    {
+      "type": "select",
+      "id": "padding_top",
+      "label": "t:sections.all.padding_top.label",
+      "options": [
+        { "value": "none", "label": "t:sections.all.space_step.none" },
+        { "value": "2xs", "label": "t:sections.all.space_step.2xs" },
+        { "value": "xs", "label": "t:sections.all.space_step.xs" },
+        { "value": "sm", "label": "t:sections.all.space_step.sm" },
+        { "value": "md", "label": "t:sections.all.space_step.md" },
+        { "value": "lg", "label": "t:sections.all.space_step.lg" },
+        { "value": "xl", "label": "t:sections.all.space_step.xl" },
+        { "value": "max", "label": "t:sections.all.space_step.max" }
+      ],
+      "default": "lg"
+    },
+    {
+      "type": "select",
+      "id": "padding_bottom",
+      "label": "t:sections.all.padding_bottom.label",
+      "options": [
+        { "value": "none", "label": "t:sections.all.space_step.none" },
+        { "value": "2xs", "label": "t:sections.all.space_step.2xs" },
+        { "value": "xs", "label": "t:sections.all.space_step.xs" },
+        { "value": "sm", "label": "t:sections.all.space_step.sm" },
+        { "value": "md", "label": "t:sections.all.space_step.md" },
+        { "value": "lg", "label": "t:sections.all.space_step.lg" },
+        { "value": "xl", "label": "t:sections.all.space_step.xl" },
+        { "value": "max", "label": "t:sections.all.space_step.max" }
+      ],
+      "default": "lg"
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:sections.main_search.name",
+      "blocks": [
+        {
+          "type": "_product-card",
+          "static": true,
+          "id": "product-card",
+          "blocks": [
+            { "type": "_product-card-media", "settings": { "image_ratio": "1/1", "image_fit": "contain" } },
+            { "type": "text", "settings": { "text": "{{ closest.product.title }}", "style": "small", "element": "h3", "override_case": "uppercase", "override_tracking": "wide" } },
+            { "type": "_product-card-option-control", "settings": { "target_by": "auto", "control": "auto", "swatch_shape": "round" } },
+            { "type": "_product-card-price" },
+            { "type": "_product-card-add", "settings": { "variant_action": "choose_options" } }
+          ]
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

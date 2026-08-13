@@ -25,23 +25,17 @@
   ordinary Text blocks connected to `closest.product.title`; the link must not
   require a second Product Title block just to make the card clickable.
 
-  **`snippets/product-card.liquid` is untouched and stays the card everywhere
-  else.** The collection and search templates still render it, so the theme
-  carries one card built two ways for as long as those templates are what they
-  are. The class names and every `data-card-*` hook are identical between them
-  — that is the contract `theme.js` binds to, and it reads them all from the
-  `[data-card]` root rather than by walking the tree, which is what lets the
-  markup be rearranged like this at all.
+  Collection, search and Featured products all render this same composed card.
+  The class names and every `data-card-*` hook stay rooted at `[data-card]`, so
+  the merchant can rearrange the block tree without coupling the script to a
+  particular wrapper.
 
   **Everything under Theme settings → Product cards that is still a *setting*
   lives on these blocks now**, so a merchant edits the card where the card is:
   the frame, the fit, the framing correction and the spin on the photograph
   block, the button's words on the button block, the alignment and the quick
-  view here. The theme settings stay because the snippet card still reads them,
-  and they are **not** fallbacks — nothing here consults them, and changing one
-  moves the collection and search grids while leaving this card alone. That is
-  the price of one card built two ways, and it ends when those templates are
-  rebuilt.
+  view here. The old snippet remains only as a design-system diagnostic sample;
+  storefront product grids no longer depend on its fixed defaults.
 
   Everything else that was a setting is now the presence of a block, which is
   what a block is for: the caption, the option control, the price, the "in

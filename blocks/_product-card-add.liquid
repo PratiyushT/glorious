@@ -148,6 +148,7 @@
         data-card-add-strategy="highest_available"
         data-card-add-variant-id="{{ chosen.id }}"
         data-card-add-option-value="{{ strategy_option_value | escape }}"
+        data-card-add-option-values="{{ chosen.options | json | escape }}"
         data-card-add-price="{{ chosen_price_html | strip | escape }}"
       {% endif %}
       {{ block.shopify_attributes }}

@@ -1,0 +1,164 @@
+{%- comment -%}
+  Main collection — the Shopify 2.0 collection template surface.
+
+  The section owns pagination and the repeated resource loop. One static
+  `_product-card` block is rendered for every product through
+  `closest.product`, so the merchant edits the card once for this template and
+  the editor shows it once with Shopify's repeated-block marker.
+{%- endcomment -%}
+
+<section
+  class="section scheme-{{ section.settings.color_scheme }}"
+  style="{% render 'section-style', padding_top: section.settings.padding_top, padding_bottom: section.settings.padding_bottom %}"
+>
+  <div class="page-width stack stack--loose">
+    <header class="stack">
+      <h1 class="h3">{{ collection.title }}</h1>
+
+      {%- if section.settings.show_description and collection.description != blank -%}
+        <div class="rte measure">{{ collection.description }}</div>
+      {%- endif -%}
+    </header>
+
+    {%- paginate collection.products by section.settings.products_per_page -%}
+      {%- if collection.products.size > 0 -%}
+        <div
+          class="grid-auto grid-auto--products"
+          style="{% render 'block-spacing', gap: section.settings.gap %} --cols: {{ section.settings.columns }}; --gap: var(--block-gap);"
+        >
+          {%- for product in collection.products -%}
+            {% content_for 'block', type: '_product-card', id: 'product-card', closest.product: product %}
+          {%- endfor -%}
+        </div>
+
+        {%- if paginate.pages > 1 -%}
+          <nav class="btn-row" style="justify-content: center;" aria-label="{{ 'general.pagination.label' | t }}">
+            {%- if paginate.previous -%}
+              <a class="btn btn--secondary" href="{{ paginate.previous.url }}">
+                {{ 'general.pagination.previous' | t }}
+              </a>
+            {%- endif -%}
+            {%- if paginate.next -%}
+              <a class="btn btn--secondary" href="{{ paginate.next.url }}">
+                {{ 'general.pagination.next' | t }}
+              </a>
+            {%- endif -%}
+          </nav>
+        {%- endif -%}
+      {%- else -%}
+        <p class="text-muted">{{ 'collections.empty' | t }}</p>
+      {%- endif -%}
+    {%- endpaginate -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "t:sections.main_collection.name",
+  "enabled_on": {
+    "templates": ["collection"]
+  },
+  "settings": [
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:sections.all.color_scheme.label",
+      "default": "scheme_1"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_description",
+      "label": "t:sections.main_collection.show_description.label",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "products_per_page",
+      "label": "t:sections.main_collection.products_per_page.label",
+      "min": 8,
+      "max": 48,
+      "step": 4,
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "columns",
+      "label": "t:sections.main_collection.columns.label",
+      "min": 2,
+      "max": 5,
+      "step": 1,
+      "default": 4
+    },
+    {
+      "type": "select",
+      "id": "gap",
+      "label": "t:blocks.all.gap.label",
+      "info": "t:blocks.all.gap.info",
+      "options": [
+        { "value": "minimal", "label": "t:blocks.all.step.minimal" },
+        { "value": "tiny", "label": "t:blocks.all.step.tiny" },
+        { "value": "small", "label": "t:blocks.all.step.small" },
+        { "value": "medium", "label": "t:blocks.all.step.medium" },
+        { "value": "large", "label": "t:blocks.all.step.large" },
+        { "value": "xlarge", "label": "t:blocks.all.step.xlarge" }
+      ],
+      "default": "large"
+    },
+    {
+      "type": "header",
+      "content": "t:sections.all.spacing_header"
+    },
+    {
+      "type": "select",
+      "id": "padding_top",
+      "label": "t:sections.all.padding_top.label",
+      "options": [
+        { "value": "none", "label": "t:sections.all.space_step.none" },
+        { "value": "2xs", "label": "t:sections.all.space_step.2xs" },
+        { "value": "xs", "label": "t:sections.all.space_step.xs" },
+        { "value": "sm", "label": "t:sections.all.space_step.sm" },
+        { "value": "md", "label": "t:sections.all.space_step.md" },
+        { "value": "lg", "label": "t:sections.all.space_step.lg" },
+        { "value": "xl", "label": "t:sections.all.space_step.xl" },
+        { "value": "max", "label": "t:sections.all.space_step.max" }
+      ],
+      "default": "lg"
+    },
+    {
+      "type": "select",
+      "id": "padding_bottom",
+      "label": "t:sections.all.padding_bottom.label",
+      "options": [
+        { "value": "none", "label": "t:sections.all.space_step.none" },
+        { "value": "2xs", "label": "t:sections.all.space_step.2xs" },
+        { "value": "xs", "label": "t:sections.all.space_step.xs" },
+        { "value": "sm", "label": "t:sections.all.space_step.sm" },
+        { "value": "md", "label": "t:sections.all.space_step.md" },
+        { "value": "lg", "label": "t:sections.all.space_step.lg" },
+        { "value": "xl", "label": "t:sections.all.space_step.xl" },
+        { "value": "max", "label": "t:sections.all.space_step.max" }
+      ],
+      "default": "lg"
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:sections.main_collection.name",
+      "blocks": [
+        {
+          "type": "_product-card",
+          "static": true,
+          "id": "product-card",
+          "blocks": [
+            { "type": "_product-card-media", "settings": { "image_ratio": "1/1", "image_fit": "contain" } },
+            { "type": "text", "settings": { "text": "{{ closest.product.title }}", "style": "small", "element": "h3", "override_case": "uppercase", "override_tracking": "wide" } },
+            { "type": "_product-card-option-control", "settings": { "target_by": "auto", "control": "auto", "swatch_shape": "round" } },
+            { "type": "_product-card-price" },
+            { "type": "_product-card-add", "settings": { "variant_action": "choose_options" } }
+          ]
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

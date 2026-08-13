@@ -24,9 +24,8 @@
 
   **What is left here is the frame's own.** There is no "Product cards" group in
   the theme settings any more; a card is edited where the card is.
-  `snippets/product-card.liquid` still draws the collection and search grids and
-  carries its own defaults, so those two grids are fixed until they are rebuilt
-  on blocks — the honest state of a theme with one card built two ways.
+  Collection, search and Featured products all use the composed card, so this
+  one block now controls the frame on every storefront product grid.
 
   **Nothing here knows what the shop sells.** The framing correction used to be
   a table matching "bracelet", "earring" and "ring" against the product's type
@@ -251,4 +250,3 @@
   ]
 }
 {% endschema %}
-

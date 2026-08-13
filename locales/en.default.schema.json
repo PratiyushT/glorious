@@ -769,6 +769,24 @@
     },
     "product_card_variants": {
       "name": "Option control",
+      "target_by": {
+        "label": "Target option by",
+        "info": "Automatic is portable across mixed catalogues. Name follows the merchant's Shopify option name. Position follows Shopify's option order.",
+        "auto": "Automatic",
+        "name": "Name",
+        "position": "Position"
+      },
+      "option_name": {
+        "label": "Option name",
+        "info": "Enter the option name exactly as it appears in Shopify, such as the shop's own name for colour, size, material, or flavour. Nothing is hard-coded by the theme. Products without this option show no control."
+      },
+      "option_position": {
+        "label": "Option position",
+        "info": "Products without this option position show no control.",
+        "first": "Option 1",
+        "second": "Option 2",
+        "third": "Option 3"
+      },
       "control": {
         "label": "Shown as",
         "info": "Auto uses native Shopify swatches when this option has them and written values otherwise.",
@@ -1480,6 +1498,27 @@
       "view_all_link": {
         "label": "View all link",
         "info": "Defaults to the collection above. Set this to send it somewhere else."
+      }
+    },
+    "main_collection": {
+      "name": "Collection products",
+      "show_description": {
+        "label": "Show collection description"
+      },
+      "products_per_page": {
+        "label": "Products per page"
+      },
+      "columns": {
+        "label": "Maximum columns"
+      }
+    },
+    "main_search": {
+      "name": "Search results",
+      "results_per_page": {
+        "label": "Results per page"
+      },
+      "columns": {
+        "label": "Maximum columns"
       }
     },
     "collection_list": {

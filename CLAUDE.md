@@ -290,9 +290,9 @@ inside the section's own loop, handed the piece through `closest.product` —
 settings for eight cards, and the section keeps its carousel because it is
 still the thing doing the looping.
 
-**`snippets/product-card.liquid` is untouched and still serves the collection
-and search templates.** The theme carries one card built two ways until those
-templates are rebuilt. That is affordable only because `theme.js` reads every
+**Collection and search now use the same `_product-card` block as Featured
+products.** `snippets/product-card.liquid` remains only on the design-system
+diagnostic template. `theme.js` reads every
 hook off the `[data-card]` root — `card.querySelector('.card__add')`,
 `[data-card-price]`, `[data-card-meta]`, `[data-card-add-id]` — rather than by
 walking the tree. Nothing in it traverses `.card__body`, so the markup could be
@@ -317,24 +317,17 @@ that reaches for a parent would tie the two cards' structures together again.
   the whole card and land over the price. The arrows, the spin badge and the
   sold-out badge stay inside the image block.
 
-- **A theme block cannot read its parent's settings or a sibling's, and that
-  fact designs this card.** The price, the button and the option control all
-  have to agree on one variant, and in `snippets/product-card.liquid` they do
-  because the swatch loop works it out once and the other two read the
-  variable. Split into blocks there is no such place — so a merchant-set "which
-  option" would be visible to the control alone, and the row would mark one
-  value selected while the price beside it quoted a variant chosen on another,
-  with nothing on screen to say why.
-
-  So the option is **derived, identically, in all three**, through
+- **A theme block cannot read its parent's settings or a sibling's, so option
+  rows publish the complete variant they resolve.** Price and Add begin on the
+  same selected-or-first-available variant through
   `snippets/card-option.liquid` — which prints `index||value||variant_id` and
-  is captured and split. Auto chooses the first option carrying a native
-  Shopify swatch and otherwise the first option in the merchant's own order;
-  it never matches a catalogue-specific option name.
-  `_product-card-option-control` therefore offers **no option picker**, only how the
-  values are drawn. Auto draws native swatches when they exist and written
-  values otherwise. Same rule the quick view's axes are written to: *which
-  control an axis gets is derived, not tabled.*
+  is captured and split. An Option control can target **Automatic, Name, or
+  Position**. Name is merchant-entered and case-insensitive; no catalogue names
+  are built into the theme. Position offers Shopify's three option slots. Each
+  value link publishes its option index, resolved variant id and complete
+  option values; `theme.js` uses that contract to keep multiple rows, price,
+  Quick view and Add synchronized. Auto still prefers the first option with a
+  native Shopify swatch, then the merchant's first option.
 
 - **The theme must not assume a jewellery store, and the caption is where that
   assumption lived.** It was one element built in Liquid — the chosen metal,
@@ -422,11 +415,9 @@ that reaches for a parent would tie the two cards' structures together again.
   the quick view on the card itself. Everything that was a show/hide checkbox —
   the caption, the swatches, the note, the button — is the presence of a block.
 
-  **`snippets/product-card.liquid` carries those values as its own defaults
-  now.** It still draws the collection and search grids, which are not built on
-  blocks, so they render exactly as they did and are fixed until those
-  templates are rebuilt on the card block. The way to make them editable is to
-  rebuild them, not to bring the settings back.
+  **Collection and search are JSON templates with static `_product-card`
+  blocks now.** Their merchants edit the same card parts as Featured products;
+  the legacy snippet's defaults affect only the design-system diagnostic.
 
   `--card-fit` and `--card-align` were compiled into `:root` from those
   settings by `theme-tokens.liquid`; they are literals in `base.css` beside the
@@ -604,8 +595,8 @@ that reaches for a parent would tie the two cards' structures together again.
   still written out separately, because the grid must not depend on
   `{% content_for %}` surviving a `capture`.
 
-**Verified against `snippets/product-card.liquid` on `/collections/all`, which
-is the whole point of leaving it in place.** Every gap in the caption stack is
+**The original spacing comparison was verified against the legacy snippet on
+`/collections/all` before that template migrated to blocks.** Every gap in the caption stack is
 identical — media→title **16**, caption→swatches **0**, swatches→note **3**,
 price→button **13** — with the caption row **18px** on one line, the tax note
 **11.256px**, and all seven cards level. Title→caption is **6.9** against the
@@ -2439,8 +2430,9 @@ its pill → bar expansion against.
 
 ### Product card
 
-A 1:1 rebuild of `Product Card.dc.html`, in `snippets/product-card.liquid`.
-Used by Most Loved, the collection template and the search template.
+A 1:1 rebuild of `Product Card.dc.html`, now composed through
+`blocks/_product-card.liquid` on Featured products, collection, and search.
+The old `snippets/product-card.liquid` remains only on the design-system page.
 
 - **The design's card is one `<a>` with buttons nested inside it**, which is
   neither valid HTML nor navigable. Here the title carries the only link and
