@@ -2504,7 +2504,14 @@
       var label = sold
         ? (add.dataset.soldOutLabel || card.dataset.soldOutLabel)
         : (add.dataset.addLabel || card.dataset.addLabel);
-      if (label) add.textContent = label;
+      if (label) {
+        /* Shared Button arrow styles carry a decorative icon beside a mutable
+           label. Change only the words when that wrapper exists; legacy cards
+           still use the original text-only control. */
+        var labelNode = add.querySelector('[data-button-label]');
+        if (labelNode) labelNode.textContent = label;
+        else add.textContent = label;
+      }
     }
 
     /* The quick view opens whatever its href points at, so it follows too. */
