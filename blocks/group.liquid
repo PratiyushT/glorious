@@ -57,6 +57,7 @@
   data-direction="{{ block.settings.direction }}"
   data-stack="{{ block.settings.stack_below }}"
   data-items="{{ block.settings.items_width }}"
+  data-wrap="{{ block.settings.wrap }}"
   {% if block.settings.show_borders %}
     style="--group-border-width: {{ block.settings.group_border_width }}px; --group-border-color: {% if block.settings.border_color != blank %}{{ block.settings.border_color }}{% else %}var(--c-hairline){% endif %}; --group-border-top: {% if block.settings.border_top %}var(--group-border-width){% else %}0px{% endif %}; --group-border-right: {% if block.settings.border_right %}var(--group-border-width){% else %}0px{% endif %}; --group-border-bottom: {% if block.settings.border_bottom %}var(--group-border-width){% else %}0px{% endif %}; --group-border-left: {% if block.settings.border_left %}var(--group-border-width){% else %}0px{% endif %};"
   {% endif %}

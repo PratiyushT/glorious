@@ -147,7 +147,7 @@
                       data-cart-step="-1"
                       aria-label="{{ 'cart.decrease' | t: title: item.product.title | escape }}"
                     >
-                      &minus;
+                      {% render 'icon', icon: 'minus' %}
                     </button>
                     <span class="drawer-qty__value" data-cart-qty>{{ item.quantity }}</span>
                     <button
@@ -156,7 +156,7 @@
                       data-cart-step="1"
                       aria-label="{{ 'cart.increase' | t: title: item.product.title | escape }}"
                     >
-                      &plus;
+                      {% render 'icon', icon: 'plus' %}
                     </button>
                   </div>
                 </div>

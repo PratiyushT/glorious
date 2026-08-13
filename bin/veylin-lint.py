@@ -485,8 +485,8 @@ def R11_theme_js_stays_es5():
 def R12_icon_uid():
     """An icon whose SVG declares an id is rendered with a uid.
 
-    `snippets/icon.liquid` builds `bag-plus` from a `<mask>`, and a mask needs
-    an id. The icon renders four times on the home page, so a fixed id put four
+    `snippets/icon-bag-plus.liquid` builds a `<mask>`, and a mask needs an id.
+    The icon renders four times on the home page, so a fixed id put four
     identical ids in one document — invalid HTML, and every `url(#...)` binds
     to whichever came first, so removing that one silently breaks the rest.
 
@@ -495,22 +495,24 @@ def R12_icon_uid():
     snippet counts 0 every time. The caller has to pass the token, which makes
     this a convention — and conventions in this repo get a rule.
     """
-    # strip_comments first, or this reads the prose *about* ids as ids. The
-    # documentation for `bag-plus` sits between two `when` branches and quotes
-    # `<mask id="...">`, which made the branch before it look like it declared
-    # one. Same mistake R08 made on its first run against this repo's own
-    # comments explaining why href="#" is banned.
+    # Public calls still go through icon.liquid, but implementations live in
+    # flat icon-*.liquid snippets because Shopify does not support a nested
+    # snippets/icons directory. Strip comments before looking for ids so prose
+    # about the mask does not create a false positive.
     src = strip_comments(read(os.path.join(ROOT, 'snippets', 'icon.liquid')))
     icons = re.findall(r"{%-?\s*when\s+'([a-z0-9-]+)'", src)
     needs = set()
     for name in icons:
-        # The branch body runs to the next `when`; only a declared id matters.
-        # Built by concatenation, not %-formatting — the pattern is full of
-        # literal % characters and `'...%s...' % x` chokes on the first `%}`.
+        # Only a declared id matters. Fall back to the dispatcher branch for
+        # any icon not split into its own implementation file.
         pat = (r"{%-?\s*when\s+'" + re.escape(name)
                + r"'\s*-?%}(.*?)(?={%-?\s*when\s|{%-?\s*endcase)")
-        m = re.search(pat, src, re.S)
-        if m and re.search(r'\sid="', m.group(1)):
+        icon_path = os.path.join(ROOT, 'snippets', 'icon-' + name + '.liquid')
+        body = read(icon_path) if os.path.exists(icon_path) else ''
+        if not body:
+            m = re.search(pat, src, re.S)
+            body = m.group(1) if m else ''
+        if re.search(r'\sid="', strip_comments(body)):
             needs.add(name)
     if not needs:
         return
@@ -531,6 +533,60 @@ def R12_icon_uid():
                     'an id and would duplicate' % got.group(1))
 
 
+def R13_central_icon_library():
+    """Theme-owned icon drawings live only in snippets/icon-*.liquid.
+
+    Shopify has no supported snippets/icons subdirectory, so the flat
+    icon-*.liquid family is the single source of truth and icon.liquid is its
+    public dispatcher. This rule covers the easy escape hatches too: SVG
+    strings in JavaScript, character entities in Liquid/JavaScript, and icons
+    drawn with CSS `content`.
+
+    Shopify's `placeholder_svg_tag` remains valid. It generates a merchant
+    content placeholder at runtime and does not place literal SVG markup in a
+    theme file.
+    """
+    legacy_glyph = re.compile(
+        r'&(?:larr|rarr|times|plus|minus);|'
+        r'&#(?:9654|10005|10022|10074);|[▶❚]'
+    )
+
+    for sub in ('sections', 'blocks', 'snippets', 'layout', 'templates'):
+        for p in walk_files(sub, '.liquid'):
+            src = strip_inert(strip_comments(read(p)))
+            name = os.path.basename(p)
+            if not name.startswith('icon-'):
+                for m in re.finditer(r'<svg\b', src, re.I):
+                    line = src.count('\n', 0, m.start()) + 1
+                    err('R13', '%s:%d' % (rel(p), line),
+                        'inline SVG belongs in snippets/icon-*.liquid')
+            for m in legacy_glyph.finditer(src):
+                line = src.count('\n', 0, m.start()) + 1
+                err('R13', '%s:%d' % (rel(p), line),
+                    'character icon belongs in the shared icon library')
+
+    for p in walk_files('assets', '.js'):
+        src = read(p)
+        for pat, message in (
+                (re.compile(r'<svg\b', re.I),
+                 'JavaScript SVG belongs in snippets/icon-*.liquid'),
+                (legacy_glyph,
+                 'JavaScript character icon belongs in the shared icon library')):
+            for m in pat.finditer(src):
+                line = src.count('\n', 0, m.start()) + 1
+                err('R13', '%s:%d' % (rel(p), line), message)
+
+    css_glyph = re.compile(
+        r'content\s*:\s*([\'\"])(?:\+|−|×|▶|❚❚|\\2212)\1', re.I
+    )
+    for p in walk_files('assets', '.css'):
+        src = read(p)
+        for m in css_glyph.finditer(src):
+            line = src.count('\n', 0, m.start()) + 1
+            err('R13', '%s:%d' % (rel(p), line),
+                'CSS-generated icon belongs in the shared icon library')
+
+
 RULES = OrderedDict([
     ('R01', (R01_range_steps, 'range steps are legal (Shopify validates server-side)')),
     ('R02', (R02_select_defaults, "a select's default is one of its options")),
@@ -544,6 +600,7 @@ RULES = OrderedDict([
     ('R10', (R10_image_lqip, 'every <img> declares data-image-lqip')),
     ('R11', (R11_theme_js_stays_es5, 'assets/*.js stays ES5 so Shopify minifies it')),
     ('R12', (R12_icon_uid, 'an icon declaring an SVG id is rendered with a uid')),
+    ('R13', (R13_central_icon_library, 'all icon drawings use the shared icon library')),
 ])
 
 

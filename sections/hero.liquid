@@ -36,34 +36,17 @@
   <div class="hero__glow" aria-hidden="true"></div>
 
   {%- if section.settings.show_arcs -%}
-    <svg class="hero__arc hero__arc--left" viewBox="0 0 520 520" fill="none" aria-hidden="true" focusable="false">
-      <circle cx="250" cy="255" r="180" stroke="currentColor" stroke-width="1.1" />
-      <path d="M70 185 A 265 265 0 0 0 250 470" stroke="currentColor" stroke-width="0.9" opacity=".85" />
-      <path d="M430 185 A 265 265 0 0 1 250 470" stroke="currentColor" stroke-width="0.9" opacity=".85" />
-      <path d="M115 235 A 200 200 0 0 0 250 425" stroke="currentColor" stroke-width="0.7" opacity=".5" />
-      <path d="M385 235 A 200 200 0 0 1 250 425" stroke="currentColor" stroke-width="0.7" opacity=".5" />
-      <circle cx="250" cy="42" r="11" fill="currentColor" opacity=".7" />
-      <circle cx="204" cy="58" r="6" fill="currentColor" opacity=".5" />
-      <circle cx="296" cy="58" r="6" fill="currentColor" opacity=".5" />
-    </svg>
-
-    <svg class="hero__arc hero__arc--right" viewBox="0 0 520 520" fill="none" aria-hidden="true" focusable="false">
-      <circle cx="265" cy="260" r="192" stroke="currentColor" stroke-width="1.1" />
-      <path d="M75 185 A 280 280 0 0 0 265 490" stroke="currentColor" stroke-width="0.9" opacity=".85" />
-      <path d="M455 185 A 280 280 0 0 1 265 490" stroke="currentColor" stroke-width="0.9" opacity=".85" />
-      <circle cx="265" cy="34" r="10" fill="currentColor" opacity=".65" />
-      <circle cx="221" cy="50" r="5.5" fill="currentColor" opacity=".45" />
-      <circle cx="309" cy="50" r="5.5" fill="currentColor" opacity=".45" />
-    </svg>
+    {% render 'icon', icon: 'hero-arc-left' %}
+    {% render 'icon', icon: 'hero-arc-right' %}
   {%- endif -%}
 
   {%- if section.settings.show_sparkles -%}
     <div class="hero__sparkles" aria-hidden="true">
-      <span style="left: 7%;  top: 120px;   --size: 1.13rem; --dur: 3.8s; --delay: 0.4s;">&#10022;</span>
-      <span style="left: 38%; top: 84px;    --size: 0.69rem; --dur: 4.6s; --delay: 1.6s;">&#10022;</span>
-      <span style="right: 9%; top: 132px;   --size: 0.94rem; --dur: 4.2s; --delay: 2.4s;">&#10022;</span>
-      <span style="right: 30%; top: 66px;   --size: 0.63rem; --dur: 5s;   --delay: 3.1s;">&#10022;</span>
-      <span style="left: 16%; bottom: 18%;  --size: 0.75rem; --dur: 5.4s; --delay: 2s;">&#10022;</span>
+      <span style="left: 7%;  top: 120px;   --size: 1.13rem; --dur: 3.8s; --delay: 0.4s;">{% render 'icon', icon: 'sparkle' %}</span>
+      <span style="left: 38%; top: 84px;    --size: 0.69rem; --dur: 4.6s; --delay: 1.6s;">{% render 'icon', icon: 'sparkle' %}</span>
+      <span style="right: 9%; top: 132px;   --size: 0.94rem; --dur: 4.2s; --delay: 2.4s;">{% render 'icon', icon: 'sparkle' %}</span>
+      <span style="right: 30%; top: 66px;   --size: 0.63rem; --dur: 5s;   --delay: 3.1s;">{% render 'icon', icon: 'sparkle' %}</span>
+      <span style="left: 16%; bottom: 18%;  --size: 0.75rem; --dur: 5.4s; --delay: 2s;">{% render 'icon', icon: 'sparkle' %}</span>
     </div>
   {%- endif -%}
 
@@ -149,7 +132,7 @@
             {{ button_block.shopify_attributes }}
           >
             {{ button_block.settings.button_label }}
-            <span aria-hidden="true">&rarr;</span>
+            <span aria-hidden="true">{% render 'icon', icon: 'arrow-right' %}</span>
           </a>
         {%- endif -%}
       </div>
@@ -184,7 +167,7 @@
       <div class="hero__cards">
         <div class="hero-carousel" data-hero-carousel>
           <button class="hero-carousel__arrow hero-carousel__arrow--prev" type="button" data-hero-step="-1" aria-label="{{ 'hero.previous' | t }}">
-            &larr;
+            {% render 'icon', icon: 'arrow-left' %}
           </button>
 
           <div class="hero-carousel__window" data-hero-window>
@@ -223,7 +206,7 @@
           </div>
 
           <button class="hero-carousel__arrow hero-carousel__arrow--next" type="button" data-hero-step="1" aria-label="{{ 'hero.next' | t }}">
-            &rarr;
+            {% render 'icon', icon: 'arrow-right' %}
           </button>
         </div>
 
@@ -232,8 +215,8 @@
           no room beside the cards, so the same two controls sit under them.
         {%- endcomment -%}
         <div class="hero-carousel__below">
-          <button class="hero-carousel__arrow" type="button" data-hero-step="-1" aria-label="{{ 'hero.previous' | t }}">&larr;</button>
-          <button class="hero-carousel__arrow" type="button" data-hero-step="1" aria-label="{{ 'hero.next' | t }}">&rarr;</button>
+          <button class="hero-carousel__arrow" type="button" data-hero-step="-1" aria-label="{{ 'hero.previous' | t }}">{% render 'icon', icon: 'arrow-left' %}</button>
+          <button class="hero-carousel__arrow" type="button" data-hero-step="1" aria-label="{{ 'hero.next' | t }}">{% render 'icon', icon: 'arrow-right' %}</button>
         </div>
       </div>
 
@@ -251,7 +234,7 @@
             {{ button_block.shopify_attributes }}
           >
             {{ button_block.settings.button_label }}
-            <span aria-hidden="true">&rarr;</span>
+            <span aria-hidden="true">{% render 'icon', icon: 'arrow-right' %}</span>
           </a>
         </div>
       {%- endif -%}

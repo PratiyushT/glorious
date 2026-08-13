@@ -121,5 +121,5 @@
     The arrow is decoration: the label already says where this goes, so it is
     hidden from assistive technology rather than announced as "right arrow".
   {%- endcomment -%}
-  {%- if shows_arrow %}<span aria-hidden="true">&rarr;</span>{% endif -%}
+  {%- if shows_arrow %}<span aria-hidden="true">{% render 'icon', icon: 'arrow-right' %}</span>{% endif -%}
 </a>

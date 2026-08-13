@@ -560,6 +560,15 @@ a {
    where the rule happens to sit. Same shape as the `.line-options` note. */
 .layout-group > .layout-group__inner > * {
   margin-block: 0;
+  min-inline-size: 0;
+  max-inline-size: 100%;
+}
+
+/* A Group promises containment even when a merchant enters one long word.
+   Equal children can shrink below that word's intrinsic width, so text must
+   be allowed to wrap instead of painting over the next card. */
+.layout-group > .layout-group__inner > :where(h1, h2, h3, h4, h5, h6, p, .rte) {
+  overflow-wrap: anywhere;
 }
 
 /* Borders belong to the outer Group and never participate in its inner flex
@@ -589,18 +598,18 @@ a {
 }
 
 .icon-block--framed .icon-block__shape {
-  width: var(--icon-frame-size, 52px);
-  height: var(--icon-frame-size, 52px);
+  width: max(var(--icon-frame-size, 52px), calc(var(--icon-size, var(--icon-size-global)) + 1rem));
+  height: max(var(--icon-frame-size, 52px), calc(var(--icon-size, var(--icon-size-global)) + 1rem));
   border: var(--border-width) solid var(--icon-border-color, color-mix(in srgb, var(--c-accent) 26%, transparent));
   border-radius: var(--icon-frame-radius, 0);
   background: var(--icon-background, color-mix(in srgb, var(--c-accent) 4%, var(--c-surface)));
 }
 
 .icon-block__shape svg {
-  width: var(--icon-size, 30px);
-  height: var(--icon-size, 30px);
-  max-width: 82%;
-  max-height: 82%;
+  width: var(--icon-size, var(--icon-size-global));
+  height: var(--icon-size, var(--icon-size-global));
+  max-width: 100%;
+  max-height: 100%;
 }
 
 /* Equal items are opt-in. Natural width remains the Group block's default so
@@ -611,8 +620,21 @@ a {
      useful content. This internal floor replaces the merchant-facing width
      slider: the layout stays fluid, while Responsive layout remains the only
      choice about when a row should become one column. */
-  flex: 1 1 12rem;
+  flex: 1 1 16rem;
   min-width: 0;
+}
+
+/* When a second row is allowed, equal items use an auto-fitting grid. Flexbox
+   makes the lone item on a final row consume the whole row; grid keeps the
+   same column tracks on every row while retaining the same fluid 16rem floor.
+   Turning wrapping off keeps the original one-row flex behavior. */
+.layout-group[data-direction="horizontal"][data-items="equal"][data-wrap="true"] > .layout-group__inner {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+}
+
+.layout-group[data-direction="horizontal"][data-items="equal"][data-wrap="true"] > .layout-group__inner > .border-block--full-container {
+  grid-column: 1 / -1;
 }
 
 /* A nested horizontal group needs a definite inline size before its vertical
@@ -642,6 +664,10 @@ a {
     flex: 0 1 auto;
     width: 100%;
   }
+
+  .layout-group[data-items="equal"][data-stack="mobile"] > .layout-group__inner {
+    grid-template-columns: 1fr;
+  }
 }
 
 @container (max-width: 48rem) {
@@ -654,6 +680,10 @@ a {
   .layout-group[data-items="equal"][data-stack="tablet"] > .layout-group__inner > * {
     flex: 0 1 auto;
     width: 100%;
+  }
+
+  .layout-group[data-items="equal"][data-stack="tablet"] > .layout-group__inner {
+    grid-template-columns: 1fr;
   }
 }
 
@@ -913,6 +943,12 @@ a {
 .btn--arrow:hover {
   gap: 19px;
   color: var(--c-accent);
+}
+
+.btn--arrow > span svg {
+  display: block;
+  width: 1em;
+  height: 1em;
 }
 
 /* An arrow that also carries the outline's frame. The design gives it a
@@ -1522,6 +1558,11 @@ a {
   color: var(--c-accent);
 }
 
+.hero-carousel__arrow > svg {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
 .hero-carousel__arrow--prev,
 .hero-carousel__arrow--next {
   position: absolute;
@@ -1774,6 +1815,24 @@ a {
   --type-7xl: clamp(3.125rem, 4.2593vw + 2.1667rem, 6rem);
   --type-8xl: clamp(3.5rem, 5.9259vw + 2.1667rem, 7.5rem);
 
+  /* Icon sizes use their own fluid ladder. A text rung and an icon rung are
+     different visual quantities even when they share a merchant-facing name.
+     Medium preserves the original 24–30px drawing size. */
+  --icon-size-3xs: clamp(0.625rem, 0.1852vw + 0.5833rem, 0.75rem);
+  --icon-size-2xs: clamp(0.75rem, 0.1852vw + 0.7083rem, 0.875rem);
+  --icon-size-xs: clamp(0.875rem, 0.3704vw + 0.7917rem, 1.125rem);
+  --icon-size-sm: clamp(1.125rem, 0.3704vw + 1.0417rem, 1.375rem);
+  --icon-size-md: clamp(1.5rem, 0.5556vw + 1.375rem, 1.875rem);
+  --icon-size-lg: clamp(1.875rem, 0.7407vw + 1.7083rem, 2.375rem);
+  --icon-size-xl: clamp(2.25rem, 1.1111vw + 2rem, 3rem);
+  --icon-size-2xl: clamp(2.75rem, 1.4815vw + 2.4167rem, 3.75rem);
+  --icon-size-3xl: clamp(3.25rem, 1.8519vw + 2.8333rem, 4.5rem);
+  --icon-size-4xl: clamp(4rem, 2.2222vw + 3.5rem, 5.5rem);
+  --icon-size-5xl: clamp(4.75rem, 2.5926vw + 4.1667rem, 6.5rem);
+  --icon-size-6xl: clamp(5.5rem, 2.963vw + 4.8333rem, 7.5rem);
+  --icon-size-7xl: clamp(6.5rem, 3.7037vw + 5.6667rem, 9rem);
+  --icon-size-8xl: clamp(7.5rem, 4.4444vw + 6.5rem, 10.5rem);
+
   /* The other two rungs a preset stands on. Named rather than typed, for the
      same reason the sizes are: a merchant chooses "Snug", not 1.1. */
   --lead-tight: 0.95;
@@ -1811,6 +1870,11 @@ a {
   line-height: var(--text-leading);
   letter-spacing: var(--text-tracking);
   text-transform: var(--text-case);
+}
+
+.hero__sparkles svg {
+  width: 1em;
+  height: 1em;
 }
 
 .text-title {
@@ -2814,6 +2878,11 @@ a {
   color: var(--c-accent);
 }
 
+.row-carousel__arrow > svg {
+  width: var(--row-arrow-glyph);
+  height: var(--row-arrow-glyph);
+}
+
 /* The row is bounded rather than looping, so an end really is an end. */
 .row-carousel__arrow[disabled] {
   opacity: 0.28;
@@ -3066,6 +3135,13 @@ a {
   font-size: 0.7em;
 }
 
+.cat-card__head-arrow svg {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  vertical-align: -0.08em;
+}
+
 .cat-card__count {
   grid-area: count;
   align-self: baseline;
@@ -3171,6 +3247,12 @@ a {
 .cat-card__reveal-arrow {
   font-size: 1rem;
   color: color-mix(in srgb, var(--c-porcelain) 80%, #fff);
+}
+
+.cat-card__reveal-arrow svg {
+  display: block;
+  width: 1em;
+  height: 1em;
 }
 
 /* ---- Lookbook -------------------------------------------------------
@@ -3443,13 +3525,12 @@ a {
   transition: all 0.35s ease;
 }
 
-.lookbook[data-pin-style="plus"] .lookbook-pin__dot {
-  font-size: 0;
-}
-
-.lookbook[data-pin-style="plus"] .lookbook-pin__dot::before {
-  content: "+";
-  font-size: 0.81rem;
+.lookbook-pin__plus { display: none; }
+.lookbook[data-pin-style="plus"] .lookbook-pin__number { display: none; }
+.lookbook[data-pin-style="plus"] .lookbook-pin__plus { display: grid; }
+.lookbook[data-pin-style="plus"] .lookbook-pin__plus svg {
+  width: 0.81rem;
+  height: 0.81rem;
 }
 
 .lookbook[data-pin-style="number"] .lookbook-pin.is-active .lookbook-pin__dot,
@@ -3654,6 +3735,22 @@ a {
 
 .lookbook-film__play:hover {
   color: var(--c-accent);
+}
+
+[data-look-play-glyph],
+[data-look-play-glyph] > span {
+  display: grid;
+  grid-area: 1 / 1;
+  place-items: center;
+}
+
+[data-look-play-glyph] svg {
+  width: 1em;
+  height: 1em;
+}
+
+[data-look-play-glyph] > span[hidden] {
+  display: none;
 }
 
 .lookbook-film__bar {
@@ -5438,13 +5535,15 @@ a.nav-menu__address:hover {
   color: color-mix(in srgb, var(--c-text) 55%, transparent);
 }
 
-.footer__col-mark::before {
-  content: "+";
+.footer__col-mark svg {
+  display: block;
+  width: 1rem;
+  height: 1rem;
 }
 
-.footer__col[data-open] .footer__col-mark::before {
-  content: "\2212";
-}
+.footer__col-minus { display: none; }
+.footer__col[data-open] .footer__col-plus { display: none; }
+.footer__col[data-open] .footer__col-minus { display: block; }
 
 .footer__col-panel {
   display: grid;

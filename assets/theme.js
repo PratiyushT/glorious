@@ -3927,12 +3927,14 @@
 
         var fill = film.querySelector('[data-look-fill]');
         var time = film.querySelector('[data-look-time]');
-        var glyph = film.querySelector('[data-look-play-glyph]');
+        var playIcon = film.querySelector('[data-look-play-icon]');
+        var pauseIcon = film.querySelector('[data-look-pause-icon]');
         var dur = v.duration || 0;
 
         if (fill) fill.style.width = (dur ? (v.currentTime / dur) * 100 : 0) + '%';
         if (time) time.textContent = clock(v.currentTime) + ' / ' + clock(dur);
-        if (glyph) glyph.innerHTML = v.paused ? '&#9654;' : '&#10074;&#10074;';
+        if (playIcon) playIcon.hidden = !v.paused;
+        if (pauseIcon) pauseIcon.hidden = v.paused;
 
         applyTiming();
       }

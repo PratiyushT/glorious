@@ -136,12 +136,30 @@ editable number), `border`, `heading`, and `paragraph`.
   composition in any other Group section without crossing a special contract.
 - `icon` is a public drawing primitive. It owns icon choice, size, alignment,
   optional frame, accessible label, and color overrides; the surrounding
-  Group owns layout. The five original emblems remain choices alongside
-  general editorial icons.
+  Group owns layout. Its picker is intentionally broader than this homepage:
+  jewelry, apparel, food and drink, hospitality, travel, wellness, pets,
+  technology, retail, interface and editorial drawings share one library.
+- **Icon size is a responsive preset, never a pixel slider.** Theme settings →
+  Icons selects the global 3X-small–8X-large rung. An Icon block defaults to
+  `Use theme setting` and may select any rung from the identical list. The
+  icon ladder is separate from text because a medium glyph and medium type are
+  different visual quantities, but both scales are fluid.
+- **Every theme-owned icon has one implementation.** SVG markup lives only in
+  the flat `snippets/icon-*.liquid` family and callers use
+  `{% render 'icon', icon: 'name' %}`. Shopify themes support the standard
+  `snippets/` directory but not a nested `snippets/icons/` directory, so the
+  `icon-` prefix is the folder-like namespace. This includes interface marks,
+  product-card controls, hero decoration, the loader and the wordmark emblem.
+  JavaScript toggles pre-rendered icons; it never writes SVG or character
+  glyphs. R13 enforces the boundary.
 - Group's `padding` is internal container spacing. It is optional and
   independent of borders, so an ordinary Group remains unchanged at the
   default `none`, while a bordered Group can hold card-like content without a
   Card block.
+- A Group is a containment boundary: direct children can shrink to their
+  available width and merchant text can wrap one long word. This keeps an
+  equal-width heading inside its own bordered card instead of painting across
+  the next card, and applies to every Group rather than to this composition.
 - Numbers are ordinary text on purpose. Automatic numbering couples content
   to sibling position and needs parent-specific counters; editable text stays
   reusable and can be removed or replaced with any label.
@@ -694,7 +712,7 @@ blocks/ bin/` for its filename. A theme asset is reachable only through
 - the eight `metal-*.webp`, already recorded as unreferenced under "Product
   card": the swatch paints from the option value's own Color metafield and the
   same images are served from `/cdn/shop/files/`.
-- `icon-bag-plus.svg`, which duplicates an inline icon in `snippets/icon.liquid`.
+- `icon-bag-plus.svg`, which duplicates `snippets/icon-bag-plus.liquid`.
 
 **Do not read a block key as a reference.** `header-group.json` has blocks keyed
 `cat-rings`, `cat-earrings`, `cat-bracelets`, `cat-necklaces` and
@@ -867,7 +885,7 @@ rather than typed.** The accessibility requirement is a Lighthouse score of 90,
 and a duplicate id is both a scored failure and a real defect — a `url(#x)` or
 an `aria-labelledby` binds to whichever came first.
 
-- **`<mask id="gj-bag-plus">`, four times.** `snippets/icon.liquid` builds
+- **`<mask id="gj-bag-plus">`, four times.** `snippets/icon-bag-plus.liquid` builds
   `bag-plus` from a mask, and the lookbook renders it four times. All four bags
   were being punched by the *first* icon's mask; it looked right only because
   the masks were identical, and removing that first icon from the DOM — a cart
@@ -880,8 +898,9 @@ an `aria-labelledby` binds to whichever came first.
   through a `capture` there, and `0` every time from inside the snippet.
   **Anything needing a per-render token in a snippet must be handed one.**
 
-  So `icon.liquid` takes a `uid`, and the two call sites build one from their
-  loop indices. Verified on the page: four distinct ids, and each path's
+  So the `icon.liquid` dispatcher passes a caller-supplied `uid` into that
+  implementation, and the two call sites build one from their loop indices.
+  Verified on the page: four distinct ids, and each path's
   `url(#…)` resolving to a mask **inside its own `<svg>`** — which is the check
   worth making, not merely that it resolves.
 
@@ -1000,6 +1019,7 @@ a block type is a data contract.
 | --- | --- | --- |
 | `button.liquid` | four hand-written button pairs | about, craft, visit |
 | `wordmark-mark.liquid` | three PNG cuts | the lockup |
+| `icon.liquid` + `icon-*.liquid` | inline SVGs, entities, CSS glyphs and JavaScript SVG strings | every theme icon caller |
 
 - **The hero is not a caller of either, deliberately.** `.hero__choice` looks
   like a labelled row and is not one, and `.hero__cta` is not a `.btn`. The
@@ -1252,6 +1272,7 @@ diligent, and this theme has already paid for that twice — see the footer unde
 | R10 | every `<img>` declares `data-image-lqip` (warning; `"off"` for a logo) |
 | R11 | `assets/*.js` stays ES5 — ES6 stops Shopify auto-minifying the file |
 | R12 | an icon whose SVG declares an id is rendered with a `uid` |
+| R13 | all icon SVGs and glyphs live in the centralized Liquid icon library |
 
 **R05 is the one written from a scar.** `section-style.liquid` stopped
 understanding numbers when padding became a step, the footer kept its range, and
@@ -2338,7 +2359,8 @@ afterthought.
 
 A 1:1 rebuild. Three art-directed arrangements at 990px and 1100px (see
 "Fluid for continuous values" above), the wordmark letters rising 60ms apart
-from `.1s`, and the design's decorative arcs and sparkles as inline SVG.
+from `.1s`, and the design's decorative arcs and sparkles rendered through the
+centralized Liquid icon library.
 
 **The hero fits itself to the screen rather than clipping.** It is a
 screenful, and its content does not always agree — at 1280×560 the grid

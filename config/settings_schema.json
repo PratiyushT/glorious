@@ -1899,6 +1899,38 @@
     ]
   },
   {
+    "name": "t:settings_schema.icons.name",
+    "settings": [
+      {
+        "type": "paragraph",
+        "content": "t:settings_schema.icons.paragraph"
+      },
+      {
+        "type": "select",
+        "id": "icon_size",
+        "label": "t:settings_schema.icons.size.label",
+        "info": "t:settings_schema.icons.size.info",
+        "options": [
+          { "value": "3xs", "label": "t:settings_schema.typography.scale.3xs" },
+          { "value": "2xs", "label": "t:settings_schema.typography.scale.2xs" },
+          { "value": "xs", "label": "t:settings_schema.typography.scale.xs" },
+          { "value": "sm", "label": "t:settings_schema.typography.scale.sm" },
+          { "value": "md", "label": "t:settings_schema.typography.scale.md" },
+          { "value": "lg", "label": "t:settings_schema.typography.scale.lg" },
+          { "value": "xl", "label": "t:settings_schema.typography.scale.xl" },
+          { "value": "2xl", "label": "t:settings_schema.typography.scale.2xl" },
+          { "value": "3xl", "label": "t:settings_schema.typography.scale.3xl" },
+          { "value": "4xl", "label": "t:settings_schema.typography.scale.4xl" },
+          { "value": "5xl", "label": "t:settings_schema.typography.scale.5xl" },
+          { "value": "6xl", "label": "t:settings_schema.typography.scale.6xl" },
+          { "value": "7xl", "label": "t:settings_schema.typography.scale.7xl" },
+          { "value": "8xl", "label": "t:settings_schema.typography.scale.8xl" }
+        ],
+        "default": "md"
+      }
+    ]
+  },
+  {
     "name": "t:settings_schema.spacing.name",
     "settings": [
       {

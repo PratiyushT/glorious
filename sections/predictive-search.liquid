@@ -114,7 +114,7 @@
         data-search-row
       >
         {{ 'general.search.see_all' | t: terms: terms }}
-        <span aria-hidden="true">&rarr;</span>
+        <span aria-hidden="true">{% render 'icon', icon: 'arrow-right' %}</span>
       </a>
     {%- else -%}
       <div class="search-empty">

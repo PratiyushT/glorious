@@ -56,7 +56,7 @@
     aria-label="{{ 'general.carousel.previous' | t }}"
     {% if side_arrows %}data-row-controls hidden{% endif %}
   >
-    &larr;
+    {% render 'icon', icon: 'arrow-left' %}
   </button>
 {%- endcapture -%}
 
@@ -68,7 +68,7 @@
     aria-label="{{ 'general.carousel.next' | t }}"
     {% if side_arrows %}data-row-controls hidden{% endif %}
   >
-    &rarr;
+    {% render 'icon', icon: 'arrow-right' %}
   </button>
 {%- endcapture -%}
 

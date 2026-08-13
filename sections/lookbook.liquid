@@ -178,7 +178,10 @@
                     {% unless forloop.parentloop.first %}hidden{% endunless %}
                   >
                     <span class="lookbook-pin__ring" aria-hidden="true"></span>
-                    <span class="lookbook-pin__dot" aria-hidden="true">{{ i }}</span>
+                    <span class="lookbook-pin__dot" aria-hidden="true">
+                      <span class="lookbook-pin__number">{{ i }}</span>
+                      <span class="lookbook-pin__plus">{% render 'icon', icon: 'plus' %}</span>
+                    </span>
                   </button>
                 {%- endif -%}
               {%- endfor -%}
@@ -245,7 +248,7 @@
 
                       <button class="lookbook-card__close" type="button" data-look-card-close>
                         <span class="visually-hidden">{{ 'navigation.close' | t }}</span>
-                        <span aria-hidden="true">&#10005;</span>
+                        <span aria-hidden="true">{% render 'icon', icon: 'close' %}</span>
                       </button>
                     </div>
 
@@ -297,7 +300,10 @@
           {%- if has_video -%}
             <div class="lookbook-film" data-look-film hidden>
               <button class="lookbook-film__play" type="button" data-look-play aria-label="{{ 'lookbook.play' | t }}">
-                <span aria-hidden="true" data-look-play-glyph>&#9654;</span>
+                <span aria-hidden="true" data-look-play-glyph>
+                  <span data-look-play-icon>{% render 'icon', icon: 'play' %}</span>
+                  <span data-look-pause-icon hidden>{% render 'icon', icon: 'pause' %}</span>
+                </span>
               </button>
 
               <div class="lookbook-film__bar" data-look-bar>
@@ -420,7 +426,7 @@
                 <div class="lookbook__list-foot">
                   <a class="lookbook__all" href="{{ section.settings.link | default: routes.all_products_collection_url }}">
                     {{ section.settings.link_label }}
-                    <span aria-hidden="true">&rarr;</span>
+                    <span aria-hidden="true">{% render 'icon', icon: 'arrow-right' %}</span>
                   </a>
                 </div>
               {%- endif -%}

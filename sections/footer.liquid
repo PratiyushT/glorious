@@ -67,7 +67,10 @@
               aria-expanded="false"
             >
               <span class="footer__heading">{{ block.settings.heading }}</span>
-              <span class="footer__col-mark" aria-hidden="true"></span>
+              <span class="footer__col-mark" aria-hidden="true">
+                <span class="footer__col-plus">{% render 'icon', icon: 'plus' %}</span>
+                <span class="footer__col-minus">{% render 'icon', icon: 'minus' %}</span>
+              </span>
             </button>
 
             {%- comment -%}
@@ -117,7 +120,10 @@
               aria-expanded="false"
             >
               <span class="footer__heading">{{ block.settings.heading }}</span>
-              <span class="footer__col-mark" aria-hidden="true"></span>
+              <span class="footer__col-mark" aria-hidden="true">
+                <span class="footer__col-plus">{% render 'icon', icon: 'plus' %}</span>
+                <span class="footer__col-minus">{% render 'icon', icon: 'minus' %}</span>
+              </span>
             </button>
 
             {%- comment -%}

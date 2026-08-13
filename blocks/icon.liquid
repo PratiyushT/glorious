@@ -22,12 +22,18 @@
   elsif block.settings.frame_shape == 'round'
     assign frame_radius = '999px'
   endif
+
+  assign icon_size_presets = '3xs,2xs,xs,sm,md,lg,xl,2xl,3xl,4xl,5xl,6xl,7xl,8xl' | split: ','
+  assign resolved_icon_size = 'var(--icon-size-global)'
+  if icon_size_presets contains block.settings.icon_size
+    assign resolved_icon_size = 'var(--icon-size-' | append: block.settings.icon_size | append: ')'
+  endif
 -%}
 
 {%- unless block.settings.icon == 'none' -%}
   <div
     class="icon-block reveal{% if block.settings.show_frame %} icon-block--framed{% endif %}"
-    style="--icon-align: {{ alignment }}; --icon-size: {{ block.settings.icon_size }}px; --icon-frame-size: {{ block.settings.frame_size }}px; --icon-frame-radius: {{ frame_radius }};{% if block.settings.color != blank %} --icon-color: {{ block.settings.color }};{% endif %}{% if block.settings.border_color != blank %} --icon-border-color: {{ block.settings.border_color }};{% endif %}{% if block.settings.background_color != blank %} --icon-background: {{ block.settings.background_color }};{% endif %}{% render 'block-spacing', padding: block.settings.padding %}"
+    style="--icon-align: {{ alignment }}; --icon-size: {{ resolved_icon_size }}; --icon-frame-size: {{ block.settings.frame_size }}px; --icon-frame-radius: {{ frame_radius }};{% if block.settings.color != blank %} --icon-color: {{ block.settings.color }};{% endif %}{% if block.settings.border_color != blank %} --icon-border-color: {{ block.settings.border_color }};{% endif %}{% if block.settings.background_color != blank %} --icon-background: {{ block.settings.background_color }};{% endif %}{% render 'block-spacing', padding: block.settings.padding %}"
     {{ block.shopify_attributes }}
   >
     <span
@@ -60,14 +66,103 @@
         { "value": "handcraft", "label": "t:blocks.icon.icons.handcraft" },
         { "value": "certified", "label": "t:blocks.icon.icons.certified" },
         { "value": "diamond", "label": "t:blocks.icon.icons.diamond" },
+        { "value": "gem", "label": "t:blocks.icon.icons.gem" },
+        { "value": "ring", "label": "t:blocks.icon.icons.ring" },
+        { "value": "earrings", "label": "t:blocks.icon.icons.earrings" },
+        { "value": "necklace", "label": "t:blocks.icon.icons.necklace" },
+        { "value": "bracelet", "label": "t:blocks.icon.icons.bracelet" },
+        { "value": "crown", "label": "t:blocks.icon.icons.crown" },
+        { "value": "heart", "label": "t:blocks.icon.icons.heart" },
+        { "value": "star", "label": "t:blocks.icon.icons.star" },
+        { "value": "gift", "label": "t:blocks.icon.icons.gift" },
+        { "value": "award", "label": "t:blocks.icon.icons.award" },
         { "value": "sparkle", "label": "t:blocks.icon.icons.sparkle" },
+        { "value": "flower", "label": "t:blocks.icon.icons.flower" },
+        { "value": "leaf", "label": "t:blocks.icon.icons.leaf" },
+        { "value": "sun", "label": "t:blocks.icon.icons.sun" },
+        { "value": "moon", "label": "t:blocks.icon.icons.moon" },
         { "value": "location", "label": "t:blocks.icon.icons.location" },
         { "value": "phone", "label": "t:blocks.icon.icons.phone" },
+        { "value": "home", "label": "t:blocks.icon.icons.home" },
+        { "value": "store", "label": "t:blocks.icon.icons.store" },
+        { "value": "globe", "label": "t:blocks.icon.icons.globe" },
+        { "value": "mail", "label": "t:blocks.icon.icons.mail" },
+        { "value": "chat", "label": "t:blocks.icon.icons.chat" },
+        { "value": "calendar", "label": "t:blocks.icon.icons.calendar" },
+        { "value": "clock", "label": "t:blocks.icon.icons.clock" },
+        { "value": "info", "label": "t:blocks.icon.icons.info" },
+        { "value": "lock", "label": "t:blocks.icon.icons.lock" },
+        { "value": "credit-card", "label": "t:blocks.icon.icons.credit_card" },
+        { "value": "package", "label": "t:blocks.icon.icons.package" },
+        { "value": "refresh", "label": "t:blocks.icon.icons.refresh" },
+        { "value": "recycle", "label": "t:blocks.icon.icons.recycle" },
+        { "value": "ruler", "label": "t:blocks.icon.icons.ruler" },
+        { "value": "camera", "label": "t:blocks.icon.icons.camera" },
+        { "value": "video", "label": "t:blocks.icon.icons.video" },
+        { "value": "share", "label": "t:blocks.icon.icons.share" },
+        { "value": "filter", "label": "t:blocks.icon.icons.filter" },
+        { "value": "user-group", "label": "t:blocks.icon.icons.user_group" },
+        { "value": "shirt", "label": "t:blocks.icon.icons.shirt" },
+        { "value": "dress", "label": "t:blocks.icon.icons.dress" },
+        { "value": "trousers", "label": "t:blocks.icon.icons.trousers" },
+        { "value": "shoe", "label": "t:blocks.icon.icons.shoe" },
+        { "value": "hanger", "label": "t:blocks.icon.icons.hanger" },
+        { "value": "hat", "label": "t:blocks.icon.icons.hat" },
+        { "value": "handbag", "label": "t:blocks.icon.icons.handbag" },
+        { "value": "sunglasses", "label": "t:blocks.icon.icons.sunglasses" },
+        { "value": "utensils", "label": "t:blocks.icon.icons.utensils" },
+        { "value": "chef-hat", "label": "t:blocks.icon.icons.chef_hat" },
+        { "value": "cloche", "label": "t:blocks.icon.icons.cloche" },
+        { "value": "coffee", "label": "t:blocks.icon.icons.coffee" },
+        { "value": "tea", "label": "t:blocks.icon.icons.tea" },
+        { "value": "wine", "label": "t:blocks.icon.icons.wine" },
+        { "value": "cocktail", "label": "t:blocks.icon.icons.cocktail" },
+        { "value": "pizza", "label": "t:blocks.icon.icons.pizza" },
+        { "value": "burger", "label": "t:blocks.icon.icons.burger" },
+        { "value": "cake", "label": "t:blocks.icon.icons.cake" },
+        { "value": "ice-cream", "label": "t:blocks.icon.icons.ice_cream" },
+        { "value": "apple", "label": "t:blocks.icon.icons.apple" },
+        { "value": "bread", "label": "t:blocks.icon.icons.bread" },
+        { "value": "fish", "label": "t:blocks.icon.icons.fish" },
+        { "value": "bowl", "label": "t:blocks.icon.icons.bowl" },
+        { "value": "bottle", "label": "t:blocks.icon.icons.bottle" },
+        { "value": "bed", "label": "t:blocks.icon.icons.bed" },
+        { "value": "plane", "label": "t:blocks.icon.icons.plane" },
+        { "value": "car", "label": "t:blocks.icon.icons.car" },
+        { "value": "luggage", "label": "t:blocks.icon.icons.luggage" },
+        { "value": "map", "label": "t:blocks.icon.icons.map" },
+        { "value": "spa", "label": "t:blocks.icon.icons.spa" },
+        { "value": "dumbbell", "label": "t:blocks.icon.icons.dumbbell" },
+        { "value": "book", "label": "t:blocks.icon.icons.book" },
+        { "value": "music", "label": "t:blocks.icon.icons.music" },
+        { "value": "paw", "label": "t:blocks.icon.icons.paw" },
+        { "value": "baby", "label": "t:blocks.icon.icons.baby" },
+        { "value": "tools", "label": "t:blocks.icon.icons.tools" },
+        { "value": "paintbrush", "label": "t:blocks.icon.icons.paintbrush" },
+        { "value": "laptop", "label": "t:blocks.icon.icons.laptop" },
+        { "value": "smartphone", "label": "t:blocks.icon.icons.smartphone" },
+        { "value": "lightning", "label": "t:blocks.icon.icons.lightning" },
+        { "value": "fire", "label": "t:blocks.icon.icons.fire" },
+        { "value": "droplet", "label": "t:blocks.icon.icons.droplet" },
+        { "value": "tree", "label": "t:blocks.icon.icons.tree" },
+        { "value": "shopping-bag", "label": "t:blocks.icon.icons.shopping_bag" },
         { "value": "check", "label": "t:blocks.icon.icons.check" },
         { "value": "account", "label": "t:blocks.icon.icons.account" },
         { "value": "search", "label": "t:blocks.icon.icons.search" },
         { "value": "cart", "label": "t:blocks.icon.icons.cart" },
+        { "value": "menu", "label": "t:blocks.icon.icons.menu" },
+        { "value": "close", "label": "t:blocks.icon.icons.close" },
+        { "value": "eye", "label": "t:blocks.icon.icons.eye" },
+        { "value": "shield-check", "label": "t:blocks.icon.icons.shield_check" },
+        { "value": "play", "label": "t:blocks.icon.icons.play" },
+        { "value": "pause", "label": "t:blocks.icon.icons.pause" },
+        { "value": "plus", "label": "t:blocks.icon.icons.plus" },
+        { "value": "minus", "label": "t:blocks.icon.icons.minus" },
+        { "value": "arrow-left", "label": "t:blocks.icon.icons.arrow_left" },
         { "value": "arrow-right", "label": "t:blocks.icon.icons.arrow_right" },
+        { "value": "chevron-left", "label": "t:blocks.icon.icons.chevron_left" },
+        { "value": "chevron-right", "label": "t:blocks.icon.icons.chevron_right" },
+        { "value": "chevron-down", "label": "t:blocks.icon.icons.chevron_down" },
         { "value": "none", "label": "t:blocks.icon.icons.none" }
       ],
       "default": "sparkle"
@@ -79,14 +174,28 @@
       "info": "t:blocks.icon.accessible_label.info"
     },
     {
-      "type": "range",
+      "type": "select",
       "id": "icon_size",
       "label": "t:blocks.icon.icon_size.label",
-      "min": 12,
-      "max": 96,
-      "step": 2,
-      "unit": "px",
-      "default": 30
+      "info": "t:blocks.icon.icon_size.info",
+      "options": [
+        { "value": "inherit", "label": "t:blocks.all.inherit.label" },
+        { "value": "3xs", "label": "t:settings_schema.typography.scale.3xs" },
+        { "value": "2xs", "label": "t:settings_schema.typography.scale.2xs" },
+        { "value": "xs", "label": "t:settings_schema.typography.scale.xs" },
+        { "value": "sm", "label": "t:settings_schema.typography.scale.sm" },
+        { "value": "md", "label": "t:settings_schema.typography.scale.md" },
+        { "value": "lg", "label": "t:settings_schema.typography.scale.lg" },
+        { "value": "xl", "label": "t:settings_schema.typography.scale.xl" },
+        { "value": "2xl", "label": "t:settings_schema.typography.scale.2xl" },
+        { "value": "3xl", "label": "t:settings_schema.typography.scale.3xl" },
+        { "value": "4xl", "label": "t:settings_schema.typography.scale.4xl" },
+        { "value": "5xl", "label": "t:settings_schema.typography.scale.5xl" },
+        { "value": "6xl", "label": "t:settings_schema.typography.scale.6xl" },
+        { "value": "7xl", "label": "t:settings_schema.typography.scale.7xl" },
+        { "value": "8xl", "label": "t:settings_schema.typography.scale.8xl" }
+      ],
+      "default": "inherit"
     },
     {
       "type": "select",
@@ -173,7 +282,7 @@
       "name": "t:blocks.icon.name",
       "settings": {
         "icon": "sparkle",
-        "icon_size": 30,
+        "icon_size": "inherit",
         "alignment": "left",
         "show_frame": true,
         "frame_size": 52,

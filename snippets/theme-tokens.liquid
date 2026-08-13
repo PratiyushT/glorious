@@ -164,6 +164,11 @@
     --micro-size: var(--text-caption-size);
     --micro-tracking: var(--text-caption-tracking);
 
+    /* ---- Icons -------------------------------------------------------
+       The merchant picks one responsive rung globally. Icon blocks inherit
+       this alias unless they select the same scale locally.               */
+    --icon-size-global: var(--icon-size-{{ settings.icon_size | default: 'md' }});
+
     /* ---- Shape ------------------------------------------------------- */
     --radius: {{ s_radius }}px;
     --radius-sm: {{ s_radius | times: 1.0 | divided_by: 2.0 | round: 2 }}px;

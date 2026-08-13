@@ -434,7 +434,7 @@
                       "settings": {
                         "icon": "shipping",
                         "accessible_label": "",
-                        "icon_size": 30,
+                        "icon_size": "inherit",
                         "alignment": "left",
                         "show_frame": true,
                         "frame_size": 52,
@@ -535,7 +535,7 @@
                       "settings": {
                         "icon": "support",
                         "accessible_label": "",
-                        "icon_size": 30,
+                        "icon_size": "inherit",
                         "alignment": "left",
                         "show_frame": true,
                         "frame_size": 52,
@@ -636,7 +636,7 @@
                       "settings": {
                         "icon": "secure",
                         "accessible_label": "",
-                        "icon_size": 30,
+                        "icon_size": "inherit",
                         "alignment": "left",
                         "show_frame": true,
                         "frame_size": 52,
@@ -737,7 +737,7 @@
                       "settings": {
                         "icon": "handcraft",
                         "accessible_label": "",
-                        "icon_size": 30,
+                        "icon_size": "inherit",
                         "alignment": "left",
                         "show_frame": true,
                         "frame_size": 52,
@@ -838,7 +838,7 @@
                       "settings": {
                         "icon": "certified",
                         "accessible_label": "",
-                        "icon_size": 30,
+                        "icon_size": "inherit",
                         "alignment": "left",
                         "show_frame": true,
                         "frame_size": 52,
