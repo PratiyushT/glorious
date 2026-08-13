@@ -212,7 +212,7 @@
       },
       "accent": {
         "label": "Accent",
-        "info": "The gold used for micro labels, rules and emblems."
+        "info": "The accent color used for micro labels, rules and emblems."
       },
       "border": {
         "label": "Borders"
