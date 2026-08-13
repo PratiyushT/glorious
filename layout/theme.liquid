@@ -23,6 +23,16 @@
     <meta name="description" content="{{ meta_description | escape }}">
     {% render 'social-meta-tags', description: meta_description %}
 
+    {%- if request.page_type == 'product' -%}
+      <script type="application/ld+json">
+        {{ product | structured_data }}
+      </script>
+    {%- elsif request.page_type == 'article' -%}
+      <script type="application/ld+json">
+        {{ article | structured_data }}
+      </script>
+    {%- endif -%}
+
     <script>
       document.documentElement.classList.remove('no-js');
       document.documentElement.classList.add('js');
