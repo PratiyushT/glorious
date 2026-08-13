@@ -106,6 +106,7 @@
                     {{ selected_variant.unit_price | money }} / {%- if selected_variant.unit_price_measurement.reference_value != 1 -%}{{ selected_variant.unit_price_measurement.reference_value }}{%- endif -%}{{ selected_variant.unit_price_measurement.reference_unit }}
                   {%- endif -%}
                 </span>
+                {% render 'tax-note' %}
                 {%- if block.settings.show_shipping_policy and shop.shipping_policy.body != blank -%}<a class="product-price__note" href="{{ shop.shipping_policy.url }}">{{ 'products.shipping_policy' | t }}</a>{%- endif -%}
               </div>
 

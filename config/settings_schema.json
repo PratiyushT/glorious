@@ -2349,7 +2349,7 @@
         "id": "tax_note_text",
         "label": "t:settings_schema.tax.tax_note_text.label",
         "info": "t:settings_schema.tax.tax_note_text.info",
-        "default": "inc. all taxes and fees"
+        "default": "Taxes and shipping are calculated at checkout."
       }
     ]
   },

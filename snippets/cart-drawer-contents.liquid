@@ -183,6 +183,7 @@
                     {%- else -%}
                       {{- item.final_line_price | money -}}
                     {%- endif -%}
+                    {% render 'unit-price', price: item.unit_price, measurement: item.unit_price_measurement, class: 'drawer-row__unit-price' %}
                   </span>
                   <button
                     class="drawer-row__remove"
@@ -203,17 +204,6 @@
 </div>
 
 {%- if cart.item_count > 0 -%}
-  {%- liquid
-    comment
-      The footer's copy follows the one tax-note switch, because revision 14's
-      reassurance is a claim about the figure above it — "every tax and fee
-      already included" is only true where the note is shown. With the note off
-      the shop is not pricing tax-inclusively, and the drawer says the other
-      thing instead.
-    endcomment
-    assign tax_note_on = settings.show_tax_note
-  -%}
-
   <div class="drawer__foot">
     {%- comment -%}
       Cart-level discounts, which are the shop's own — an automatic discount or
@@ -257,12 +247,7 @@
       a differently-styled paragraph made the whole footer change appearance,
       which is not what the switch is for.
     {%- endcomment -%}
-    {%- liquid
-      assign promise_text = section.settings.promise_text
-      unless tax_note_on
-        assign promise_text = section.settings.note
-      endunless
-    -%}
+    {%- assign promise_text = section.settings.promise_text -%}
 
     {%- if section.settings.promise_label != blank or promise_text != blank -%}
       <div class="drawer__promise">

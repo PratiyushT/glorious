@@ -145,17 +145,12 @@
 
       -%}
 
-      {%- comment -%}
-        The price markup a pick writes into `[data-card-price]`. It carries the
-        figure and nothing else: `theme.js` replaces that element's whole
-        `innerHTML`, and anything beside the price — a note, a unit — is a
-        sibling block out of its reach.
-      {%- endcomment -%}
       {%- capture value_price_html -%}
         {%- if chosen.compare_at_price > chosen.price -%}
           <s>{{ chosen.compare_at_price | money }}</s>
         {%- endif -%}
         {{- chosen.price | money -}}
+        {% render 'unit-price', price: chosen.unit_price, measurement: chosen.unit_price_measurement, class: 'card__unit-price' %}
       {%- endcapture -%}
 
         <a

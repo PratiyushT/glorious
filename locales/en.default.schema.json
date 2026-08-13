@@ -372,10 +372,10 @@
     },
     "tax": {
       "name": "Tax",
-      "paragraph": "How this shop qualifies its prices. The words are stated once here; where they are shown is a Cart setting.",
+      "paragraph": "Shopify automatically identifies tax-inclusive prices. Set the note used when taxes are not included.",
       "tax_note_text": {
-        "label": "Tax note",
-        "info": "Follows the subtotal in the cart drawer and on the cart page — \"inc. all taxes and fees\", \"plus shipping\", whatever is true of this shop. Leave it empty to say nothing."
+        "label": "Tax-exclusive note",
+        "info": "Shown when Shopify reports that taxes are not included. Leave empty to say nothing."
       }
     },
     "cart": {
@@ -387,8 +387,8 @@
       },
       "features_header": "Cart features",
       "show_tax_note": {
-        "label": "Show the tax note",
-        "info": "Puts the Tax note after the cart subtotal."
+        "label": "Show the tax-exclusive note",
+        "info": "Shows the custom note when Shopify reports that taxes are not included. Tax-inclusive prices are always identified."
       },
       "cart_note": {
         "label": "Allow note to seller",

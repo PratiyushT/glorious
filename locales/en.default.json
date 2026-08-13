@@ -84,6 +84,7 @@
     "product_type": "Product type",
     "sku": "SKU",
     "media_gallery": "Product media",
+    "unit_price_separator": "per",
     "breadcrumbs": "Breadcrumbs",
     "zoom_image": "Zoom {{ title }}",
     "shipping_policy": "Shipping policy",
@@ -148,6 +149,7 @@
     "remove_title": "Remove {{ title }}",
     "increase": "Add one {{ title }}",
     "decrease": "Remove one {{ title }}",
+    "taxes_included": "Taxes included.",
     "taxes_note": "Taxes and shipping calculated at checkout."
   },
   "navigation": {

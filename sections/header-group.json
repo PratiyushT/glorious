@@ -82,7 +82,6 @@
       "type": "cart-drawer",
       "settings": {
         "color_scheme": "scheme_1",
-        "note": "Taxes and delivery are calculated at checkout. Review the order before payment.",
         "secondary_label": "Salon",
         "secondary_link": "/#visit"
       }

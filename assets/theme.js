@@ -3057,6 +3057,12 @@
       compare.hidden = !variant.compareAtPrice;
     }
 
+    var unit = panel.querySelector('[data-qv-unit-price]');
+    if (unit) {
+      unit.innerHTML = variant.unitPrice || '';
+      unit.hidden = !variant.unitPrice;
+    }
+
     var sku = panel.querySelector('[data-qv-sku]');
     if (sku) sku.textContent = variant.sku || '';
 

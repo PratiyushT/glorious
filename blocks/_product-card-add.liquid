@@ -117,6 +117,7 @@
       echo '</s>'
     endif
     echo chosen.price | money
+    render 'unit-price', price: chosen.unit_price, measurement: chosen.unit_price_measurement, class: 'card__unit-price'
   endcapture
 -%}
 

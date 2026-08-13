@@ -80,6 +80,7 @@
                   <div class="cart-line__price">
                     {%- if item.original_line_price > item.final_line_price -%}<s class="cart-line__compare">{{ item.original_line_price | money }}</s>{%- endif -%}
                     {%- if settings.cart_unit_price -%}{{ item.final_price | money }}{%- else -%}{{ item.final_line_price | money }}{%- endif -%}
+                    {% render 'unit-price', price: item.unit_price, measurement: item.unit_price_measurement, class: 'cart-line__unit-price' %}
                   </div>
                   <div class="cart-line__controls">
                     <div class="cart-quantity" data-cart-quantity>
@@ -113,8 +114,7 @@
               <span>{{ 'cart.subtotal' | t }}</span>
               <span>{{ cart.total_price | money }}</span>
             </div>
-            {%- if settings.show_tax_note -%}<div>{% render 'tax-note' %}</div>{%- endif -%}
-            <p class="text-xs text-muted">{{ 'cart.taxes_note' | t }}</p>
+            <div>{% render 'tax-note' %}</div>
 
             <div class="cart-page__actions">
               <button type="submit" name="checkout" class="btn btn--primary">{{ 'cart.checkout' | t }}</button>

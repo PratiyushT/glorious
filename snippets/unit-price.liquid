@@ -1,0 +1,13 @@
+{%- comment -%}
+  Outputs Shopify's legal unit-price measurement for a variant or line item.
+  Accepts: price, measurement, class.
+{%- endcomment -%}
+{%- if measurement != blank and price != blank -%}
+  <small class="unit-price {{ class }}">
+    {{- price | money -}}
+    <span aria-hidden="true"> / </span>
+    <span class="visually-hidden">{{ 'products.unit_price_separator' | t }}</span>
+    {%- if measurement.reference_value != 1 -%}{{ measurement.reference_value }}{%- endif -%}
+    {{- measurement.reference_unit -}}
+  </small>
+{%- endif -%}

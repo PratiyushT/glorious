@@ -35,6 +35,8 @@
   without it the markup is `$19.99<small>inc. all taxes</small>` — spaced by the
   margin on screen, but run together as one word when read aloud or copied.
 {%- endcomment -%}
-{%- if settings.show_tax_note and settings.tax_note_text != blank -%}
+{%- if cart.taxes_included -%}
+  {{- ' ' -}}<small class="price-tax">{{ 'cart.taxes_included' | t }}</small>
+{%- elsif settings.show_tax_note and settings.tax_note_text != blank -%}
   {{- ' ' -}}<small class="price-tax">{{ settings.tax_note_text }}</small>
 {%- endif -%}

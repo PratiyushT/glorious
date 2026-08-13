@@ -2766,6 +2766,18 @@ a {
   margin-top: var(--card-add-gap);
 }
 
+.unit-price {
+  display: block;
+  margin-top: 0.2rem;
+  color: var(--c-muted);
+  font-family: var(--font-body);
+  font-size: var(--fs-xs);
+  font-weight: 400;
+  letter-spacing: var(--text-small-tracking);
+  line-height: var(--text-small-leading);
+  white-space: normal;
+}
+
 .card__add-fallback {
   display: none;
 }
