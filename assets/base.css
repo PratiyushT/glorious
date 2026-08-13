@@ -6912,6 +6912,11 @@ a.nav-menu__address:hover {
   color: color-mix(in srgb, var(--c-text) 68%, transparent);
 }
 
+.footer__follow-on-shop {
+  display: flex;
+  align-items: center;
+}
+
 @container (max-width: 36.85rem) {
   .footer__bottom {
     padding-top: 20px;

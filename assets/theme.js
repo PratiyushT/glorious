@@ -1793,11 +1793,11 @@
       };
 
       script = document.querySelector(
-        'script[src="https://www.youtube.com/iframe_api"]:not([data-gj-player-api-failed])'
+        'script[src="//www.youtube.com/iframe_api"]:not([data-gj-player-api-failed])'
       );
       if (!script) {
         script = document.createElement('script');
-        script.src = 'https://www.youtube.com/iframe_api';
+        script.src = '//www.youtube.com/iframe_api';
         script.async = true;
         script.dataset.gjPlayerApi = 'youtube';
         document.head.appendChild(script);
@@ -1824,7 +1824,7 @@
       var settled = false;
       var timeout = 0;
       var script = document.querySelector(
-        'script[src="https://player.vimeo.com/api/player.js"]:not([data-gj-player-api-failed])'
+        'script[src="//player.vimeo.com/api/player.js"]:not([data-gj-player-api-failed])'
       );
 
       function succeed() {
@@ -1847,7 +1847,7 @@
 
       if (!script) {
         script = document.createElement('script');
-        script.src = 'https://player.vimeo.com/api/player.js';
+        script.src = '//player.vimeo.com/api/player.js';
         script.async = true;
         script.dataset.gjPlayerApi = 'vimeo';
         document.head.appendChild(script);

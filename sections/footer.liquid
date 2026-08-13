@@ -15,6 +15,10 @@
 {%- liquid
   assign social_blocks = section.blocks | where: 'type', 'social'
   assign social = social_blocks.first
+  assign has_social_links = false
+  if social != blank and social.settings.instagram != blank or social.settings.facebook != blank or social.settings.pinterest != blank or social.settings.tiktok != blank
+    assign has_social_links = true
+  endif
   assign column_blocks = section.blocks | where: 'type', 'menu'
   assign contact_blocks = section.blocks | where: 'type', 'contact'
 -%}
@@ -24,7 +28,7 @@
   style="{% render 'section-style', padding_top: section.settings.padding_top, padding_bottom: section.settings.padding_bottom %}"
 >
   <div class="page-width">
-    {%- if social != blank -%}
+    {%- if has_social_links -%}
       <div class="footer__social" {{ social.shopify_attributes }}>
         {%- if social.settings.instagram != blank -%}
           <a class="footer__link" href="{{ social.settings.instagram }}" target="_blank" rel="noopener">Instagram</a>
@@ -175,6 +179,10 @@
     {%- endif -%}
 
     <div class="footer__bottom">
+      {%- if section.settings.show_follow_on_shop -%}
+        <div class="footer__follow-on-shop">{{ shop | login_button: action: 'follow' }}</div>
+      {%- endif -%}
+
       <span>
         &copy; {{ 'now' | date: '%Y' }} {{ section.settings.copyright | default: shop.name }}
       </span>
@@ -201,6 +209,13 @@
       "type": "checkbox",
       "id": "show_wordmark",
       "label": "t:sections.footer.show_wordmark.label",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_follow_on_shop",
+      "label": "t:sections.footer.show_follow_on_shop.label",
+      "info": "t:sections.footer.show_follow_on_shop.info",
       "default": true
     },
     {
@@ -277,7 +292,8 @@
           "type": "link_list",
           "id": "menu",
           "label": "t:sections.footer.blocks.menu.menu.label",
-          "info": "t:sections.footer.blocks.menu.menu.info"
+          "info": "t:sections.footer.blocks.menu.menu.info",
+          "default": "footer"
         },
         { "type": "text", "id": "label_1", "label": "t:sections.footer.blocks.menu.label_n.label_1" },
         { "type": "url", "id": "url_1", "label": "t:sections.footer.blocks.menu.url_n.url_1" },

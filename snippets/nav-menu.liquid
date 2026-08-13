@@ -22,6 +22,10 @@
   assign cat_blocks = section.blocks | where: 'type', 'category'
   assign social_blocks = section.blocks | where: 'type', 'social'
   assign social = social_blocks.first
+  assign has_social_links = false
+  if social != blank and social.settings.instagram != blank or social.settings.facebook != blank or social.settings.pinterest != blank
+    assign has_social_links = true
+  endif
 
   comment
     One rank past the last numbered row: the design animates the category
@@ -131,7 +135,7 @@
   </div>
 
   <div class="nav-menu__foot" style="--row: {{ tail_row }};">
-    {%- if social != blank -%}
+    {%- if has_social_links -%}
       <div class="nav-menu__social">
         {%- if social.settings.instagram != blank -%}
           <a href="{{ social.settings.instagram }}" target="_blank" rel="noopener">Instagram</a>

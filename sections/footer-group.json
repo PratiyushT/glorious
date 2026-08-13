@@ -12,11 +12,7 @@
       "blocks": {
         "social": {
           "type": "social",
-          "settings": {
-            "instagram": "https://www.instagram.com/",
-            "facebook": "https://www.facebook.com/",
-            "pinterest": "https://www.pinterest.com/"
-          }
+          "settings": {}
         },
         "navigation": {
           "type": "menu",

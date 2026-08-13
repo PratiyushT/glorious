@@ -1398,6 +1398,10 @@
       "show_wordmark": {
         "label": "Show the letterform wordmark"
       },
+      "show_follow_on_shop": {
+        "label": "Show Follow on Shop",
+        "info": "Lets customers follow the store in the Shop app. Shopify controls the branded button appearance."
+      },
       "show_payment_icons": {
         "label": "Show payment icons"
       },
