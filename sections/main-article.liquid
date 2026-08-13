@@ -31,6 +31,67 @@
 
     <div class="content-prose rte">{{ article.content }}</div>
 
+    {%- if blog.comments_enabled? -%}
+      <section class="article-comments" id="comments" aria-labelledby="CommentsHeading-{{ section.id }}">
+        <h2 id="CommentsHeading-{{ section.id }}">{{ 'blogs.comments.heading' | t: count: article.comments_count }}</h2>
+
+        {%- paginate article.comments by section.settings.comments_per_page -%}
+          {%- if article.comments_count > 0 -%}
+            <ol class="article-comments__list" role="list">
+              {%- for comment in article.comments -%}
+                <li class="article-comment" id="comment-{{ comment.id }}">
+                  <div class="rte">{{ comment.content }}</div>
+                  <p class="article-comment__meta">
+                    <span>{{ comment.author }}</span>
+                    <time datetime="{{ comment.created_at | date: '%Y-%m-%d' }}">{{ comment.created_at | date: '%b %e, %Y' }}</time>
+                  </p>
+                </li>
+              {%- endfor -%}
+            </ol>
+
+            {%- if paginate.pages > 1 -%}
+              <div class="catalog-pagination-wrap">
+                {% render 'catalog-pagination', paginate: paginate %}
+              </div>
+            {%- endif -%}
+          {%- endif -%}
+        {%- endpaginate -%}
+
+        <div class="article-comment-form">
+          <h3>{{ 'blogs.comments.form_heading' | t }}</h3>
+          {%- form 'new_comment', article, class: 'contact-form' -%}
+            {%- if form.posted_successfully? -%}
+              <p class="form-status form-status--success" tabindex="-1" autofocus>
+                {%- if blog.moderated? -%}{{ 'blogs.comments.success_moderated' | t }}{%- else -%}{{ 'blogs.comments.success' | t }}{%- endif -%}
+              </p>
+            {%- endif -%}
+
+            {%- if form.errors -%}
+              <div class="form-status form-status--error" role="alert" tabindex="-1" autofocus>
+                {{ form.errors | default_errors }}
+              </div>
+            {%- endif -%}
+
+            <div class="contact-form__grid">
+              <div class="contact-form__field">
+                <label for="CommentAuthor-{{ section.id }}">{{ 'blogs.comments.name' | t }}</label>
+                <input class="field" id="CommentAuthor-{{ section.id }}" type="text" name="comment[author]" value="{{ form.author | escape }}" autocomplete="name" required>
+              </div>
+              <div class="contact-form__field">
+                <label for="CommentEmail-{{ section.id }}">{{ 'blogs.comments.email' | t }}</label>
+                <input class="field" id="CommentEmail-{{ section.id }}" type="email" name="comment[email]" value="{{ form.email | escape }}" autocomplete="email" autocorrect="off" autocapitalize="off" required>
+              </div>
+              <div class="contact-form__field contact-form__field--wide">
+                <label for="CommentBody-{{ section.id }}">{{ 'blogs.comments.message' | t }}</label>
+                <textarea class="field" id="CommentBody-{{ section.id }}" name="comment[body]" required>{{ form.body }}</textarea>
+              </div>
+            </div>
+            <div><button class="btn btn--primary" type="submit">{{ 'blogs.comments.submit' | t }}</button></div>
+          {%- endform -%}
+        </div>
+      </section>
+    {%- endif -%}
+
     {%- if section.settings.show_navigation -%}
       {%- if blog.previous_article or blog.next_article -%}
         <nav class="article-navigation" aria-label="{{ 'blogs.article_navigation' | t }}">
@@ -72,6 +133,17 @@
       "default": "cover", "visible_if": "{{ section.settings.show_image }}"
     },
     { "type": "checkbox", "id": "show_navigation", "label": "t:sections.main_article.show_navigation", "default": true },
+    {
+      "type": "select",
+      "id": "comments_per_page",
+      "label": "t:sections.main_article.comments_per_page",
+      "options": [
+        { "value": "5", "label": "5" },
+        { "value": "10", "label": "10" },
+        { "value": "20", "label": "20" }
+      ],
+      "default": "10"
+    },
     { "type": "header", "content": "t:sections.all.spacing_header" },
     {
       "type": "select", "id": "padding_top", "label": "t:sections.all.padding_top.label",

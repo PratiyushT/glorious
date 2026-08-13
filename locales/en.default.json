@@ -204,6 +204,19 @@
   "blogs": {
     "read_more": "Read more",
     "article_navigation": "More articles",
+    "comments": {
+      "heading": {
+        "one": "{{ count }} comment",
+        "other": "{{ count }} comments"
+      },
+      "form_heading": "Leave a comment",
+      "name": "Name",
+      "email": "Email address",
+      "message": "Comment",
+      "submit": "Post comment",
+      "success": "Your comment was posted.",
+      "success_moderated": "Your comment was submitted and will appear after approval."
+    },
     "empty": {
       "title": "No articles yet",
       "text": "New stories will appear here when they are published."

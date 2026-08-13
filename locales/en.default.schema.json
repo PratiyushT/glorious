@@ -1723,7 +1723,8 @@
       "show_metadata": "Show published date",
       "show_author": "Show author",
       "show_image": "Show featured image",
-      "show_navigation": "Show previous and next articles"
+      "show_navigation": "Show previous and next articles",
+      "comments_per_page": "Comments per page"
     },
     "main_policy": {
       "name": "Policy content",
