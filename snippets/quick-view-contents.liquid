@@ -48,82 +48,29 @@
   assign current_variant = product.selected_or_first_available_variant
 
   comment
-    The axes.
-
-    `GV.groups()` hands the design's quick view one row per axis and it renders
-    whatever comes back, never naming an axis itself: "Pages never hard-code an
-    axis: they render whatever `groups()` hands back, which is what lets a ring
-    show seven choices and a pair of earrings show six without either page
-    knowing." (gj-variants.js.) Here the axes are the product's own options and
-    the variants are Shopify's, so the prices are the ones checkout will charge
-    rather than a multiplier table's.
-
-    Two options are singled out, by the same names the rest of the theme matches
-    them on — see snippets/line-options.liquid. The metal is the row that gets
-    swatches and the design's own ordering; the karat is composed into the metal
-    row's caption, because "18K Yellow Gold" is one fact about the piece, which
-    is exactly what the design's `metalName()` builds and what a bag line shows.
+    Product options remain in the exact order configured by the merchant. No
+    option name or value has special meaning here: a clothing size, food
+    flavour, furniture finish, or subscription choice all use the same path.
   endcomment
-  assign metal_option = blank
-  assign karat_option = blank
-  assign karat_index = 0
   assign has_options = false
-
   unless product.has_only_default_variant
     assign has_options = true
-    for option in product.options_with_values
-      assign option_down = option.name | downcase
-      if option_down contains 'purity' or option_down contains 'karat'
-        if karat_option == blank
-          assign karat_option = option
-          assign karat_index = forloop.index0
-        endif
-      elsif option_down contains 'metal'
-        if metal_option == blank
-          assign metal_option = option
-        endif
-      endif
-    endfor
   endunless
 
-  capture ordered_metals_raw
-    render 'metal-order', option: metal_option
-  endcapture
-  assign ordered_metals = ordered_metals_raw | strip | split: '||'
-
   comment
-    Which options are painted with swatches, worked out once.
-
-    An option gets the swatch treatment when it is the metal, or when its values
-    carry a native Shopify swatch of their own — never because of a table of
-    metal names kept here, which is the rule metal-swatch.liquid is written to.
-    The flags are computed here rather than inside the render loop because the
-    order below needs the same answer, and asking twice would mean two places to
-    keep in step.
+    Automatic controls use native Shopify swatches when they exist, compact
+    pills for short option lists, and a select for longer lists. A merchant can
+    also force one control style for every quick-view option.
   endcomment
-  assign metal_row_index = -1
   assign swatch_flags = ''
   for option in product.options_with_values
-    assign option_down = option.name | downcase
     assign is_swatch = false
-    if option_down contains 'metal'
-      assign is_swatch = true
-      comment
-        Recorded here, off the *same* needle the row loop's `is_metal` uses, so
-        "the row that renders as the metal row" and "the row that is hoisted"
-        are the same row by construction rather than by two tests agreeing.
-      endcomment
-      if metal_row_index == -1
-        assign metal_row_index = forloop.index0
+    for value in option.values
+      if value.swatch.color != blank or value.swatch.image != blank
+        assign is_swatch = true
+        break
       endif
-    else
-      for value in option.values
-        if value.swatch.color != blank or value.swatch.image != blank
-          assign is_swatch = true
-          break
-        endif
-      endfor
-    endif
+    endfor
     if is_swatch
       assign swatch_flags = swatch_flags | append: '1|'
     else
@@ -133,85 +80,22 @@
   assign swatch_flags = swatch_flags | split: '|'
 
   comment
-    **The metal swatch row always leads.** The design's `axisDefs()` opens with
-    `out.push({ key: 'metal', label: 'Metal', kind: 'swatch', primary: true })`
-    and pushes everything else after it, so the metal is the first thing the
-    panel offers. Rendering `product.options_with_values` in its own order gave
-    whatever the merchant typed in admin instead — on this shop that put "Gold
-    Karat" above "Metal".
-
-    **The metal, and only the metal.** Hoisting every swatch-kind option instead
-    would make the row order depend on admin metafield data: connect Shopify's
-    Color metafield to a "Finish" or "Gemstone" option and the panel silently
-    reorders, and if that option sits before Metal in admin it would *lead* —
-    which the design never does. The design has exactly one swatch axis
-    (`gj-variants.js:125` is the file's only `kind: 'swatch'`) and so states no
-    precedence between two, and inventing one is not porting. Everything after
-    the metal keeps the merchant's order.
-
-    So this is a list of *positions* with the metal moved to the front.
-    **The positions themselves are never renumbered, and that is load-bearing.**
-    `data-qv-group`, `data-qv-prefix` and `current_variant.options[...]` are all
-    indexed by the option's real place in `variant.options` — renumber them to
-    the display order and the script would match a pick against the wrong axis
-    and resolve the wrong variant, silently, for every product whose metal was
-    not already first.
-
-    With no metal option `metal_row_index` stays -1, the first branch is skipped
-    and the order is simply 0…n-1.
+    Positions are kept explicitly because data-qv-group and variant.options use
+    these zero-based indexes to resolve the selected variant.
   endcomment
   assign option_order = ''
-  if metal_row_index != -1
-    assign option_order = option_order | append: metal_row_index | append: '|'
-  endif
   for option in product.options_with_values
-    unless forloop.index0 == metal_row_index
-      assign option_order = option_order | append: forloop.index0 | append: '|'
-    endunless
+    assign option_order = option_order | append: forloop.index0 | append: '|'
   endfor
   assign option_order = option_order | split: '|'
 
-  comment
-    The design's `sc-if noVariants` row: with nothing to choose, the panel still
-    says what the piece is made of. Only reached where the piece carries no metal
-    option, so the metafield is the only thing left that knows — which is the
-    card's rule too ("without a control the metafield still wins").
-  endcomment
-  assign metal_line = blank
-  if metal_option == blank
-    assign metal_line = product.metafields.custom.metal.value | append: ''
+  assign swatch_radius = '50%'
+  if settings.quick_view_swatch_shape == 'square'
+    assign swatch_radius = 'var(--radius-base, 0)'
   endif
 
-  comment
-    The design's "Total carat weight" row, from the same metafield the card's
-    caption reads.
-  endcomment
-  assign carat_label = product.metafields.custom.total_carat_weight.value | append: ''
-  if carat_label != blank
-    unless carat_label contains 'ct'
-      assign carat_label = carat_label | append: ' ct'
-    endunless
-  endif
-
-  comment
-    Clarity, colour and certification are one value for the whole house in the
-    design. They are theme settings here, with the matching product metafield in
-    front of each so an exception can say so.
-  endcomment
-  assign clarity = product.metafields.custom.diamond_clarity_grade.value | default: settings.quick_view_clarity
-  assign colour = product.metafields.custom.diamond_color_grade.value | default: settings.quick_view_colour
-  assign certification = product.metafields.custom.certification_lab.value | default: settings.quick_view_certification
-
-  comment
-    Engraving is an axis in the design and a line item property here, so the
-    input has to sit inside the form while the control it belongs to sits up in
-    the rows with the others. `form=` is what associates the two — FormData
-    collects it either way.
-  endcomment
-  assign supports_engraving = product.metafields.custom.engraving_available.value
   assign form_id = 'quick-view-form-' | append: product.id
   assign cart_name = settings.cart_name | default: 'Cart'
-  assign cart_name_lower = cart_name | downcase
   assign add_label = 'products.add_to_cart' | t: cart_name: cart_name
 -%}
 
@@ -389,75 +273,41 @@
         {%- liquid
           comment
             The option's own position, not the loop's. See the note on
-            `option_order` above: everything downstream — data-qv-group,
-            data-qv-prefix, the variant matcher — is indexed by where the option
+            `option_order` above: everything downstream — data-qv-group and
+            the variant matcher — is indexed by where the option
             really sits in `variant.options`, so the display order must never
             become the numbering.
           endcomment
           assign opt_index = position | plus: 0
           assign option = product.options_with_values[opt_index]
           assign selected_value = current_variant.options[opt_index]
-          assign option_down = option.name | downcase
-
-          assign is_metal = false
-          if option_down contains 'metal'
-            assign is_metal = true
-          endif
-
           comment
             Which control an axis gets.
 
-            The design fixes each axis's `kind` by hand because it owns its own
-            axis table. Here they are the merchant's options, so the kind is
-            derived — and the derivation reproduces the design's own arrangement
-            on the design's own data: swatches for the metal, pills for the two-
-            and three-value axes (karat, origin, cut, purchase option, backing,
-            clasp), a select for the longer ones (ring size at thirteen, chain
-            at five, wrist at four).
-
-            Swatch or not was settled once, above, because the row order needs
-            the same answer — `swatch_flags` is that answer, indexed the same
-            way as everything else here.
+            Automatic follows native swatches and list length. Forced styles
+            apply uniformly without inspecting the option name or its values.
           endcomment
-          assign kind = 'select'
-          if swatch_flags[opt_index] == '1'
-            assign kind = 'swatch'
-          elsif option.values.size <= 3
-            assign kind = 'pill'
-          endif
-
-          assign swatch_values = option.values
-          if is_metal
-            assign swatch_values = ordered_metals
-          endif
-
-          comment
-            The metal row's caption is the design's `metalName(v)` — "18k White
-            Gold", the karat and the metal as one fact. The karat keeps its own
-            row below, as it does in the design.
-          endcomment
-          assign value_label = selected_value
-          assign compose_karat = false
-          if is_metal and karat_option != blank
-            assign compose_karat = true
-            assign value_label = current_variant.options[karat_index] | append: ' ' | append: selected_value
+          assign kind = settings.quick_view_picker_type | default: 'auto'
+          if kind == 'auto'
+            assign kind = 'select'
+            if swatch_flags[opt_index] == '1'
+              assign kind = 'swatch'
+            elsif option.values.size <= 3
+              assign kind = 'pill'
+            endif
           endif
         -%}
 
         <div class="quick-view__opt" data-qv-group="{{ opt_index }}">
           <div class="quick-view__opt-head">
             <span class="quick-view__opt-label">{{ option.name }}</span>
-            <span
-              class="quick-view__opt-value"
-              data-qv-selected
-              {%- if compose_karat %} data-qv-prefix="{{ karat_index }}"{% endif -%}
-            >{{ value_label }}</span>
+            <span class="quick-view__opt-value" data-qv-selected>{{ selected_value }}</span>
           </div>
 
           {%- case kind -%}
             {%- when 'swatch' -%}
-              <div class="quick-view__swatches">
-                {%- for value in swatch_values -%}
+              <div class="quick-view__swatches" style="--swatch-radius: {{ swatch_radius }};">
+                {%- for value in option.values -%}
                   {%- liquid
                     assign value_text = value | append: ''
 
@@ -466,20 +316,6 @@
                       assign is_on = true
                     endif
 
-                    comment
-                      `ordered_metals` came back through `split`, so `value` is a
-                      plain string and no longer the product_option_value drop.
-                      The drop is what carries the merchant's native swatch, so
-                      it is looked up again — without this the swatch snippet's
-                      first and most specific branch is unreachable.
-                    endcomment
-                    assign value_drop = blank
-                    for candidate in option.values
-                      if candidate == value_text
-                        assign value_drop = candidate
-                        break
-                      endif
-                    endfor
                   -%}
                   <button
                     class="quick-view__swatch{% if is_on %} is-selected{% endif %}"
@@ -496,7 +332,7 @@
                       draws the ring from it, so a pick moves one class and
                       never leaves two rings behind.
                     {%- endcomment -%}
-                    {% render 'metal-swatch', option_value: value_drop, size: 96 %}
+                    {% render 'option-swatch', option_value: value, size: 96 %}
                   </button>
                 {%- endfor -%}
               </div>
@@ -536,87 +372,23 @@
       {%- endfor -%}
     {%- endif -%}
 
-    {%- if supports_engraving -%}
-      {%- comment -%}
-        An axis in the design, a line item property here — so it looks like the
-        others and posts like a property. The input is associated with the form
-        by `form=` rather than by nesting, and stays disabled until it is asked
-        for so an empty engraving never reaches the bag.
-      {%- endcomment -%}
-      <div class="quick-view__opt" data-qv-engrave>
-        <div class="quick-view__opt-head">
-          <span class="quick-view__opt-label">{{ 'products.engraving' | t }}</span>
-          <span class="quick-view__opt-value" data-qv-engrave-value>{{ 'products.engraving_none' | t }}</span>
-        </div>
-
-        <div class="quick-view__pills">
-          <button
-            class="quick-view__pill is-selected"
-            type="button"
-            data-qv-engrave-pick="off"
-            aria-pressed="true"
-          >{{ 'products.engraving_none' | t }}</button>
-          <button
-            class="quick-view__pill"
-            type="button"
-            data-qv-engrave-pick="on"
-            aria-pressed="false"
-          >{{ 'products.engraving_custom' | t }}</button>
-        </div>
-
-        <input
-          class="quick-view__engrave-field"
-          type="text"
-          form="{{ form_id }}"
-          name="properties[Custom Engraving]"
-          maxlength="20"
-          autocomplete="off"
-          placeholder="{{ 'products.custom_engraving_placeholder' | t | escape }}"
-          aria-label="{{ 'products.custom_engraving' | t | escape }}"
-          data-qv-engrave-field
-          hidden
-          disabled
-        >
-
-        <p class="quick-view__opt-note">{{ 'products.custom_engraving_hint' | t: cart_name: cart_name_lower }}</p>
-      </div>
-    {%- endif -%}
-
     <dl class="quick-view__specs">
-      {%- comment -%}
-        What the piece is, rather than what can be chosen about it. The metal
-        only appears here where nothing above states it — with a metal option
-        the row above is the metal, exactly as the design's `sc-if noVariants`
-        has it.
-      {%- endcomment -%}
-      {%- if metal_line != blank -%}
+      {%- if product.vendor != blank -%}
         <div class="quick-view__spec">
-          <dt>{{ 'products.metal' | t }}</dt>
-          <dd>{{ metal_line }}</dd>
+          <dt>{{ 'products.vendor' | t }}</dt>
+          <dd>{{ product.vendor }}</dd>
         </div>
       {%- endif -%}
-      {%- if carat_label != blank -%}
+      {%- if product.type != blank -%}
         <div class="quick-view__spec">
-          <dt>{{ 'products.carat_weight' | t }}</dt>
-          <dd>{{ carat_label }}</dd>
+          <dt>{{ 'products.product_type' | t }}</dt>
+          <dd>{{ product.type }}</dd>
         </div>
       {%- endif -%}
-      {%- if clarity != blank -%}
+      {%- if current_variant.sku != blank -%}
         <div class="quick-view__spec">
-          <dt>{{ 'products.clarity' | t }}</dt>
-          <dd>{{ clarity }}</dd>
-        </div>
-      {%- endif -%}
-      {%- if colour != blank -%}
-        <div class="quick-view__spec">
-          <dt>{{ 'products.colour' | t }}</dt>
-          <dd>{{ colour }}</dd>
-        </div>
-      {%- endif -%}
-      {%- if certification != blank -%}
-        <div class="quick-view__spec">
-          <dt>{{ 'products.certification' | t }}</dt>
-          <dd>{{ certification }}</dd>
+          <dt>{{ 'products.sku' | t }}</dt>
+          <dd data-qv-sku>{{ current_variant.sku }}</dd>
         </div>
       {%- endif -%}
     </dl>
@@ -670,6 +442,7 @@
               "id": {{ variant.id | json }},
               "available": {{ variant.available | json }},
               "options": {{ variant.options | json }},
+              "sku": {{ variant.sku | json }},
               "price": {{ variant.price | money | json }},
               "compareAtPrice": {% if variant.compare_at_price > variant.price %}{{ variant.compare_at_price | money | json }}{% else %}""{% endif %}
             }{% unless forloop.last %},{% endunless %}

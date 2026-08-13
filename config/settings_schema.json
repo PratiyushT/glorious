@@ -2288,33 +2288,52 @@
         "default": "scheme_1"
       },
       {
+        "type": "select",
+        "id": "quick_view_picker_type",
+        "label": "t:settings_schema.quick_view.quick_view_picker_type.label",
+        "info": "t:settings_schema.quick_view.quick_view_picker_type.info",
+        "options": [
+          {
+            "value": "auto",
+            "label": "t:settings_schema.quick_view.quick_view_picker_type.auto"
+          },
+          {
+            "value": "swatch",
+            "label": "t:settings_schema.quick_view.quick_view_picker_type.swatch"
+          },
+          {
+            "value": "pill",
+            "label": "t:settings_schema.quick_view.quick_view_picker_type.pill"
+          },
+          {
+            "value": "select",
+            "label": "t:settings_schema.quick_view.quick_view_picker_type.select"
+          }
+        ],
+        "default": "auto"
+      },
+      {
+        "type": "select",
+        "id": "quick_view_swatch_shape",
+        "label": "t:settings_schema.quick_view.quick_view_swatch_shape.label",
+        "visible_if": "{{ settings.quick_view_picker_type == 'auto' or settings.quick_view_picker_type == 'swatch' }}",
+        "options": [
+          {
+            "value": "round",
+            "label": "t:settings_schema.quick_view.quick_view_swatch_shape.round"
+          },
+          {
+            "value": "square",
+            "label": "t:settings_schema.quick_view.quick_view_swatch_shape.square"
+          }
+        ],
+        "default": "round"
+      },
+      {
         "type": "text",
         "id": "quick_view_reassurance",
         "label": "t:settings_schema.quick_view.quick_view_reassurance.label",
-        "default": "Free insured shipping"
-      },
-      {
-        "type": "header",
-        "content": "t:settings_schema.quick_view.specs_header",
-        "info": "t:settings_schema.quick_view.specs_info"
-      },
-      {
-        "type": "text",
-        "id": "quick_view_clarity",
-        "label": "t:settings_schema.quick_view.quick_view_clarity.label",
-        "default": "VVS and above"
-      },
-      {
-        "type": "text",
-        "id": "quick_view_colour",
-        "label": "t:settings_schema.quick_view.quick_view_colour.label",
-        "default": "F and above"
-      },
-      {
-        "type": "text",
-        "id": "quick_view_certification",
-        "label": "t:settings_schema.quick_view.quick_view_certification.label",
-        "default": "IGI"
+        "default": "Complimentary delivery"
       }
     ]
   },

@@ -356,16 +356,18 @@
       "quick_view_reassurance": {
         "label": "Reassurance line"
       },
-      "specs_header": "Specification",
-      "specs_info": "House-wide values. A custom.diamond_clarity_grade, custom.diamond_color_grade or custom.certification_lab metafield overrides one per piece.",
-      "quick_view_clarity": {
-        "label": "Clarity"
+      "quick_view_picker_type": {
+        "label": "Option controls",
+        "info": "Automatic uses Shopify swatches when provided, pills for short lists, and dropdowns for longer lists.",
+        "auto": "Automatic",
+        "swatch": "Swatches",
+        "pill": "Pills",
+        "select": "Dropdowns"
       },
-      "quick_view_colour": {
-        "label": "Colour"
-      },
-      "quick_view_certification": {
-        "label": "Certification"
+      "quick_view_swatch_shape": {
+        "label": "Swatch shape",
+        "round": "Round",
+        "square": "Square"
       }
     },
     "tax": {

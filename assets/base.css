@@ -7662,7 +7662,7 @@ a.nav-menu__address:hover {
   height: 2.75rem;
   padding: 0;
   border: 0;
-  border-radius: 50%;
+  border-radius: var(--swatch-radius, 50%);
   background: none;
   cursor: pointer;
 }

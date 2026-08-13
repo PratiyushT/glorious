@@ -3013,20 +3013,12 @@
 
     var choice = quickChoice(panel);
 
-    /* Each row says what is chosen on it. The metal row composes the karat into
-       its caption — "18K Yellow Gold" is one fact about the piece, which is how
-       the design's own metalName() writes it and how a bag line reads. */
+    /* Each row says what is chosen on it, in merchant option order. */
     panel.querySelectorAll('[data-qv-group]').forEach(function (group) {
       var caption = group.querySelector('[data-qv-selected]');
       if (!caption) return;
 
-      var text = choice[parseInt(group.dataset.qvGroup, 10)] || '';
-      var prefix = caption.dataset.qvPrefix;
-      if (prefix !== undefined && choice[parseInt(prefix, 10)]) {
-        text = choice[parseInt(prefix, 10)] + ' ' + text;
-      }
-
-      caption.textContent = text;
+      caption.textContent = choice[parseInt(group.dataset.qvGroup, 10)] || '';
     });
 
     var add = panel.querySelector('[data-qv-add]');
@@ -3066,6 +3058,9 @@
       compare.textContent = variant.compareAtPrice || '';
       compare.hidden = !variant.compareAtPrice;
     }
+
+    var sku = panel.querySelector('[data-qv-sku]');
+    if (sku) sku.textContent = variant.sku || '';
 
     if (add) {
       add.disabled = !variant.available;
@@ -3133,35 +3128,6 @@
     document.addEventListener('change', function (event) {
       if (!event.target.matches || !event.target.matches('[data-qv-select]')) return;
       paintQuickVariant();
-    });
-
-    /* Engraving looks like an axis and is a line item property, so it moves its
-       own field and leaves the variant alone. */
-    document.addEventListener('click', function (event) {
-      var pick = event.target.closest && event.target.closest('[data-qv-engrave-pick]');
-      if (!pick) return;
-
-      var row = pick.closest('[data-qv-engrave]');
-      if (!row) return;
-
-      row.querySelectorAll('[data-qv-engrave-pick]').forEach(function (other) {
-        var on = other === pick;
-        other.classList.toggle('is-selected', on);
-        other.setAttribute('aria-pressed', on ? 'true' : 'false');
-      });
-
-      var caption = row.querySelector('[data-qv-engrave-value]');
-      if (caption) caption.textContent = pick.textContent;
-
-      /* Disabled as well as hidden: a disabled control is not submitted, so an
-         engraving nobody asked for never reaches the bag. */
-      var field = row.querySelector('[data-qv-engrave-field]');
-      if (!field) return;
-
-      var wanted = pick.dataset.qvEngravePick === 'on';
-      field.hidden = !wanted;
-      field.disabled = !wanted;
-      if (wanted) field.focus();
     });
 
     document.addEventListener('dblclick', function (event) {
