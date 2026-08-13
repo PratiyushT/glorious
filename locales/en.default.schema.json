@@ -605,6 +605,13 @@
     "rich_text": {
       "name": "Rich text"
     },
+    "custom_liquid": {
+      "name": "Custom Liquid",
+      "custom_liquid": {
+        "label": "Custom Liquid",
+        "info": "Add custom Liquid or HTML. This block follows the layout and spacing of the section or Group that contains it."
+      }
+    },
     "search_form": {
       "name": "Search form",
       "placeholder": "Placeholder",
