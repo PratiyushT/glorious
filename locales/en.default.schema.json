@@ -1393,6 +1393,13 @@
         "link": {
           "name": "Menu row"
         },
+        "menu": {
+          "name": "Main menu",
+          "menu": {
+            "label": "Main menu",
+            "info": "Supports nested links up to three levels. Remove individual menu rows when this block should be the only navigation source."
+          }
+        },
         "category": {
           "name": "Category shortcut"
         }

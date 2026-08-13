@@ -155,6 +155,7 @@
     "taxes_note": "Taxes and shipping calculated at checkout."
   },
   "navigation": {
+    "view_all": "View all {{ title }}",
     "menu": "Menu",
     "close": "Close",
     "your_cart": "Your {{ cart_name }}",

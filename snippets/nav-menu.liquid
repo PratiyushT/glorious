@@ -20,6 +20,9 @@
 {%- liquid
   assign cart_name = settings.cart_name | default: 'Cart'
   assign cat_blocks = section.blocks | where: 'type', 'category'
+  assign menu_blocks = section.blocks | where: 'type', 'menu'
+  assign menu_block = menu_blocks.first
+  assign menu_links = menu_block.settings.menu.links
   assign social_blocks = section.blocks | where: 'type', 'social'
   assign social = social_blocks.first
   assign has_social_links = false
@@ -33,7 +36,7 @@
     One rank past the last numbered row: the design animates the category
     shortcuts and the footer together, after everything else.
   endcomment
-  assign tail_row = link_blocks.size
+  assign tail_row = link_blocks.size | plus: menu_links.size
   if cart_number > tail_row
     assign tail_row = cart_number
   endif
@@ -73,6 +76,42 @@
             </a>
           </li>
         {%- endif -%}
+      {%- endfor -%}
+
+      {%- for link in menu_links -%}
+        {%- assign row_number = link_blocks.size | plus: forloop.index -%}
+        <li class="nav-menu__item" style="--row: {{ row_number | minus: 1 }};" {{ menu_block.shopify_attributes }}>
+          {%- if link.links.size > 0 -%}
+            <details class="nav-menu__details">
+              <summary class="nav-menu__link">
+                <span class="nav-menu__num" aria-hidden="true">{{ row_number | prepend: '0' | slice: -2, 2 }}</span>
+                <span>{{ link.title }}</span>
+                <span class="nav-menu__branch-mark" aria-hidden="true">+</span>
+              </summary>
+              <div class="nav-menu__submenu">
+                <a href="{{ link.url }}">{{ 'navigation.view_all' | t: title: link.title }}</a>
+                {%- for child_link in link.links -%}
+                  {%- if child_link.links.size > 0 -%}
+                    <details class="nav-menu__subbranch">
+                      <summary>{{ child_link.title }}</summary>
+                      <div>
+                        <a href="{{ child_link.url }}">{{ 'navigation.view_all' | t: title: child_link.title }}</a>
+                        {%- for grandchild_link in child_link.links -%}<a href="{{ grandchild_link.url }}">{{ grandchild_link.title }}</a>{%- endfor -%}
+                      </div>
+                    </details>
+                  {%- else -%}
+                    <a href="{{ child_link.url }}">{{ child_link.title }}</a>
+                  {%- endif -%}
+                {%- endfor -%}
+              </div>
+            </details>
+          {%- else -%}
+            <a class="nav-menu__link" href="{{ link.url }}">
+              <span class="nav-menu__num" aria-hidden="true">{{ row_number | prepend: '0' | slice: -2, 2 }}</span>
+              {{ link.title }}
+            </a>
+          {%- endif -%}
+        </li>
       {%- endfor -%}
 
       {%- comment -%}

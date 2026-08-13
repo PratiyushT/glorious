@@ -10,14 +10,16 @@
   it is a resting state, not a reaction to scrolling — the design's homepage is
   a pill from the first paint. Only the morph mode needs a scroll listener.
 
-  Menu items are blocks, not a Shopify linklist, so the design's content ships
-  working out of the box and stays editable without the merchant first building
-  navigation menus in admin.
+  Menu rows can be composed as individual blocks for the preset art direction,
+  or supplied by a native Shopify menu when nested navigation is needed.
 {%- endcomment -%}
 
 {%- liquid
   assign menu_id = 'nav-menu-' | append: section.id
   assign link_blocks = section.blocks | where: 'type', 'link'
+  assign menu_blocks = section.blocks | where: 'type', 'menu'
+  assign menu_block = menu_blocks.first
+  assign menu_links = menu_block.settings.menu.links
   assign cart_name = settings.cart_name | default: 'Cart'
   assign account_menu_handle = section.settings.customer_account_menu.handle
 
@@ -32,7 +34,7 @@
     The overlay numbers every row continuously, including the two action rows,
     so the count has to follow whatever the merchant has switched on.
   endcomment
-  assign n = link_blocks.size
+  assign n = link_blocks.size | plus: menu_links.size
   assign cart_number = 0
   assign search_number = 0
   if section.settings.show_cart
@@ -374,6 +376,20 @@
           "type": "url",
           "id": "url",
           "label": "t:sections.all.link.label"
+        }
+      ]
+    },
+    {
+      "type": "menu",
+      "name": "t:sections.header.blocks.menu.name",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "link_list",
+          "id": "menu",
+          "label": "t:sections.header.blocks.menu.menu.label",
+          "info": "t:sections.header.blocks.menu.menu.info",
+          "default": "main-menu"
         }
       ]
     },
