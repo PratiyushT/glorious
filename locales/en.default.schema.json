@@ -1473,6 +1473,18 @@
         }
       }
     },
+    "main_password": {
+      "name": "Password page",
+      "show_signup": {
+        "label": "Show email signup"
+      },
+      "signup_label": {
+        "label": "Signup button label"
+      },
+      "enter_label": {
+        "label": "Password button label"
+      }
+    },
     "hero": {
       "name": "Hero",
       "wordmark_header": "Wordmark",

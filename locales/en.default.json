@@ -172,6 +172,13 @@
     "no_thanks": "No thanks",
     "continue": "Continue Shopping"
   },
+  "password_page": {
+    "email_label": "Email address",
+    "password_label": "Storefront password",
+    "signup_success": "Thanks. We will let you know when the store opens.",
+    "store_owner": "Are you the store owner?",
+    "log_in": "Log in here"
+  },
   "hero": {
     "previous": "Previous pieces",
     "next": "Next pieces"
