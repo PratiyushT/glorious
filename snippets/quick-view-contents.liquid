@@ -13,14 +13,7 @@
 {%- endcomment -%}
 
 {%- liquid
-  assign gallery_images = product.media | where: 'media_type', 'image'
-  assign product_videos = product.media | where: 'media_type', 'video'
-  assign gallery_video = product_videos.first
-
-  assign slide_count = gallery_images.size
-  if gallery_video != blank
-    assign slide_count = slide_count | plus: 1
-  endif
+  assign slide_count = product.media.size
 
   assign category = product.type
   if category == blank
@@ -109,48 +102,35 @@
         data-quick-track
         style="--qv-slides: {{ slide_count }};"
       >
-        {%- for media in gallery_images -%}
-          <div class="quick-view__slot" data-quick-slot="{{ forloop.index0 }}">
-            <img
-              class="quick-view__img"
-              src="{{ media | image_url: width: 1100 }}"
-              data-image-lqip="{{ media | image_url: width: 40 }}"
-              srcset="{{ media | image_url: width: 500 }} 500w, {{ media | image_url: width: 800 }} 800w, {{ media | image_url: width: 1100 }} 1100w, {{ media | image_url: width: 1600 }} 1600w"
-              sizes="(min-width: 55rem) 50vw, 95vw"
-              alt="{{ media.alt | default: product.title | escape }}"
-              width="{{ media.width }}"
-              height="{{ media.height }}"
-              loading="lazy"
-              decoding="async"
-              draggable="false"
-              data-quick-zoomable
-            >
+        {%- for media in product.media -%}
+          <div class="quick-view__slot" data-quick-slot="{{ forloop.index0 }}" data-media-type="{{ media.media_type }}">
+            {%- case media.media_type -%}
+              {%- when 'image' -%}
+                <img
+                  class="quick-view__img"
+                  src="{{ media | image_url: width: 1100 }}"
+                  data-image-lqip="{{ media | image_url: width: 40 }}"
+                  srcset="{{ media | image_url: width: 500 }} 500w, {{ media | image_url: width: 800 }} 800w, {{ media | image_url: width: 1100 }} 1100w, {{ media | image_url: width: 1600 }} 1600w"
+                  sizes="(min-width: 55rem) 50vw, 95vw"
+                  alt="{{ media.alt | default: product.title | escape }}"
+                  width="{{ media.width }}"
+                  height="{{ media.height }}"
+                  loading="lazy"
+                  decoding="async"
+                  draggable="false"
+                  data-quick-zoomable
+                >
+              {%- when 'video' -%}
+                {%- assign gallery_video_lqip = media.preview_image | image_url: width: 40 -%}
+                {{ media | video_tag: class: 'quick-view__rich-media', controls: true, muted: true, playsinline: true, preload: 'metadata', image_size: '1100x', data-video-lqip: gallery_video_lqip }}
+                {% render 'video-lqip-frame', lqip: gallery_video_lqip %}
+              {%- when 'external_video' -%}
+                {{ media | external_video_tag: class: 'quick-view__rich-media', loading: 'lazy' }}
+              {%- when 'model' -%}
+                {{ media | model_viewer_tag: class: 'quick-view__rich-media', reveal: 'interaction', toggleable: true, data-model-id: media.id }}
+            {%- endcase -%}
           </div>
         {%- endfor -%}
-
-        {%- if gallery_video != blank -%}
-          {%- assign mp4_sources = gallery_video.sources | where: 'format', 'mp4' -%}
-          {%- assign mp4 = mp4_sources.last -%}
-          {%- if mp4 != blank -%}
-            {%- assign gallery_video_lqip = gallery_video.preview_image | image_url: width: 40 -%}
-            <div class="quick-view__slot" data-quick-slot="{{ gallery_images.size }}" data-quick-spin>
-              <video
-                class="quick-view__img quick-view__video"
-                data-src="{{ mp4.url }}"
-                poster="{{ gallery_video.preview_image | image_url: width: 900 }}"
-                width="{{ gallery_video.preview_image.width | default: 1240 }}"
-                height="{{ gallery_video.preview_image.height | default: 827 }}"
-                muted
-                loop
-                playsinline
-                preload="none"
-                aria-label="{{ 'products.spin_view' | t }}"
-                data-video-lqip="{{ gallery_video_lqip }}"
-              ></video>
-              {% render 'video-lqip-frame', lqip: gallery_video_lqip %}
-            </div>
-          {%- endif -%}
-        {%- endif -%}
       </div>
 
       {%- if slide_count > 1 -%}
@@ -174,25 +154,17 @@
         </button>
 
         <div class="quick-view__dots">
-          {%- for media in gallery_images -%}
+          {%- for media in product.media -%}
             <button
-              class="quick-view__dot{% if forloop.first %} is-on{% endif %}"
+              class="quick-view__dot{% unless media.media_type == 'image' %} quick-view__dot--media{% endunless %}{% if forloop.first %} is-on{% endif %}"
               type="button"
               data-quick-go="{{ forloop.index0 }}"
-              data-tip="{{ 'products.go_to_view' | t }}"
-              aria-label="{{ 'products.go_to_view' | t }}"
-            ></button>
+              data-tip="{{ 'products.go_to_view' | t }} {{ forloop.index }}"
+              aria-label="{{ 'products.go_to_view' | t }} {{ forloop.index }}{% if media.media_type == 'video' or media.media_type == 'external_video' %}, {{ 'products.video_badge' | t }}{% elsif media.media_type == 'model' %}, {{ 'products.model_badge' | t }}{% endif %}"
+            >
+              {%- if media.media_type == 'video' or media.media_type == 'external_video' -%}{{ 'products.video_badge' | t }}{%- elsif media.media_type == 'model' -%}{{ 'products.model_badge' | t }}{%- endif -%}
+            </button>
           {%- endfor -%}
-
-          {%- if gallery_video != blank -%}
-            <button
-              class="quick-view__dot quick-view__dot--spin"
-              type="button"
-              data-quick-go="{{ gallery_images.size }}"
-              data-tip="{{ 'products.spin_view' | t }}"
-              aria-label="{{ 'products.spin_view' | t }}"
-            >{{ 'products.spin_badge' | t }}</button>
-          {%- endif -%}
         </div>
       {%- endif -%}
 

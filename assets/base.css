@@ -7465,6 +7465,18 @@ a.nav-menu__address:hover {
   transition: transform 0.55s var(--ease);
 }
 
+.quick-view__rich-media,
+.quick-view__slot iframe,
+.quick-view__slot model-viewer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background: var(--c-surface);
+  object-fit: contain;
+}
+
 /* While a pointer is driving the zoom, the transform must follow it frame for
    frame — an easing curve here would lag behind the finger. */
 .quick-view__img[data-quick-dragging] {
@@ -7523,26 +7535,37 @@ a.nav-menu__address:hover {
 }
 
 .quick-view__dot {
-  width: 0.5rem;
-  height: 0.5rem;
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
   padding: 0;
   border: 0;
+  background: none;
+  cursor: pointer;
+}
+
+.quick-view__dot::before {
+  width: 0.5rem;
+  height: 0.5rem;
   border-radius: 50%;
   background: color-mix(in srgb, var(--c-surface) 90%, transparent);
   box-shadow: 0 0 0 1px color-mix(in srgb, var(--c-text) 18%, transparent);
-  cursor: pointer;
+  content: '';
   transition: background var(--duration) var(--ease-ui);
 }
 
-.quick-view__dot.is-on {
+.quick-view__dot.is-on::before {
   background: var(--c-text);
 }
 
 /* The spin gets its label rather than a dot — it is a different kind of view,
    not another photograph. */
-.quick-view__dot--spin {
+.quick-view__dot--media {
   width: auto;
-  height: 1.25rem;
+  min-width: 2.75rem;
+  height: 2.75rem;
+  padding-inline: 0.35rem;
   display: grid;
   place-items: center;
   border-radius: 0;
@@ -7557,7 +7580,9 @@ a.nav-menu__address:hover {
   transition: color var(--duration) var(--ease-ui);
 }
 
-.quick-view__dot--spin.is-on {
+.quick-view__dot--media::before { display: none; }
+
+.quick-view__dot--media.is-on {
   background: none;
   color: var(--c-text);
 }
