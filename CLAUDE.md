@@ -311,6 +311,22 @@ a merchant-entered filter label. No catalogue vocabulary belongs in Liquid.
   enhances those URLs with the Section Rendering endpoint, replaces only the
   owning `[data-catalog-section]`, and updates browser history. Never build a
   client-side filter table or calculate result counts in JavaScript.
+- **The reference appearance is a preset, not a fixed page.**
+  `snippets/catalog-masthead.liquid` serves collection and search with the
+  oversized reference treatment by default, plus split, overlay, and stacked
+  image compositions. Collection media can come from `collection.image` or a
+  merchant image; search can use its featured collection or a merchant image.
+  Header height, alignment, fit, overlay, controls, resource rows, grid motion,
+  and pagination are section settings. Keep the no-media collapse rules: a
+  split header without an image must never reserve an empty half.
+- **Sort and filters share components and Shopify data, not just colours.**
+  `snippets/catalog-sort.liquid` renders native `sort_options` as the ZIP's
+  animated dropdown or a native select. `snippets/catalog-filter-drawer.liquid`
+  uses the cart drawer's `.drawer`, `.overlay__veil`, `.drawer__panel`, focus
+  trap, scroll lock, Escape handling, and exact entry/exit timings. The drawer
+  must remain a direct child of the catalogue section, outside the sticky
+  blurred control bar: `backdrop-filter` creates a containing block and would
+  clip a nested fixed drawer to the bar's height.
 - A product URL returned by search already carries Shopify tracking query
   parameters. Any card link adding `variant=` must use `&` when `product.url`
   already contains `?`; blindly appending a second question mark breaks the

@@ -1,0 +1,104 @@
+{%- comment -%}
+  Shopify-native sort options rendered in either the reference dropdown, a
+  native select, or the filter drawer. All choices still submit a real GET
+  form; JavaScript only upgrades the navigation to a section refresh.
+
+  Accepts: results, current_sort, form_action, context, search_terms, section,
+  search_types, placement ('bar' or 'drawer').
+{%- endcomment -%}
+
+{%- liquid
+  assign selected_name = blank
+  for option in results.sort_options
+    if option.value == current_sort
+      assign selected_name = option.name
+      break
+    endif
+  endfor
+  if selected_name == blank
+    assign selected_name = results.sort_options.first.name
+  endif
+  assign sort_style = section.settings.sort_style | default: 'dropdown'
+-%}
+
+<form
+  class="catalog-sort catalog-sort--{{ sort_style }} catalog-sort--{{ placement }}"
+  action="{{ form_action }}"
+  method="get"
+  data-catalog-form
+>
+  {%- if context == 'search' -%}
+    <input type="hidden" name="q" value="{{ search_terms | escape }}">
+    <input type="hidden" name="options[prefix]" value="last">
+    <input type="hidden" name="type" value="{{ search_types | default: 'product,page,article' }}">
+  {%- endif -%}
+
+  {%- for filter in results.filters -%}
+    {%- for value in filter.active_values -%}
+      <input type="hidden" name="{{ value.param_name }}" value="{{ value.value | escape }}">
+    {%- endfor -%}
+    {%- if filter.type == 'price_range' -%}
+      {%- if filter.min_value.value != blank -%}
+        <input type="hidden" name="{{ filter.min_value.param_name }}" value="{{ filter.min_value.value | money_without_currency | replace: ',', '' | replace: ' ', '' }}">
+      {%- endif -%}
+      {%- if filter.max_value.value != blank -%}
+        <input type="hidden" name="{{ filter.max_value.param_name }}" value="{{ filter.max_value.value | money_without_currency | replace: ',', '' | replace: ' ', '' }}">
+      {%- endif -%}
+    {%- endif -%}
+  {%- endfor -%}
+
+  {%- if placement == 'drawer' -%}
+    <input type="hidden" name="sort_by" value="{{ current_sort | escape }}" data-catalog-sort-value>
+    <div class="catalog-sort-drawer" role="group" aria-label="{{ 'collections.sorting.label' | t }}">
+      {%- for option in results.sort_options -%}
+        <button
+          class="catalog-sort-option{% if option.value == current_sort %} is-active{% endif %}"
+          type="button"
+          data-catalog-sort-option="{{ option.value | escape }}"
+        >
+          <span>{{ option.name }}</span>
+          {%- if option.value == current_sort -%}<span aria-hidden="true">✓</span>{%- endif -%}
+        </button>
+      {%- endfor -%}
+    </div>
+  {%- elsif sort_style == 'native' -%}
+    <label class="visually-hidden" for="CatalogSort-{{ section.id }}">{{ 'collections.sorting.label' | t }}</label>
+    <select id="CatalogSort-{{ section.id }}" class="catalog-sort__select" name="sort_by" data-catalog-sort>
+      {%- for option in results.sort_options -%}
+        <option value="{{ option.value | escape }}"{% if option.value == current_sort %} selected{% endif %}>{{ option.name }}</option>
+      {%- endfor -%}
+    </select>
+  {%- else -%}
+    <input type="hidden" name="sort_by" value="{{ current_sort | escape }}" data-catalog-sort-value>
+    <details class="catalog-sort-menu catalog-sort-menu--{{ section.settings.sort_menu_width | default: 'medium' }} catalog-sort-menu--align-{{ section.settings.sort_menu_alignment | default: 'end' }}" data-catalog-sort-menu>
+      <summary class="catalog-control-button">
+        {%- if section.settings.show_sort_label -%}<span>{{ 'collections.sorting.label' | t }}</span>{%- endif -%}
+        <span data-catalog-sort-current>{{ selected_name }}</span>
+        <span class="catalog-sort-menu__chevron" aria-hidden="true">⌄</span>
+      </summary>
+      <div class="catalog-sort-menu__options" role="listbox" aria-label="{{ 'collections.sorting.label' | t }}">
+        {%- for option in results.sort_options -%}
+          <button
+            class="catalog-sort-option{% if option.value == current_sort %} is-active{% endif %}"
+            type="button"
+            role="option"
+            aria-selected="{% if option.value == current_sort %}true{% else %}false{% endif %}"
+            data-catalog-sort-option="{{ option.value | escape }}"
+          >
+            <span>{{ option.name }}</span>
+            {%- if option.value == current_sort -%}<span aria-hidden="true">✓</span>{%- endif -%}
+          </button>
+        {%- endfor -%}
+      </div>
+    </details>
+    <noscript>
+      <label class="visually-hidden" for="CatalogSortFallback-{{ section.id }}">{{ 'collections.sorting.label' | t }}</label>
+      <select id="CatalogSortFallback-{{ section.id }}" class="catalog-sort__select" name="sort_by">
+        {%- for option in results.sort_options -%}
+          <option value="{{ option.value | escape }}"{% if option.value == current_sort %} selected{% endif %}>{{ option.name }}</option>
+        {%- endfor -%}
+      </select>
+      <button class="catalog-control-button" type="submit">{{ 'collections.sorting.apply' | t }}</button>
+    </noscript>
+  {%- endif -%}
+</form>

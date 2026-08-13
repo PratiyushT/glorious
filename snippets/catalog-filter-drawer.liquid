@@ -1,0 +1,114 @@
+{%- comment -%}
+  Catalog filters inside the theme's shared drawer shell. Veil, panel, focus
+  trap, scroll lock, Escape handling, and entry/exit motion are the same
+  primitives used by the cart drawer.
+
+  Accepts: results, section, context, form_action, clear_url, current_sort,
+  search_terms, search_types, drawer_name.
+{%- endcomment -%}
+
+<div
+  class="drawer catalog-filter-overlay catalog-filter-overlay--{{ section.settings.drawer_position | default: 'end' }} catalog-filter-overlay--width-{{ section.settings.drawer_width | default: 'medium' }} catalog-filter-overlay--mobile-{{ section.settings.mobile_drawer_style | default: 'sheet' }}"
+  data-overlay="{{ drawer_name }}"
+  data-overlay-modal
+  data-catalog-filter-drawer
+  hidden
+>
+  <div class="overlay__veil" data-overlay-close="{{ drawer_name }}"></div>
+
+  <aside class="drawer__panel scheme-{{ section.settings.drawer_color_scheme | default: section.settings.color_scheme }}" role="dialog" aria-modal="true" aria-label="{{ section.settings.drawer_heading | escape }}">
+    <form class="drawer__inner catalog-filter-form" action="{{ form_action }}" method="get" data-catalog-form>
+      <header class="drawer__head">
+        <h2 class="drawer__title">{{ section.settings.drawer_heading }}</h2>
+        <button class="overlay-head__close drawer__close" type="button" data-overlay-close="{{ drawer_name }}">{{ 'navigation.close' | t }}</button>
+      </header>
+
+      <div class="drawer__body catalog-filter-drawer__body" data-drawer-scroller>
+        {%- if context == 'search' -%}
+          <input type="hidden" name="q" value="{{ search_terms | escape }}">
+          <input type="hidden" name="options[prefix]" value="last">
+          <input type="hidden" name="type" value="{{ search_types | default: 'product,page,article' }}">
+        {%- endif -%}
+        <input type="hidden" name="sort_by" value="{{ current_sort | escape }}" data-catalog-sort-value>
+
+        {%- if section.settings.sort_placement == 'drawer' or section.settings.sort_placement == 'both' -%}
+          <section class="catalog-filter-sort">
+            <h3>{{ 'collections.sorting.label' | t }}</h3>
+            <div class="catalog-sort-drawer" role="group" aria-label="{{ 'collections.sorting.label' | t }}">
+              {%- for option in results.sort_options -%}
+                <button class="catalog-sort-option{% if option.value == current_sort %} is-active{% endif %}" type="button" data-catalog-drawer-sort-option="{{ option.value | escape }}">
+                  <span>{{ option.name }}</span>
+                  {%- if option.value == current_sort -%}<span aria-hidden="true">✓</span>{%- endif -%}
+                </button>
+              {%- endfor -%}
+            </div>
+          </section>
+        {%- endif -%}
+
+        {%- for filter in results.filters -%}
+          {%- liquid
+            assign filter_is_active = false
+            if filter.active_values.size > 0
+              assign filter_is_active = true
+            elsif filter.type == 'price_range' and filter.min_value.value != blank or filter.max_value.value != blank
+              assign filter_is_active = true
+            endif
+            assign filter_open = false
+            if section.settings.filter_group_style == 'expanded' or filter_is_active
+              assign filter_open = true
+            elsif section.settings.open_first_filter and forloop.first
+              assign filter_open = true
+            endif
+          -%}
+          <details class="catalog-filter-group"{% if filter_open %} open{% endif %}>
+            <summary>
+              <span>{{ filter.label }}</span>
+              <span aria-hidden="true">+</span>
+            </summary>
+
+            <div class="catalog-filter-group__content">
+              {%- case filter.type -%}
+                {%- when 'boolean', 'list' -%}
+                  <div class="catalog-filter-options">
+                    {%- for value in filter.values -%}
+                      {%- assign input_id = section.id | append: '-' | append: filter.param_name | handle | append: '-' | append: forloop.index -%}
+                      <label class="catalog-filter-option" for="{{ input_id }}">
+                        <input id="{{ input_id }}" type="checkbox" name="{{ value.param_name }}" value="{{ value.value | escape }}" {% if value.active %}checked{% endif %} {% if value.count == 0 and value.active == false %}disabled{% endif %}>
+                        {%- if section.settings.show_filter_visuals -%}
+                          {%- if value.swatch.image != blank or value.swatch.color != blank -%}
+                            <span class="catalog-filter-option__swatch" style="{% if value.swatch.image != blank %}--filter-swatch-image: url('{{ value.swatch.image | image_url: width: 64 }}');{% elsif value.swatch.color != blank %}--filter-swatch-color: {{ value.swatch.color }};{% endif %}" aria-hidden="true"></span>
+                          {%- elsif value.image != blank -%}
+                            {{ value.image | image_url: width: 64 | image_tag: class: 'catalog-filter-option__image', loading: 'lazy', alt: '' }}
+                          {%- endif -%}
+                        {%- endif -%}
+                        <span>{{ value.label }}</span>
+                        {%- if section.settings.show_filter_counts -%}<span class="catalog-filter-option__count">{{ value.count }}</span>{%- endif -%}
+                      </label>
+                    {%- endfor -%}
+                  </div>
+
+                {%- when 'price_range' -%}
+                  {%- assign range_max = filter.range_max | money_without_currency | replace: ',', '' | replace: ' ', '' -%}
+                  <div class="catalog-price-range">
+                    <label>
+                      <span>{{ 'collections.filters.from' | t }}</span>
+                      <input type="number" name="{{ filter.min_value.param_name }}" min="0" max="{{ range_max }}" placeholder="0" {% if filter.min_value.value != blank %}value="{{ filter.min_value.value | money_without_currency | replace: ',', '' | replace: ' ', '' }}"{% endif %}>
+                    </label>
+                    <label>
+                      <span>{{ 'collections.filters.to' | t }}</span>
+                      <input type="number" name="{{ filter.max_value.param_name }}" min="0" max="{{ range_max }}" placeholder="{{ range_max }}" {% if filter.max_value.value != blank %}value="{{ filter.max_value.value | money_without_currency | replace: ',', '' | replace: ' ', '' }}"{% endif %}>
+                    </label>
+                  </div>
+              {%- endcase -%}
+            </div>
+          </details>
+        {%- endfor -%}
+      </div>
+
+      <footer class="drawer__foot catalog-filter-drawer__footer">
+        <a class="btn btn--secondary" href="{{ clear_url }}" data-catalog-link>{{ 'collections.filters.clear' | t }}</a>
+        <button class="btn btn--primary" type="submit">{{ 'collections.filters.apply' | t }}</button>
+      </footer>
+    </form>
+  </aside>
+</div>

@@ -4348,7 +4348,37 @@
      Shopify-authoritative rather than becoming a second client-side catalog. */
 
   var catalogPopBound = false;
+  var catalogMenusBound = false;
   var catalogRequestController = null;
+
+  function prepareCatalogTitle(root) {
+    root.querySelectorAll('[data-catalog-title]').forEach(function (title) {
+      if (!bindOnce(title, 'catalogTitlePrepared')) return;
+      var text = title.dataset.catalogTitleText || title.textContent || '';
+      title.textContent = '';
+
+      Array.prototype.forEach.call(text, function (character, index) {
+        var span = document.createElement('span');
+        span.style.setProperty('--catalog-title-index', index);
+        span.textContent = character === ' ' ? '\u00a0' : character;
+        title.appendChild(span);
+      });
+    });
+  }
+
+  function prepareCatalogSearch(root) {
+    root.querySelectorAll('[data-catalog-search-form]').forEach(function (form) {
+      var input = form.querySelector('input[type="search"]');
+      if (!input || !bindOnce(input, 'catalogSearchPrepared')) return;
+
+      function sync() {
+        form.classList.toggle('has-query', input.value.trim() !== '');
+      }
+
+      input.addEventListener('input', sync);
+      sync();
+    });
+  }
 
   function catalogFormUrl(form) {
     var url = new URL(form.action, window.location.origin);
@@ -4405,20 +4435,35 @@
 
   function initCatalog(scope) {
     scope.querySelectorAll('[data-catalog-section]').forEach(function (root) {
+      prepareCatalogTitle(root);
+      prepareCatalogSearch(root);
       if (!bindOnce(root, 'boundCatalog')) return;
 
       root.addEventListener('click', function (event) {
-        var open = event.target.closest && event.target.closest('[data-catalog-filter-open]');
-        if (open) {
-          var dialog = root.querySelector('[data-catalog-filter-dialog]');
-          if (dialog && typeof dialog.showModal === 'function') dialog.showModal();
+        var sortOption = event.target.closest && event.target.closest('[data-catalog-sort-option]');
+        if (sortOption) {
+          var sortForm = sortOption.closest('form');
+          var sortValue = sortForm && sortForm.querySelector('[data-catalog-sort-value]');
+          if (sortForm && sortValue) {
+            event.preventDefault();
+            sortValue.value = sortOption.dataset.catalogSortOption;
+            var menu = sortOption.closest('[data-catalog-sort-menu]');
+            if (menu) menu.open = false;
+            sortForm.requestSubmit();
+          }
           return;
         }
 
-        var close = event.target.closest && event.target.closest('[data-catalog-filter-close]');
-        if (close) {
-          var openDialog = close.closest('dialog');
-          if (openDialog) openDialog.close();
+        var drawerSortOption = event.target.closest && event.target.closest('[data-catalog-drawer-sort-option]');
+        if (drawerSortOption) {
+          var drawerForm = drawerSortOption.closest('form');
+          var drawerSortValue = drawerForm && drawerForm.querySelector('[data-catalog-sort-value]');
+          if (drawerSortValue) {
+            drawerSortValue.value = drawerSortOption.dataset.catalogDrawerSortOption;
+            drawerForm.querySelectorAll('[data-catalog-drawer-sort-option]').forEach(function (option) {
+              option.classList.toggle('is-active', option === drawerSortOption);
+            });
+          }
           return;
         }
 
@@ -4435,11 +4480,6 @@
         renderCatalog(root, linkUrl.href, true, Boolean(link.closest('.catalog-pagination')));
       });
 
-      root.addEventListener('click', function (event) {
-        var dialog = event.target.closest && event.target.closest('[data-catalog-filter-dialog]');
-        if (dialog && event.target === dialog) dialog.close();
-      });
-
       root.addEventListener('change', function (event) {
         var sort = event.target.closest && event.target.closest('[data-catalog-sort]');
         if (sort && sort.form) sort.form.requestSubmit();
@@ -4450,11 +4490,28 @@
         if (!form) return;
         event.preventDefault();
 
-        var dialog = form.closest('dialog');
-        if (dialog && dialog.open) dialog.close();
+        var overlay = form.closest('[data-overlay]');
+        if (overlay && overlays[overlay.dataset.overlay]) overlays[overlay.dataset.overlay].close(false);
         renderCatalog(root, catalogFormUrl(form).href, true, true);
       });
     });
+
+    if (!catalogMenusBound) {
+      catalogMenusBound = true;
+      document.addEventListener('click', function (event) {
+        document.querySelectorAll('[data-catalog-sort-menu][open]').forEach(function (menu) {
+          if (!menu.contains(event.target)) menu.open = false;
+        });
+      });
+      document.addEventListener('keydown', function (event) {
+        if (event.key !== 'Escape') return;
+        document.querySelectorAll('[data-catalog-sort-menu][open]').forEach(function (menu) {
+          menu.open = false;
+          var summary = menu.querySelector('summary');
+          if (summary) summary.focus();
+        });
+      });
+    }
 
     if (!catalogPopBound) {
       catalogPopBound = true;
