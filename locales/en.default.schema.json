@@ -827,6 +827,8 @@
       "name": "Button",
       "inherit": "Use theme setting",
       "color_info": "Leave empty to use the current color scheme.",
+      "appearance_header": "Appearance",
+      "hover_header": "Hover appearance",
       "background_color": {
         "label": "Background color"
       },
@@ -841,6 +843,21 @@
       },
       "arrow_color": {
         "label": "Arrow color"
+      },
+      "hover_background_color": {
+        "label": "Hover background color"
+      },
+      "hover_text_color": {
+        "label": "Hover text color"
+      },
+      "hover_border_color": {
+        "label": "Hover border color"
+      },
+      "hover_underline_color": {
+        "label": "Hover underline color"
+      },
+      "hover_arrow_color": {
+        "label": "Hover arrow color"
       },
       "border_width": {
         "label": "Border width"

@@ -6,14 +6,19 @@
   always a link. A merchant could change the words and the destination and
   nothing else. This renders all of it, and the choice is theirs.
 
-  **A button needs a destination to exist.** A label with no link renders
+  **A link button needs a destination to exist.** A label with no link renders
   nothing at all, because `href="#"` is a control that looks live and goes
-  nowhere. Callers that have a real fallback route — the hero, the bag drawer —
-  pass it as `link` themselves rather than relying on one here.
+  nowhere. A real form action may instead ask for a `button`, and unavailable
+  states may ask for a `span`; appearance remains one implementation while the
+  semantic element follows the action.
 
   Accepts:
     label   - required; nothing renders without it
-    link    - required, as above
+    link    - required for the default anchor, as above
+    element - a | button | span; defaults to a
+    button_type, button_name, disabled - native control attributes
+    mutable_label - wraps the words in `[data-button-label]` so JavaScript can
+                    change them without removing a decorative arrow
     style   - filled | outline | link | quiet | arrow | arrow_outline
               Defaults to `filled`. The design's four are filled, outline,
               link and arrow; `quiet` is its stepped-back link, and
@@ -23,7 +28,11 @@
     radius  - square | soft | rounded | pill, or blank to inherit
     border_width - a rung of button_border_width, or blank to inherit
     background_color, text_color, border_color, underline_color, arrow_color
-            - optional local colour overrides
+            - optional local resting colour overrides
+    hover_background_color, hover_text_color, hover_border_color,
+    hover_underline_color, hover_arrow_color - optional hover overrides
+    appearance - an optional block.settings drop carrying every value above;
+                 explicit arguments remain the ordinary global Button API
     class    - extra classes for the caller's own layout
     attributes - Shopify editor attributes for a block render
     new_tab  - true to open off-site, adding rel="noopener". A caller works
@@ -43,8 +52,33 @@
 {%- endcomment -%}
 
 {%- liquid
-  if label == blank or link == blank
+  assign button_element = element | default: 'a'
+  unless button_element == 'button' or button_element == 'span'
+    assign button_element = 'a'
+  endunless
+
+  if label == blank
     break
+  endif
+  if button_element == 'a' and link == blank
+    break
+  endif
+
+  if appearance != blank
+    assign style = appearance.button_style
+    assign size = appearance.button_size
+    assign radius = appearance.button_radius
+    assign border_width = appearance.button_border_width
+    assign background_color = appearance.background_color
+    assign text_color = appearance.text_color
+    assign border_color = appearance.border_color
+    assign underline_color = appearance.underline_color
+    assign arrow_color = appearance.arrow_color
+    assign hover_background_color = appearance.hover_background_color
+    assign hover_text_color = appearance.hover_text_color
+    assign hover_border_color = appearance.hover_border_color
+    assign hover_underline_color = appearance.hover_underline_color
+    assign hover_arrow_color = appearance.hover_arrow_color
   endif
 
   case style
@@ -137,21 +171,60 @@
   if arrow_color != blank
     assign style_attr = style_attr | append: ' --btn-arrow: ' | append: arrow_color | append: ';'
   endif
+  if hover_background_color != blank
+    assign style_attr = style_attr | append: ' --btn-bg-hover: ' | append: hover_background_color | append: ';'
+  endif
+  if hover_text_color != blank
+    assign style_attr = style_attr | append: ' --btn-text-hover: ' | append: hover_text_color | append: ';'
+  endif
+  if hover_border_color != blank
+    assign style_attr = style_attr | append: ' --btn-border-hover: ' | append: hover_border_color | append: ';'
+  endif
+  if hover_underline_color != blank
+    assign style_attr = style_attr | append: ' --btn-underline-hover: ' | append: hover_underline_color | append: ';'
+  endif
+  if hover_arrow_color != blank
+    assign style_attr = style_attr | append: ' --btn-arrow-hover: ' | append: hover_arrow_color | append: ';'
+  endif
 -%}
 
-<a
-  class="btn {{ variant }}{% if class != blank %} {{ class }}{% endif %}"
-  href="{{ link }}"
-  {%- if style_attr != blank %} style="{{ style_attr }}"{% endif %}
-  {%- if id != blank %} id="{{ id }}"{% endif %}
-  {%- if aria_label != blank %} aria-label="{{ aria_label }}"{% endif %}
-  {%- if new_tab %} target="_blank" rel="noopener"{% endif %}
-  {% if attributes != blank %}{{ attributes }}{% endif %}
->
-  {{- label -}}
+{%- capture button_contents -%}
+  {%- if mutable_label -%}<span data-button-label>{{- label -}}</span>{%- else -%}{{- label -}}{%- endif -%}
   {%- comment -%}
     The arrow is decoration: the label already says where this goes, so it is
     hidden from assistive technology rather than announced as "right arrow".
   {%- endcomment -%}
-  {%- if shows_arrow %}<span aria-hidden="true">{% render 'icon', icon: 'arrow-right' %}</span>{% endif -%}
-</a>
+  {%- if shows_arrow %}<span class="btn__arrow" aria-hidden="true">{% render 'icon', icon: 'arrow-right' %}</span>{% endif -%}
+{%- endcapture -%}
+
+{%- if button_element == 'button' -%}
+  <button
+    class="btn {{ variant }}{% if class != blank %} {{ class }}{% endif %}"
+    type="{{ button_type | default: 'button' }}"
+    {%- if button_name != blank %} name="{{ button_name }}"{% endif %}
+    {%- if style_attr != blank %} style="{{ style_attr }}"{% endif %}
+    {%- if id != blank %} id="{{ id }}"{% endif %}
+    {%- if aria_label != blank %} aria-label="{{ aria_label }}"{% endif %}
+    {%- if disabled %} disabled aria-disabled="true"{% endif %}
+    {% if attributes != blank %}{{ attributes }}{% endif %}
+  >{{- button_contents -}}</button>
+{%- elsif button_element == 'span' -%}
+  <span
+    class="btn {{ variant }}{% if class != blank %} {{ class }}{% endif %}"
+    {%- if style_attr != blank %} style="{{ style_attr }}"{% endif %}
+    {%- if id != blank %} id="{{ id }}"{% endif %}
+    {%- if aria_label != blank %} aria-label="{{ aria_label }}"{% endif %}
+    {%- if disabled %} aria-disabled="true"{% endif %}
+    {% if attributes != blank %}{{ attributes }}{% endif %}
+  >{{- button_contents -}}</span>
+{%- else -%}
+  <a
+    class="btn {{ variant }}{% if class != blank %} {{ class }}{% endif %}"
+    href="{{ link }}"
+    {%- if style_attr != blank %} style="{{ style_attr }}"{% endif %}
+    {%- if id != blank %} id="{{ id }}"{% endif %}
+    {%- if aria_label != blank %} aria-label="{{ aria_label }}"{% endif %}
+    {%- if new_tab %} target="_blank" rel="noopener"{% endif %}
+    {% if attributes != blank %}{{ attributes }}{% endif %}
+  >{{- button_contents -}}</a>
+{%- endif -%}

@@ -30,6 +30,11 @@
   border_color: block.settings.border_color,
   underline_color: block.settings.underline_color,
   arrow_color: block.settings.arrow_color,
+  hover_background_color: block.settings.hover_background_color,
+  hover_text_color: block.settings.hover_text_color,
+  hover_border_color: block.settings.hover_border_color,
+  hover_underline_color: block.settings.hover_underline_color,
+  hover_arrow_color: block.settings.hover_arrow_color,
   attributes: block.shopify_attributes -%}
 
 {% schema %}
@@ -47,6 +52,10 @@
       "type": "url",
       "id": "button_link",
       "label": "t:sections.all.link.label"
+    },
+    {
+      "type": "header",
+      "content": "t:blocks.button.appearance_header"
     },
     {
       "type": "select",
@@ -136,6 +145,44 @@
       "type": "color",
       "id": "arrow_color",
       "label": "t:blocks.button.arrow_color.label",
+      "info": "t:blocks.button.color_info",
+      "visible_if": "{{ block.settings.button_style == 'arrow' }}"
+    },
+    {
+      "type": "header",
+      "content": "t:blocks.button.hover_header"
+    },
+    {
+      "type": "color",
+      "id": "hover_background_color",
+      "label": "t:blocks.button.hover_background_color.label",
+      "info": "t:blocks.button.color_info",
+      "visible_if": "{{ block.settings.button_style == 'filled' or block.settings.button_style == 'outline' or block.settings.button_style == 'arrow_outline' }}"
+    },
+    {
+      "type": "color",
+      "id": "hover_text_color",
+      "label": "t:blocks.button.hover_text_color.label",
+      "info": "t:blocks.button.color_info"
+    },
+    {
+      "type": "color",
+      "id": "hover_border_color",
+      "label": "t:blocks.button.hover_border_color.label",
+      "info": "t:blocks.button.color_info",
+      "visible_if": "{{ block.settings.button_style == 'outline' or block.settings.button_style == 'arrow_outline' }}"
+    },
+    {
+      "type": "color",
+      "id": "hover_underline_color",
+      "label": "t:blocks.button.hover_underline_color.label",
+      "info": "t:blocks.button.color_info",
+      "visible_if": "{{ block.settings.button_style == 'link' or block.settings.button_style == 'quiet' }}"
+    },
+    {
+      "type": "color",
+      "id": "hover_arrow_color",
+      "label": "t:blocks.button.hover_arrow_color.label",
       "info": "t:blocks.button.color_info",
       "visible_if": "{{ block.settings.button_style == 'arrow' }}"
     }

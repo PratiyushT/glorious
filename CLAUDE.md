@@ -1093,6 +1093,14 @@ global Button settings. Editor visibility follows the selected style:
 - Arrow outline: text plus one shared border-and-arrow color, border width, and
   shape.
 
+Resting and hover colors are separate optional overrides. A blank hover value
+falls back through the resting override to the scheme, so merely opening the
+new editor group changes nothing. The public Button block remains a link;
+section-owned commerce actions call the same snippet with `element: 'button'`
+or an unavailable `span`. That keeps one appearance API without turning a form
+submit into a fake link. `mutable_label` wraps only the words, leaving the
+decorative arrow intact when JavaScript changes an action label.
+
 The design states its own model: *"Four variants carry every action across the
 store. Pill geometry, uppercase Karla at .15em, and a single gold accent.
 Nothing else."*
