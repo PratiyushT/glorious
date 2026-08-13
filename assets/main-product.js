@@ -138,6 +138,22 @@
     window.history.replaceState({}, '', url.href);
   }
 
+  function syncRecipient(root, toggle) {
+    var fields = root.querySelector('[data-recipient-fields]');
+    if (!fields || !toggle) return;
+
+    fields.hidden = !toggle.checked;
+    Array.prototype.forEach.call(fields.querySelectorAll('input, textarea, select'), function (field) {
+      field.disabled = !toggle.checked;
+    });
+
+    var email = fields.querySelector('[data-recipient-email]');
+    if (email) email.required = toggle.checked;
+
+    var offset = fields.querySelector('[data-recipient-offset]');
+    if (offset && toggle.checked) offset.value = String(new Date().getTimezoneOffset());
+  }
+
   function initProduct(root) {
     if (root.dataset.productBound === 'true') return;
     root.dataset.productBound = 'true';
@@ -148,8 +164,7 @@
       if (event.target.matches('[data-product-option]')) syncVariant(root, variants);
 
       if (event.target.matches('[data-recipient-toggle]')) {
-        var fields = root.querySelector('[data-recipient-fields]');
-        if (fields) fields.hidden = !event.target.checked;
+        syncRecipient(root, event.target);
       }
     });
 
@@ -204,6 +219,8 @@
 
     var variantInput = root.querySelector('[data-product-variant-id]');
     if (variantInput && initial) variantInput.value = initial.id;
+    var recipientToggle = root.querySelector('[data-recipient-toggle]');
+    if (recipientToggle) syncRecipient(root, recipientToggle);
     syncOptionLabels(root);
     if (initial) pickupAvailability(root, initial.id);
   }

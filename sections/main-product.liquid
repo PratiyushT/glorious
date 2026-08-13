@@ -184,18 +184,7 @@
                   <input type="hidden" name="id" value="{{ selected_variant.id }}" data-product-variant-id>
 
                   {%- if product.gift_card? and block.settings.show_gift_card_recipient -%}
-                    <div class="gift-recipient">
-                      <label class="gift-recipient__toggle">
-                        <input type="checkbox" name="properties[__shopify_send_gift_card_to_recipient]" value="if_present" data-recipient-toggle>
-                        <span>{{ 'products.recipient.checkbox' | t }}</span>
-                      </label>
-                      <div class="gift-recipient__fields" data-recipient-fields hidden>
-                        <label>{{ 'products.recipient.email' | t }}<input class="field" type="email" name="properties[Recipient email]" value="{{ form.email }}" autocomplete="email"></label>
-                        <label>{{ 'products.recipient.name' | t }}<input class="field" type="text" name="properties[Recipient name]" value="{{ form.name }}" autocomplete="name"></label>
-                        <label>{{ 'products.recipient.message' | t }}<textarea class="field" name="properties[Message]" maxlength="200">{{ form.message }}</textarea></label>
-                        <label>{{ 'products.recipient.send_on' | t }}<input class="field" type="date" name="properties[Send on]" value="{{ form.send_on }}"></label>
-                      </div>
-                    </div>
+                    {% render 'gift-card-recipient-form', form: form, section_id: section.id %}
                   {%- endif -%}
 
                   <div class="product-buy-form__buttons">

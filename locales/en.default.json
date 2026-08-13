@@ -169,6 +169,25 @@
     },
     "cart_empty": "Empty"
   },
+  "date_formats": {
+    "month_day_year": "%B %d, %Y"
+  },
+  "gift_cards": {
+    "title": "{{ value }} gift card for {{ shop }}",
+    "meta_description": "Your gift card for {{ shop }}.",
+    "heading": "Your gift card",
+    "disabled": "Disabled",
+    "expired_on": "Expired on {{ date }}",
+    "expires_on": "Expires on {{ date }}",
+    "remaining": "{{ balance }} remaining",
+    "instructions": "Use this code at checkout to redeem your gift card.",
+    "issued_to": "For {{ name }} at {{ email }}",
+    "sent_to": "Sent to {{ email }}",
+    "scheduled_for": "Scheduled for {{ date }}",
+    "start_shopping": "Start shopping",
+    "print": "Print",
+    "apple_wallet": "Add to Apple Wallet"
+  },
   "newsletter": {
     "email": "Email address",
     "subscribe": "Subscribe",

@@ -165,9 +165,14 @@
                 <div class="product-buy-form" {{ block.shopify_attributes }}>
                   {%- form 'product', product, id: product_form_id, class: 'product-buy-form product-buy-form--js', data-cart-add: '' -%}
                     <input type="hidden" name="id" value="{{ selected_variant.id }}" data-product-variant-id>
+                    {%- if product.gift_card? and block.settings.show_gift_card_recipient -%}
+                      {% render 'gift-card-recipient-form', form: form, section_id: section.id %}
+                    {%- endif -%}
                     <div class="product-buy-form__buttons">
                       <button class="btn btn--primary" type="submit" name="add" data-product-submit data-add-label="{{ add_label | escape }}" data-sold-out-label="{{ 'products.sold_out' | t | escape }}" data-unavailable-label="{{ 'products.unavailable' | t | escape }}" {% unless selected_variant.available %}disabled{% endunless %}>{%- if selected_variant.available -%}{{ add_label }}{%- else -%}{{ 'products.sold_out' | t }}{%- endif -%}</button>
-                      {%- if block.settings.show_dynamic_checkout -%}{{ form | payment_button }}{%- endif -%}
+                      {%- unless product.gift_card? and block.settings.show_gift_card_recipient -%}
+                        {%- if block.settings.show_dynamic_checkout -%}{{ form | payment_button }}{%- endif -%}
+                      {%- endunless -%}
                     </div>
                     {%- if block.settings.show_installments -%}<div class="product-payment-terms">{{ form | payment_terms }}</div>{%- endif -%}
                   {%- endform -%}
@@ -231,7 +236,8 @@
     { "type": "product_quantity", "name": "t:sections.main_product.blocks.quantity", "limit": 1, "settings": [] },
     { "type": "product_buy_buttons", "name": "t:sections.main_product.blocks.buy_buttons", "limit": 1, "settings": [
       { "type": "checkbox", "id": "show_dynamic_checkout", "label": "t:sections.main_product.show_dynamic_checkout.label", "default": true },
-      { "type": "checkbox", "id": "show_installments", "label": "t:sections.main_product.show_installments.label", "default": true }
+      { "type": "checkbox", "id": "show_installments", "label": "t:sections.main_product.show_installments.label", "default": true },
+      { "type": "checkbox", "id": "show_gift_card_recipient", "label": "t:sections.main_product.show_gift_card_recipient.label", "default": true }
     ] },
     { "type": "product_pickup", "name": "t:sections.main_product.blocks.pickup", "limit": 1, "settings": [] },
     { "type": "product_text", "name": "t:sections.main_product.blocks.text", "settings": [
