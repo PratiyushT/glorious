@@ -1,5 +1,34 @@
 {
   "sections": {
+    "header": {
+      "type": "search-header",
+      "blocks": {
+        "search-form": {
+          "type": "search-form",
+          "settings": {
+            "placeholder": "Search products and pages",
+            "result_types": "all",
+            "width": "full",
+            "show_button": false,
+            "button_label": "Search",
+            "show_clear": true,
+            "padding": "none"
+          }
+        }
+      },
+      "block_order": ["search-form"],
+      "settings": {
+        "color_scheme": "scheme_1",
+        "content_width": "page",
+        "height": "compact",
+        "content_alignment": "left",
+        "vertical_alignment": "center",
+        "block_gap": "tiny",
+        "motion": "reference",
+        "padding_top": "none",
+        "padding_bottom": "none"
+      }
+    },
     "main": {
       "type": "main-search",
       "blocks": {
@@ -124,27 +153,10 @@
       },
       "settings": {
         "color_scheme": "scheme_1",
-        "header_color_scheme": "scheme_1",
-        "header_layout": "reference",
-        "show_search_title": false,
-        "search_title": "Search",
-        "header_title_size": "display",
-        "header_alignment": "left",
-        "header_media_source": "none",
-        "header_media_position": "end",
-        "header_height": "reference",
-        "header_image_fit": "cover",
-        "header_overlay": "medium",
-        "header_motion": "reference",
-        "sticky_search_header": true,
-        "search_placeholder": "Search products and pages",
-        "show_search_button": false,
-        "search_button_label": "Search",
         "popular_label": "Popular",
         "popular_source": "manual",
         "popular_searches": "New arrivals, Best sellers, Gifts, Sale",
         "popular_layout": "inline",
-        "result_types": "all",
         "sticky_controls": true,
         "controls_style": "pills",
         "controls_layout": "spread",
@@ -181,7 +193,7 @@
         "browse_label": "Browse all products",
         "results_per_page": 24,
         "columns": 4,
-        "gap": "large",
+        "gap": "theme",
         "grid_motion": "reference",
         "pagination_style": "round",
         "padding_top": "none",
@@ -189,5 +201,5 @@
       }
     }
   },
-  "order": ["main"]
+  "order": ["header", "main"]
 }

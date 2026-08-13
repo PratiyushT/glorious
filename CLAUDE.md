@@ -311,14 +311,28 @@ a merchant-entered filter label. No catalogue vocabulary belongs in Liquid.
   enhances those URLs with the Section Rendering endpoint, replaces only the
   owning `[data-catalog-section]`, and updates browser history. Never build a
   client-side filter table or calculate result counts in JavaScript.
-- **The reference appearance is a preset, not a fixed page.**
-  `snippets/catalog-masthead.liquid` serves collection and search with the
-  oversized reference treatment by default, plus split, overlay, and stacked
-  image compositions. Collection media can come from `collection.image` or a
-  merchant image; search can use its featured collection or a merchant image.
-  Header height, alignment, fit, overlay, controls, resource rows, grid motion,
-  and pagination are section settings. Keep the no-media collapse rules: a
-  split header without an image must never reserve an empty half.
+- **Catalogue headers are sections made from global blocks.**
+  `collection-header` and `search-header` own only their colour, measure,
+  minimum-height preset, alignment, block gap, animation, and section padding.
+  Every visible piece is a block. The collection template connects global Text
+  and Rich text to `collection.title` and `collection.description`; the search
+  template inserts the global `search-form` block. Media, Group, Button, Icon,
+  Border, apps, and later public blocks can be added and rearranged normally.
+  Never put title, eyebrow, description, image, or search-form content settings
+  back on the section. The section minimum heights are floors, not fixed
+  heights, so added blocks can always make the header taller.
+- **Search scope belongs to the Search form block; active scope belongs to
+  Shopify.** `blocks/search-form.liquid` submits `type=` from its preset. Once a
+  search has been performed, `main-search` reads `search.types` and carries
+  that authoritative list through filters, sorting, clearing, and pagination.
+  Do not duplicate a scope setting on the results section: two editor controls
+  would drift and a filter submission could silently broaden the search.
+- **Collection and search card gaps default to the shared product-grid token.**
+  Their `gap` setting offers `theme` first, which resolves to `--grid-gap` and
+  therefore matches Product List. The remaining named spacing presets are
+  deliberate merchant overrides; do not route the default through
+  `--block-gap`, because that token spaces a section's children rather than
+  cards in a product grid.
 - **Sort and filters share components and Shopify data, not just colours.**
   `snippets/catalog-sort.liquid` renders native `sort_options` as the ZIP's
   animated dropdown or a native select. `snippets/catalog-filter-drawer.liquid`

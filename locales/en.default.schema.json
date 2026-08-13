@@ -603,6 +603,14 @@
     "rich_text": {
       "name": "Rich text"
     },
+    "search_form": {
+      "name": "Search form",
+      "placeholder": "Placeholder",
+      "width": "Form width",
+      "show_button": "Show search button",
+      "button_label": "Search button label",
+      "show_clear": "Show clear link"
+    },
     "collection_count_text": {
       "name": "Count"
     },
@@ -1636,10 +1644,23 @@
       "rows": "Rows",
       "cards": "Cards",
       "minimal_links": "Minimal links",
+      "card_gap": "Space between product cards",
+      "card_gap_info": "Use theme default to match Product List sections. Choose another preset to override this page.",
+      "theme_product_gap": "Use theme default",
       "product_grid_animation": "Product grid animation",
       "result_grid_animation": "Result grid animation",
       "pagination_style": "Pagination style",
       "round_pages": "Round pages"
+    },
+    "collection_header": {
+      "name": "Collection header",
+      "height_info": "Minimum height only. Content can always make the header taller.",
+      "content_height": "Fit content",
+      "vertical_alignment": "Position within the header",
+      "block_gap": "Space between blocks"
+    },
+    "search_header": {
+      "name": "Search header"
     },
     "main_collection": {
       "name": "Collection products",

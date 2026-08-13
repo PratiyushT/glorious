@@ -1,0 +1,124 @@
+{%- comment -%}
+  A global storefront-search form. The form is useful in a Search header, a
+  Group, or any other block composition and submits Shopify's real search
+  parameters. The result scope is a merchant choice, never a hardcoded catalog
+  assumption.
+{%- endcomment -%}
+
+{%- liquid
+  assign search_types = 'product,page,article'
+  case block.settings.result_types
+    when 'products'
+      assign search_types = 'product'
+    when 'products_pages'
+      assign search_types = 'product,page'
+    when 'products_articles'
+      assign search_types = 'product,article'
+  endcase
+
+  assign input_id = 'SearchForm-' | append: block.id
+-%}
+
+<form
+  class="catalog-search-form catalog-search-form--{{ block.settings.width }}"
+  action="{{ routes.search_url }}"
+  method="get"
+  role="search"
+  data-catalog-search-form
+  style="{% render 'block-spacing', padding: block.settings.padding %}"
+  {{ block.shopify_attributes }}
+>
+  <input type="hidden" name="options[prefix]" value="last">
+  <input type="hidden" name="type" value="{{ search_types }}">
+  <label class="visually-hidden" for="{{ input_id }}">{{ 'general.search.search' | t }}</label>
+  <input id="{{ input_id }}" type="search" name="q" value="{{ search.terms | escape }}" placeholder="{{ block.settings.placeholder | escape }}" autocomplete="off" spellcheck="false">
+  <button class="catalog-search-form__submit{% unless block.settings.show_button %} visually-hidden{% endunless %}" type="submit">{{ block.settings.button_label }}</button>
+  {%- if block.settings.show_clear and search.terms != blank -%}
+    <a class="catalog-search-form__clear" href="{{ routes.search_url }}">{{ 'general.search.clear' | t }}</a>
+  {%- endif -%}
+</form>
+
+{% schema %}
+{
+  "name": "t:blocks.search_form.name",
+  "tag": null,
+  "settings": [
+    {
+      "type": "text",
+      "id": "placeholder",
+      "label": "t:blocks.search_form.placeholder",
+      "default": "Search products and pages"
+    },
+    {
+      "type": "select",
+      "id": "result_types",
+      "label": "t:sections.catalog.result_types",
+      "options": [
+        { "value": "all", "label": "t:sections.catalog.all_result_types" },
+        { "value": "products", "label": "t:sections.catalog.products_only" },
+        { "value": "products_pages", "label": "t:sections.catalog.products_pages" },
+        { "value": "products_articles", "label": "t:sections.catalog.products_articles" }
+      ],
+      "default": "all"
+    },
+    {
+      "type": "select",
+      "id": "width",
+      "label": "t:blocks.search_form.width",
+      "options": [
+        { "value": "full", "label": "t:sections.group.content_width.full" },
+        { "value": "wide", "label": "t:sections.catalog.wide" },
+        { "value": "reading", "label": "t:sections.group.content_width.reading" }
+      ],
+      "default": "full"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_button",
+      "label": "t:blocks.search_form.show_button",
+      "default": false
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "t:blocks.search_form.button_label",
+      "default": "Search",
+      "visible_if": "{{ block.settings.show_button }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_clear",
+      "label": "t:blocks.search_form.show_clear",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "padding",
+      "label": "t:blocks.all.padding.label",
+      "options": [
+        { "value": "none", "label": "t:blocks.all.step.none" },
+        { "value": "minimal", "label": "t:blocks.all.step.minimal" },
+        { "value": "tiny", "label": "t:blocks.all.step.tiny" },
+        { "value": "small", "label": "t:blocks.all.step.small" },
+        { "value": "medium", "label": "t:blocks.all.step.medium" },
+        { "value": "large", "label": "t:blocks.all.step.large" },
+        { "value": "xlarge", "label": "t:blocks.all.step.xlarge" }
+      ],
+      "default": "none"
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:blocks.search_form.name",
+      "settings": {
+        "placeholder": "Search products and pages",
+        "result_types": "all",
+        "width": "full",
+        "show_button": false,
+        "show_clear": true,
+        "padding": "none"
+      }
+    }
+  ]
+}
+{% endschema %}

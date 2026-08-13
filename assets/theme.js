@@ -4351,16 +4351,31 @@
   var catalogMenusBound = false;
   var catalogRequestController = null;
 
+  function prepareCatalogBlockHeaders(root) {
+    var headers = Array.prototype.slice.call(root.querySelectorAll('[data-catalog-block-header]'));
+    if (root.matches && root.matches('[data-catalog-block-header]')) headers.unshift(root);
+
+    headers.forEach(function (header) {
+      if (header.dataset.catalogHeaderMotion !== 'reference') return;
+      var title = header.querySelector('.text-block.display');
+      if (!title || title.hasAttribute('data-catalog-title')) return;
+      title.setAttribute('data-catalog-title', '');
+      title.setAttribute('data-catalog-title-text', title.textContent || '');
+    });
+  }
+
   function prepareCatalogTitle(root) {
     root.querySelectorAll('[data-catalog-title]').forEach(function (title) {
       if (!bindOnce(title, 'catalogTitlePrepared')) return;
       var text = title.dataset.catalogTitleText || title.textContent || '';
       title.textContent = '';
+      if (!title.hasAttribute('aria-label')) title.setAttribute('aria-label', text);
 
       Array.prototype.forEach.call(text, function (character, index) {
         var span = document.createElement('span');
         span.style.setProperty('--catalog-title-index', index);
         span.textContent = character === ' ' ? '\u00a0' : character;
+        span.setAttribute('aria-hidden', 'true');
         title.appendChild(span);
       });
     });
@@ -4376,6 +4391,11 @@
       }
 
       input.addEventListener('input', sync);
+      input.addEventListener('keydown', function (event) {
+        if (event.key !== 'Enter') return;
+        event.preventDefault();
+        form.requestSubmit();
+      });
       sync();
     });
   }
@@ -4434,9 +4454,11 @@
   }
 
   function initCatalog(scope) {
+    prepareCatalogBlockHeaders(scope);
+    prepareCatalogTitle(scope);
+    prepareCatalogSearch(scope);
+
     scope.querySelectorAll('[data-catalog-section]').forEach(function (root) {
-      prepareCatalogTitle(root);
-      prepareCatalogSearch(root);
       if (!bindOnce(root, 'boundCatalog')) return;
 
       root.addEventListener('click', function (event) {
