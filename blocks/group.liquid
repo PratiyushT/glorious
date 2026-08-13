@@ -225,6 +225,23 @@
       "default": "inherit"
     },
     {
+      "type": "select",
+      "id": "padding",
+      "label": "t:blocks.group.padding.label",
+      "info": "t:blocks.group.padding.info",
+      "options": [
+        { "value": "none", "label": "t:blocks.all.step.none" },
+        { "value": "minimal", "label": "t:blocks.all.step.minimal" },
+        { "value": "tiny", "label": "t:blocks.all.step.tiny" },
+        { "value": "small", "label": "t:blocks.all.step.small" },
+        { "value": "medium", "label": "t:blocks.all.step.medium" },
+        { "value": "large", "label": "t:blocks.all.step.large" },
+        { "value": "xlarge", "label": "t:blocks.all.step.xlarge" },
+        { "value": "maximum", "label": "t:blocks.all.step.maximum" }
+      ],
+      "default": "none"
+    },
+    {
       "type": "checkbox",
       "id": "show_borders",
       "label": "t:blocks.group.show_borders_label",
@@ -297,6 +314,7 @@
         "stack_below": "mobile",
         "gap": "medium",
         "vertical_gap": "inherit",
+        "padding": "none",
         "show_borders": false,
         "group_border_width": 1,
         "border_top": true,

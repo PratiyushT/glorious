@@ -58,9 +58,8 @@ The homepage blocks fall into four contracts:
 
 - **Global composition blocks** are public and require no resource context:
   `title`, `heading`, `subheading`, `paragraph`, `prose`, `buttons`,
-  `border`, `media`, `group`, `promise`, and `quote`. Promise numbering is added only by
-  `.promises__grid`; Quote hiding and overlap are added only by `.quotes`.
-  Standalone instances remain visible and complete.
+  `border`, `media`, `icon`, `group`, and `quote`. Quote hiding and overlap are
+  added only by `.quotes`; standalone instances remain visible and complete.
 - **Resource-aware public blocks** inherit the nearest resource but also expose
   a source picker, so the same block works in an unrestricted Group elsewhere.
   Product: `product-card-image`, `product-card-title`, `product-card-option-name`,
@@ -94,8 +93,7 @@ the history below explains the block contracts that migration preserved.
 
 - **Both of its local types converted in one commit**, because a section holds
   either its own blocks or theme blocks and never both. That is the constraint
-  that sets the whole phase's order, and it is why `promises` — one local type
-  — is not the cheap first conversion it looks like.
+  that sets the whole phase's order.
 
 - **`buttons` keeps its type name, and that is the migration.** A block type is
   a data contract: every stored instance in `templates/index.json` says
@@ -126,57 +124,34 @@ sibling flow: made into blocks they would fall onto two rows. Converting it
 means either keeping that row as section settings or giving the section a
 static block, as the collection list does for its card.
 
-**`promises` cost its `forloop`, and that is the whole conversion.** Its one
-local type became `blocks/promise.liquid` keeping the name `promise`, so the
-five stored instances carried over untouched — verified on the page: five
-distinct titles, five distinct texts, five different icons, nothing fallen back
-to a schema default.
+**The former Promises area is now composition rather than a component.** The
+homepage section is an ordinary `group` instance. Its header is a nested Group
+containing `title` and `subheading`; its item row is another Group containing
+five bordered Groups. Each item is assembled from `icon`, `subheading` (the
+editable number), `border`, `heading`, and `paragraph`.
 
-- **A theme block has no index, and this section printed two things from one.**
-  `{% content_for 'blocks' %}` renders the set as one flat flow — `forloop`
-  exists only out in the section, which no longer loops. The card's ordinal was
-  `{{ forloop.index | prepend: '0' | slice: -2, 2 }}` and its entrance was
-  `--reveal-delay: {{ forloop.index0 | times: 80 }}ms`. Only the parent can
-  count, so both moved to `.promises__grid` in `base.css`.
+- There is no `sections/promises.liquid`, `blocks/promise.liquid`, Promise
+  schema, CSS counter, or card-specific layout. A merchant can remove the
+  number, replace the rule, move the icon, add a button, or put the same
+  composition in any other Group section without crossing a special contract.
+- `icon` is a public drawing primitive. It owns icon choice, size, alignment,
+  optional frame, accessible label, and color overrides; the surrounding
+  Group owns layout. The five original emblems remain choices alongside
+  general editorial icons.
+- Group's `padding` is internal container spacing. It is optional and
+  independent of borders, so an ordinary Group remains unchanged at the
+  default `none`, while a bordered Group can hold card-like content without a
+  Card block.
+- Numbers are ordinary text on purpose. Automatic numbering couples content
+  to sibling position and needs parent-specific counters; editable text stays
+  reusable and can be removed or replaced with any label.
+- Responsive behavior comes from Group's existing equal widths, wrapping,
+  minimum block width, and container-based stacking controls. There are no
+  feature-specific breakpoints or orphan rules.
+- The Group section's **Feature grid** preset is the reusable entry point for
+  other templates. It seeds three bordered Groups made only from Icon, Heading
+  and Paragraph blocks; it does not introduce another section or block type.
 
-  The ordinal is a **CSS counter** — `counter-reset` on the grid,
-  `counter-increment` on the card, `content: counter(promise,
-  decimal-leading-zero)` on an empty `.promise-card__num`. It renumbers on
-  reorder and on removal exactly as the loop did (verified by moving a card to
-  the front and by deleting one), and it gets a set past nine right where the
-  old `slice: -2, 2` printed "00" at 100.
-
-  **The stagger could not follow it**, because a counter is not a number
-  `calc()` can read — so it is a short `:nth-child` ladder, ten rungs and then
-  held. Measured: `transition-delay` resolves to 0 / .08 / .16 / .24 / .32s
-  across the five, which is what the `forloop` emitted.
-
-  `.promise-card__num` is therefore **deliberately empty in the markup**. Do not
-  put a number back into it; the block has no way to know which number it is.
-
-- **The heading and the subheading stay section settings**, and this is
-  `featured-products`' constraint arriving from the other side. There the header
-  cannot become blocks because two of its parts share one row; here because the
-  only flow the section has to place blocks in *is* `.promises__grid`, so a
-  title block would land inside the grid as a card-shaped cell.
-
-  They still emit what the blocks would have. The subheading was on
-  `.section-header` — the row Most Loved uses to carry a label *and* a "view
-  all" link, spaced for the link. With nothing beside it that is a hole, and it
-  measured like one: **15.6 above and 41.6 below** an 18px label, 75.2 from the
-  heading to the grid. On `.section-eyebrow`, which is what
-  `blocks/subheading.liquid` emits, it is **7.8 / 18 / 31.2** and 57 — the
-  Medium row already tabulated under "Block spacing". The label box stays 18px,
-  which is the standing check that the eyebrow's `display: flex` is doing its
-  job, and the cards stay level at 294.
-
-- **`"tag": null` on the card is load-bearing.** The card has to *be* the grid
-  item. A generated wrapper would take `.promises__grid > *`'s column span while
-  the card inside sized to its own content, and a row would stop being level.
-  Verified across all three tiers: five columns at 1280, six columns at 1000
-  with the orphan pair centred by `:has(> :nth-child(5):last-child)` (x = 191
-  and 505 against 33 above), and two columns at 600 with the odd last card
-  spanning the full 542.
 
 **`section.blocks` survives the conversion, but only as a tally.** This governs
 every remaining conversion, so it is worth stating exactly. A section that
@@ -190,10 +165,10 @@ renders theme blocks still has a populated `section.blocks`:
 | `settings` | **empty**, every one of them |
 | `shopify_attributes` | **empty** |
 
-Measured with a probe against the converted `promises`, not assumed: five
-blocks came back `size=5` with ids ending `__shipping`, `__support`, `__secure`,
-`__handcraft`, `__certified`, and every `type` reading `@theme` with no
-settings at all.
+Measured originally with a probe against the now-removed Promises section, not
+assumed: five blocks came back `size=5` with ids ending `__shipping`,
+`__support`, `__secure`, `__handcraft`, `__certified`, and every `type` reading
+`@theme` with no settings at all.
 
 So a section can **count and number** its blocks and cannot **read** them. That
 is enough for an index, a total, an `{% if size > 1 %}` guard or a row of
@@ -960,21 +935,20 @@ is encouraged rather than required. So this is not a submission blocker today;
 it becomes one when the product template is built, and that section must carry
 `@app` from the start.
 
-**Five sections carry it: `about`, `craft`, `visit`, `rich-text`,
-`newsletter`.** They are the ones whose `content_for 'blocks'` renders into a
-plain vertical flow, so an app block lands somewhere sane and needs no render
-path of its own — `content_for 'blocks'` renders whatever is stored.
+**The general `group` section carries it, as do `rich-text` and `newsletter`.**
+They are the sections whose `content_for 'blocks'` renders into an ordinary
+layout flow, so an app block lands somewhere sane and needs no render path of
+its own — `content_for 'blocks'` renders whatever is stored. Craft, About,
+Visit, and the former Promises area are all Group instances and inherit that
+support.
 
-**Three theme-block sections deliberately do not**, and each for its own
+**Two theme-block sections deliberately do not**, and each for its own
 reason:
 
 - **`testimonials`** — `.quotes` stacks every child in `grid-area: 1 / 1` and
   cross-fades them. An app block would be laid under a quote at opacity 0 and
   never seen. This is the worst of the three: it would look like the app was
   broken.
-- **`promises`** — the flow is `.promises__grid`, so an app block becomes a
-  cell in an art-directed grid built around card-shaped children and an orphan
-  rule keyed to `:nth-child`.
 - **`collection-list`** — its header blocks render straight into `.page-width`
   with no wrapper, because `.display + .grid-auto`'s gap depends on that
   adjacency. An app block between the title and the grid breaks the rule and
@@ -1040,7 +1014,7 @@ a block type is a data contract.
 **The homepage had no `<h1>`, and four of its section titles were not headings
 at all.** Measured before the fix: `h1: 0`, and Most Loved, Our Products, Our
 Promises and About Us each rendered `<div class="display">`. The only real
-headings below them were the five `<h3>` promise cards — so the document's
+headings below them were the five `<h3>` feature cards — so the document's
 outline started at level three, under nothing.
 
 - **The wordmark is the `h1`.** It was a `div` carrying `role="img"` and an
@@ -1215,7 +1189,7 @@ its text blocks follow; a block carries its own `alignment`, defaulting to
   order**, both being one class of specificity, so the defaults are declared
   above `.align-*` in `base.css` and must stay there.
 - Sections carrying it so far: `collection-list`, `featured-products`,
-  `promises`, `testimonials`, and `rich-text`, which had its own `alignment`
+  `group`, `testimonials`, and `rich-text`, which had its own `alignment`
   first. Any other section adopts it by adding the setting and appending the
   two properties to its `section-style` render.
 
@@ -1591,22 +1565,12 @@ see the search overlay below.
   `.grid-auto`, since the category grid already reaches one column at its own
   360px floor and the blog and collection lists are not what the design means.
   No `!important` — same specificity, later in the file.
-- **The promises grid is art-directed, not auto-fitting.** Three tiers: 2
-  columns with an odd last card spanning both; then a **6-column** grid where
-  each card spans 2, so the orphan row of two sits in columns 2–5 with half a
-  column of air either side; then five single columns. That middle tier exists
-  only to centre the orphan — `auto-fit` cannot express it, which is why the
-  grid is spelled out. The centring is guarded by
-  `:has(> :nth-child(5):last-child)` so it only fires at exactly five cards;
-  with six there is no orphan and shifting the fourth would open a hole.
+- **The feature-card row is a Group, not an art-directed grid.** Equal widths,
+  wrapping, the minimum block width and gap are all merchant settings on the
+  nested `items` Group. The homepage starts at a 12rem minimum and never
+  switches to a section-specific layout. Removing or adding an item therefore
+  reflows naturally instead of activating rules written for exactly five.
 
-  The thresholds are container queries (50rem / 72.5rem on `.promises`), being
-  the design's 860px and 1240px viewports converted to the width the grid
-  actually gets inside `.page-width`'s gutters. `.promises` exists purely to be
-  that container — an element cannot query its own size.
-
-  The section has **no column setting** on purpose: there is nothing for one
-  to act on.
 - **`--page-width` is the width of the *content*, with the gutter outside it.**
   `.page-width` therefore caps at `calc(var(--page-width) + var(--gutter) * 2)`.
   Capping the border box instead — the obvious reading — makes every section a
@@ -1674,8 +1638,8 @@ as on the design's homepage.
 ### Homepage sections
 
 `hero`, `featured-products` (Most Loved), `collection-list` (Our Products),
-`lookbook` (Shop the look), `promises`, three `group` instances (Craft, About,
-Visit), and `testimonials` — plus `header`,
+`lookbook` (Shop the look), four `group` instances (feature cards, Craft,
+About, Visit), and `testimonials` — plus `header`,
 `announcement-bar`, `cart-drawer`, `newsletter-popup`, `cookie-banner` in the
 header group, `footer` in the footer group, and general-purpose `rich-text`
 and `newsletter`. `predictive-search` and `quick-view` are sections with **no

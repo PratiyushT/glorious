@@ -1,0 +1,186 @@
+{%- comment -%}
+  A decorative or labelled icon that belongs to no section.
+
+  The drawing comes from the theme's shared icon library; this block owns only
+  presentation — size, alignment, an optional frame, and color overrides. It
+  can therefore sit directly in a Group or be combined with text, Borders and
+  nested Groups without introducing a feature-, promise-, or card-specific
+  content contract.
+{%- endcomment -%}
+
+{%- liquid
+  assign alignment = 'flex-start'
+  if block.settings.alignment == 'center'
+    assign alignment = 'center'
+  elsif block.settings.alignment == 'right'
+    assign alignment = 'flex-end'
+  endif
+
+  assign frame_radius = '0'
+  if block.settings.frame_shape == 'soft'
+    assign frame_radius = '0.5rem'
+  elsif block.settings.frame_shape == 'round'
+    assign frame_radius = '999px'
+  endif
+-%}
+
+{%- unless block.settings.icon == 'none' -%}
+  <div
+    class="icon-block reveal{% if block.settings.show_frame %} icon-block--framed{% endif %}"
+    style="--icon-align: {{ alignment }}; --icon-size: {{ block.settings.icon_size }}px; --icon-frame-size: {{ block.settings.frame_size }}px; --icon-frame-radius: {{ frame_radius }};{% if block.settings.color != blank %} --icon-color: {{ block.settings.color }};{% endif %}{% if block.settings.border_color != blank %} --icon-border-color: {{ block.settings.border_color }};{% endif %}{% if block.settings.background_color != blank %} --icon-background: {{ block.settings.background_color }};{% endif %}{% render 'block-spacing', padding: block.settings.padding %}"
+    {{ block.shopify_attributes }}
+  >
+    <span
+      class="icon-block__shape"
+      {% if block.settings.accessible_label != blank %}
+        role="img"
+        aria-label="{{ block.settings.accessible_label | escape }}"
+      {% else %}
+        aria-hidden="true"
+      {% endif %}
+    >
+      {% render 'icon', icon: block.settings.icon %}
+    </span>
+  </div>
+{%- endunless -%}
+
+{% schema %}
+{
+  "name": "t:blocks.icon.name",
+  "tag": null,
+  "settings": [
+    {
+      "type": "select",
+      "id": "icon",
+      "label": "t:blocks.icon.icon.label",
+      "options": [
+        { "value": "shipping", "label": "t:blocks.icon.icons.shipping" },
+        { "value": "support", "label": "t:blocks.icon.icons.support" },
+        { "value": "secure", "label": "t:blocks.icon.icons.secure" },
+        { "value": "handcraft", "label": "t:blocks.icon.icons.handcraft" },
+        { "value": "certified", "label": "t:blocks.icon.icons.certified" },
+        { "value": "diamond", "label": "t:blocks.icon.icons.diamond" },
+        { "value": "sparkle", "label": "t:blocks.icon.icons.sparkle" },
+        { "value": "location", "label": "t:blocks.icon.icons.location" },
+        { "value": "phone", "label": "t:blocks.icon.icons.phone" },
+        { "value": "check", "label": "t:blocks.icon.icons.check" },
+        { "value": "account", "label": "t:blocks.icon.icons.account" },
+        { "value": "search", "label": "t:blocks.icon.icons.search" },
+        { "value": "cart", "label": "t:blocks.icon.icons.cart" },
+        { "value": "arrow-right", "label": "t:blocks.icon.icons.arrow_right" },
+        { "value": "none", "label": "t:blocks.icon.icons.none" }
+      ],
+      "default": "sparkle"
+    },
+    {
+      "type": "text",
+      "id": "accessible_label",
+      "label": "t:blocks.icon.accessible_label.label",
+      "info": "t:blocks.icon.accessible_label.info"
+    },
+    {
+      "type": "range",
+      "id": "icon_size",
+      "label": "t:blocks.icon.icon_size.label",
+      "min": 12,
+      "max": 96,
+      "step": 2,
+      "unit": "px",
+      "default": 30
+    },
+    {
+      "type": "select",
+      "id": "alignment",
+      "label": "t:sections.all.content_alignment.label",
+      "options": [
+        { "value": "left", "label": "t:settings_schema.options.left" },
+        { "value": "center", "label": "t:settings_schema.options.center" },
+        { "value": "right", "label": "t:settings_schema.options.right" }
+      ],
+      "default": "left"
+    },
+    {
+      "type": "color",
+      "id": "color",
+      "label": "t:blocks.icon.color.label",
+      "info": "t:blocks.icon.color.info"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_frame",
+      "label": "t:blocks.icon.show_frame.label",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "frame_size",
+      "label": "t:blocks.icon.frame_size.label",
+      "min": 32,
+      "max": 128,
+      "step": 4,
+      "unit": "px",
+      "default": 52,
+      "visible_if": "{{ block.settings.show_frame }}"
+    },
+    {
+      "type": "select",
+      "id": "frame_shape",
+      "label": "t:blocks.icon.frame_shape.label",
+      "options": [
+        { "value": "square", "label": "t:blocks.icon.frame_shape.square" },
+        { "value": "soft", "label": "t:blocks.icon.frame_shape.soft" },
+        { "value": "round", "label": "t:blocks.icon.frame_shape.round" }
+      ],
+      "default": "square",
+      "visible_if": "{{ block.settings.show_frame }}"
+    },
+    {
+      "type": "color",
+      "id": "border_color",
+      "label": "t:blocks.icon.border_color.label",
+      "info": "t:blocks.icon.border_color.info",
+      "visible_if": "{{ block.settings.show_frame }}"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "t:blocks.icon.background_color.label",
+      "info": "t:blocks.icon.background_color.info",
+      "visible_if": "{{ block.settings.show_frame }}"
+    },
+    {
+      "type": "header",
+      "content": "t:blocks.all.spacing_header"
+    },
+    {
+      "type": "select",
+      "id": "padding",
+      "label": "t:blocks.all.padding.label",
+      "options": [
+        { "value": "none", "label": "t:blocks.all.step.none" },
+        { "value": "minimal", "label": "t:blocks.all.step.minimal" },
+        { "value": "tiny", "label": "t:blocks.all.step.tiny" },
+        { "value": "small", "label": "t:blocks.all.step.small" },
+        { "value": "medium", "label": "t:blocks.all.step.medium" },
+        { "value": "large", "label": "t:blocks.all.step.large" },
+        { "value": "xlarge", "label": "t:blocks.all.step.xlarge" }
+      ],
+      "default": "none"
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:blocks.icon.name",
+      "settings": {
+        "icon": "sparkle",
+        "icon_size": 30,
+        "alignment": "left",
+        "show_frame": true,
+        "frame_size": 52,
+        "frame_shape": "square",
+        "padding": "none"
+      }
+    }
+  ]
+}
+{% endschema %}

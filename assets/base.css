@@ -549,6 +549,7 @@ a {
      left to inherit. */
   column-gap: var(--group-gap, var(--step-medium));
   row-gap: var(--group-row-gap, var(--block-gap, var(--step-large)));
+  padding: var(--group-padding, 0);
 }
 
 /* **Two classes deep, and that is not cosmetic.** `.section-eyebrow` carries
@@ -568,6 +569,38 @@ a {
   border-style: solid;
   border-color: var(--group-border-color, var(--c-hairline));
   border-width: var(--group-border-top, 0) var(--group-border-right, 0) var(--group-border-bottom, 0) var(--group-border-left, 0);
+}
+
+/* A public icon is only a drawing and its optional frame. Layout belongs to
+   the Group around it, so the same block works in a compact row, a card-like
+   bordered Group, or a standalone editorial stack. */
+.icon-block {
+  display: flex;
+  justify-content: var(--icon-align, flex-start);
+  padding: var(--block-padding, 0);
+  color: var(--icon-color, var(--c-accent));
+}
+
+.icon-block__shape {
+  flex: none;
+  display: grid;
+  place-items: center;
+  color: inherit;
+}
+
+.icon-block--framed .icon-block__shape {
+  width: var(--icon-frame-size, 52px);
+  height: var(--icon-frame-size, 52px);
+  border: var(--border-width) solid var(--icon-border-color, color-mix(in srgb, var(--c-accent) 26%, transparent));
+  border-radius: var(--icon-frame-radius, 0);
+  background: var(--icon-background, color-mix(in srgb, var(--c-accent) 4%, var(--c-surface)));
+}
+
+.icon-block__shape svg {
+  width: var(--icon-size, 30px);
+  height: var(--icon-size, 30px);
+  max-width: 82%;
+  max-height: 82%;
 }
 
 /* Equal items are opt-in. Natural width remains the Group block's default so
@@ -716,7 +749,6 @@ a {
    optional row that may not be there. Matches the margin the header would
    have contributed, so the rhythm is the same either way. */
 .display + .grid-auto,
-.display + .promises,
 .display + .row-carousel,
 .section-lede + .grid-auto,
 .section-lede + .row-carousel {
@@ -3852,209 +3884,6 @@ a {
 .lookbook__all:hover {
   color: var(--c-accent);
   border-color: var(--c-accent);
-}
-
-/* ---- Promises grid --------------------------------------------------
-   Art-directed, not auto-fitting. The design gives five cards three
-   distinct arrangements, and the middle one exists purely to centre the
-   orphan row — a 6-column grid where each card spans 2, so the two cards
-   left over sit in columns 2–5 with a half-column of air either side.
-   `auto-fit` cannot express that, which is why this grid is spelled out.
-
-   Container queries rather than the design's media queries, so the section
-   stays right in a narrow column too. The thresholds are the design's 860px
-   and 1240px viewports converted to the width this grid actually gets
-   inside .page-width's gutters.                                          */
-
-.promises {
-  container-type: inline-size;
-}
-
-.promises__grid {
-  --promise-stagger: 80ms;
-
-  display: grid;
-  gap: var(--grid-gap);
-  grid-template-columns: repeat(2, 1fr);
-  counter-reset: promise;
-}
-
-/* ---- The ordinal, and the entrance stagger --------------------------
-   Both used to be printed by the section from `forloop`. The card is a
-   theme block now, and a theme block cannot know its place among its
-   siblings: `content_for 'blocks'` renders the set as one flat flow with
-   no index. Only the parent can count, so the parent counts.
-
-   The counter renumbers on reorder exactly as the loop did, and gets a
-   set past nine right where the old `prepend: '0' | slice: -2, 2` printed
-   "00" at 100.
-
-   The stagger cannot use it — a counter is not a number `calc()` can
-   read — so it is a ladder. Ten rungs and then held: past that the last
-   card would be waiting most of a second to arrive, which is a delay
-   nobody reads as choreography. The design ships five. */
-
-.promises__grid .promise-card {
-  counter-increment: promise;
-}
-
-.promises__grid .promise-card__num::before {
-  content: counter(promise, decimal-leading-zero);
-}
-
-.promises__grid > :nth-child(1) { --reveal-delay: 0ms; }
-.promises__grid > :nth-child(2) { --reveal-delay: calc(var(--promise-stagger) * 1); }
-.promises__grid > :nth-child(3) { --reveal-delay: calc(var(--promise-stagger) * 2); }
-.promises__grid > :nth-child(4) { --reveal-delay: calc(var(--promise-stagger) * 3); }
-.promises__grid > :nth-child(5) { --reveal-delay: calc(var(--promise-stagger) * 4); }
-.promises__grid > :nth-child(6) { --reveal-delay: calc(var(--promise-stagger) * 5); }
-.promises__grid > :nth-child(7) { --reveal-delay: calc(var(--promise-stagger) * 6); }
-.promises__grid > :nth-child(8) { --reveal-delay: calc(var(--promise-stagger) * 7); }
-.promises__grid > :nth-child(9) { --reveal-delay: calc(var(--promise-stagger) * 8); }
-.promises__grid > :nth-child(n + 10) { --reveal-delay: calc(var(--promise-stagger) * 9); }
-
-/* An odd number of cards leaves the last one alone: give it the full row
-   rather than half of one. */
-.promises__grid > :last-child:nth-child(odd) {
-  grid-column: span 2;
-}
-
-@container (min-width: 50rem) {
-  .promises__grid {
-    grid-template-columns: repeat(6, 1fr);
-  }
-
-  .promises__grid > * {
-    grid-column: span 2;
-  }
-
-  /* Only when there are exactly five. With six there is no orphan row, and
-     shifting the fourth card would open a hole instead of closing one. */
-  .promises__grid:has(> :nth-child(5):last-child) > :nth-child(4) {
-    grid-column: 2 / span 2;
-  }
-}
-
-@container (min-width: 72.5rem) {
-  .promises__grid {
-    grid-template-columns: repeat(5, 1fr);
-  }
-
-  .promises__grid > *,
-  .promises__grid > :last-child:nth-child(odd),
-  .promises__grid:has(> :nth-child(5):last-child) > :nth-child(4) {
-    grid-column: span 1;
-  }
-}
-
-/* ---- Promise card ---------------------------------------------------
-   The design's own metrics. Held in properties rather than inlined so the
-   default is exact and each one is still a single edit.                  */
-
-.promise-card {
-  --promise-pad-top: clamp(1.38rem, 2.4vw, 1.88rem);
-  --promise-pad-x: clamp(1.13rem, 2.2vw, 1.75rem);
-  --promise-pad-bottom: clamp(1.63rem, 2.8vw, 2.13rem);
-  --promise-emblem: clamp(2.88rem, 4vw, 3.38rem);
-  --promise-rule-gap: clamp(1rem, 1.8vw, 1.38rem);
-
-  position: relative;
-  overflow: hidden;
-  background: var(--c-surface);
-  border: var(--border-width) solid color-mix(in srgb, var(--c-text) 8%, transparent);
-  padding: var(--promise-pad-top) var(--promise-pad-x) var(--promise-pad-bottom);
-  line-height: normal;
-  transition: border-color 0.5s ease,
-              transform 0.55s var(--ease),
-              box-shadow 0.5s ease;
-}
-
-.promise-card:hover {
-  border-color: color-mix(in srgb, var(--c-accent) 42%, transparent);
-  transform: translateY(-4px);
-  box-shadow: 0 22px 44px -32px color-mix(in srgb, var(--c-text) 55%, transparent);
-}
-
-.promise-card__top {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 10px;
-}
-
-.promise-card__emblem {
-  flex: none;
-  display: grid;
-  place-items: center;
-  width: var(--promise-emblem);
-  height: var(--promise-emblem);
-  border: var(--border-width) solid color-mix(in srgb, var(--c-accent) 26%, transparent);
-  background: color-mix(in srgb, var(--c-accent) 4%, var(--c-surface));
-  color: var(--c-accent);
-  transition: border-color 0.5s ease, background 0.5s ease;
-}
-
-.promise-card:hover .promise-card__emblem {
-  border-color: color-mix(in srgb, var(--c-accent) 60%, transparent);
-  background: color-mix(in srgb, var(--c-accent) 9%, var(--c-surface));
-}
-
-.promise-card__num {
-  font-size: 0.69rem;
-  letter-spacing: 0.2em;
-  color: color-mix(in srgb, var(--c-accent) 50%, transparent);
-  transition: color 0.5s ease;
-}
-
-.promise-card:hover .promise-card__num {
-  color: color-mix(in srgb, var(--c-accent) 90%, transparent);
-}
-
-.promise-card__rule {
-  display: block;
-  height: var(--border-width);
-  width: 28px;
-  background: color-mix(in srgb, var(--c-accent) 55%, transparent);
-  margin: var(--promise-rule-gap) 0 14px;
-  transition: width 0.7s var(--ease);
-}
-
-.promise-card:hover .promise-card__rule {
-  width: 100%;
-}
-
-.promise-card__title {
-  font-family: var(--font-display);
-  font-size: clamp(1.05rem, 1.75vw, 1.35rem);
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  line-height: 1.3;
-  color: var(--c-heading);
-}
-
-.promise-card__text {
-  margin-top: 10px;
-  font-size: 0.88rem;
-  line-height: 1.75;
-  color: color-mix(in srgb, var(--c-text) 58%, transparent);
-  text-wrap: pretty;
-}
-
-.promise-card__corner {
-  position: absolute;
-  right: 11px;
-  bottom: 11px;
-  width: 13px;
-  height: 13px;
-  border-right: var(--border-width) solid color-mix(in srgb, var(--c-accent) 60%, transparent);
-  border-bottom: var(--border-width) solid color-mix(in srgb, var(--c-accent) 60%, transparent);
-  opacity: 0.3;
-  transition: opacity 0.5s ease;
-  pointer-events: none;
-}
-
-.promise-card:hover .promise-card__corner {
-  opacity: 1;
 }
 
 /* ---- Testimonials ------------------------------------------------ */

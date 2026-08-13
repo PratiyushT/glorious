@@ -74,6 +74,13 @@
   endif
 
   assign item_min = layout_settings.min_item_width | default: 0
+
+  assign padding_css = ''
+  if layout_settings.padding == 'none'
+    assign padding_css = '--group-padding: 0;'
+  elsif gap_steps contains layout_settings.padding
+    assign padding_css = '--group-padding: var(--step-' | append: layout_settings.padding | append: ');'
+  endif
 -%}
 
 --group-direction: {{ direction }};
@@ -84,3 +91,4 @@
 --group-item-min: {{ item_min }}rem;
 {{- gap_css -}}
 {{- row_gap_css -}}
+{{- padding_css -}}

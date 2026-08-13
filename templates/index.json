@@ -382,61 +382,601 @@
         "padding_bottom": "max"
       }
     },
-    "promises": {
-      "type": "promises",
+    "features": {
+      "type": "group",
       "blocks": {
-        "shipping": {
-          "type": "promise",
+        "header": {
+          "type": "group",
+          "blocks": {
+            "title": {
+              "type": "title",
+              "settings": {
+                "style": "title",
+                "heading_level": "h2",
+                "alignment": "inherit",
+                "text": "Our Promises"
+              }
+            },
+            "eyebrow": {
+              "type": "subheading",
+              "settings": {
+                "style": "subheading",
+                "element": "span",
+                "alignment": "inherit",
+                "text": "Promises of Excellence",
+                "padding": "none"
+              }
+            }
+          },
+          "block_order": [
+            "title",
+            "eyebrow"
+          ],
           "settings": {
-            "icon": "shipping",
-            "heading": "Insured Shipping",
-            "text": "Every order travels fully insured, door to door, at no cost to you."
+            "direction": "vertical",
+            "reverse": false,
+            "align_vertical": "stretch",
+            "vertical_gap": "tiny",
+            "padding": "none",
+            "show_borders": false
           }
         },
-        "support": {
-          "type": "promise",
+        "items": {
+          "type": "group",
+          "blocks": {
+            "shipping": {
+              "type": "group",
+              "blocks": {
+                "top": {
+                  "type": "group",
+                  "blocks": {
+                    "icon": {
+                      "type": "icon",
+                      "settings": {
+                        "icon": "shipping",
+                        "accessible_label": "",
+                        "icon_size": 30,
+                        "alignment": "left",
+                        "show_frame": true,
+                        "frame_size": 52,
+                        "frame_shape": "square",
+                        "padding": "none"
+                      }
+                    },
+                    "number": {
+                      "type": "subheading",
+                      "settings": {
+                        "style": "caption",
+                        "element": "span",
+                        "override_tracking": "wider",
+                        "alignment": "right",
+                        "text": "01",
+                        "padding": "none"
+                      }
+                    }
+                  },
+                  "block_order": [
+                    "icon",
+                    "number"
+                  ],
+                  "settings": {
+                    "direction": "horizontal",
+                    "reverse": false,
+                    "distribute": "between",
+                    "align": "start",
+                    "wrap": false,
+                    "items_width": "natural",
+                    "stack_below": "never",
+                    "gap": "small",
+                    "padding": "none",
+                    "show_borders": false
+                  }
+                },
+                "rule": {
+                  "type": "border",
+                  "settings": {
+                    "style": "solid",
+                    "weight": "hairline",
+                    "width": "quarter",
+                    "full_container_width": false,
+                    "alignment": "left",
+                    "space_before": "none",
+                    "space_after": "none"
+                  }
+                },
+                "heading": {
+                  "type": "heading",
+                  "settings": {
+                    "text": "Insured Shipping",
+                    "style": "heading_5",
+                    "override_case": "uppercase",
+                    "override_tracking": "wide",
+                    "heading_level": "h3",
+                    "alignment": "inherit"
+                  }
+                },
+                "text": {
+                  "type": "paragraph",
+                  "settings": {
+                    "style": "small",
+                    "element": "p",
+                    "override_leading": "relaxed",
+                    "alignment": "inherit",
+                    "text": "Every order travels fully insured, door to door, at no cost to you.",
+                    "padding": "none"
+                  }
+                }
+              },
+              "block_order": [
+                "top",
+                "rule",
+                "heading",
+                "text"
+              ],
+              "settings": {
+                "direction": "vertical",
+                "reverse": false,
+                "align_vertical": "stretch",
+                "vertical_gap": "small",
+                "padding": "medium",
+                "show_borders": true,
+                "group_border_width": 1,
+                "border_top": true,
+                "border_right": true,
+                "border_bottom": true,
+                "border_left": true
+              }
+            },
+            "support": {
+              "type": "group",
+              "blocks": {
+                "top": {
+                  "type": "group",
+                  "blocks": {
+                    "icon": {
+                      "type": "icon",
+                      "settings": {
+                        "icon": "support",
+                        "accessible_label": "",
+                        "icon_size": 30,
+                        "alignment": "left",
+                        "show_frame": true,
+                        "frame_size": 52,
+                        "frame_shape": "square",
+                        "padding": "none"
+                      }
+                    },
+                    "number": {
+                      "type": "subheading",
+                      "settings": {
+                        "style": "caption",
+                        "element": "span",
+                        "override_tracking": "wider",
+                        "alignment": "right",
+                        "text": "02",
+                        "padding": "none"
+                      }
+                    }
+                  },
+                  "block_order": [
+                    "icon",
+                    "number"
+                  ],
+                  "settings": {
+                    "direction": "horizontal",
+                    "reverse": false,
+                    "distribute": "between",
+                    "align": "start",
+                    "wrap": false,
+                    "items_width": "natural",
+                    "stack_below": "never",
+                    "gap": "small",
+                    "padding": "none",
+                    "show_borders": false
+                  }
+                },
+                "rule": {
+                  "type": "border",
+                  "settings": {
+                    "style": "solid",
+                    "weight": "hairline",
+                    "width": "quarter",
+                    "full_container_width": false,
+                    "alignment": "left",
+                    "space_before": "none",
+                    "space_after": "none"
+                  }
+                },
+                "heading": {
+                  "type": "heading",
+                  "settings": {
+                    "text": "Personal Assistance",
+                    "style": "heading_5",
+                    "override_case": "uppercase",
+                    "override_tracking": "wide",
+                    "heading_level": "h3",
+                    "alignment": "inherit"
+                  }
+                },
+                "text": {
+                  "type": "paragraph",
+                  "settings": {
+                    "style": "small",
+                    "element": "p",
+                    "override_leading": "relaxed",
+                    "alignment": "inherit",
+                    "text": "Speak with the salon directly — Tue–Sat, by phone or email.",
+                    "padding": "none"
+                  }
+                }
+              },
+              "block_order": [
+                "top",
+                "rule",
+                "heading",
+                "text"
+              ],
+              "settings": {
+                "direction": "vertical",
+                "reverse": false,
+                "align_vertical": "stretch",
+                "vertical_gap": "small",
+                "padding": "medium",
+                "show_borders": true,
+                "group_border_width": 1,
+                "border_top": true,
+                "border_right": true,
+                "border_bottom": true,
+                "border_left": true
+              }
+            },
+            "secure": {
+              "type": "group",
+              "blocks": {
+                "top": {
+                  "type": "group",
+                  "blocks": {
+                    "icon": {
+                      "type": "icon",
+                      "settings": {
+                        "icon": "secure",
+                        "accessible_label": "",
+                        "icon_size": 30,
+                        "alignment": "left",
+                        "show_frame": true,
+                        "frame_size": 52,
+                        "frame_shape": "square",
+                        "padding": "none"
+                      }
+                    },
+                    "number": {
+                      "type": "subheading",
+                      "settings": {
+                        "style": "caption",
+                        "element": "span",
+                        "override_tracking": "wider",
+                        "alignment": "right",
+                        "text": "03",
+                        "padding": "none"
+                      }
+                    }
+                  },
+                  "block_order": [
+                    "icon",
+                    "number"
+                  ],
+                  "settings": {
+                    "direction": "horizontal",
+                    "reverse": false,
+                    "distribute": "between",
+                    "align": "start",
+                    "wrap": false,
+                    "items_width": "natural",
+                    "stack_below": "never",
+                    "gap": "small",
+                    "padding": "none",
+                    "show_borders": false
+                  }
+                },
+                "rule": {
+                  "type": "border",
+                  "settings": {
+                    "style": "solid",
+                    "weight": "hairline",
+                    "width": "quarter",
+                    "full_container_width": false,
+                    "alignment": "left",
+                    "space_before": "none",
+                    "space_after": "none"
+                  }
+                },
+                "heading": {
+                  "type": "heading",
+                  "settings": {
+                    "text": "Secure Payment",
+                    "style": "heading_5",
+                    "override_case": "uppercase",
+                    "override_tracking": "wide",
+                    "heading_level": "h3",
+                    "alignment": "inherit"
+                  }
+                },
+                "text": {
+                  "type": "paragraph",
+                  "settings": {
+                    "style": "small",
+                    "element": "p",
+                    "override_leading": "relaxed",
+                    "alignment": "inherit",
+                    "text": "Encrypted checkout with the payment methods you already trust.",
+                    "padding": "none"
+                  }
+                }
+              },
+              "block_order": [
+                "top",
+                "rule",
+                "heading",
+                "text"
+              ],
+              "settings": {
+                "direction": "vertical",
+                "reverse": false,
+                "align_vertical": "stretch",
+                "vertical_gap": "small",
+                "padding": "medium",
+                "show_borders": true,
+                "group_border_width": 1,
+                "border_top": true,
+                "border_right": true,
+                "border_bottom": true,
+                "border_left": true
+              }
+            },
+            "handcraft": {
+              "type": "group",
+              "blocks": {
+                "top": {
+                  "type": "group",
+                  "blocks": {
+                    "icon": {
+                      "type": "icon",
+                      "settings": {
+                        "icon": "handcraft",
+                        "accessible_label": "",
+                        "icon_size": 30,
+                        "alignment": "left",
+                        "show_frame": true,
+                        "frame_size": 52,
+                        "frame_shape": "square",
+                        "padding": "none"
+                      }
+                    },
+                    "number": {
+                      "type": "subheading",
+                      "settings": {
+                        "style": "caption",
+                        "element": "span",
+                        "override_tracking": "wider",
+                        "alignment": "right",
+                        "text": "04",
+                        "padding": "none"
+                      }
+                    }
+                  },
+                  "block_order": [
+                    "icon",
+                    "number"
+                  ],
+                  "settings": {
+                    "direction": "horizontal",
+                    "reverse": false,
+                    "distribute": "between",
+                    "align": "start",
+                    "wrap": false,
+                    "items_width": "natural",
+                    "stack_below": "never",
+                    "gap": "small",
+                    "padding": "none",
+                    "show_borders": false
+                  }
+                },
+                "rule": {
+                  "type": "border",
+                  "settings": {
+                    "style": "solid",
+                    "weight": "hairline",
+                    "width": "quarter",
+                    "full_container_width": false,
+                    "alignment": "left",
+                    "space_before": "none",
+                    "space_after": "none"
+                  }
+                },
+                "heading": {
+                  "type": "heading",
+                  "settings": {
+                    "text": "Handcrafted Design",
+                    "style": "heading_5",
+                    "override_case": "uppercase",
+                    "override_tracking": "wide",
+                    "heading_level": "h3",
+                    "alignment": "inherit"
+                  }
+                },
+                "text": {
+                  "type": "paragraph",
+                  "settings": {
+                    "style": "small",
+                    "element": "p",
+                    "override_leading": "relaxed",
+                    "alignment": "inherit",
+                    "text": "Cut, set, and finished by hand in our own workshop.",
+                    "padding": "none"
+                  }
+                }
+              },
+              "block_order": [
+                "top",
+                "rule",
+                "heading",
+                "text"
+              ],
+              "settings": {
+                "direction": "vertical",
+                "reverse": false,
+                "align_vertical": "stretch",
+                "vertical_gap": "small",
+                "padding": "medium",
+                "show_borders": true,
+                "group_border_width": 1,
+                "border_top": true,
+                "border_right": true,
+                "border_bottom": true,
+                "border_left": true
+              }
+            },
+            "certified": {
+              "type": "group",
+              "blocks": {
+                "top": {
+                  "type": "group",
+                  "blocks": {
+                    "icon": {
+                      "type": "icon",
+                      "settings": {
+                        "icon": "certified",
+                        "accessible_label": "",
+                        "icon_size": 30,
+                        "alignment": "left",
+                        "show_frame": true,
+                        "frame_size": 52,
+                        "frame_shape": "square",
+                        "padding": "none"
+                      }
+                    },
+                    "number": {
+                      "type": "subheading",
+                      "settings": {
+                        "style": "caption",
+                        "element": "span",
+                        "override_tracking": "wider",
+                        "alignment": "right",
+                        "text": "05",
+                        "padding": "none"
+                      }
+                    }
+                  },
+                  "block_order": [
+                    "icon",
+                    "number"
+                  ],
+                  "settings": {
+                    "direction": "horizontal",
+                    "reverse": false,
+                    "distribute": "between",
+                    "align": "start",
+                    "wrap": false,
+                    "items_width": "natural",
+                    "stack_below": "never",
+                    "gap": "small",
+                    "padding": "none",
+                    "show_borders": false
+                  }
+                },
+                "rule": {
+                  "type": "border",
+                  "settings": {
+                    "style": "solid",
+                    "weight": "hairline",
+                    "width": "quarter",
+                    "full_container_width": false,
+                    "alignment": "left",
+                    "space_before": "none",
+                    "space_after": "none"
+                  }
+                },
+                "heading": {
+                  "type": "heading",
+                  "settings": {
+                    "text": "Certified Quality",
+                    "style": "heading_5",
+                    "override_case": "uppercase",
+                    "override_tracking": "wide",
+                    "heading_level": "h3",
+                    "alignment": "inherit"
+                  }
+                },
+                "text": {
+                  "type": "paragraph",
+                  "settings": {
+                    "style": "small",
+                    "element": "p",
+                    "override_leading": "relaxed",
+                    "alignment": "inherit",
+                    "text": "Every stone graded and certified before it leaves the salon.",
+                    "padding": "none"
+                  }
+                }
+              },
+              "block_order": [
+                "top",
+                "rule",
+                "heading",
+                "text"
+              ],
+              "settings": {
+                "direction": "vertical",
+                "reverse": false,
+                "align_vertical": "stretch",
+                "vertical_gap": "small",
+                "padding": "medium",
+                "show_borders": true,
+                "group_border_width": 1,
+                "border_top": true,
+                "border_right": true,
+                "border_bottom": true,
+                "border_left": true
+              }
+            }
+          },
+          "block_order": [
+            "shipping",
+            "support",
+            "secure",
+            "handcraft",
+            "certified"
+          ],
           "settings": {
-            "icon": "support",
-            "heading": "Personal Assistance",
-            "text": "Speak with the salon directly — Tue–Sat, by phone or email."
-          }
-        },
-        "secure": {
-          "type": "promise",
-          "settings": {
-            "icon": "secure",
-            "heading": "Secure Payment",
-            "text": "Encrypted checkout with the payment methods you already trust."
-          }
-        },
-        "handcraft": {
-          "type": "promise",
-          "settings": {
-            "icon": "handcraft",
-            "heading": "Handcrafted Design",
-            "text": "Cut, set, and finished by hand in our own workshop."
-          }
-        },
-        "certified": {
-          "type": "promise",
-          "settings": {
-            "icon": "certified",
-            "heading": "Certified Quality",
-            "text": "Every stone graded and certified before it leaves the salon."
+            "direction": "horizontal",
+            "reverse": false,
+            "distribute": "start",
+            "align": "stretch",
+            "wrap": true,
+            "items_width": "equal",
+            "min_item_width": 12,
+            "stack_below": "never",
+            "gap": "medium",
+            "padding": "none",
+            "show_borders": false
           }
         }
       },
       "block_order": [
-        "shipping",
-        "support",
-        "secure",
-        "handcraft",
-        "certified"
+        "header",
+        "items"
       ],
       "settings": {
         "color_scheme": "scheme_1",
-        "heading": "Our Promises",
-        "subheading": "Promises of Excellence",
+        "content_width": "page",
+        "full_height": false,
+        "anchor": "",
+        "direction": "vertical",
+        "reverse": false,
+        "align_vertical": "stretch",
+        "vertical_gap": "large",
+        "content_alignment": "left",
+        "block_gap": "medium",
         "padding_top": "lg",
         "padding_bottom": "max"
       }
@@ -948,7 +1488,7 @@
     "most-loved",
     "lookbook",
     "our-products",
-    "promises",
+    "features",
     "craft",
     "about",
     "testimonials",

@@ -873,6 +873,10 @@
       "vertical_gap_label": "Vertical spacing",
       "vertical_gap_info": "Override the section's block spacing for this stacked Group.",
       "vertical_gap_inherit": "Use section spacing",
+      "padding": {
+        "label": "Inside spacing",
+        "info": "Adds equal space inside the Group. This is useful when borders are shown, but it does not require them."
+      },
       "show_borders_label": "Show borders",
       "show_borders_info": "Turn on border controls for this Group. This does not change how its blocks are arranged.",
       "border_settings_header": "Border settings",
@@ -904,16 +908,41 @@
         "label": "Attribution"
       }
     },
-    "promise": {
-      "name": "Promise",
+    "icon": {
+      "name": "Icon",
       "icon": {
         "label": "Icon"
       },
-      "heading": {
-        "label": "Heading"
+      "accessible_label": {
+        "label": "Accessible label",
+        "info": "Leave empty when the icon is decorative. Add a short label only when the icon communicates information that nearby text does not."
       },
-      "text": {
-        "label": "Text"
+      "icon_size": {
+        "label": "Icon size"
+      },
+      "color": {
+        "label": "Icon color override",
+        "info": "Leave empty to use the current color scheme's accent color."
+      },
+      "show_frame": {
+        "label": "Show frame"
+      },
+      "frame_size": {
+        "label": "Frame size"
+      },
+      "frame_shape": {
+        "label": "Frame shape",
+        "square": "Square",
+        "soft": "Soft corners",
+        "round": "Round"
+      },
+      "border_color": {
+        "label": "Frame border override",
+        "info": "Leave empty to derive a subtle border from the current accent color."
+      },
+      "background_color": {
+        "label": "Frame background override",
+        "info": "Leave empty to derive a subtle background from the current accent and surface colors."
       },
       "icons": {
         "shipping": "Insured shipping",
@@ -921,6 +950,15 @@
         "secure": "Secure payment",
         "handcraft": "Handcrafted",
         "certified": "Certified quality",
+        "diamond": "Diamond",
+        "sparkle": "Sparkle",
+        "location": "Location",
+        "phone": "Telephone",
+        "check": "Check",
+        "account": "Account",
+        "search": "Search",
+        "cart": "Bag",
+        "arrow_right": "Arrow right",
         "none": "None"
       }
     }
@@ -1336,9 +1374,6 @@
         "carousel": "Carousel"
       }
     },
-    "promises": {
-      "name": "Promises"
-    },
     "group": {
       "name": "Group",
       "layout_header": "Layout",
@@ -1353,6 +1388,9 @@
       "block_gap": {
         "label": "Vertical block spacing",
         "info": "Used between stacked blocks and whenever a row stacks on a narrow container."
+      },
+      "presets": {
+        "feature_grid": "Feature grid"
       }
     },
     "craft": {
