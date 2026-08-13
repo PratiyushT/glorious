@@ -749,6 +749,8 @@
         "label": "Value",
         "info": "Used only when Value from is Custom."
       },
+      "full_width_borders_label": "Full-width borders",
+      "full_width_borders_info": "Stretch this row so its top and bottom borders reach both edges of the parent container.",
       "link": {
         "label": "Link"
       }

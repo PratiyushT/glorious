@@ -857,6 +857,9 @@ Liquid implementations.
 - Craft, About, and Visit are three stored instances of `type: "group"`, not
   three section files. Their content is composed from nested Group blocks,
   Media, Border, text, Detail rows, and Buttons.
+- Detail's `full_width_borders` is opt-in. It stretches the row to its parent
+  so the row's own hairlines reach both container edges; it does not set a
+  height, and a Detail row with the setting off can still hug its content.
 - `items_width` is the one addition the two-column migration needed. Natural is
   the Group block's backward-compatible default; Equal makes direct row
   children share the available width. When the container stacks, equal-width

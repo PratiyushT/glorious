@@ -27,12 +27,14 @@
     new_tab    - true to open off-site. The caller works this out
                  (`link contains '://'`) and passes a variable, because a
                  filter cannot be used on a `render` argument.
+    full_width - true to stretch the row, and therefore its borders, across
+                 the parent container
     attributes - the caller's `block.shopify_attributes`, so the theme editor
                  can still select the row
 {%- endcomment -%}
 
 {%- if value != blank -%}
-  <div class="spec-row" {{ attributes }}>
+  <div class="spec-row{% if full_width %} spec-row--full-width{% endif %}" {{ attributes }}>
     <span class="spec-row__label">{{ label }}</span>
     <span class="spec-row__value">
       {%- if link != blank -%}

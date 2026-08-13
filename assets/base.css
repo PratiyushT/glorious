@@ -4059,6 +4059,14 @@ a {
   border-top: var(--border-width) solid var(--c-hairline);
 }
 
+/* Opt-in because a Detail row may intentionally hug a short value inside a
+   naturally aligned Group. Stretching the row lets its own top and closing
+   borders reach the parent edges without fixing or capping its height. */
+.spec-row--full-width {
+  align-self: stretch;
+  width: 100%;
+}
+
 /* The last row closes the group. `:not(:has(+ .spec-row))` rather than
    `:last-child`, because as theme blocks these render in one flat sibling flow
    with everything else the section holds — a trailing buttons block would take

@@ -62,6 +62,7 @@
   value: row_value,
   link: row_link,
   new_tab: row_external,
+  full_width: block.settings.full_width_borders,
   attributes: block.shopify_attributes -%}
 
 {% schema %}
@@ -99,6 +100,13 @@
       "type": "url",
       "id": "link",
       "label": "t:sections.all.link.label"
+    },
+    {
+      "type": "checkbox",
+      "id": "full_width_borders",
+      "label": "t:blocks.detail.full_width_borders_label",
+      "info": "t:blocks.detail.full_width_borders_info",
+      "default": false
     }
   ],
   "presets": [
