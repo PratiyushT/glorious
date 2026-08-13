@@ -6758,6 +6758,13 @@ a.nav-menu__address:hover {
   color: color-mix(in srgb, var(--c-text) 55%, transparent);
 }
 
+.footer__social .footer__link,
+.nav-menu__social a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+}
+
 .footer__col-mark svg {
   display: block;
   width: 1rem;

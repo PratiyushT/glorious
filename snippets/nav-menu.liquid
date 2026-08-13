@@ -23,8 +23,10 @@
   assign social_blocks = section.blocks | where: 'type', 'social'
   assign social = social_blocks.first
   assign has_social_links = false
-  if social != blank and social.settings.instagram != blank or social.settings.facebook != blank or social.settings.pinterest != blank
-    assign has_social_links = true
+  if social != blank
+    if social.settings.instagram != blank or social.settings.facebook != blank or social.settings.pinterest != blank or social.settings.tiktok != blank or social.settings.youtube != blank or social.settings.x != blank
+      assign has_social_links = true
+    endif
   endif
 
   comment
@@ -138,13 +140,22 @@
     {%- if has_social_links -%}
       <div class="nav-menu__social">
         {%- if social.settings.instagram != blank -%}
-          <a href="{{ social.settings.instagram }}" target="_blank" rel="noopener">Instagram</a>
+          <a href="{{ social.settings.instagram }}" target="_blank" rel="noopener">{% render 'icon', icon: 'instagram', width: 16, height: 16 %}<span>Instagram</span></a>
         {%- endif -%}
         {%- if social.settings.facebook != blank -%}
-          <a href="{{ social.settings.facebook }}" target="_blank" rel="noopener">Facebook</a>
+          <a href="{{ social.settings.facebook }}" target="_blank" rel="noopener">{% render 'icon', icon: 'facebook', width: 16, height: 16 %}<span>Facebook</span></a>
         {%- endif -%}
         {%- if social.settings.pinterest != blank -%}
-          <a href="{{ social.settings.pinterest }}" target="_blank" rel="noopener">Pinterest</a>
+          <a href="{{ social.settings.pinterest }}" target="_blank" rel="noopener">{% render 'icon', icon: 'pinterest', width: 16, height: 16 %}<span>Pinterest</span></a>
+        {%- endif -%}
+        {%- if social.settings.tiktok != blank -%}
+          <a href="{{ social.settings.tiktok }}" target="_blank" rel="noopener">{% render 'icon', icon: 'tiktok', width: 16, height: 16 %}<span>TikTok</span></a>
+        {%- endif -%}
+        {%- if social.settings.youtube != blank -%}
+          <a href="{{ social.settings.youtube }}" target="_blank" rel="noopener">{% render 'icon', icon: 'youtube', width: 16, height: 16 %}<span>YouTube</span></a>
+        {%- endif -%}
+        {%- if social.settings.x != blank -%}
+          <a href="{{ social.settings.x }}" target="_blank" rel="noopener">{% render 'icon', icon: 'x', width: 16, height: 16 %}<span>X</span></a>
         {%- endif -%}
       </div>
     {%- endif -%}
