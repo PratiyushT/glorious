@@ -113,60 +113,69 @@
   endcapture
 -%}
 
-{%- if product == blank -%}
-  <span class="btn btn--square card__add" aria-disabled="true" {{ block.shopify_attributes }}>
-    {{- label -}}
-  </span>
-{%- elsif product.available == false -%}
-  <span class="btn btn--square card__add" aria-disabled="true" {{ block.shopify_attributes }}>
-    {{- sold_out_label -}}
-  </span>
-{%- elsif opens_options -%}
-  <a
-    class="btn btn--square card__add"
-    href="{{ product.url }}?variant={{ chosen.id }}"
-    data-quick-view
-    {{ block.shopify_attributes }}
-  >
-    {{- choose_options_label -}}
-  </a>
-{%- else -%}
-  {%- assign form_class = 'card__add-form' -%}
-  {%- if has_variant_choices and variant_action == 'highest_available' -%}
-    {%- assign form_class = form_class | append: ' card__add-form--requires-js' -%}
-  {%- endif -%}
-
-  {%- form 'product', product, id: form_id, class: form_class, data-cart-add: '' -%}
-    <input type="hidden" name="id" value="{{ chosen.id }}" data-card-add-id>
-    <button
-      type="submit"
-      name="add"
-      class="btn btn--square card__add"
-      data-add-label="{{ label | escape }}"
-      data-sold-out-label="{{ sold_out_label | escape }}"
-      {% if has_variant_choices and variant_action == 'highest_available' %}
-        data-card-add-strategy="highest_available"
-        data-card-add-variant-id="{{ chosen.id }}"
-        data-card-add-option-value="{{ strategy_option_value | escape }}"
-        data-card-add-option-values="{{ chosen.options | json | escape }}"
-        data-card-add-price="{{ chosen_price_html | strip | escape }}"
-      {% endif %}
-      {{ block.shopify_attributes }}
-    >
+{%- comment -%}
+  Every state lives in the same direct-child slot. The composed card puts its
+  caption inset on direct children, so letting the Add to cart form be the
+  child while rendering Choose options as the child button made identical
+  `.card__add` controls resolve to different widths. The slot owns layout; only
+  the control inside it changes with the product's variant behavior.
+{%- endcomment -%}
+<div class="card__add-slot">
+  {%- if product == blank -%}
+    <span class="btn btn--square card__add" aria-disabled="true" {{ block.shopify_attributes }}>
       {{- label -}}
-    </button>
-  {%- endform -%}
-
-  {%- if has_variant_choices and variant_action == 'highest_available' -%}
+    </span>
+  {%- elsif product.available == false -%}
+    <span class="btn btn--square card__add" aria-disabled="true" {{ block.shopify_attributes }}>
+      {{- sold_out_label -}}
+    </span>
+  {%- elsif opens_options -%}
     <a
-      class="btn btn--square card__add card__add-fallback"
+      class="btn btn--square card__add"
       href="{{ product.url }}?variant={{ chosen.id }}"
       data-quick-view
+      {{ block.shopify_attributes }}
     >
       {{- choose_options_label -}}
     </a>
+  {%- else -%}
+    {%- assign form_class = 'card__add-form' -%}
+    {%- if has_variant_choices and variant_action == 'highest_available' -%}
+      {%- assign form_class = form_class | append: ' card__add-form--requires-js' -%}
+    {%- endif -%}
+
+    {%- form 'product', product, id: form_id, class: form_class, data-cart-add: '' -%}
+      <input type="hidden" name="id" value="{{ chosen.id }}" data-card-add-id>
+      <button
+        type="submit"
+        name="add"
+        class="btn btn--square card__add"
+        data-add-label="{{ label | escape }}"
+        data-sold-out-label="{{ sold_out_label | escape }}"
+        {% if has_variant_choices and variant_action == 'highest_available' %}
+          data-card-add-strategy="highest_available"
+          data-card-add-variant-id="{{ chosen.id }}"
+          data-card-add-option-value="{{ strategy_option_value | escape }}"
+          data-card-add-option-values="{{ chosen.options | json | escape }}"
+          data-card-add-price="{{ chosen_price_html | strip | escape }}"
+        {% endif %}
+        {{ block.shopify_attributes }}
+      >
+        {{- label -}}
+      </button>
+    {%- endform -%}
+
+    {%- if has_variant_choices and variant_action == 'highest_available' -%}
+      <a
+        class="btn btn--square card__add card__add-fallback"
+        href="{{ product.url }}?variant={{ chosen.id }}"
+        data-quick-view
+      >
+        {{- choose_options_label -}}
+      </a>
+    {%- endif -%}
   {%- endif -%}
-{%- endif -%}
+</div>
 
 {% schema %}
 {
