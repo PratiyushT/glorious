@@ -4,8 +4,8 @@
     "theme_name": "Veylin",
     "theme_version": "0.3.0",
     "theme_author": "PratiyushT",
-    "theme_documentation_url": "https://example.com/veylin/docs",
-    "theme_support_email": "support@example.com"
+    "theme_documentation_url": "https://github.com/PratiyushT/glorious/tree/main/docs",
+    "theme_support_email": "aloomataloo@gmail.com"
   },
   {
     "name": "t:settings_schema.brand.name",
