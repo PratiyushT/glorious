@@ -1,0 +1,47 @@
+{%- comment -%}
+  Shared active-filter summary for collection and search. Each value uses
+  Shopify's removal URL, so pagination is cleared and all other active filters,
+  sort, search terms and locale state remain authoritative.
+
+  Accepts: results, clear_url.
+{%- endcomment -%}
+
+{%- liquid
+  assign active_count = 0
+  capture active_items
+    for filter in results.filters
+      for value in filter.active_values
+        assign active_count = active_count | plus: 1
+        echo '<a class="catalog-active-filter" href="'
+        echo value.url_to_remove
+        echo '" data-catalog-link><span>'
+        echo filter.label | escape
+        echo ': '
+        echo value.label | escape
+        echo '</span><span aria-hidden="true">×</span></a>'
+      endfor
+
+      if filter.type == 'price_range' and filter.min_value.value != blank or filter.max_value.value != blank
+        assign active_count = active_count | plus: 1
+        assign active_min = filter.min_value.value | default: 0 | money
+        assign active_max = filter.max_value.value | default: filter.range_max | money
+        echo '<a class="catalog-active-filter" href="'
+        echo filter.url_to_remove
+        echo '" data-catalog-link><span>'
+        echo filter.label | escape
+        echo ': '
+        echo active_min
+        echo ' – '
+        echo active_max
+        echo '</span><span aria-hidden="true">×</span></a>'
+      endif
+    endfor
+  endcapture
+-%}
+
+{%- if active_count > 0 -%}
+  <div class="catalog-active-filters" aria-label="{{ 'collections.filters.active' | t }}">
+    {{ active_items }}
+    <a class="catalog-active-filters__clear" href="{{ clear_url }}" data-catalog-link>{{ 'collections.filters.clear' | t }}</a>
+  </div>
+{%- endif -%}

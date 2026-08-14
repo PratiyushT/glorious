@@ -1,0 +1,8 @@
+{%- comment -%}
+  Adds the state a choice needs beyond the shared Button appearance contract.
+  Resting geometry and colours still come from button-style; only the selected
+  state is specific to a mutually-exclusive choice.
+{%- endcomment -%}
+{%- if selected_background_color != blank -%}--choice-selected-bg: {{ selected_background_color }};{%- endif -%}
+{%- if selected_text_color != blank -%}--choice-selected-text: {{ selected_text_color }};{%- endif -%}
+{%- if selected_border_color != blank -%}--choice-selected-border: {{ selected_border_color }};{%- endif -%}

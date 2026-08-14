@@ -1,0 +1,33 @@
+{%- comment -%}
+  One Shopify-native catalog filter value. Collection and search drawers use
+  this renderer for both the initial values and the progressively disclosed
+  remainder, so visual variant filters, counts, availability and accessibility
+  cannot drift between the two groups.
+
+  Accepts: value, section, input_id.
+{%- endcomment -%}
+
+<label class="catalog-filter-option" for="{{ input_id }}">
+  <input
+    id="{{ input_id }}"
+    type="checkbox"
+    name="{{ value.param_name }}"
+    value="{{ value.value | escape }}"
+    {% if value.active %}checked{% endif %}
+    {% if value.count == 0 and value.active == false %}disabled{% endif %}
+  >
+  <span class="catalog-filter-option__check" aria-hidden="true">{% render 'icon', icon: 'check' %}</span>
+  {%- if section.settings.show_filter_visuals -%}
+    {%- if value.swatch.image != blank or value.swatch.color != blank -%}
+      <span
+        class="catalog-filter-option__swatch"
+        style="{% if value.swatch.image != blank %}--filter-swatch-image: url('{{ value.swatch.image | image_url: width: 64 }}');{% elsif value.swatch.color != blank %}--filter-swatch-color: {{ value.swatch.color }};{% endif %}"
+        aria-hidden="true"
+      ></span>
+    {%- elsif value.image != blank -%}
+      {{ value.image | image_url: width: 64 | image_tag: class: 'catalog-filter-option__image', loading: 'lazy', alt: '' }}
+    {%- endif -%}
+  {%- endif -%}
+  <span class="catalog-filter-option__label">{{ value.label }}</span>
+  {%- if section.settings.show_filter_counts -%}<span class="catalog-filter-option__count">{{ value.count }}</span>{%- endif -%}
+</label>

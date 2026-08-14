@@ -6,7 +6,7 @@
       "type": "footer",
       "settings": {
         "color_scheme": "scheme_2",
-        "show_wordmark": true,
+        "huge_text_value": "STORE NAME",
         "copyright": "Store name · City, State"
       },
       "blocks": {
@@ -18,54 +18,21 @@
           "type": "menu",
           "settings": {
             "heading": "Navigation",
-            "label_1": "Home",
-            "url_1": "/",
-            "label_2": "The Collection",
-            "url_2": "/collections/all",
-            "label_3": "About Us",
-            "url_3": "/pages/about",
-            "label_4": "Contact",
-            "url_4": "/pages/contact",
-            "label_5": "Account",
-            "url_5": "/account",
-            "label_6": "Search",
-            "url_6": "/search",
-            "label_7": "Find an Order",
-            "url_7": "/account",
-            "label_8": "Newsletter",
-            "url_8": "#newsletter"
+            "menu": "main-menu"
           }
         },
         "collections": {
           "type": "menu",
           "settings": {
             "heading": "Shop",
-            "label_1": "All products",
-            "url_1": "/collections/all",
-            "label_2": "New arrivals",
-            "url_2": "/collections/all",
-            "label_3": "Featured",
-            "url_3": "/collections/all",
-            "label_4": "Collections",
-            "url_4": "/collections"
+            "menu": "footer"
           }
         },
         "policies": {
-          "type": "menu",
+          "type": "policies",
           "settings": {
             "heading": "Our Policies",
-            "label_1": "Returns & Shipping",
-            "url_1": "/policies/refund-policy",
-            "label_2": "Terms",
-            "url_2": "/policies/terms-of-service",
-            "label_3": "Privacy",
-            "url_3": "/policies/privacy-policy",
-            "label_4": "Cookies",
-            "url_4": "/pages/cookies",
-            "label_5": "Disclaimer",
-            "url_5": "/pages/disclaimer",
-            "label_6": "Cookie Preferences",
-            "url_6": "#cookie-preferences"
+            "show_cookie_preferences": true
           }
         },
         "contact-details": {

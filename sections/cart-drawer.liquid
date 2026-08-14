@@ -33,7 +33,8 @@
       aria-label="{{ 'cart.title_drawer' | t: cart_name: cart_name }}"
     >
       <div class="drawer__inner" data-drawer-contents>
-        {% render 'cart-drawer-contents', section: section %}
+        {%- capture drawer_blocks -%}{% content_for 'blocks' %}{%- endcapture -%}
+        {% render 'cart-drawer-contents', section: section, drawer_blocks: drawer_blocks %}
       </div>
     </aside>
   </div>
@@ -43,6 +44,7 @@
 {
   "name": "t:sections.cart_drawer.name",
   "tag": "div",
+  "blocks": [{ "type": "cart_upsell" }, { "type": "@app" }],
   "settings": [
     {
       "type": "paragraph",

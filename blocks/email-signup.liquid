@@ -1,0 +1,44 @@
+{%- comment -%}Reusable newsletter form; Shopify customer tags provide the subscription source of truth.{%- endcomment -%}
+<div class="email-signup-block align-{{ block.settings.alignment }}" {{ block.shopify_attributes }}>
+  {%- if block.settings.heading != blank -%}<p style="{% render 'text-style', preset: block.settings.heading_style %}">{{ block.settings.heading }}</p>{%- endif -%}
+  {%- if block.settings.text != blank -%}<div class="rte">{{ block.settings.text }}</div>{%- endif -%}
+  {% form 'customer', class: 'email-signup-block__form' %}
+    <input type="hidden" name="contact[tags]" value="newsletter">
+    <label class="visually-hidden" for="EmailSignup-{{ block.id }}">{{ 'newsletter.email' | t }}</label>
+    <input id="EmailSignup-{{ block.id }}" class="field" type="email" name="contact[email]" value="{{ form.email }}" placeholder="{{ 'newsletter.email' | t | escape }}" autocorrect="off" autocapitalize="off" autocomplete="email" required>
+    <button class="button button--{{ block.settings.button_style }}" type="submit">{{ block.settings.button_label }}</button>
+    {%- if form.posted_successfully? -%}<p class="form-status form-status--success" role="status">{{ 'newsletter.success' | t }}</p>{%- endif -%}
+    {%- if form.errors -%}<div class="form-status form-status--error" role="alert">{{ form.errors | default_errors }}</div>{%- endif -%}
+  {% endform %}
+</div>
+
+{% schema %}
+{
+  "name": "Email signup",
+  "tag": null,
+  "settings": [
+    { "type": "inline_richtext", "id": "heading", "label": "Heading", "default": "Join our list" },
+    {
+      "type": "select", "id": "heading_style", "label": "Heading style",
+      "options": [
+        { "value": "heading_2", "label": "Heading 2" }, { "value": "heading_3", "label": "Heading 3" }, { "value": "subheading", "label": "Subheading" }
+      ], "default": "heading_3"
+    },
+    { "type": "richtext", "id": "text", "label": "Text" },
+    { "type": "text", "id": "button_label", "label": "Button label", "default": "Subscribe" },
+    {
+      "type": "select", "id": "button_style", "label": "Button style",
+      "options": [
+        { "value": "filled", "label": "Filled" }, { "value": "outline", "label": "Outline" }
+      ], "default": "filled"
+    },
+    {
+      "type": "select", "id": "alignment", "label": "Alignment",
+      "options": [
+        { "value": "left", "label": "Left" }, { "value": "center", "label": "Center" }, { "value": "right", "label": "Right" }
+      ], "default": "left"
+    }
+  ],
+  "presets": [{ "name": "Email signup" }]
+}
+{% endschema %}

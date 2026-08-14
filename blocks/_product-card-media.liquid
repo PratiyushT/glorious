@@ -4,7 +4,8 @@
   Product card — the photograph.
 
   Every photograph the piece has is a slide, however many that is, and only the
-  first two are fetched up front. That is `snippets/card-slide.liquid`'s rule
+  opening photograph has a source at first paint. That is
+  `snippets/card-slide.liquid`'s rule
   and the reason a slide is `opacity: 0` rather than `display: none`; see
   "Product card" in CLAUDE.md before changing anything here.
 
@@ -115,11 +116,12 @@
   endif
 
   comment
-    Slide 0 is what the card shows and slide 1 is what hover previews. Those
-    two are the whole of it without scripting, so those two are what the
-    browser fetches.
+    Only slide 0 is needed at first paint. Hovering, swiping, or using an arrow
+    promotes the requested slide's deferred source immediately before it is
+    shown; a product with many images therefore never downloads the unopened
+    views merely because the carousel setting is enabled.
   endcomment
-  assign eager_slides = 2
+  assign eager_slides = 1
 -%}
 
 <div
@@ -162,6 +164,7 @@
           width="{{ card_video.preview_image.width | default: 1240 }}"
           height="{{ card_video.preview_image.height | default: 827 }}"
           muted
+          autoplay
           loop
           playsinline
           preload="none"
@@ -198,13 +201,6 @@
     </button>
   {%- endif -%}
 
-  {%- if product != blank -%}
-    {%- if product.available == false -%}
-      <span class="badge">{{ 'products.sold_out' | t }}</span>
-    {%- elsif product.compare_at_price > product.price -%}
-      <span class="badge">{{ 'products.on_sale' | t }}</span>
-    {%- endif -%}
-  {%- endif -%}
 </div>
 
 {% schema %}

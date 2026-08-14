@@ -292,6 +292,16 @@
     scope.querySelectorAll('[data-overlay]').forEach(registerOverlay);
   }
 
+  /* A reopened menu starts folded. `details` keeps its open state through the
+     overlay's display toggle, so a branch left open would greet the visitor
+     mid-tree, with its entrance already spent. */
+  document.addEventListener('overlay:close', function (event) {
+    if (!event.target || event.target.getAttribute('data-overlay') !== 'menu') return;
+    event.target.querySelectorAll('.nav-menu__details[open]').forEach(function (details) {
+      details.removeAttribute('open');
+    });
+  });
+
   /* The controls are delegated from the document and bound once, never bound
      to the elements themselves.
 
@@ -669,6 +679,7 @@
 
       current.innerHTML = next.innerHTML;
       blurUp(current, true);
+      init(current);
 
       if (scroller) scroller.scrollTop = scrolled;
 
@@ -935,6 +946,7 @@
     document.addEventListener('submit', function (event) {
       var form = event.target;
       if (!form.matches || !form.matches('[data-cart-add]')) return;
+      if (event.submitter && event.submitter.name !== 'add') return;
 
       var drawer = cartDrawer();
       if (!drawer) return;
@@ -1556,7 +1568,14 @@
 
     var retry = mode === 'retry';
     button.hidden = false;
-    button.setAttribute('aria-label', retry ? 'Retry video' : 'Play video');
+    /* Liquid renders the translated labels onto the button; the literals are
+       only the floor for a facade this script had to create itself. */
+    button.setAttribute(
+      'aria-label',
+      retry
+        ? button.dataset.retryLabel || 'Retry video'
+        : button.dataset.playLabel || 'Play video'
+    );
     button.firstElementChild.textContent = retry ? '\u21bb' : '\u25b6';
     state.overlay.classList.add('has-video-action');
     state.overlay.removeAttribute('aria-hidden');
@@ -1655,6 +1674,13 @@
   function videoLqipPaused(media, state) {
     if (videoLqipStates.get(media) !== state || state.done || !state.active) return;
     cancelVideoFrameWait(media, state);
+    /* An autoplaying video is only ever paused by the system — a slide stepped
+       away, the viewport left — and its next play is automatic too, so the
+       Play affordance would flash over a video nobody needs to start. It
+       belongs to media whose merchant turned autoplay off. Reduced motion is
+       the exception: autoplay is refused there, and the action is the only
+       way in. */
+    if ((media.autoplay || media.hasAttribute('data-video-autoplay')) && !reduceMotion.matches) return;
     setVideoLqipAction(media, state, 'play');
   }
 
@@ -1699,7 +1725,22 @@
     if (media.tagName === 'IFRAME') {
       initExternalVideoLqip(media, state);
     } else {
-      if (media.controls || reduceMotion.matches) setVideoLqipAction(media, state, 'play');
+      /* With scripting the product gallery draws no native video chrome — the
+         facade's Play action and a click on the stage are the controls. The
+         attribute is still served, because for a visitor without JavaScript
+         the native controls are the only way in. */
+      if (media.controls && media.closest('.product-gallery')) {
+        media.removeAttribute('controls');
+      }
+
+      /* Any native video that will not start itself needs the accessible
+         action up front. Ambient viewport-autoplay media is the exception —
+         its observer starts it — but reduced motion still gets the action,
+         because that observer refuses to autoplay there. */
+      var ambientVideo = media.hasAttribute('data-video-autoplay');
+      if ((!media.autoplay && !ambientVideo) || media.controls || reduceMotion.matches) {
+        setVideoLqipAction(media, state, 'play');
+      }
       if (!media.paused && media.readyState >= 2) videoLqipPlaying(media, state);
     }
   }
@@ -1723,6 +1764,19 @@
 
     videoLqipViewport.observe(media);
   }
+
+  /* A gallery video draws no control chrome with scripting, so the stage is
+     its own control: a click toggles playback. Scoped to the product gallery
+     deliberately — the card's video is ambient under the card link, the
+     lookbook's film carries its own controls, and the Media block chooses
+     controls or ambient for itself. Delegated and bound once, because quick
+     view injects gallery markup after load. */
+  document.addEventListener('click', function (event) {
+    var video = event.target.closest ? event.target.closest('.product-gallery video') : null;
+    if (!video || video.controls) return;
+    if (video.paused) requestVideoLqipPlayback(video, true);
+    else video.pause();
+  });
 
   function prepareExternalVideo(media) {
     if (media.tagName !== 'IFRAME') return '';
@@ -2093,12 +2147,20 @@
     if (media.tagName !== 'VIDEO' || videoAutoplayBound.has(media)) return;
     videoAutoplayBound.add(media);
 
-    if (!('IntersectionObserver' in window)) {
+    /* Theme settings → Motion decides whether offscreen video pauses at all.
+       Off, an ambient video simply starts once and plays on — the same
+       behaviour a browser without IntersectionObserver gets. */
+    var pauseOffscreen = document.body.hasAttribute('data-video-offscreen-pause');
+
+    if (!('IntersectionObserver' in window) || !pauseOffscreen) {
       if (!reduceMotion.matches) requestVideoLqipPlayback(media, false);
       return;
     }
 
     if (!videoAutoplayViewport) {
+      /* Playing needs less than a third of the video on screen; a manual
+         pause does not survive leaving and returning — coming back to an
+         ambient video means it plays, which is the behaviour asked for. */
       videoAutoplayViewport = new IntersectionObserver(function (entries) {
         entries.forEach(function (entry) {
           var video = entry.target;
@@ -2114,7 +2176,7 @@
             video.pause();
           }
         });
-      }, { rootMargin: '300px 0px', threshold: 0.25 });
+      }, { threshold: 0.3 });
     }
 
     videoAutoplayViewport.observe(media);
@@ -2586,11 +2648,11 @@
         return index;
       }
 
-      /* Slides past the first two arrive with no src at all — see
-         snippets/card-slide.liquid. The one about to be shown is given its
-         source now, and so are its two neighbours, so stepping never waits on
-         a request. A card is only ever three photographs' worth of traffic,
-         however many the piece has. */
+      /* Every slide after the opening photograph arrives without a src — see
+         snippets/card-slide.liquid. Promote only the view that is actually
+         about to be shown. Hover asks for slide 1, an arrow or swipe asks for
+         its destination, and unopened views remain network-free however many
+         images the product owns. */
       function load(i) {
         var slide = slides[(i % count + count) % count];
         if (!slide) return;
@@ -2608,8 +2670,6 @@
         var at = shown();
 
         load(at);
-        load(at + 1);
-        load(at - 1);
 
         slides.forEach(function (slide, i) {
           var on = i === at;
@@ -2723,7 +2783,6 @@
      would be pointing at detached markup by the second piece. */
 
   var quickCache = Object.create(null);
-  var quickIndex = 0;
 
   function quickOverlay() {
     return overlays['quick-view'];
@@ -2734,39 +2793,6 @@
     return overlay ? overlay.el.querySelector('[data-quick-view-panel]') : null;
   }
 
-  /* The details region is a scroll container only where the merchant asked for
-     one and only in two columns, and only *then* should it be a tab stop.
-
-     A scroller has to be reachable by keyboard, and nothing gives this one that
-     for free: it holds focusable children, which is exactly the case where
-     Chrome's keyboard-focusable-scrollers behaviour declines to add it to the
-     tab order, and no other engine adds it either. Tabbing through its own
-     controls is not a substitute — the specification list sits after every one
-     of them, and each `<select>` axis eats the arrow keys to change the variant
-     — so the tail of the region would be mouse-only.
-
-     Which is why this is measured rather than rendered. Under the other two
-     modes the wrapper is `display: contents` and has no box at all, so both
-     values read 0 and the test is false; in two columns with nothing to scroll
-     it is false as well. A stray tab stop on a region that does not move is
-     worse than none, so the attributes come off again when it stops
-     overflowing. */
-  function syncQuickDetails() {
-    var panel = quickPanel();
-    var region = panel && panel.querySelector('.quick-view__details');
-    if (!region) return;
-
-    if (region.scrollHeight > region.clientHeight + 1) {
-      region.setAttribute('tabindex', '0');
-      region.setAttribute('role', 'group');
-      region.setAttribute('aria-label', region.dataset.label || '');
-    } else {
-      region.removeAttribute('tabindex');
-      region.removeAttribute('role');
-      region.removeAttribute('aria-label');
-    }
-  }
-
   function quickFill(html) {
     var panel = quickPanel();
     var host = panel && panel.querySelector('[data-quick-view-contents]');
@@ -2774,12 +2800,11 @@
 
     panel.classList.remove('is-loading');
     host.innerHTML = html;
+    if (window.VeylinProducts && typeof window.VeylinProducts.init === 'function') {
+      window.VeylinProducts.init(host);
+    }
     panel.scrollTop = 0;
-    quickIndex = 0;
-    resetQuickZoom();
-    paintQuick(0);
     blurUp(host, true);
-    syncQuickDetails();
   }
 
   function openQuickView(url) {
@@ -2789,13 +2814,15 @@
     if (!overlay || !panel || !host || !url) return;
 
     overlay.open();
-
     if (quickCache[url]) { quickFill(quickCache[url]); return; }
 
     host.innerHTML = '';
     panel.classList.add('is-loading');
 
-    fetch(url + (url.indexOf('?') === -1 ? '?' : '&') + 'section_id=quick-view')
+    var requestUrl = new URL(url, window.location.origin);
+    requestUrl.searchParams.set('section_id', overlay.el.dataset.quickViewSection || 'quick-view');
+
+    fetch(requestUrl.href)
       .then(function (res) { return res.ok ? res.text() : Promise.reject(res.status); })
       .then(function (text) {
         var doc = new DOMParser().parseFromString(text, 'text/html');
@@ -2806,289 +2833,12 @@
         quickFill(html);
       })
       .catch(function () {
-        /* It was a link to the piece before the script touched it. */
         overlay.close(false);
         window.location.href = url;
       });
   }
 
-  function paintQuick(index) {
-    var panel = quickPanel();
-    var track = panel && panel.querySelector('[data-quick-track]');
-    if (!track) return;
-
-    var slots = Array.prototype.slice.call(track.querySelectorAll('[data-quick-slot]'));
-    if (!slots.length) return;
-
-    quickIndex = ((index % slots.length) + slots.length) % slots.length;
-    track.style.setProperty('--qv-index', quickIndex);
-
-    panel.querySelectorAll('[data-quick-go]').forEach(function (dot) {
-      dot.classList.toggle('is-on', parseInt(dot.dataset.quickGo, 10) === quickIndex);
-    });
-
-    slots.forEach(function (slot, i) {
-      var video = slot.querySelector('video');
-      if (!video) return;
-
-      if (i === quickIndex && !reduceMotion.matches) {
-        if (!video.src && video.dataset.src) video.src = video.dataset.src;
-        watchVideoLqip(video, true);
-        video.muted = true;
-        requestVideoLqipPlayback(video, false);
-      } else if (i === quickIndex) {
-        watchVideoLqip(video, true);
-      } else if (!video.paused) {
-        video.pause();
-      }
-    });
-
-    resetQuickZoom();
-  }
-
-  /* ---- Quick view: zoom ----
-     Double-click to magnify at the point clicked, drag to pan, pinch on a
-     touch screen, ctrl-wheel on a trackpad — and a minimap showing which part
-     of the photograph is actually on screen. */
-
-  var zoom = { el: null, scale: 1, x: 0, y: 0, w: 0, h: 0 };
-  var zoomPoints = Object.create(null);
-  var zoomDrag = null;
-  var zoomPinch = null;
-  var zoomFrame = 0;
-
-  function bound(value, limit) {
-    return Math.max(-limit, Math.min(limit, value));
-  }
-
-  function paintMinimap() {
-    var panel = quickPanel();
-    var map = panel && panel.querySelector('[data-quick-minimap]');
-    var view = panel && panel.querySelector('[data-quick-minimap-view]');
-    if (!map || !view) return;
-
-    if (!zoom.el || zoom.scale <= 1.01 || !zoom.w || !zoom.h) { map.hidden = true; return; }
-
-    map.hidden = false;
-    map.style.backgroundImage = 'url("' + (zoom.el.currentSrc || zoom.el.src) + '")';
-    map.style.height = Math.round(96 * Math.min(2.2, Math.max(0.4, zoom.h / zoom.w))) + 'px';
-
-    var size = 100 / zoom.scale;
-    view.style.width = size + '%';
-    view.style.height = size + '%';
-    view.style.left = (0.5 - zoom.x / (zoom.w * zoom.scale) - 0.5 / zoom.scale) * 100 + '%';
-    view.style.top = (0.5 - zoom.y / (zoom.h * zoom.scale) - 0.5 / zoom.scale) * 100 + '%';
-  }
-
-  function applyZoom() {
-    if (!zoom.el) return;
-    zoom.el.style.setProperty('--qv-zoom', zoom.scale);
-    zoom.el.style.setProperty('--qv-tx', zoom.x + 'px');
-    zoom.el.style.setProperty('--qv-ty', zoom.y + 'px');
-    if (zoom.scale > 1.01) zoom.el.setAttribute('data-quick-zoomed', '');
-    else zoom.el.removeAttribute('data-quick-zoomed');
-    paintMinimap();
-  }
-
-  function resetQuickZoom() {
-    if (zoom.el) {
-      zoom.el.style.removeProperty('--qv-zoom');
-      zoom.el.style.removeProperty('--qv-tx');
-      zoom.el.style.removeProperty('--qv-ty');
-      zoom.el.removeAttribute('data-quick-zoomed');
-      zoom.el.removeAttribute('data-quick-dragging');
-    }
-    zoom = { el: null, scale: 1, x: 0, y: 0, w: 0, h: 0 };
-    zoomPoints = Object.create(null);
-    zoomDrag = null;
-    zoomPinch = null;
-
-    var panel = quickPanel();
-    var map = panel && panel.querySelector('[data-quick-minimap]');
-    if (map) map.hidden = true;
-  }
-
-  function zoomTo(img, scale, clientX, clientY) {
-    var box = img.getBoundingClientRect();
-    var px = clientX - box.left - box.width / 2;
-    var py = clientY - box.top - box.height / 2;
-
-    if (zoom.el && zoom.el !== img) resetQuickZoom();
-
-    zoom.el = img;
-    zoom.w = box.width;
-    zoom.h = box.height;
-    zoom.scale = scale;
-    zoom.x = bound(px * (1 - scale), box.width * (scale - 1) / 2);
-    zoom.y = bound(py * (1 - scale), box.height * (scale - 1) / 2);
-    applyZoom();
-  }
-
-  function runZoomFrame() {
-    var ids = Object.keys(zoomPoints);
-
-    if (zoomPinch && ids.length >= 2) {
-      var a = zoomPoints[ids[0]];
-      var b = zoomPoints[ids[1]];
-      var box = zoomPinch.box;
-      var spread = Math.sqrt(Math.pow(a.x - b.x, 2) + Math.pow(a.y - b.y, 2));
-      var scale = Math.max(1, Math.min(4, zoomPinch.scale * (spread / zoomPinch.spread)));
-      var mx = (a.x + b.x) / 2 - box.left - box.width / 2;
-      var my = (a.y + b.y) / 2 - box.top - box.height / 2;
-
-      zoom.scale = scale;
-      zoom.x = bound(mx - zoomPinch.cx * scale, box.width * (scale - 1) / 2);
-      zoom.y = bound(my - zoomPinch.cy * scale, box.height * (scale - 1) / 2);
-      applyZoom();
-      return;
-    }
-
-    if (zoomDrag && ids.length === 1 && zoom.scale > 1) {
-      var point = zoomPoints[ids[0]];
-      zoom.x = bound(zoomDrag.ox + (point.x - zoomDrag.sx), zoom.w * (zoom.scale - 1) / 2);
-      zoom.y = bound(zoomDrag.oy + (point.y - zoomDrag.sy), zoom.h * (zoom.scale - 1) / 2);
-      applyZoom();
-    }
-  }
-
-  /* ---- Quick view: the axes --------------------------------------------
-     The panel's option rows are Liquid's — one per product option, with the
-     design's swatches, pills or select on each. This is what makes a pick mean
-     something: it resolves the chosen values against the variant list Liquid
-     embedded beside them and moves the price, each row's caption, the hidden
-     variant id and the button.
-
-     Every figure in that list is Liquid's `money`, so nothing here formats a
-     price. The "inc. tax" note is a sibling of the figure rather than part of
-     it, which is what lets a price change write over the figure alone and
-     leave the note standing — the card has to fold the note into its captured
-     markup for want of that.
-
-     Delegated from the document like the rest of the quick view: the panel's
-     contents are replaced wholesale on every open, so a listener bound inside
-     it would be pointing at detached markup by the second piece. */
-
-  function quickVariants() {
-    var panel = quickPanel();
-    var node = panel && panel.querySelector('[data-qv-variants]');
-    if (!node) return null;
-
-    if (node.gjVariants === undefined) {
-      try {
-        node.gjVariants = JSON.parse(node.textContent);
-      } catch (error) {
-        node.gjVariants = null;
-      }
-    }
-    return node.gjVariants;
-  }
-
-  /* What is chosen on every axis, by the option's own position — which is the
-     order `variant.options` comes in, and so the order to compare against. */
-  function quickChoice(panel) {
-    var choice = [];
-
-    panel.querySelectorAll('[data-qv-group]').forEach(function (group) {
-      var index = parseInt(group.dataset.qvGroup, 10);
-      var select = group.querySelector('[data-qv-select]');
-
-      if (select) {
-        choice[index] = select.value;
-        return;
-      }
-
-      var on = group.querySelector('[data-qv-pick][aria-pressed="true"]');
-      choice[index] = on ? on.dataset.qvValue : '';
-    });
-
-    return choice;
-  }
-
-  function paintQuickVariant() {
-    var panel = quickPanel();
-    var variants = quickVariants();
-    if (!panel || !variants) return;
-
-    var choice = quickChoice(panel);
-
-    /* Each row says what is chosen on it, in merchant option order. */
-    panel.querySelectorAll('[data-qv-group]').forEach(function (group) {
-      var caption = group.querySelector('[data-qv-selected]');
-      if (!caption) return;
-
-      caption.textContent = choice[parseInt(group.dataset.qvGroup, 10)] || '';
-    });
-
-    var add = panel.querySelector('[data-qv-add]');
-    var variant = null;
-
-    for (var i = 0; i < variants.length; i++) {
-      var options = variants[i].options || [];
-      var hit = true;
-
-      for (var j = 0; j < options.length; j++) {
-        if (options[j] !== choice[j]) { hit = false; break; }
-      }
-
-      if (hit) { variant = variants[i]; break; }
-    }
-
-    /* A combination the shop does not make. The price is left as it was rather
-       than blanked — it is still the last real figure — and the button is what
-       says so, as it does for a sold-out one. */
-    if (!variant) {
-      if (add) {
-        add.disabled = true;
-        add.setAttribute('aria-disabled', 'true');
-        add.textContent = add.dataset.unavailableLabel;
-      }
-      return;
-    }
-
-    var id = panel.querySelector('[data-qv-variant-id]');
-    if (id) id.value = variant.id;
-
-    var price = panel.querySelector('[data-qv-price]');
-    if (price) price.textContent = variant.price;
-
-    var compare = panel.querySelector('[data-qv-compare]');
-    if (compare) {
-      compare.textContent = variant.compareAtPrice || '';
-      compare.hidden = !variant.compareAtPrice;
-    }
-
-    var unit = panel.querySelector('[data-qv-unit-price]');
-    if (unit) {
-      unit.innerHTML = variant.unitPrice || '';
-      unit.hidden = !variant.unitPrice;
-    }
-
-    var sku = panel.querySelector('[data-qv-sku]');
-    if (sku) sku.textContent = variant.sku || '';
-
-    if (add) {
-      add.disabled = !variant.available;
-      add.setAttribute('aria-disabled', variant.available ? 'false' : 'true');
-      add.textContent = variant.available ? add.dataset.addLabel : add.dataset.soldOutLabel;
-    }
-
-    /* And the page the panel offers, which is now this piece. Only the query is
-       replaced, so a link that already carried one is not doubled. */
-    var full = panel.querySelector('.quick-view__full');
-    if (full) {
-      var href = full.getAttribute('href') || '';
-      full.setAttribute('href', href.split('?')[0] + '?variant=' + variant.id);
-    }
-  }
-
   function initQuickView() {
-    /* Both thresholds the details region depends on — the panel's width and the
-       viewport's height — move on a resize, so whether it scrolls at all can
-       change under an open panel. Cheap enough to answer every time: one
-       lookup and two property reads. */
-    window.addEventListener('resize', syncQuickDetails, { passive: true });
-
-    /* Any card's quick-view link opens the overlay instead of navigating. */
     document.addEventListener('click', function (event) {
       var trigger = event.target.closest && event.target.closest('[data-quick-view]');
       if (!trigger || !quickOverlay()) return;
@@ -3098,188 +2848,9 @@
       openQuickView(trigger.getAttribute('href'));
     });
 
-    document.addEventListener('click', function (event) {
-      if (!event.target.closest) return;
-
-      var step = event.target.closest('[data-quick-step]');
-      if (step) {
-        paintQuick(quickIndex + parseInt(step.dataset.quickStep, 10));
-        return;
-      }
-
-      var go = event.target.closest('[data-quick-go]');
-      if (go) paintQuick(parseInt(go.dataset.quickGo, 10));
-    });
-
-    /* Picking a value on any axis — a swatch or a pill. The select's own change
-       event covers the third. */
-    document.addEventListener('click', function (event) {
-      var pick = event.target.closest && event.target.closest('[data-qv-pick]');
-      if (!pick) return;
-
-      var group = pick.closest('[data-qv-group]');
-      if (!group) return;
-
-      group.querySelectorAll('[data-qv-pick]').forEach(function (other) {
-        var on = other === pick;
-        other.classList.toggle('is-selected', on);
-        other.setAttribute('aria-pressed', on ? 'true' : 'false');
-      });
-
-      paintQuickVariant();
-    });
-
-    document.addEventListener('change', function (event) {
-      if (!event.target.matches || !event.target.matches('[data-qv-select]')) return;
-      paintQuickVariant();
-    });
-
-    document.addEventListener('dblclick', function (event) {
-      var img = event.target.closest && event.target.closest('[data-quick-zoomable]');
-      if (!img) return;
-      event.preventDefault();
-
-      if (zoom.el === img && zoom.scale > 1) { resetQuickZoom(); return; }
-      zoomTo(img, 2.2, event.clientX, event.clientY);
-    });
-
-    /* Ctrl-wheel is the trackpad pinch. Passive would forbid the
-       preventDefault that stops the browser zooming the whole page. */
-    window.addEventListener('wheel', function (event) {
-      if (!event.ctrlKey) return;
-      var img = event.target.closest && event.target.closest('[data-quick-zoomable]');
-      if (!img) return;
-
-      event.preventDefault();
-
-      var box = img.getBoundingClientRect();
-      var from = zoom.el === img ? zoom.scale : 1;
-      var to = Math.max(1, Math.min(4, from * Math.exp(-event.deltaY * 0.012)));
-      if (to === from) return;
-
-      if (to === 1) { resetQuickZoom(); return; }
-      if (zoom.el !== img) resetQuickZoom();
-
-      var qx = event.clientX - box.left - box.width / 2;
-      var qy = event.clientY - box.top - box.height / 2;
-      var ox = zoom.el === img ? zoom.x : 0;
-      var oy = zoom.el === img ? zoom.y : 0;
-
-      zoom.el = img;
-      zoom.w = box.width;
-      zoom.h = box.height;
-      zoom.scale = to;
-      zoom.x = bound(qx - (qx - ox) * (to / from), box.width * (to - 1) / 2);
-      zoom.y = bound(qy - (qy - oy) * (to / from), box.height * (to - 1) / 2);
-      applyZoom();
-    }, { passive: false });
-
-    document.addEventListener('pointerdown', function (event) {
-      var img = event.target.closest && event.target.closest('[data-quick-zoomable]');
-      if (!img) return;
-
-      zoomPoints[event.pointerId] = { x: event.clientX, y: event.clientY };
-      var ids = Object.keys(zoomPoints);
-
-      if (ids.length === 2) {
-        var a = zoomPoints[ids[0]];
-        var b = zoomPoints[ids[1]];
-        var box = img.getBoundingClientRect();
-
-        if (zoom.el !== img) { resetQuickZoom(); zoomPoints[event.pointerId] = { x: event.clientX, y: event.clientY }; }
-        zoom.el = img;
-        zoom.w = box.width;
-        zoom.h = box.height;
-
-        var mx = (a.x + b.x) / 2 - box.left - box.width / 2;
-        var my = (a.y + b.y) / 2 - box.top - box.height / 2;
-
-        zoomPinch = {
-          box: box,
-          spread: Math.sqrt(Math.pow(a.x - b.x, 2) + Math.pow(a.y - b.y, 2)) || 1,
-          scale: zoom.scale,
-          cx: (mx - zoom.x) / zoom.scale,
-          cy: (my - zoom.y) / zoom.scale
-        };
-
-        event.preventDefault();
-        img.setAttribute('data-quick-dragging', '');
-        return;
-      }
-
-      if (ids.length === 1 && zoom.el === img && zoom.scale > 1) {
-        event.preventDefault();
-        zoomDrag = { sx: event.clientX, sy: event.clientY, ox: zoom.x, oy: zoom.y };
-        img.setAttribute('data-quick-dragging', '');
-      }
-    });
-
-    document.addEventListener('pointermove', function (event) {
-      if (!zoomPoints[event.pointerId]) return;
-      zoomPoints[event.pointerId] = { x: event.clientX, y: event.clientY };
-
-      if (zoomFrame) return;
-      zoomFrame = window.requestAnimationFrame(function () {
-        zoomFrame = 0;
-        runZoomFrame();
-      });
-    });
-
-    function releasePointer(event) {
-      if (!zoomPoints[event.pointerId]) return;
-      delete zoomPoints[event.pointerId];
-
-      var ids = Object.keys(zoomPoints);
-      if (ids.length < 2) zoomPinch = null;
-
-      /* Lifting one finger out of a pinch leaves the other one panning. */
-      if (ids.length === 1 && zoom.scale > 1) {
-        zoomDrag = { sx: zoomPoints[ids[0]].x, sy: zoomPoints[ids[0]].y, ox: zoom.x, oy: zoom.y };
-        return;
-      }
-
-      if (ids.length) return;
-
-      zoomDrag = null;
-      if (zoom.el) zoom.el.removeAttribute('data-quick-dragging');
-      /* Pinched back to about life size — settle at exactly life size. */
-      if (zoom.scale <= 1.06) resetQuickZoom();
-    }
-
-    document.addEventListener('pointerup', releasePointer);
-    document.addEventListener('pointercancel', releasePointer);
-
-    /* Swiping the gallery steps it, unless a zoomed photograph is being
-       dragged instead. */
-    var swipe = null;
-
-    document.addEventListener('touchstart', function (event) {
-      var gallery = event.target.closest && event.target.closest('[data-quick-gallery]');
-      if (!gallery || zoom.scale > 1) { swipe = null; return; }
-      var touch = event.touches && event.touches[0];
-      swipe = touch ? { x: touch.clientX, y: touch.clientY } : null;
-    }, { passive: true });
-
-    document.addEventListener('touchend', function (event) {
-      var start = swipe;
-      swipe = null;
-      if (!start || zoom.scale > 1) return;
-      if (!event.target.closest || !event.target.closest('[data-quick-gallery]')) return;
-
-      var touch = event.changedTouches && event.changedTouches[0];
-      if (!touch) return;
-
-      var dx = touch.clientX - start.x;
-      var dy = touch.clientY - start.y;
-      if (Math.abs(dx) < 42 || Math.abs(dx) < Math.abs(dy) * 1.4) return;
-
-      paintQuick(quickIndex + (dx < 0 ? 1 : -1));
-    }, { passive: true });
-
     document.addEventListener('overlay:close', function (event) {
       var el = event.target;
       if (!el.matches || !el.matches('[data-overlay="quick-view"]')) return;
-      resetQuickZoom();
       el.querySelectorAll('video').forEach(function (video) {
         if (!video.paused) video.pause();
       });
@@ -3519,6 +3090,8 @@
 
       var pools = Array.prototype.slice.call(hero.querySelectorAll('[data-hero-pool]'));
       var switches = Array.prototype.slice.call(hero.querySelectorAll('[data-hero-tab]'));
+      var portraits = Array.prototype.slice.call(hero.querySelectorAll('[data-hero-portrait]'));
+      var portraitFrame = hero.querySelector('[data-hero-portrait-frame]');
       var carousel = hero.querySelector('[data-hero-carousel]');
       var windowEl = hero.querySelector('[data-hero-window]');
       var below = hero.querySelector('.hero-carousel__below');
@@ -3538,6 +3111,10 @@
           btn.classList.toggle('is-on', i === activeTab);
           btn.setAttribute('aria-pressed', String(i === activeTab));
         });
+        portraits.forEach(function (portrait, i) { portrait.hidden = i !== activeTab; });
+        if (portraitFrame && portraits[activeTab]) {
+          portraitFrame.style.setProperty('--hero-portrait-ratio', portraits[activeTab].dataset.mediaRatio || '3 / 4');
+        }
 
         var list = cards();
         var cyclable = list.length > VISIBLE;
@@ -3643,8 +3220,19 @@
       if (!viewport || !track || !ruler || !cells.length) return;
 
       var fade = root.dataset.rowMotion === 'fade';
+      var active = false;
       var per = 0;
       var pages = 1;
+      /* Whether the last measurement saw real geometry. A carousel that boots
+         inside a hidden container — the bag drawer's upsell — reads a 0-wide
+         viewport, and a page count derived from that is fiction: it was latching
+         --row-per: 1 and presenting one full-width card per page. Nothing is
+         painted or handed over until this is true; the ResizeObserver below
+         completes the hand-over when the container first gets a size. */
+      var measured = false;
+      /* Liquid's translated role, so switching layouts cannot replace it with
+         an English literal. */
+      var role = root.getAttribute('aria-roledescription');
       /* The page on show, and the page it is going to. They differ only while a
          fade is handing one over to the other, which is exactly the window in
          which a second press must not be measured against the old number. */
@@ -3658,7 +3246,8 @@
         var width = viewport.clientWidth;
         var column = ruler.getBoundingClientRect().width;
         var gap = parseFloat(window.getComputedStyle(track).columnGap) || 0;
-        if (!width || !column) return per || 1;
+        measured = !!(width && column);
+        if (!measured) return per || 1;
 
         /* The count `auto-fit` would reach: as many whole columns as fit, each
            with the gap that follows it. The half pixel absorbs the rounding at
@@ -3702,11 +3291,18 @@
       }
 
       function paint(replay) {
+        if (!active) return;
         var next = measure();
+        /* No geometry, no statement: the track stays the fallback grid and the
+           controls stay hidden until the container can actually be measured. */
+        if (!measured) return;
         if (next !== per) {
           per = next;
           root.style.setProperty('--row-per', per);
         }
+        /* Live only now — --row-per already holds a real number, so the live
+           rules can size a column the moment they apply. */
+        root.setAttribute('data-row-live', '');
 
         pages = Math.ceil(cells.length / per);
         if (page > pages - 1) page = pages - 1;
@@ -3790,6 +3386,7 @@
          `gj-card` as it always has. `afterFade` is the drawer's mechanic, doing
          the same job here. */
       function go(to) {
+        if (!active) return;
         var clamped = Math.max(0, Math.min(to, pages - 1));
         if (clamped === target) return;
         target = clamped;
@@ -3870,19 +3467,63 @@
         go(target + (dx < 0 ? 1 : -1));
       }, { passive: true });
 
+      /* Layout is a per-device section decision. The markup stays one real
+         grid in every case; carousel mode only adds the live paging contract.
+         This avoids duplicate static card blocks while allowing a merchant to
+         choose Grid/Carousel independently for desktop, tablet, and mobile. */
+      var desktopLayout = window.matchMedia('(min-width: 62.5rem)');
+      var tabletLayout = window.matchMedia('(min-width: 47rem)');
+
+      function requestedLayout() {
+        if (desktopLayout.matches) return root.dataset.rowLayoutDesktop || 'carousel';
+        if (tabletLayout.matches) return root.dataset.rowLayoutTablet || 'carousel';
+        return root.dataset.rowLayoutMobile || 'carousel';
+      }
+
+      function showGrid() {
+        active = false;
+        swapping = false;
+        page = 0;
+        target = 0;
+        root.removeAttribute('data-row-live');
+        root.setAttribute('data-row-layout-active', 'grid');
+        root.removeAttribute('aria-roledescription');
+        root.style.removeProperty('--row-page');
+        root.style.removeProperty('--row-per');
+        cells.forEach(function (cell) {
+          cell.hidden = false;
+          cell.removeAttribute('inert');
+          cell.removeAttribute('data-row-leaving');
+        });
+        controls.forEach(function (control) { control.hidden = true; });
+      }
+
+      function showCarousel() {
+        if (!active) {
+          active = true;
+          root.setAttribute('data-row-layout-active', 'carousel');
+          if (role) root.setAttribute('aria-roledescription', role);
+        }
+        /* paint() measures while the track is still the fallback grid and
+           hands over only once the measurement is real — see `measured`. */
+        paint(false);
+      }
+
+      function syncResponsiveLayout() {
+        if (requestedLayout() === 'carousel') showCarousel();
+        else showGrid();
+      }
+
       /* The count follows the component's own width, not the screen's, so a
          carousel in a narrow section is right too. */
       if ('ResizeObserver' in window) {
-        new ResizeObserver(function () { paint(false); }).observe(viewport);
-      } else {
-        window.addEventListener('resize', function () { paint(false); }, { passive: true });
+        new ResizeObserver(function () {
+          if (active) paint(false);
+        }).observe(viewport);
       }
+      window.addEventListener('resize', syncResponsiveLayout, { passive: true });
 
-      /* Measured while the track is still the plain grid, and only then handed
-         over: --row-per has to hold a number before the live rules can size a
-         column, or `grid-auto-columns` is invalid and the row collapses. */
-      paint(false);
-      root.setAttribute('data-row-live', '');
+      syncResponsiveLayout();
     });
   }
 
@@ -4191,6 +3832,68 @@
     });
   }
 
+  /* ---- Global Accordion ---------------------------------------------
+     The same disclosure motion as the footer, now wrapping arbitrary theme
+     blocks. The panel is only collapsed after JavaScript has made its
+     descendants inert, so no-script storefronts keep every child available. */
+
+  var accordionWide = window.matchMedia('(min-width: 47rem)');
+  var accordionMediaBound = false;
+
+  function syncAccordion(root) {
+    var toggle = root.querySelector('[data-accordion-toggle]');
+    var panel = root.querySelector('[data-accordion-panel]');
+    if (!toggle || !panel) return;
+
+    var desktopExpanded = root.dataset.desktopBehavior === 'expanded' && accordionWide.matches;
+    var open = desktopExpanded || root.hasAttribute('data-open');
+
+    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    panel.setAttribute('aria-hidden', open ? 'false' : 'true');
+    if (open) panel.removeAttribute('inert');
+    else panel.setAttribute('inert', '');
+
+    if (desktopExpanded) {
+      toggle.setAttribute('aria-disabled', 'true');
+      toggle.setAttribute('tabindex', '-1');
+    } else {
+      toggle.removeAttribute('aria-disabled');
+      toggle.removeAttribute('tabindex');
+    }
+  }
+
+  function syncAccordions(scope) {
+    scope.querySelectorAll('[data-accordion]').forEach(syncAccordion);
+  }
+
+  function initAccordions(scope) {
+    scope.querySelectorAll('[data-accordion]').forEach(function (root) {
+      var toggle = root.querySelector('[data-accordion-toggle]');
+      if (!toggle || !bindOnce(root, 'boundAccordion')) return;
+
+      toggle.addEventListener('click', function () {
+        if (root.dataset.desktopBehavior === 'expanded' && accordionWide.matches) return;
+        if (root.hasAttribute('data-open')) root.removeAttribute('data-open');
+        else root.setAttribute('data-open', '');
+        syncAccordion(root);
+      });
+
+      root.addEventListener('shopify:block:select', function () {
+        root.setAttribute('data-open', '');
+        syncAccordion(root);
+      });
+
+      syncAccordion(root);
+    });
+
+    if (!accordionMediaBound) {
+      accordionMediaBound = true;
+      var onAccordionWidth = function () { syncAccordions(document); };
+      if (accordionWide.addEventListener) accordionWide.addEventListener('change', onAccordionWidth);
+      else accordionWide.addListener(onAccordionWidth);
+    }
+  }
+
   /* ---- Cookie choice -------------------------------------------------
      Record the decision with Shopify's Customer Privacy API where it is
      available, so declining actually withholds consent rather than only
@@ -4370,6 +4073,62 @@
     });
   }
 
+  function prepareCatalogPriceRanges(root) {
+    root.querySelectorAll('[data-catalog-price-range]').forEach(function (range) {
+      if (!bindOnce(range, 'catalogPricePrepared')) return;
+      var minInput = range.querySelector('[data-catalog-price-min-input]');
+      var maxInput = range.querySelector('[data-catalog-price-max-input]');
+      var minNumber = range.querySelector('[data-catalog-price-min-number]');
+      var maxNumber = range.querySelector('[data-catalog-price-max-number]');
+      var minOutput = range.querySelector('[data-catalog-price-min]');
+      var maxOutput = range.querySelector('[data-catalog-price-max]');
+      if (!minInput || !maxInput) return;
+
+      var formatter;
+      try {
+        formatter = new Intl.NumberFormat(document.documentElement.lang || 'en', {
+          style: 'currency',
+          currency: range.dataset.currency || 'USD',
+          maximumFractionDigits: 0
+        });
+      } catch (error) {
+        formatter = { format: function (value) { return String(value); } };
+      }
+
+      function sync(source) {
+        if (source === minNumber) minInput.value = minNumber.value === '' ? 0 : minNumber.value;
+        if (source === maxNumber) maxInput.value = maxNumber.value === '' ? maxInput.max : maxNumber.value;
+        if (source === minInput && minNumber) minNumber.value = minInput.value;
+        if (source === maxInput && maxNumber) maxNumber.value = maxInput.value;
+
+        var min = Number(minInput.value) || 0;
+        var max = Number(maxInput.value) || 0;
+        var limit = Number(maxInput.max) || 1;
+        if (min > max) {
+          if (source === minInput || source === minNumber) {
+            maxInput.value = min;
+            if (maxNumber) maxNumber.value = min;
+          } else {
+            minInput.value = max;
+            if (minNumber) minNumber.value = max;
+          }
+          min = Number(minInput.value) || 0;
+          max = Number(maxInput.value) || 0;
+        }
+        range.style.setProperty('--price-min', Math.max(0, Math.min(100, min / limit * 100)) + '%');
+        range.style.setProperty('--price-max', Math.max(0, Math.min(100, max / limit * 100)) + '%');
+        if (minOutput) minOutput.textContent = formatter.format(min);
+        if (maxOutput) maxOutput.textContent = formatter.format(max);
+      }
+
+      minInput.addEventListener('input', function () { sync(minInput); });
+      maxInput.addEventListener('input', function () { sync(maxInput); });
+      if (minNumber) minNumber.addEventListener('input', function () { sync(minNumber); });
+      if (maxNumber) maxNumber.addEventListener('input', function () { sync(maxNumber); });
+      sync();
+    });
+  }
+
   function catalogFormUrl(form) {
     var url = new URL(form.action, window.location.origin);
     var data = new FormData(form);
@@ -4427,6 +4186,7 @@
     prepareCatalogBlockHeaders(scope);
     prepareCatalogTitle(scope);
     prepareCatalogSearch(scope);
+    prepareCatalogPriceRanges(scope);
 
     scope.querySelectorAll('[data-catalog-section]').forEach(function (root) {
       if (!bindOnce(root, 'boundCatalog')) return;
@@ -4514,6 +4274,60 @@
     }
   }
 
+  /* ---- Product breadcrumb history ------------------------------------ */
+
+  function initProductBreadcrumbs(scope) {
+    var storagePrefix = 'veylin:breadcrumb:';
+
+    function contextLabel() {
+      var heading = document.querySelector('main h1');
+      if (heading && heading.textContent.trim()) return heading.textContent.trim();
+      return (document.title || '').split(/[–—|]/)[0].trim() || 'Home';
+    }
+
+    if (!document.documentElement.dataset.boundBreadcrumbHistory) {
+      document.documentElement.dataset.boundBreadcrumbHistory = 'true';
+      document.addEventListener('click', function (event) {
+        var target = event.target;
+        var link = target && target.closest && target.closest('[data-card] a[href]');
+        if (!link) return;
+
+        var destination;
+        try { destination = new URL(link.href, window.location.origin); } catch (error) { return; }
+        if (destination.origin !== window.location.origin || destination.pathname.indexOf('/products/') === -1) return;
+
+        var sourceUrl = window.location.pathname + window.location.search;
+        var sourceLabel = contextLabel();
+        safeStore(function () {
+          sessionStorage.setItem(storagePrefix + destination.pathname, JSON.stringify({
+            label: sourceLabel,
+            url: sourceUrl
+          }));
+        });
+      });
+    }
+
+    scope.querySelectorAll('[data-product-breadcrumb]').forEach(function (breadcrumb) {
+      var path = breadcrumb.dataset.productPath;
+      if (!path) return;
+      try { path = new URL(path, window.location.origin).pathname; } catch (error) { return; }
+
+      var stored = safeStore(function () {
+        return JSON.parse(sessionStorage.getItem(storagePrefix + path) || 'null');
+      }, null);
+      if (!stored || !stored.label || !stored.url) return;
+
+      var source;
+      try { source = new URL(stored.url, window.location.origin); } catch (error) { return; }
+      if (source.origin !== window.location.origin || source.pathname === path) return;
+
+      var sourceLink = breadcrumb.querySelector('[data-product-breadcrumb-source]');
+      if (!sourceLink) return;
+      sourceLink.textContent = stored.label;
+      sourceLink.href = source.pathname + source.search + source.hash;
+    });
+  }
+
   /* ---- Localization --------------------------------------------------- */
 
   function initLocalization(scope) {
@@ -4531,6 +4345,7 @@
     initReveals(scope);
     initQuotes(scope);
     initLocalization(scope);
+    initAccordions(scope);
     initFooter(scope);
     initHero(scope);
     initRowCarousels(scope);
@@ -4539,6 +4354,7 @@
     initCards(scope);
     initCardOptions(scope);
     initCatalog(scope);
+    initProductBreadcrumbs(scope);
     initOverlays(scope);
     initCookieChoice(scope);
   }

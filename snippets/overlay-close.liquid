@@ -1,0 +1,33 @@
+{%- comment -%}
+  The one close control, in the shop's chosen form — Theme settings → Buttons →
+  Close controls. Text is the default: a "Close" pill, the design's own idiom.
+  Icon swaps every instance for the same bordered disc holding the theme's
+  close glyph; the accessible name stays "Close" either way.
+
+  Callers pass *placement*, not appearance: a context class that positions the
+  control (`.drawer__close` in a drawer head, `.quick-view__close` in the
+  panel corner) and the attributes that wire it (`data-overlay-close`,
+  autofocus, tips). Appearance belongs to the mode classes here —
+  `.overlay-head__close` for the pill, `.overlay-close--icon` for the disc —
+  so a context class must never carry visual style of its own again; that is
+  how quick view ended up an icon while the drawer was a word.
+
+  Deliberately not `snippets/button.liquid`: a close is a purpose-built
+  interface control, the R16 exemption, though its corner radius follows the
+  global button shape so Rounded means rounded here too.
+
+  Accepts:
+    class       - context placement classes.
+    attributes  - captured attribute string (data-overlay-close etc.).
+{%- endcomment -%}
+
+{%- if settings.close_style == 'icon' -%}
+  <button class="overlay-close--icon {{ class }}" type="button" {{ attributes }}>
+    <span class="visually-hidden">{{ 'navigation.close' | t }}</span>
+    {% render 'icon', icon: 'close' %}
+  </button>
+{%- else -%}
+  <button class="overlay-head__close {{ class }}" type="button" {{ attributes }}>
+    {{- 'navigation.close' | t -}}
+  </button>
+{%- endif -%}

@@ -21,6 +21,21 @@
   assign current_sort = sort_by | default: results.default_sort_by
   assign drawer_name = 'catalog-filters-' | append: section_id
   assign quick_links_limit_number = quick_links_limit | default: 6 | plus: 0
+
+  comment
+    One word for the whole catalog control system — Theme settings → Catalog.
+    The last-resort fallback routes through the locale file rather than a
+    literal, so a blank setting still translates.
+  endcomment
+  assign filter_word_fallback = 'collections.filters.label' | t
+  assign filter_word = settings.catalog_filter_word | default: filter_word_fallback
+
+  comment
+    Collections the shop hides from automatic enumeration — merchandising
+    groupings rather than browsing destinations. `contains` cannot compare
+    drops, so the list is projected to handles first.
+  endcomment
+  assign hidden_handles = settings.hidden_collections | map: 'handle'
   assign sort_in_bar = false
   if show_sort and section.settings.sort_placement != 'drawer'
     assign sort_in_bar = true
@@ -38,7 +53,7 @@
 
         {%- assign rendered_links = 0 -%}
         {%- for quick_collection in collections -%}
-          {%- unless quick_collection.handle == 'all' -%}
+          {%- unless quick_collection.handle == 'all' or hidden_handles contains quick_collection.handle -%}
             {%- if rendered_links < quick_links_limit_number -%}
               <a class="catalog-pill{% if context == 'collection' and quick_collection.handle == results.handle %} is-active{% endif %}" href="{{ quick_collection.url }}" data-catalog-link>{{ quick_collection.title }}</a>
               {%- assign rendered_links = rendered_links | plus: 1 -%}
@@ -60,7 +75,7 @@
   <div class="catalog-controls__actions">
     {%- if show_filters and results.filters.size > 0 -%}
       <button class="catalog-control-button" type="button" data-overlay-open="{{ drawer_name }}" aria-haspopup="dialog" aria-controls="CatalogFilters-{{ section_id }}" aria-expanded="false">
-        {{- section.settings.filter_button_label | default: 'Filter' -}}
+        {{- filter_word -}}
         {%- if active_filter_count > 0 -%}<span class="catalog-control-button__count">{{ active_filter_count }}</span>{%- endif -%}
       </button>
     {%- endif -%}

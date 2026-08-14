@@ -1,0 +1,37 @@
+{%- assign product = closest.product -%}
+{%- if product != blank -%}
+  {%- liquid
+    assign source_url = routes.all_products_collection_url
+    assign source_label = block.settings.products_label
+    if collection != blank
+      assign source_url = collection.url
+      assign source_label = collection.title
+    endif
+  -%}
+  <nav
+    class="product-breadcrumbs"
+    aria-label="{{ 'products.breadcrumbs' | t }}"
+    data-product-breadcrumb
+    data-product-path="{{ product.url }}"
+    {{ block.shopify_attributes }}
+  >
+    <a href="{{ routes.root_url }}">{{ block.settings.home_label }}</a>
+    <span aria-hidden="true">/</span>
+    <span data-product-breadcrumb-source-item>
+      <a href="{{ source_url }}" data-product-breadcrumb-source>{{ source_label }}</a>
+      <span aria-hidden="true">/</span>
+    </span>
+    <span aria-current="page">{{ product.title }}</span>
+  </nav>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "t:sections.main_product.blocks.breadcrumbs", "tag": null,
+  "settings": [
+    { "type": "text", "id": "home_label", "label": "t:sections.main_product.home_label.label", "default": "Home" },
+    { "type": "text", "id": "products_label", "label": "t:sections.main_product.products_label.label", "default": "All products" }
+  ],
+  "presets": [{ "name": "t:sections.main_product.blocks.breadcrumbs" }]
+}
+{% endschema %}

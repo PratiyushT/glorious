@@ -4,7 +4,8 @@
   primitives used by the cart drawer.
 
   Accepts: results, section, context, form_action, clear_url, current_sort,
-  search_terms, search_types, drawer_name.
+  search_terms, search_types, drawer_name, show_sort, quick_source,
+  quick_filter, quick_links_limit.
 {%- endcomment -%}
 
 <div
@@ -16,11 +17,23 @@
 >
   <div class="overlay__veil" data-overlay-close="{{ drawer_name }}"></div>
 
-  <aside class="drawer__panel scheme-{{ section.settings.drawer_color_scheme | default: section.settings.color_scheme }}" role="dialog" aria-modal="true" aria-label="{{ section.settings.drawer_heading | escape }}">
+  {%- liquid
+    comment
+      The heading is the shop's one catalog word — Theme settings → Catalog —
+      so the button that opens this drawer and the drawer itself can never
+      disagree about what the feature is called. The old per-section
+      "Refine" heading was the only second word in the system.
+    endcomment
+    assign filter_word_fallback = 'collections.filters.label' | t
+    assign filter_word = settings.catalog_filter_word | default: filter_word_fallback
+    assign hidden_handles = settings.hidden_collections | map: 'handle'
+  -%}
+  <aside class="drawer__panel scheme-{{ section.settings.drawer_color_scheme | default: section.settings.color_scheme }}" role="dialog" aria-modal="true" aria-label="{{ filter_word | escape }}">
     <form class="drawer__inner catalog-filter-form" action="{{ form_action }}" method="get" data-catalog-form>
       <header class="drawer__head">
-        <h2 class="drawer__title">{{ section.settings.drawer_heading }}</h2>
-        <button class="overlay-head__close drawer__close" type="button" data-overlay-close="{{ drawer_name }}">{{ 'navigation.close' | t }}</button>
+        <h2 class="drawer__title">{{ filter_word }}</h2>
+        {%- capture close_attributes -%}data-overlay-close="{{ drawer_name }}"{%- endcapture -%}
+        {% render 'overlay-close', class: 'drawer__close', attributes: close_attributes %}
       </header>
 
       <div class="drawer__body catalog-filter-drawer__body" data-drawer-scroller>
@@ -31,8 +44,34 @@
         {%- endif -%}
         <input type="hidden" name="sort_by" value="{{ current_sort | escape }}" data-catalog-sort-value>
 
-        {%- if section.settings.sort_placement == 'drawer' or section.settings.sort_placement == 'both' -%}
-          <section class="catalog-filter-sort">
+        {%- if context == 'collection' and quick_source != 'none' -%}
+          <section class="catalog-filter-navigation">
+            <h3>{{ 'collections.title' | t }}</h3>
+            <div class="catalog-filter-navigation__links">
+              {%- if quick_source == 'collections' -%}
+                <a class="catalog-filter-navigation__link{% if results.handle == 'all' %} is-active{% endif %}" href="{{ routes.all_products_collection_url }}" data-catalog-link>{{ 'collections.all' | t }}</a>
+                {%- assign drawer_link_limit = quick_links_limit | default: 6 | plus: 0 -%}
+                {%- assign drawer_links_rendered = 0 -%}
+                {%- for quick_collection in collections -%}
+                  {%- unless quick_collection.handle == 'all' or hidden_handles contains quick_collection.handle -%}
+                    {%- if drawer_links_rendered < drawer_link_limit -%}
+                      <a class="catalog-filter-navigation__link{% if quick_collection.handle == results.handle %} is-active{% endif %}" href="{{ quick_collection.url }}" data-catalog-link>{{ quick_collection.title }}</a>
+                      {%- assign drawer_links_rendered = drawer_links_rendered | plus: 1 -%}
+                    {%- endif -%}
+                  {%- endunless -%}
+                {%- endfor -%}
+              {%- elsif quick_source == 'filter' and quick_filter != blank -%}
+                <a class="catalog-filter-navigation__link{% if quick_filter.active_values.size == 0 %} is-active{% endif %}" href="{{ clear_url }}" data-catalog-link data-catalog-clear-param="{{ quick_filter.param_name | escape }}">{{ 'collections.all' | t }}</a>
+                {%- for value in quick_filter.values -%}
+                  <a class="catalog-filter-navigation__link{% if value.active %} is-active{% endif %}{% if value.count == 0 and value.active == false %} is-disabled{% endif %}" href="{% if value.active %}{{ value.url_to_remove }}{% else %}{{ value.url_to_add }}{% endif %}" data-catalog-link {% if value.count == 0 and value.active == false %}aria-disabled="true"{% endif %}>{{ value.label }}</a>
+                {%- endfor -%}
+              {%- endif -%}
+            </div>
+          </section>
+        {%- endif -%}
+
+        {%- if show_sort and results.sort_options.size > 0 -%}
+          <section class="catalog-filter-sort catalog-filter-sort--{{ section.settings.sort_placement | default: 'bar' }}">
             <h3>{{ 'collections.sorting.label' | t }}</h3>
             <div class="catalog-sort-drawer" role="group" aria-label="{{ 'collections.sorting.label' | t }}">
               {%- for option in results.sort_options -%}
@@ -60,7 +99,7 @@
               assign filter_open = true
             endif
           -%}
-          <details class="catalog-filter-group"{% if filter_open %} open{% endif %}>
+          <details class="catalog-filter-group{% if section.settings.filter_group_style == 'expanded' %} catalog-filter-group--expanded{% endif %}"{% if filter_open %} open{% endif %}>
             <summary>
               <span>{{ filter.label }}</span>
               <span aria-hidden="true">+</span>
@@ -70,34 +109,56 @@
               {%- case filter.type -%}
                 {%- when 'boolean', 'list' -%}
                   <div class="catalog-filter-options">
-                    {%- for value in filter.values -%}
+                    {%- for value in filter.values limit: 10 -%}
                       {%- assign input_id = section.id | append: '-' | append: filter.param_name | handle | append: '-' | append: forloop.index -%}
-                      <label class="catalog-filter-option" for="{{ input_id }}">
-                        <input id="{{ input_id }}" type="checkbox" name="{{ value.param_name }}" value="{{ value.value | escape }}" {% if value.active %}checked{% endif %} {% if value.count == 0 and value.active == false %}disabled{% endif %}>
-                        {%- if section.settings.show_filter_visuals -%}
-                          {%- if value.swatch.image != blank or value.swatch.color != blank -%}
-                            <span class="catalog-filter-option__swatch" style="{% if value.swatch.image != blank %}--filter-swatch-image: url('{{ value.swatch.image | image_url: width: 64 }}');{% elsif value.swatch.color != blank %}--filter-swatch-color: {{ value.swatch.color }};{% endif %}" aria-hidden="true"></span>
-                          {%- elsif value.image != blank -%}
-                            {{ value.image | image_url: width: 64 | image_tag: class: 'catalog-filter-option__image', loading: 'lazy', alt: '' }}
-                          {%- endif -%}
-                        {%- endif -%}
-                        <span>{{ value.label }}</span>
-                        {%- if section.settings.show_filter_counts -%}<span class="catalog-filter-option__count">{{ value.count }}</span>{%- endif -%}
-                      </label>
+                      {% render 'catalog-filter-option', value: value, section: section, input_id: input_id %}
                     {%- endfor -%}
+
+                    {%- if filter.values.size > 10 -%}
+                      {%- assign remaining_value_count = filter.values.size | minus: 10 -%}
+                      {%- assign extra_active = false -%}
+                      {%- for value in filter.values offset: 10 -%}
+                        {%- if value.active -%}{%- assign extra_active = true -%}{%- break -%}{%- endif -%}
+                      {%- endfor -%}
+                      <details class="catalog-filter-more"{% if extra_active %} open{% endif %}>
+                        <summary>{{ 'collections.filters.show_more' | t: count: remaining_value_count }}</summary>
+                        <div class="catalog-filter-options">
+                          {%- for value in filter.values offset: 10 -%}
+                            {%- assign input_index = forloop.index | plus: 10 -%}
+                            {%- assign input_id = section.id | append: '-' | append: filter.param_name | handle | append: '-' | append: input_index -%}
+                            {% render 'catalog-filter-option', value: value, section: section, input_id: input_id %}
+                          {%- endfor -%}
+                        </div>
+                      </details>
+                    {%- endif -%}
                   </div>
 
                 {%- when 'price_range' -%}
                   {%- assign range_max = filter.range_max | money_without_currency | replace: ',', '' | replace: ' ', '' -%}
-                  <div class="catalog-price-range">
-                    <label>
-                      <span>{{ 'collections.filters.from' | t }}</span>
-                      <input type="number" name="{{ filter.min_value.param_name }}" min="0" max="{{ range_max }}" placeholder="0" {% if filter.min_value.value != blank %}value="{{ filter.min_value.value | money_without_currency | replace: ',', '' | replace: ' ', '' }}"{% endif %}>
-                    </label>
-                    <label>
-                      <span>{{ 'collections.filters.to' | t }}</span>
-                      <input type="number" name="{{ filter.max_value.param_name }}" min="0" max="{{ range_max }}" placeholder="{{ range_max }}" {% if filter.max_value.value != blank %}value="{{ filter.max_value.value | money_without_currency | replace: ',', '' | replace: ' ', '' }}"{% endif %}>
-                    </label>
+                  {%- assign range_min_value = filter.min_value.value | money_without_currency | replace: ',', '' | replace: ' ', '' -%}
+                  {%- assign range_max_value = filter.max_value.value | money_without_currency | replace: ',', '' | replace: ' ', '' -%}
+                  {%- if range_min_value == blank -%}{%- assign range_min_value = 0 -%}{%- endif -%}
+                  {%- if range_max_value == blank -%}{%- assign range_max_value = range_max -%}{%- endif -%}
+                  <div class="catalog-price-range" data-catalog-price-range data-currency="{{ cart.currency.iso_code | default: shop.currency }}">
+                    <div class="catalog-price-range__values">
+                      <output data-catalog-price-min>{{ range_min_value }}</output>
+                      <span aria-hidden="true">—</span>
+                      <output data-catalog-price-max>{{ range_max_value }}</output>
+                    </div>
+                    <div class="catalog-price-range__track">
+                      <input type="range" min="0" max="{{ range_max }}" step="1" value="{{ range_min_value }}" aria-label="{{ 'collections.filters.from' | t }}" data-catalog-price-min-input>
+                      <input type="range" min="0" max="{{ range_max }}" step="1" value="{{ range_max_value }}" aria-label="{{ 'collections.filters.to' | t }}" data-catalog-price-max-input>
+                    </div>
+                    <div class="catalog-price-range__fields">
+                      <label>
+                        <span>{{ 'collections.filters.from' | t }}</span>
+                        <input type="number" name="{{ filter.min_value.param_name }}" min="0" max="{{ range_max }}" step="1" value="{% if filter.min_value.value != blank %}{{ range_min_value }}{% endif %}" placeholder="0" inputmode="decimal" data-catalog-price-min-number>
+                      </label>
+                      <label>
+                        <span>{{ 'collections.filters.to' | t }}</span>
+                        <input type="number" name="{{ filter.max_value.param_name }}" min="0" max="{{ range_max }}" step="1" value="{% if filter.max_value.value != blank %}{{ range_max_value }}{% endif %}" placeholder="{{ range_max }}" inputmode="decimal" data-catalog-price-max-number>
+                      </label>
+                    </div>
                   </div>
               {%- endcase -%}
             </div>
@@ -106,8 +167,10 @@
       </div>
 
       <footer class="drawer__foot catalog-filter-drawer__footer">
-        <a class="btn btn--secondary" href="{{ clear_url }}" data-catalog-link>{{ 'collections.filters.clear' | t }}</a>
-        <button class="btn btn--primary" type="submit">{{ 'collections.filters.apply' | t }}</button>
+        {%- assign clear_filters_label = 'collections.filters.clear' | t -%}
+        {%- assign apply_filters_label = 'collections.filters.apply' | t -%}
+        {% render 'button', label: clear_filters_label, link: clear_url, style: 'outline', attributes: 'data-catalog-link' %}
+        {% render 'button', label: apply_filters_label, element: 'button', button_type: 'submit' %}
       </footer>
     </form>
   </aside>

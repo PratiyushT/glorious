@@ -63,6 +63,21 @@
     alike, against 1869 / 932 / 0 with an ordinary stroke. The width is scaled
     per size in the stylesheet instead.
   {%- endcomment -%}
-  {% render 'icon', icon: 'loader-mark' %}
+  {%- liquid
+    comment
+      The mark is a theme setting — Theme settings → Colors → Loading. Every
+      variant reuses the same classes, pathLength contract, and exit keyframes,
+      so the draw engine, the stagger, and reduced motion apply unchanged. An
+      unknown stored value falls back to the diamond rather than to nothing.
+    endcomment
+    case settings.loader_style
+      when 'ring'
+        render 'icon', icon: 'loader-ring'
+      when 'orbit'
+        render 'icon', icon: 'loader-orbit'
+      else
+        render 'icon', icon: 'loader-mark'
+    endcase
+  -%}
   <span class="visually-hidden">{{ loader_label }}</span>
 </span>

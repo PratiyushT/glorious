@@ -10,23 +10,16 @@
   white. `on_dark` is therefore accepted and ignored, so existing callers do
   not need touching.
 
-  A merchant's own mark is still an `<img>`: it is their artwork and the theme
-  must not recolour it.
-
   Accepts:
+    source  - the Huge Text value.
     size    - 'sm' (nav), 'md' (default), 'lg' (menu overlay).
-    on_dark - accepted for compatibility; the emblem now follows currentColor.
+    on_dark - accepted for compatibility; the emblem follows currentColor.
 {%- endcomment -%}
 
 {%- liquid
-  assign source = settings.wordmark | default: shop.name | upcase
+  assign source = source | strip | upcase
   assign letters = source | split: ''
   assign scale = size | default: 'md'
-
-  assign mark = settings.wordmark_mark
-  if mark != blank
-    assign mark_url = mark | image_url: width: 300
-  endif
 
   comment
     Find the first letter that has already appeared — the emblem replaces it.
@@ -45,20 +38,7 @@
 <span class="lockup lockup--{{ scale }}" role="img" aria-label="{{ source }}">
   {%- for letter in letters -%}
     {%- if forloop.index0 == mark_index -%}
-      {%- if mark_url != blank -%}
-        <img
-          class="lockup__mark"
-          src="{{ mark_url }}"
-          data-image-lqip="off"
-          alt=""
-          aria-hidden="true"
-          width="139"
-          height="154"
-          loading="eager"
-        >
-      {%- else -%}
-        {%- render 'wordmark-mark' -%}
-      {%- endif -%}
+      {%- render 'wordmark-mark' -%}
     {%- else -%}
       {%- liquid
         assign is_lead = false

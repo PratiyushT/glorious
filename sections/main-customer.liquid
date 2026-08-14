@@ -5,6 +5,22 @@
   if request.page_type == 'customers/account' or request.page_type == 'customers/order' or request.page_type == 'customers/addresses'
     assign is_wide = true
   endif
+  assign login_submit_label = 'customer.login.submit' | t
+  assign register_link_label = 'customer.register.link' | t
+  assign recover_submit_label = 'customer.recover.submit' | t
+  assign guest_submit_label = 'customer.guest.submit' | t
+  assign register_submit_label = 'customer.register.submit' | t
+  assign login_link_label = 'customer.login.link' | t
+  assign activate_submit_label = 'customer.activate.submit' | t
+  assign activate_decline_label = 'customer.activate.decline' | t
+  assign reset_submit_label = 'customer.reset.submit' | t
+  assign addresses_label = 'customer.addresses.title' | t
+  assign logout_label = 'customer.logout' | t
+  assign order_back_text = 'customer.order.back' | t
+  assign order_back_label = '← ' | append: order_back_text
+  assign address_add_label = 'customer.addresses.add_submit' | t
+  assign address_update_label = 'customer.addresses.update' | t
+  assign address_delete_label = 'customer.addresses.delete' | t
 -%}
 
 {%- if request.page_type == 'customers/addresses' -%}
@@ -38,8 +54,8 @@
             </div>
           {%- endif -%}
           <div class="customer-page__actions">
-            <button class="btn btn--primary" type="submit">{{ 'customer.login.submit' | t }}</button>
-            <a class="btn btn--link" href="{{ routes.account_register_url }}">{{ 'customer.register.link' | t }}</a>
+            {% render 'button', label: login_submit_label, element: 'button', button_type: 'submit' %}
+            {% render 'button', label: register_link_label, link: routes.account_register_url, style: 'link' %}
           </div>
         {%- endform -%}
 
@@ -53,14 +69,14 @@
               <label for="RecoverEmail">{{ 'customer.email' | t }}</label>
               <input class="field" id="RecoverEmail" type="email" name="email" autocomplete="email" autocapitalize="off" spellcheck="false" required>
             </div>
-            <div><button class="btn btn--secondary" type="submit">{{ 'customer.recover.submit' | t }}</button></div>
+            <div>{% render 'button', label: recover_submit_label, element: 'button', button_type: 'submit', style: 'outline' %}</div>
           {%- endform -%}
         </details>
 
         {%- if shop.checkout.guest_login -%}
           <div class="customer-panel">
             <h2>{{ 'customer.guest.title' | t }}</h2>
-            {%- form 'guest_login' -%}<button class="btn btn--secondary" type="submit">{{ 'customer.guest.submit' | t }}</button>{%- endform -%}
+            {%- form 'guest_login' -%}{% render 'button', label: guest_submit_label, element: 'button', button_type: 'submit', style: 'outline' %}{%- endform -%}
           </div>
         {%- endif -%}
 
@@ -78,7 +94,7 @@
             <div class="customer-form__field customer-form__field--wide"><label for="RegisterEmail">{{ 'customer.email' | t }}</label><input class="field" id="RegisterEmail" type="email" name="customer[email]" autocomplete="email" autocapitalize="off" spellcheck="false" required value="{{ form.email }}"></div>
             <div class="customer-form__field customer-form__field--wide"><label for="RegisterPassword">{{ 'customer.password' | t }}</label><input class="field" id="RegisterPassword" type="password" name="customer[password]" autocomplete="new-password" required></div>
           </div>
-          <div class="customer-page__actions"><button class="btn btn--primary" type="submit">{{ 'customer.register.submit' | t }}</button><a class="btn btn--link" href="{{ routes.account_login_url }}">{{ 'customer.login.link' | t }}</a></div>
+          <div class="customer-page__actions">{% render 'button', label: register_submit_label, element: 'button', button_type: 'submit' %}{% render 'button', label: login_link_label, link: routes.account_login_url, style: 'link' %}</div>
         {%- endform -%}
 
       {%- when 'customers/activate_account' -%}
@@ -87,7 +103,7 @@
           {%- if form.errors -%}<div class="customer-errors" role="alert">{{ form.errors | default_errors }}</div>{%- endif -%}
           <div class="customer-form__field"><label for="ActivatePassword">{{ 'customer.password' | t }}</label><input class="field" id="ActivatePassword" type="password" name="customer[password]" autocomplete="new-password" required></div>
           <div class="customer-form__field"><label for="ActivatePasswordConfirmation">{{ 'customer.password_confirm' | t }}</label><input class="field" id="ActivatePasswordConfirmation" type="password" name="customer[password_confirmation]" autocomplete="new-password" required></div>
-          <div class="customer-page__actions"><button class="btn btn--primary" type="submit">{{ 'customer.activate.submit' | t }}</button><button class="btn btn--secondary" type="submit" name="decline">{{ 'customer.activate.decline' | t }}</button></div>
+          <div class="customer-page__actions">{% render 'button', label: activate_submit_label, element: 'button', button_type: 'submit' %}{% render 'button', label: activate_decline_label, element: 'button', button_type: 'submit', button_name: 'decline', style: 'outline' %}</div>
         {%- endform -%}
 
       {%- when 'customers/reset_password' -%}
@@ -96,14 +112,14 @@
           {%- if form.errors -%}<div class="customer-errors" role="alert">{{ form.errors | default_errors }}</div>{%- endif -%}
           <div class="customer-form__field"><label for="ResetPassword">{{ 'customer.password' | t }}</label><input class="field" id="ResetPassword" type="password" name="customer[password]" autocomplete="new-password" required></div>
           <div class="customer-form__field"><label for="ResetPasswordConfirmation">{{ 'customer.password_confirm' | t }}</label><input class="field" id="ResetPasswordConfirmation" type="password" name="customer[password_confirmation]" autocomplete="new-password" required></div>
-          <div><button class="btn btn--primary" type="submit">{{ 'customer.reset.submit' | t }}</button></div>
+          <div>{% render 'button', label: reset_submit_label, element: 'button', button_type: 'submit' %}</div>
         {%- endform -%}
 
       {%- when 'customers/account' -%}
         <header class="customer-page__header">
           <span class="customer-kicker">{{ 'customer.account' | t }}</span>
           <h1 style="{% render 'text-style', preset: section.settings.title_style %}">{{ 'customer.account_title' | t: name: customer.first_name }}</h1>
-          <div class="customer-page__actions"><a class="btn btn--secondary" href="{{ routes.account_addresses_url }}">{{ 'customer.addresses.title' | t }}</a><a class="btn btn--link" href="{{ routes.account_logout_url }}">{{ 'customer.logout' | t }}</a></div>
+          <div class="customer-page__actions">{% render 'button', label: addresses_label, link: routes.account_addresses_url, style: 'outline' %}{% render 'button', label: logout_label, link: routes.account_logout_url, style: 'link' %}</div>
         </header>
 
         <div class="customer-account-grid">
@@ -143,7 +159,7 @@
           <span class="customer-kicker">{{ 'customer.orders.order' | t }}</span>
           <h1 style="{% render 'text-style', preset: section.settings.title_style %}">{{ order.name }}</h1>
           <p>{{ 'customer.order.placed' | t: date: order.created_at | date: '%b %e, %Y' }}</p>
-          <div class="customer-page__actions"><a class="btn btn--link" href="{{ routes.account_url }}">← {{ 'customer.order.back' | t }}</a></div>
+          <div class="customer-page__actions">{% render 'button', label: order_back_label, link: routes.account_url, style: 'link' %}</div>
         </header>
 
         {%- if order.cancelled -%}<div class="customer-errors"><strong>{{ 'customer.order.cancelled' | t: date: order.cancelled_at | date: '%b %e, %Y' }}</strong>{%- if order.cancel_reason_label != blank -%}<br>{{ order.cancel_reason_label }}{%- endif -%}</div>{%- endif -%}
@@ -185,7 +201,7 @@
         <header class="customer-page__header">
           <span class="customer-kicker">{{ 'customer.account' | t }}</span>
           <h1 style="{% render 'text-style', preset: section.settings.title_style %}">{{ 'customer.addresses.title' | t }}</h1>
-          <div><a class="btn btn--link" href="{{ routes.account_url }}">← {{ 'customer.order.back' | t }}</a></div>
+          <div>{% render 'button', label: order_back_label, link: routes.account_url, style: 'link' %}</div>
         </header>
 
         <details class="customer-address-editor customer-panel">
@@ -204,7 +220,7 @@
               <div class="customer-form__field"><label for="AddressPhoneNew">{{ 'customer.addresses.phone' | t }}</label><input class="field" id="AddressPhoneNew" type="tel" name="address[phone]" autocomplete="tel" value="{{ form.phone }}"></div>
               <label class="customer-inline-actions customer-form__field--wide"><input type="checkbox" name="address[default]" value="1"> {{ 'customer.addresses.set_default' | t }}</label>
             </div>
-            <div><button class="btn btn--primary" type="submit">{{ 'customer.addresses.add_submit' | t }}</button></div>
+            <div>{% render 'button', label: address_add_label, element: 'button', button_type: 'submit' %}</div>
           {%- endform -%}
         </details>
 
@@ -231,10 +247,10 @@
                         <div class="customer-form__field"><label for="AddressPhone{{ address.id }}">{{ 'customer.addresses.phone' | t }}</label><input class="field" id="AddressPhone{{ address.id }}" type="tel" name="address[phone]" autocomplete="tel" value="{{ form.phone }}"></div>
                         <label class="customer-inline-actions customer-form__field--wide"><input type="checkbox" name="address[default]" value="1"{% if address == customer.default_address %} checked{% endif %}> {{ 'customer.addresses.set_default' | t }}</label>
                       </div>
-                      <div><button class="btn btn--primary" type="submit">{{ 'customer.addresses.update' | t }}</button></div>
+                      <div>{% render 'button', label: address_update_label, element: 'button', button_type: 'submit' %}</div>
                     {%- endform -%}
                   </details>
-                  <form method="post" action="{{ address.url }}"><input type="hidden" name="_method" value="delete"><button class="btn btn--link" type="submit">{{ 'customer.addresses.delete' | t }}</button></form>
+                  <form method="post" action="{{ address.url }}"><input type="hidden" name="_method" value="delete">{% render 'button', label: address_delete_label, element: 'button', button_type: 'submit', style: 'link' %}</form>
                 </div>
               </article>
             {%- endfor -%}

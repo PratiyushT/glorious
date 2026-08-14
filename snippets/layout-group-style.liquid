@@ -51,7 +51,7 @@
   assign gap_steps = 'minimal,tiny,small,medium,large,xlarge,maximum' | split: ','
   assign gap_css = ''
   if layout_settings.gap == 'none'
-    assign gap_css = '--group-gap: 0;'
+    assign gap_css = '--group-gap: 0px;'
   elsif gap_steps contains layout_settings.gap
     assign gap_css = '--group-gap: var(--step-' | append: layout_settings.gap | append: ');'
   endif
@@ -59,7 +59,7 @@
   assign row_gap_css = ''
   if layout_settings.direction == 'vertical'
     if layout_settings.vertical_gap == 'none'
-      assign row_gap_css = '--group-row-gap: 0;'
+      assign row_gap_css = '--group-row-gap: 0px;'
     elsif gap_steps contains layout_settings.vertical_gap
       assign row_gap_css = '--group-row-gap: var(--step-' | append: layout_settings.vertical_gap | append: ');'
     endif

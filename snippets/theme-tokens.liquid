@@ -248,6 +248,12 @@
        in two on the panels that carry a scheme class and also scroll.      */
     --scrollbar-thumb: {{ settings.scrollbar_thumb | default: '#8A8072' }};
     --scrollbar-thumb-hover: {{ settings.scrollbar_thumb_hover | default: '#6E6558' }};
+    {%- if settings.loader_color != blank %}
+    --loader-ink: {{ settings.loader_color }};
+    {%- endif %}
+    {%- if settings.veil_color != blank %}
+    --veil-tint: {{ settings.veil_color }};
+    {%- endif %}
 
     /* ---- Motion ------------------------------------------------------
        The merchant picks a named step; motion-step.liquid resolves it to a
@@ -298,6 +304,15 @@
     --c-button-hover: {{ scheme.settings.button_hover | default: scheme.settings.button }};
     --c-button-secondary-label: {{ scheme.settings.secondary_button_label | default: scheme.settings.text }};
     --c-link: {{ scheme.settings.link | default: scheme.settings.text }};
+    --badge-sale-bg: {{ scheme.settings.badge_sale_background | default: scheme.settings.button }};
+    --badge-sale-text: {{ scheme.settings.badge_sale_text | default: scheme.settings.button_label }};
+    --badge-sold-bg: {{ scheme.settings.badge_sold_background | default: scheme.settings.muted }};
+    --badge-sold-text: {{ scheme.settings.badge_sold_text | default: scheme.settings.background }};
+    --badge-new-bg: {{ scheme.settings.badge_new_background | default: scheme.settings.accent }};
+    --badge-new-text: {{ scheme.settings.badge_new_text | default: scheme.settings.background }};
+    --badge-custom-bg: {{ scheme.settings.badge_custom_background | default: scheme.settings.surface }};
+    --badge-custom-text: {{ scheme.settings.badge_custom_text | default: scheme.settings.text }};
+    --gallery-bg: {{ scheme.settings.gallery_background | default: scheme.settings.surface }};
 
     {%- comment -%}
       Derived from the scheme's own literal colours rather than var(--c-text),

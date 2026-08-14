@@ -26,6 +26,7 @@
       {% content_for 'blocks' %}
 
       {%- form 'customer', class: 'stack stack--tight stack--center' -%}
+        {%- assign newsletter_button_label = section.settings.button_label | default: 'Subscribe' -%}
         <input type="hidden" name="contact[tags]" value="newsletter">
         <div class="form-row">
           <label class="visually-hidden" for="newsletter-{{ section.id }}">
@@ -40,9 +41,7 @@
             autocomplete="email"
             required
           >
-          <button type="submit" class="btn btn--primary">
-            {{ section.settings.button_label | default: 'Subscribe' }}
-          </button>
+          {% render 'button', label: newsletter_button_label, element: 'button', button_type: 'submit' %}
         </div>
 
         {%- if form.errors -%}
@@ -109,12 +108,7 @@
       "default": "lg"
     }
   ],
-  "blocks": [
-    { "type": "@app" },
-    { "type": "text" },
-    { "type": "rich-text" },
-    { "type": "custom-liquid" }
-  ],
+  "blocks": [{ "type": "@theme" }, { "type": "@app" }],
   "presets": [
     {
       "name": "t:sections.newsletter.name",

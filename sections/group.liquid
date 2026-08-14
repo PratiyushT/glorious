@@ -35,21 +35,8 @@
   style="{% render 'section-style', padding_top: section.settings.padding_top, padding_bottom: section.settings.padding_bottom %} {% render 'block-spacing', gap: section.settings.block_gap %} {{ alignment_css }}"
 >
   <div class="{{ width_class }}">
-    <div
-      class="layout-group group-section__layout"
-      data-direction="{{ section.settings.direction }}"
-      data-stack="{% if section.settings.direction == 'horizontal' %}{{ section.settings.stack_below }}{% else %}never{% endif %}"
-      data-mobile-align="{{ section.settings.content_alignment_mobile | default: 'inherit' }}"
-      data-items="{{ section.settings.items_width }}"
-      data-wrap="{{ section.settings.wrap }}"
-    >
-      <div
-        class="layout-group__inner"
-        style="{% render 'layout-group-style', layout_settings: section.settings %}"
-      >
-        {% content_for 'blocks' %}
-      </div>
-    </div>
+    {%- capture section_content -%}{% content_for 'blocks' %}{%- endcapture -%}
+    {% render 'layout-group', layout_settings: section.settings, content: section_content, class: 'group-section__layout' %}
   </div>
 </section>
 

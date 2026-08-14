@@ -14,36 +14,69 @@
     <button
       class="product-gallery__zoom"
       type="button"
-      data-product-zoom
-      data-zoom-src="{{ media.preview_image | image_url: width: 2400 }}"
+      data-product-zoomable
+      aria-pressed="false"
       aria-label="{{ 'products.zoom_image' | t: title: media_alt | escape }}"
     >
       {{
         media.preview_image
-        | image_url: width: 2000
+        | image_url: width: 2400
         | image_tag:
-          widths: '480,720,960,1200,1600,2000',
+          widths: '480,720,960,1200,1600,2000,2400',
           sizes: '(min-width: 62.5rem) 60vw, 100vw',
           loading: loading,
           alt: media_alt,
-          data-image-lqip: media_lqip
+          data-image-lqip: media_lqip,
+          data-product-zoom-image: ''
       }}
     </button>
+    <span class="product-gallery__minimap" data-product-zoom-minimap hidden aria-hidden="true">
+      {{ media.preview_image | image_url: width: 240 | image_tag: loading: 'lazy', alt: '', data-image-lqip: 'off' }}
+      <span data-product-zoom-viewport></span>
+    </span>
 
   {%- when 'video' -%}
+    {%- comment -%}
+      `controls: true` is the no-JavaScript path, not the presentation: with
+      scripting, theme.js strips the attribute on adoption and the gallery
+      draws no native chrome — the facade's Play action and a click on the
+      stage are the controls, and the one merchant option is autoplay
+      (muted, looping). A visitor without JavaScript keeps the browser's own
+      controls, which are then the only way to play the video at all.
+    {%- endcomment -%}
     {%- assign video_lqip = media.preview_image | image_url: width: 40 -%}
-    {{
-      media
-      | video_tag:
-        controls: true,
-        autoplay: autoplay_video,
-        muted: autoplay_video,
-        loop: autoplay_video,
-        playsinline: true,
-        preload: 'metadata',
-        image_size: '2000x',
-        data-video-lqip: video_lqip
-    }}
+    {%- if autoplay_video -%}
+      {%- comment -%}
+        `data-video-autoplay` opts the ambient video into the viewport engine:
+        it pauses under 30% visibility and resumes on return, exactly as the
+        Media block's ambient videos do. Two calls rather than a false-valued
+        data attribute, because a data attribute rendered as "false" is still
+        an attribute the script would read as opted in.
+      {%- endcomment -%}
+      {{
+        media
+        | video_tag:
+          controls: true,
+          autoplay: true,
+          muted: true,
+          loop: true,
+          playsinline: true,
+          preload: 'metadata',
+          image_size: '2000x',
+          data-video-lqip: video_lqip,
+          data-video-autoplay: true
+      }}
+    {%- else -%}
+      {{
+        media
+        | video_tag:
+          controls: true,
+          playsinline: true,
+          preload: 'metadata',
+          image_size: '2000x',
+          data-video-lqip: video_lqip
+      }}
+    {%- endif -%}
     {% render 'video-lqip-frame', lqip: video_lqip %}
 
   {%- when 'external_video' -%}

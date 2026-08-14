@@ -1,0 +1,5 @@
+{%- assign variant = closest.product.selected_or_first_available_variant -%}
+{%- if variant != blank -%}<div class="product-details__sku" {{ block.shopify_attributes }}>{{ block.settings.label }} <span data-product-sku-value>{{ variant.sku }}</span></div>{%- endif -%}
+{% schema %}
+{ "name": "t:sections.main_product.blocks.sku", "tag": null, "settings": [{ "type": "text", "id": "label", "label": "t:sections.main_product.label.label", "default": "SKU" }], "presets": [{ "name": "t:sections.main_product.blocks.sku" }] }
+{% endschema %}

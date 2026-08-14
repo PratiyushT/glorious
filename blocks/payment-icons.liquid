@@ -1,0 +1,26 @@
+{%- comment -%}Payment methods are sourced from the store, never maintained in the theme.{%- endcomment -%}
+{%- if shop.enabled_payment_types.size > 0 -%}
+  <div class="payment-icons-block align-{{ block.settings.alignment }}" {{ block.shopify_attributes }}>
+    {%- if block.settings.heading != blank -%}<p>{{ block.settings.heading }}</p>{%- endif -%}
+    <ul role="list" aria-label="{{ 'sections.footer.payment_methods' | t | escape }}">
+      {%- for type in shop.enabled_payment_types -%}<li>{{ type | payment_type_svg_tag }}</li>{%- endfor -%}
+    </ul>
+  </div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Payment icons",
+  "tag": null,
+  "settings": [
+    { "type": "inline_richtext", "id": "heading", "label": "Heading" },
+    {
+      "type": "select", "id": "alignment", "label": "Alignment",
+      "options": [
+        { "value": "left", "label": "Left" }, { "value": "center", "label": "Center" }, { "value": "right", "label": "Right" }
+      ], "default": "left"
+    }
+  ],
+  "presets": [{ "name": "Payment icons" }]
+}
+{% endschema %}

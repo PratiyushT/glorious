@@ -1,0 +1,94 @@
+{%- comment -%}
+  Shared product-media gallery used by Main product and Featured product.
+  The section owns layout settings; this renderer owns the media markup and
+  interaction hooks so the two surfaces cannot drift.
+{%- endcomment -%}
+
+{%- liquid
+  assign selected_variant = product.selected_or_first_available_variant
+  assign ordered_media = product.media
+  assign initial_media = selected_variant.featured_media
+
+  if video_first
+    assign hosted_videos = product.media | where: 'media_type', 'video'
+    assign external_videos = product.media | where: 'media_type', 'external_video'
+    assign image_media = product.media | where: 'media_type', 'image'
+    assign model_media = product.media | where: 'media_type', 'model'
+    assign ordered_media = hosted_videos | concat: external_videos | concat: image_media | concat: model_media
+    assign initial_media = hosted_videos.first | default: external_videos.first | default: initial_media
+  endif
+
+  assign initial_media_index = 0
+  for gallery_media in ordered_media
+    if gallery_media.id == initial_media.id
+      assign initial_media_index = forloop.index0
+      break
+    endif
+  endfor
+
+  if video_label == blank
+    assign video_label = 'products.video_view' | t
+  endif
+-%}
+
+<div
+  class="product-gallery product-gallery--{{ layout | default: 'carousel' }}{% if layout == 'stacked' and first_media_large %} product-gallery--first-large{% endif %}"
+  aria-label="{{ 'products.media_gallery' | t }}"
+  data-product-gallery-layout="{{ layout | default: 'carousel' }}"
+  data-sticky-mode="{{ sticky_mode | default: 'adaptive' }}"
+  {% if style != blank %}style="{{ style }}"{% endif %}
+  {% if attributes != blank %}{{ attributes }}{% endif %}
+>
+  <div class="product-gallery__track" style="--product-media-index: {{ initial_media_index }};">
+    {%- for media in ordered_media -%}
+      {%- assign is_initial_media = false -%}
+      {%- if media.id == initial_media.id or initial_media == blank and forloop.first -%}{%- assign is_initial_media = true -%}{%- endif -%}
+      {%- assign media_loading = 'lazy' -%}
+      {%- if eager_first and forloop.first -%}{%- assign media_loading = 'eager' -%}{%- endif -%}
+      <div
+        class="product-gallery__slide{% if is_initial_media %} is-active{% endif %}"
+        data-product-media
+        data-media-id="{{ media.id }}"
+        data-media-type="{{ media.media_type }}"
+        data-media-index="{{ forloop.index0 }}"
+        aria-hidden="{% if layout == 'stacked' or is_initial_media %}false{% else %}true{% endif %}"
+      >
+        {% render 'product-media', media: media, loading: media_loading, media_fit: media_fit, autoplay_video: autoplay_video %}
+      </div>
+    {%- else -%}
+      <div class="product-gallery__slide">{{ 'product-1' | placeholder_svg_tag: 'placeholder-svg' }}</div>
+    {%- endfor -%}
+  </div>
+
+  {%- if ordered_media.size > 1 and layout != 'stacked' -%}
+    {%- if show_arrows -%}
+      <div class="product-gallery__controls">
+        <button class="product-gallery__arrow product-gallery__arrow--previous" type="button" data-product-gallery-step="previous" aria-label="{{ 'products.previous_view' | t }}">
+          {% render 'icon', icon: 'chevron-left', width: '12', height: '24' %}
+        </button>
+        <button class="product-gallery__arrow product-gallery__arrow--next" type="button" data-product-gallery-step="next" aria-label="{{ 'products.next_view' | t }}">
+          {% render 'icon', icon: 'chevron-right', width: '12', height: '24' %}
+        </button>
+      </div>
+    {%- endif -%}
+
+    {%- if show_dots -%}
+      <div class="product-gallery__dots">
+        {%- for media in ordered_media -%}
+          {%- assign is_initial_media = false -%}
+          {%- if media.id == initial_media.id or initial_media == blank and forloop.first -%}{%- assign is_initial_media = true -%}{%- endif -%}
+          <button
+            class="product-gallery__dot{% if media.media_type contains 'video' %} product-gallery__dot--video{% endif %}{% if is_initial_media %} is-active{% endif %}"
+            type="button"
+            data-product-media-control
+            data-media-id="{{ media.id }}"
+            aria-current="{% if is_initial_media %}true{% else %}false{% endif %}"
+            aria-label="{{ 'products.go_to_view' | t }} {{ forloop.index }}{% if media.media_type contains 'video' %}, {{ video_label }}{% endif %}"
+          >
+            {%- if media.media_type contains 'video' -%}<span>{{ video_label }}</span>{%- endif -%}
+          </button>
+        {%- endfor -%}
+      </div>
+    {%- endif -%}
+  {%- endif -%}
+</div>

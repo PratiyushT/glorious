@@ -7,6 +7,7 @@
 
 .product-showcase {
   display: grid;
+  align-items: start;
   grid-template-columns: var(--product-columns, minmax(0, 3fr) minmax(24rem, 2fr));
   min-height: calc(100dvh - var(--product-nav-offset));
 }
@@ -15,14 +16,50 @@
 .product-showcase[data-media-position="right"] .product-details { order: 1; }
 
 .product-gallery {
-  position: sticky;
-  top: var(--product-nav-offset);
+  position: relative;
   align-self: start;
   height: calc(100dvh - var(--product-nav-offset));
   min-height: 36rem;
   overflow: hidden;
-  background: var(--c-surface);
+  /* The scheme's gallery colour: the letterbox a contain-fit photograph sits
+     in, merchant-set per scheme and falling back to the scheme's surface. */
+  background: var(--gallery-bg, var(--c-surface));
   border-inline-end: var(--border-width) solid var(--c-hairline);
+}
+
+.product-showcase[data-sticky-column="gallery"] .product-gallery,
+.product-showcase[data-sticky-column="details"] .product-details {
+  position: sticky;
+  top: var(--product-nav-offset);
+  align-self: start;
+}
+
+.product-gallery--stacked {
+  height: auto;
+  min-height: 0;
+  overflow: visible;
+}
+
+.product-gallery--stacked .product-gallery__track {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--border-width);
+  height: auto;
+  background: var(--c-hairline);
+  transform: none;
+  transition: none;
+}
+
+.product-gallery--stacked .product-gallery__slide {
+  width: auto;
+  height: auto;
+  min-width: 0;
+  aspect-ratio: 1;
+}
+
+.product-gallery--stacked.product-gallery--first-large .product-gallery__slide:first-child {
+  grid-column: 1 / -1;
+  aspect-ratio: 4 / 3;
 }
 
 .product-gallery__track,
@@ -33,13 +70,14 @@
 }
 
 .product-gallery__track {
-  display: grid;
-  grid-template: minmax(0, 1fr) / minmax(0, 1fr);
+  display: flex;
+  transform: translateX(calc(var(--product-media-index, 0) * -100%));
+  transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .product-gallery__slide {
-  grid-area: 1 / 1;
   position: relative;
+  flex: 0 0 100%;
   min-width: 0;
   overflow: hidden;
   background: var(--c-surface);
@@ -60,9 +98,64 @@
   width: 100%;
   height: 100%;
   padding: 0;
+  overflow: hidden;
   border: 0;
   background: none;
   cursor: zoom-in;
+  touch-action: pan-y;
+}
+
+.product-gallery__zoom img {
+  transform: translate3d(var(--product-zoom-x, 0), var(--product-zoom-y, 0), 0) scale(var(--product-zoom-scale, 1));
+  transform-origin: 50% 50%;
+  transition: transform var(--product-zoom-transition, 0.45s cubic-bezier(0.22, 1, 0.36, 1));
+  will-change: transform;
+}
+
+.product-gallery__zoom[data-product-zoomed] {
+  cursor: grab;
+  touch-action: none;
+}
+
+.product-gallery__zoom[data-product-zoom-dragging] {
+  cursor: grabbing;
+}
+
+.product-gallery__zoom[data-product-zoom-dragging] img {
+  --product-zoom-transition: none;
+}
+
+.product-gallery__minimap {
+  position: absolute;
+  inset-inline-start: 1rem;
+  bottom: 1rem;
+  z-index: 4;
+  display: block;
+  width: 6rem;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--c-text) 30%, transparent);
+  background: var(--c-surface);
+  box-shadow: 0 0.375rem 1.125rem color-mix(in srgb, var(--c-noir) 22%, transparent);
+  pointer-events: none;
+}
+
+.product-gallery__minimap[hidden] { display: none; }
+
+.product-gallery__minimap > img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.product-gallery__minimap > span {
+  position: absolute;
+  left: var(--product-minimap-left, 25%);
+  top: var(--product-minimap-top, 25%);
+  width: var(--product-minimap-size, 50%);
+  aspect-ratio: 1;
+  border: 1.4px solid var(--c-accent);
+  background: color-mix(in srgb, var(--c-accent) 16%, transparent);
+  box-shadow: 0 0 0 12.5rem color-mix(in srgb, var(--c-noir) 16%, transparent);
 }
 
 .product-gallery__arrow {
@@ -71,36 +164,36 @@
   z-index: 3;
   display: grid;
   place-items: center;
-  width: 2.875rem;
-  height: 2.875rem;
-  padding: 0;
+  padding: 0.75rem;
   border: 0;
-  background: color-mix(in srgb, var(--c-surface) 72%, transparent);
+  background: none;
   color: var(--c-text);
   cursor: pointer;
+  filter: drop-shadow(0 1px 2px var(--c-surface)) drop-shadow(0 0 9px color-mix(in srgb, var(--c-surface) 85%, transparent));
   transform: translateY(-50%);
+  transition: color 0.3s ease;
 }
 
-.product-gallery__arrow--previous { inset-inline-start: var(--space-xs); }
-.product-gallery__arrow--next { inset-inline-end: var(--space-xs); }
+.product-gallery__arrow--previous { inset-inline-start: 0.125rem; }
+.product-gallery__arrow--next { inset-inline-end: 0.125rem; }
 
 .product-gallery__dots {
   position: absolute;
-  inset-inline: var(--space-sm);
-  bottom: var(--space-sm);
+  inset-inline: 0;
+  bottom: 1.625rem;
   z-index: 3;
   display: flex;
   justify-content: center;
   align-items: center;
   flex-wrap: wrap;
-  gap: 0.55rem;
+  gap: 0.5625rem;
 }
 
 .product-gallery__dot {
   display: grid;
   place-items: center;
-  min-width: 2.75rem;
-  min-height: 2.75rem;
+  width: 0.5rem;
+  height: 1.25rem;
   padding: 0;
   border: 0;
   background: none;
@@ -123,27 +216,110 @@
 
 .product-gallery__dot--video {
   width: auto;
-  padding-inline: 0.5rem;
-  font-size: var(--micro-size);
-  letter-spacing: 0.1em;
+  min-width: max-content;
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  line-height: 1;
 }
 
 .product-gallery__dot--video::before { display: none; }
 
+.shopify-payment-button {
+  width: 100%;
+}
+
+/* Buy Now wears exactly what Add to cart wears. Every chain here mirrors
+   `.btn--primary`'s fallbacks in base.css — the border following the fill,
+   the hover falling through the resting override before the scheme — so a
+   merchant override moves both buttons or neither. The transition reads the
+   motion tokens rather than restating 0.3s, so turning motion down does not
+   leave this one button animating. `!important` throughout because Shopify's
+   injected payment-button stylesheet loads after ours. */
 .shopify-payment-button__button--unbranded {
-  background: var(--c-button) !important;
-  color: var(--c-button-label) !important;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 44px;
+  padding: var(--btn-pad-y, var(--button-padding-y)) var(--btn-pad-x, var(--button-padding-x)) !important;
+  border: var(--btn-border-width, var(--button-border-width)) solid var(--btn-border, var(--btn-bg, var(--c-button))) !important;
+  border-radius: var(--btn-radius, var(--button-radius)) !important;
+  background: var(--btn-bg, var(--c-button)) !important;
+  color: var(--btn-text, var(--c-button-label)) !important;
+  font-family: var(--font-body) !important;
+  font-size: var(--btn-font, var(--button-size)) !important;
+  line-height: 1.2 !important;
+  letter-spacing: var(--button-tracking) !important;
+  text-transform: var(--button-transform) !important;
+  white-space: nowrap;
+  transition: background-color var(--duration) var(--ease-ui),
+              border-color var(--duration) var(--ease-ui),
+              color var(--duration) var(--ease-ui) !important;
 }
 
 .shopify-payment-button__button--unbranded:hover,
 .shopify-payment-button__button--unbranded:focus-visible {
-  background: var(--c-button-hover) !important;
-  color: var(--c-button-label) !important;
+  border-color: var(--btn-border-hover, var(--btn-bg-hover, var(--btn-bg, var(--c-button-hover)))) !important;
+  background: var(--btn-bg-hover, var(--btn-bg, var(--c-button-hover))) !important;
+  color: var(--btn-text-hover, var(--btn-text, var(--c-button-label))) !important;
+}
+
+/* The Buy buttons block's non-filled styles restyle Add to cart, so Buy Now
+   follows. Outline is mirrored exactly from `.btn--outline`; the link and
+   arrow families have no frame at all, and a wallet button with no boundary
+   is not a Shopify-supported presentation — those map to the outline
+   treatment, which is the nearest style that still reads as a button. */
+[data-button-style='outline'] .shopify-payment-button__button--unbranded,
+[data-button-style='link'] .shopify-payment-button__button--unbranded,
+[data-button-style='quiet'] .shopify-payment-button__button--unbranded,
+[data-button-style='arrow'] .shopify-payment-button__button--unbranded,
+[data-button-style='arrow_outline'] .shopify-payment-button__button--unbranded {
+  background: transparent !important;
+  color: var(--btn-text, var(--c-button-secondary-label)) !important;
+  border-color: var(--btn-border, color-mix(in srgb, var(--c-accent) 55%, transparent)) !important;
+}
+
+[data-button-style='outline'] .shopify-payment-button__button--unbranded:hover,
+[data-button-style='outline'] .shopify-payment-button__button--unbranded:focus-visible,
+[data-button-style='link'] .shopify-payment-button__button--unbranded:hover,
+[data-button-style='link'] .shopify-payment-button__button--unbranded:focus-visible,
+[data-button-style='quiet'] .shopify-payment-button__button--unbranded:hover,
+[data-button-style='quiet'] .shopify-payment-button__button--unbranded:focus-visible,
+[data-button-style='arrow'] .shopify-payment-button__button--unbranded:hover,
+[data-button-style='arrow'] .shopify-payment-button__button--unbranded:focus-visible,
+[data-button-style='arrow_outline'] .shopify-payment-button__button--unbranded:hover,
+[data-button-style='arrow_outline'] .shopify-payment-button__button--unbranded:focus-visible {
+  background: var(--btn-bg-hover, var(--btn-border-hover, var(--btn-border, var(--c-button-secondary-label)))) !important;
+  color: var(--btn-text-hover, var(--c-bg)) !important;
+  border-color: var(--btn-border-hover, var(--btn-border, var(--c-button-secondary-label))) !important;
+}
+
+.product-gallery { animation: product-fade-in 0.9s ease both; }
+.product-breadcrumbs { animation: product-fade-in 0.8s ease both; }
+.product-details__title { animation: product-up 0.8s cubic-bezier(0.19, 1, 0.22, 1) 0.05s both; }
+.product-price { animation: product-up 0.8s cubic-bezier(0.19, 1, 0.22, 1) 0.12s both; }
+.product-description { animation: product-up 0.8s cubic-bezier(0.19, 1, 0.22, 1) 0.18s both; }
+.product-options { animation: product-up 0.8s cubic-bezier(0.19, 1, 0.22, 1) 0.22s both; }
+.product-quantity,
+.product-buy-form,
+.pickup-availability { animation: product-up 0.8s cubic-bezier(0.19, 1, 0.22, 1) 0.28s both; }
+
+@keyframes product-up {
+  from { opacity: 0; transform: translateY(1.625rem); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes product-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 .product-details {
   display: flex;
   align-items: center;
+  width: 100%;
+  min-height: calc(100dvh - var(--product-nav-offset));
+  box-sizing: border-box;
   padding: clamp(3rem, 8vw, 7.75rem) clamp(1.75rem, 4.5vw, 5.25rem) clamp(2.25rem, 5vw, 4.5rem);
   background: radial-gradient(60% 40% at 88% 6%, color-mix(in srgb, var(--c-accent) 10%, transparent), transparent 62%);
 }
@@ -168,6 +344,12 @@
 
 .product-breadcrumbs a { color: inherit; text-decoration: none; }
 .product-breadcrumbs a:hover { color: var(--c-accent); }
+.product-breadcrumbs [aria-current="page"] {
+  color: color-mix(in srgb, var(--c-text) 58%, transparent);
+}
+.product-breadcrumbs [data-product-breadcrumb-source-item] {
+  display: contents;
+}
 
 .product-details__vendor,
 .product-details__sku,
@@ -203,11 +385,7 @@
   border-bottom: var(--border-width) solid color-mix(in srgb, var(--c-accent) 45%, transparent);
 }
 
-.product-price__figure {
-  font-family: var(--font-price);
-  font-size: clamp(1.3125rem, 1.9vw, 1.5625rem);
-  letter-spacing: 0.06em;
-}
+.product-price__figure { font: inherit; letter-spacing: inherit; }
 
 .product-price s,
 .product-price__note,
@@ -224,10 +402,15 @@
 
 .product-description { line-height: var(--body-leading); }
 
+.product-options {
+  display: grid;
+  gap: var(--space-xs);
+}
+
 .product-option {
   min-inline-size: 0;
   margin: 0;
-  padding: var(--space-xs) 0 0;
+  padding: 0;
   border: 0;
 }
 
@@ -237,7 +420,7 @@
   justify-content: space-between;
   gap: var(--space-xs);
   width: 100%;
-  margin: 0 0 var(--space-3xs);
+  margin: 0 0 var(--product-option-label-gap, 0.5rem);
   font-size: var(--micro-size);
   letter-spacing: 0.15em;
   text-transform: uppercase;
@@ -248,6 +431,13 @@
   flex-wrap: wrap;
   gap: 0.5rem;
 }
+
+.product-option__values--pill > .product-option__choice {
+  flex: 1 1 0;
+  max-width: 10.625rem;
+}
+
+.product-option__values--swatch { gap: 0.75rem; }
 
 .product-option__choice {
   position: relative;
@@ -261,22 +451,55 @@
 }
 
 .product-option__pill {
-  display: grid;
-  place-items: center;
-  min-width: 3.25rem;
-  min-height: 2.875rem;
-  padding: 0.75rem 0.875rem;
-  border: var(--border-width) solid color-mix(in srgb, var(--c-text) 24%, transparent);
-  background: var(--c-surface);
-  font-size: var(--fs-sm);
-  letter-spacing: 0.08em;
-  cursor: pointer;
+  width: 100%;
+  max-width: none;
+  min-height: 44px;
+  padding: var(--btn-pad-y, 0.688rem) var(--btn-pad-x, 0.813rem);
+  border-radius: var(--btn-radius, 0);
+  font-size: var(--btn-font, 0.75rem);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.quick-view__grid > .product-gallery {
+  position: relative;
+  top: auto;
+  align-self: stretch;
+  height: auto;
+  min-height: 32rem;
+  border-inline-end: var(--border-width) solid var(--qv-rule);
+}
+
+.quick-view__grid > .product-gallery--stacked {
+  max-height: none;
+  overflow: visible;
+}
+
+.quick-view__info > .product-badges,
+.quick-view__info > .product-details__vendor,
+.quick-view__info > .product-details__title,
+.quick-view__info > .product-price,
+.quick-view__info > .product-description,
+.quick-view__info > .product-options,
+.quick-view__info > .product-quantity,
+.quick-view__info > .product-buy-form,
+.quick-view__info > .pickup-availability,
+.quick-view__info > .product-sku,
+.quick-view__info > .product-inventory {
+  width: 100%;
 }
 
 .product-option__choice input:checked + .product-option__pill {
-  border-color: var(--c-text);
-  background: var(--c-text);
-  color: var(--c-bg);
+  border-color: var(--choice-selected-border, var(--btn-border-hover, var(--c-text)));
+  background: var(--choice-selected-bg, var(--btn-bg-hover, var(--c-text)));
+  color: var(--choice-selected-text, var(--btn-text-hover, var(--c-bg)));
+}
+
+.product-option__choice input:focus-visible + .product-option__pill,
+.product-option__choice input:focus-visible + .product-option__swatch {
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
 }
 
 .product-option__choice input:disabled + .product-option__pill {
@@ -295,13 +518,14 @@
 }
 
 .product-option__swatch .swatch-dot {
-  width: 1.875rem;
-  height: 1.875rem;
+  width: 2.875rem;
+  height: 2.875rem;
+  border-radius: inherit;
 }
 
-.product-option__choice input:checked + .product-option__swatch {
-  box-shadow: 0 0 0 1px var(--c-surface), 0 0 0 2px var(--c-text);
-}
+/* The selected ring is drawn on the dot, in base.css beside the card's — one
+   selection language for both surfaces. Nothing on the wrapper: a ring here
+   plus a ring there is the double halo the control used to wear. */
 
 .product-option__select {
   position: relative;
@@ -344,7 +568,10 @@
 .product-quantity__control {
   display: grid;
   grid-template-columns: 2.75rem minmax(3rem, auto) 2.75rem;
-  border: var(--border-width) solid color-mix(in srgb, var(--c-text) 22%, transparent);
+  border: var(--input-border-width, var(--border-width)) solid var(--input-border, color-mix(in srgb, var(--c-text) 22%, transparent));
+  border-radius: var(--input-radius, 0);
+  background: var(--input-bg, transparent);
+  color: var(--input-text, inherit);
 }
 
 .product-quantity__control button,
@@ -510,6 +737,21 @@
     aspect-ratio: 4 / 5;
     border-inline-end: 0;
     border-bottom: var(--border-width) solid var(--c-hairline);
+  }
+  .product-gallery--stacked {
+    aspect-ratio: auto;
+  }
+  .product-gallery--stacked .product-gallery__track {
+    grid-template-columns: 1fr;
+  }
+  .product-gallery--stacked.product-gallery--first-large .product-gallery__slide:first-child {
+    grid-column: auto;
+    aspect-ratio: 4 / 5;
+  }
+  .product-showcase[data-sticky-column] .product-gallery,
+  .product-showcase[data-sticky-column] .product-details {
+    position: relative;
+    top: auto;
   }
   .product-details { padding: clamp(1.875rem, 6vw, 2.75rem) var(--gutter) var(--space-xl); }
   .product-details__inner { max-width: 44rem; }

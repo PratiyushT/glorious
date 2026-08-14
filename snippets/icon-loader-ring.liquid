@@ -1,0 +1,12 @@
+{%- comment -%}
+  The ring loader — a band drawn full circle, then its stone struck above it.
+  Same engine as the diamond: every line is one path with `pathLength="100"`,
+  class `loader__line`, an inline `--n` for its place in the draw and an
+  `--exit` naming which layer it leaves with. The viewBox keeps the diamond's
+  96×84 proportions so `.loader__mark`'s aspect-ratio serves both.
+{%- endcomment -%}
+<svg class="icon-svg loader__mark" viewBox="0 0 96 84" fill="none" aria-hidden="true" focusable="false">
+  <path class="loader__line" style="--n: 0; --exit: gj-loader-exit-outline;" pathLength="100" d="M48 26a26 26 0 1 0 0 52a26 26 0 1 0 0-52z"/>
+  <path class="loader__line" style="--n: 2; --exit: gj-loader-exit-girdle;" pathLength="100" d="M48 4L58 14L48 24L38 14z"/>
+  <path class="loader__line" style="--n: 3; --exit: gj-loader-exit-inner-3;" pathLength="100" d="M38 14h20"/>
+</svg>

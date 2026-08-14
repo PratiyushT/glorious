@@ -1,0 +1,30 @@
+{%- comment -%}Native store policy links with optional cookie-consent action.{%- endcomment -%}
+<nav class="policy-links-block align-{{ block.settings.alignment }}" aria-label="{{ 'sections.main_policy.navigation' | t | escape }}" {{ block.shopify_attributes }}>
+  {%- if block.settings.heading != blank -%}<p>{{ block.settings.heading }}</p>{%- endif -%}
+  <ul role="list">
+    {%- for policy in shop.policies -%}
+      {%- if policy != blank -%}<li><a href="{{ policy.url }}">{{ policy.title }}</a></li>{%- endif -%}
+    {%- endfor -%}
+    {%- if block.settings.show_cookie_preferences -%}
+      <li><button type="button" data-overlay-open="cookie-preferences">{{ 'sections.footer.cookie_preferences' | t }}</button></li>
+    {%- endif -%}
+  </ul>
+</nav>
+
+{% schema %}
+{
+  "name": "Policy links",
+  "tag": null,
+  "settings": [
+    { "type": "inline_richtext", "id": "heading", "label": "Heading" },
+    { "type": "checkbox", "id": "show_cookie_preferences", "label": "Show cookie preferences", "default": true },
+    {
+      "type": "select", "id": "alignment", "label": "Alignment",
+      "options": [
+        { "value": "left", "label": "Left" }, { "value": "center", "label": "Center" }, { "value": "right", "label": "Right" }
+      ], "default": "left"
+    }
+  ],
+  "presets": [{ "name": "Policy links" }]
+}
+{% endschema %}

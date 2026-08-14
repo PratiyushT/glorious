@@ -86,7 +86,8 @@
                 <textarea class="field" id="CommentBody-{{ section.id }}" name="comment[body]" required>{{ form.body }}</textarea>
               </div>
             </div>
-            <div><button class="btn btn--primary" type="submit">{{ 'blogs.comments.submit' | t }}</button></div>
+            {%- assign comment_submit_label = 'blogs.comments.submit' | t -%}
+            <div>{% render 'button', label: comment_submit_label, element: 'button', button_type: 'submit' %}</div>
           {%- endform -%}
         </div>
       </section>

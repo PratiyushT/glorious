@@ -1,0 +1,363 @@
+{%- comment -%}
+  A foldable Group. The header owns only the disclosure behavior; the panel is
+  the same shared Group renderer and accepts the same child blocks and layout
+  settings as Group itself. Its 0fr -> 1fr panel, clipping layer, plus/minus
+  state, timing, and easing are the footer link-column interaction promoted to
+  a global primitive.
+{%- endcomment -%}
+
+{%- liquid
+  assign accordion_heading = block.settings.heading
+  if accordion_heading == blank
+    assign accordion_heading = 'blocks.accordion.fallback' | t
+  endif
+  assign panel_id = 'AccordionPanel-' | append: block.id
+-%}
+{%- capture accordion_content -%}{% content_for 'blocks' %}{%- endcapture -%}
+{%- capture accordion_group -%}
+  {% render 'layout-group', layout_settings: block.settings, content: accordion_content, class: 'accordion__group' %}
+{%- endcapture -%}
+
+<div
+  class="accordion"
+  data-accordion
+  data-disclosure
+  data-desktop-behavior="{{ block.settings.desktop_behavior }}"
+  {% if block.settings.expanded_by_default %}data-open{% endif %}
+  style="--accordion-divider: {% if block.settings.divider_color != blank %}{{ block.settings.divider_color }}{% else %}color-mix(in srgb, var(--c-text) 18%, transparent){% endif %};"
+  {{ block.shopify_attributes }}
+>
+  <button
+    class="accordion__toggle disclosure__toggle"
+    type="button"
+    data-accordion-toggle
+    aria-controls="{{ panel_id }}"
+    aria-expanded="{% if block.settings.expanded_by_default %}true{% else %}false{% endif %}"
+  >
+    <span class="accordion__heading" style="{% render 'text-style', preset: block.settings.heading_style %}">
+      {{- accordion_heading -}}
+    </span>
+    <span class="accordion__mark disclosure__mark" aria-hidden="true">
+      <span class="accordion__plus disclosure__plus">{% render 'icon', icon: 'plus' %}</span>
+      <span class="accordion__minus disclosure__minus">{% render 'icon', icon: 'minus' %}</span>
+    </span>
+  </button>
+
+  <div class="accordion__panel disclosure__panel" id="{{ panel_id }}" data-accordion-panel>
+    <div class="accordion__clip disclosure__clip">
+      {{- accordion_group -}}
+    </div>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "t:blocks.accordion.name",
+  "tag": null,
+  "blocks": [{ "type": "@theme" }, { "type": "@app" }],
+  "settings": [
+    {
+      "type": "inline_richtext",
+      "id": "heading",
+      "label": "t:sections.all.heading.label",
+      "default": "Details"
+    },
+    {
+      "type": "select",
+      "id": "heading_style",
+      "label": "t:blocks.all.text_preset.label",
+      "options": [
+        { "value": "title", "label": "t:settings_schema.typography.presets.title.header" },
+        { "value": "heading_1", "label": "t:settings_schema.typography.presets.heading_1.header" },
+        { "value": "heading_2", "label": "t:settings_schema.typography.presets.heading_2.header" },
+        { "value": "heading_3", "label": "t:settings_schema.typography.presets.heading_3.header" },
+        { "value": "heading_4", "label": "t:settings_schema.typography.presets.heading_4.header" },
+        { "value": "heading_5", "label": "t:settings_schema.typography.presets.heading_5.header" },
+        { "value": "subheading", "label": "t:settings_schema.typography.presets.subheading.header" },
+        { "value": "paragraph", "label": "t:settings_schema.typography.presets.paragraph.header" },
+        { "value": "small", "label": "t:settings_schema.typography.presets.small.header" },
+        { "value": "caption", "label": "t:settings_schema.typography.presets.caption.header" }
+      ],
+      "default": "small"
+    },
+    {
+      "type": "checkbox",
+      "id": "expanded_by_default",
+      "label": "t:blocks.accordion.expanded_by_default",
+      "default": false
+    },
+    {
+      "type": "select",
+      "id": "desktop_behavior",
+      "label": "t:blocks.accordion.desktop_behavior.label",
+      "info": "t:blocks.accordion.desktop_behavior.info",
+      "options": [
+        { "value": "expanded", "label": "t:blocks.accordion.desktop_behavior.expanded" },
+        { "value": "collapsible", "label": "t:blocks.accordion.desktop_behavior.collapsible" }
+      ],
+      "default": "expanded"
+    },
+    {
+      "type": "color",
+      "id": "divider_color",
+      "label": "t:blocks.accordion.divider_color",
+      "info": "t:blocks.group.border_color_info"
+    },
+    {
+      "type": "header",
+      "content": "t:blocks.accordion.content_layout"
+    },
+    {
+      "type": "select",
+      "id": "direction",
+      "label": "t:blocks.group.direction.label",
+      "info": "t:blocks.group.direction.info",
+      "options": [
+        { "value": "horizontal", "label": "t:blocks.group.direction.horizontal" },
+        { "value": "vertical", "label": "t:blocks.group.direction.vertical" }
+      ],
+      "default": "horizontal"
+    },
+    {
+      "type": "select",
+      "id": "distribute",
+      "label": "t:blocks.group.distribute.label",
+      "info": "t:blocks.group.distribute.info",
+      "options": [
+        { "value": "start", "label": "t:blocks.group.distribute.start" },
+        { "value": "center", "label": "t:blocks.group.distribute.center" },
+        { "value": "end", "label": "t:blocks.group.distribute.end" },
+        { "value": "between", "label": "t:blocks.group.distribute.between" }
+      ],
+      "default": "between",
+      "visible_if": "{{ block.settings.direction == 'horizontal' }}"
+    },
+    {
+      "type": "select",
+      "id": "align",
+      "label": "t:blocks.group.align.label_horizontal",
+      "info": "t:blocks.group.align.info_horizontal",
+      "options": [
+        { "value": "baseline", "label": "t:blocks.group.align.text" },
+        { "value": "start", "label": "t:blocks.group.align.top" },
+        { "value": "center", "label": "t:blocks.group.align.middle" },
+        { "value": "end", "label": "t:blocks.group.align.bottom" },
+        { "value": "stretch", "label": "t:blocks.group.align.equal_height" }
+      ],
+      "default": "baseline",
+      "visible_if": "{{ block.settings.direction == 'horizontal' }}"
+    },
+    {
+      "type": "select",
+      "id": "align_vertical",
+      "label": "t:blocks.group.align.label_vertical",
+      "info": "t:blocks.group.align.info_vertical",
+      "options": [
+        { "value": "start", "label": "t:blocks.group.align.left" },
+        { "value": "center", "label": "t:blocks.group.align.centre" },
+        { "value": "end", "label": "t:blocks.group.align.right" },
+        { "value": "stretch", "label": "t:blocks.group.align.full_width" }
+      ],
+      "default": "start",
+      "visible_if": "{{ block.settings.direction == 'vertical' }}"
+    },
+    {
+      "type": "select",
+      "id": "content_alignment",
+      "label": "t:sections.all.content_alignment.label",
+      "info": "t:sections.all.content_alignment.info",
+      "options": [
+        { "value": "inherit", "label": "t:settings_schema.options.inherit" },
+        { "value": "left", "label": "t:settings_schema.options.left" },
+        { "value": "center", "label": "t:settings_schema.options.center" },
+        { "value": "right", "label": "t:settings_schema.options.right" }
+      ],
+      "default": "inherit"
+    },
+    {
+      "type": "checkbox",
+      "id": "wrap",
+      "label": "t:blocks.group.wrap.label",
+      "info": "t:blocks.group.wrap.info",
+      "default": true,
+      "visible_if": "{{ block.settings.direction == 'horizontal' }}"
+    },
+    {
+      "type": "select",
+      "id": "items_width",
+      "label": "t:blocks.group.items_width.label",
+      "info": "t:blocks.group.items_width.info",
+      "options": [
+        { "value": "natural", "label": "t:blocks.group.items_width.natural" },
+        { "value": "equal", "label": "t:blocks.group.items_width.equal" }
+      ],
+      "default": "natural",
+      "visible_if": "{{ block.settings.direction == 'horizontal' }}"
+    },
+    {
+      "type": "select",
+      "id": "stack_below",
+      "label": "t:blocks.group.stack_below.label",
+      "info": "t:blocks.group.stack_below.info",
+      "options": [
+        { "value": "never", "label": "t:blocks.group.stack_below.never" },
+        { "value": "tablet", "label": "t:blocks.group.stack_below.tablet" },
+        { "value": "mobile", "label": "t:blocks.group.stack_below.mobile" }
+      ],
+      "default": "mobile",
+      "visible_if": "{{ block.settings.direction == 'horizontal' }}"
+    },
+    {
+      "type": "select",
+      "id": "content_alignment_mobile",
+      "label": "t:blocks.group.content_alignment_mobile.label",
+      "info": "t:blocks.group.content_alignment_mobile.info",
+      "options": [
+        { "value": "inherit", "label": "t:blocks.group.content_alignment_mobile.inherit" },
+        { "value": "left", "label": "t:settings_schema.options.left" },
+        { "value": "center", "label": "t:settings_schema.options.center" },
+        { "value": "right", "label": "t:settings_schema.options.right" }
+      ],
+      "default": "inherit",
+      "visible_if": "{{ block.settings.direction == 'horizontal' and block.settings.stack_below != 'never' }}"
+    },
+    {
+      "type": "header",
+      "content": "t:blocks.all.spacing_header",
+      "visible_if": "{{ block.settings.direction == 'horizontal' }}"
+    },
+    {
+      "type": "select",
+      "id": "gap",
+      "label": "t:blocks.group.gap.label",
+      "info": "t:blocks.group.gap.info",
+      "visible_if": "{{ block.settings.direction == 'horizontal' }}",
+      "options": [
+        { "value": "none", "label": "t:blocks.all.step.none" },
+        { "value": "minimal", "label": "t:blocks.all.step.minimal" },
+        { "value": "tiny", "label": "t:blocks.all.step.tiny" },
+        { "value": "small", "label": "t:blocks.all.step.small" },
+        { "value": "medium", "label": "t:blocks.all.step.medium" },
+        { "value": "large", "label": "t:blocks.all.step.large" },
+        { "value": "xlarge", "label": "t:blocks.all.step.xlarge" },
+        { "value": "maximum", "label": "t:blocks.all.step.maximum" }
+      ],
+      "default": "medium"
+    },
+    {
+      "type": "select",
+      "id": "vertical_gap",
+      "label": "t:blocks.group.vertical_gap_label",
+      "info": "t:blocks.group.vertical_gap_info",
+      "visible_if": "{{ block.settings.direction == 'vertical' }}",
+      "options": [
+        { "value": "inherit", "label": "t:blocks.group.vertical_gap_inherit" },
+        { "value": "none", "label": "t:blocks.all.step.none" },
+        { "value": "minimal", "label": "t:blocks.all.step.minimal" },
+        { "value": "tiny", "label": "t:blocks.all.step.tiny" },
+        { "value": "small", "label": "t:blocks.all.step.small" },
+        { "value": "medium", "label": "t:blocks.all.step.medium" },
+        { "value": "large", "label": "t:blocks.all.step.large" },
+        { "value": "xlarge", "label": "t:blocks.all.step.xlarge" },
+        { "value": "maximum", "label": "t:blocks.all.step.maximum" }
+      ],
+      "default": "inherit"
+    },
+    {
+      "type": "select",
+      "id": "padding",
+      "label": "t:blocks.group.padding.label",
+      "info": "t:blocks.group.padding.info",
+      "options": [
+        { "value": "none", "label": "t:blocks.all.step.none" },
+        { "value": "minimal", "label": "t:blocks.all.step.minimal" },
+        { "value": "tiny", "label": "t:blocks.all.step.tiny" },
+        { "value": "small", "label": "t:blocks.all.step.small" },
+        { "value": "medium", "label": "t:blocks.all.step.medium" },
+        { "value": "large", "label": "t:blocks.all.step.large" },
+        { "value": "xlarge", "label": "t:blocks.all.step.xlarge" },
+        { "value": "maximum", "label": "t:blocks.all.step.maximum" }
+      ],
+      "default": "none"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_borders",
+      "label": "t:blocks.group.show_borders_label",
+      "info": "t:blocks.group.show_borders_info",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "t:blocks.group.border_settings_header",
+      "visible_if": "{{ block.settings.show_borders }}"
+    },
+    {
+      "type": "range",
+      "id": "group_border_width",
+      "label": "t:blocks.group.border_width_label",
+      "min": 1,
+      "max": 10,
+      "step": 1,
+      "unit": "px",
+      "default": 1,
+      "visible_if": "{{ block.settings.show_borders }}"
+    },
+    {
+      "type": "color",
+      "id": "border_color",
+      "label": "t:blocks.group.border_color_label",
+      "info": "t:blocks.group.border_color_info",
+      "visible_if": "{{ block.settings.show_borders }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "border_top",
+      "label": "t:blocks.group.border_top_label",
+      "default": true,
+      "visible_if": "{{ block.settings.show_borders }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "border_right",
+      "label": "t:blocks.group.border_right_label",
+      "default": true,
+      "visible_if": "{{ block.settings.show_borders }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "border_bottom",
+      "label": "t:blocks.group.border_bottom_label",
+      "default": true,
+      "visible_if": "{{ block.settings.show_borders }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "border_left",
+      "label": "t:blocks.group.border_left_label",
+      "default": true,
+      "visible_if": "{{ block.settings.show_borders }}"
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:blocks.accordion.name",
+      "blocks": [
+        { "type": "rich-text", "settings": { "text": "<p>Add the content that should fold beneath this heading.</p>" } }
+      ],
+      "settings": {
+        "heading": "Details",
+        "heading_style": "small",
+        "expanded_by_default": false,
+        "desktop_behavior": "expanded",
+        "direction": "vertical",
+        "align_vertical": "start",
+        "content_alignment": "inherit",
+        "vertical_gap": "tiny",
+        "padding": "none",
+        "show_borders": false
+      }
+    }
+  ]
+}
+{% endschema %}

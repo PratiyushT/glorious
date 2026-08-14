@@ -1,0 +1,29 @@
+{%- comment -%}
+  Shared Collection/Search header stage. Data-bound copy and Search form remain
+  child blocks; the two sections differ only by template eligibility, name,
+  defaults, and the Search modifier class.
+{%- endcomment -%}
+{%- liquid
+  assign width_class = 'catalog-shell'
+  case header_settings.content_width
+    when 'narrow'
+      assign width_class = 'catalog-shell catalog-block-header__width--narrow'
+    when 'reading'
+      assign width_class = 'catalog-shell catalog-block-header__width--reading'
+    when 'edge'
+      assign width_class = 'catalog-block-header__width--edge'
+  endcase
+-%}
+
+<section
+  class="section catalog-block-header{% if search %} catalog-block-header--search{% endif %} catalog-block-header--{{ header_settings.height }} catalog-block-header--align-{{ header_settings.content_alignment }} catalog-block-header--vertical-{{ header_settings.vertical_alignment }} catalog-block-header--motion-{{ header_settings.motion }} scheme-{{ header_settings.color_scheme }}"
+  data-catalog-block-header
+  data-catalog-header-motion="{{ header_settings.motion }}"
+  style="{% render 'section-style', padding_top: header_settings.padding_top, padding_bottom: header_settings.padding_bottom %}{% render 'block-spacing', gap: header_settings.block_gap %}"
+>
+  <div class="{{ width_class }}">
+    <div class="catalog-block-header__content">
+      {{- content -}}
+    </div>
+  </div>
+</section>

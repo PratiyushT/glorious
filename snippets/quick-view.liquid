@@ -7,8 +7,8 @@
   the piece is assembled in the browser; the panel is Liquid's rendering of the
   product, so money, translation and image sizing stay where they belong.
 
-  Rendered by sections/header.liquid, because it belongs to the cards that open
-  it and every template shares the header group.
+  Rendered by the Quick view section in the header group. That section owns the
+  merchant-composed product blocks and is fetched by its real section id.
 
   A full-viewport overlay root must never carry a colour scheme class — that
   paints the whole screen opaque and the veil has nothing left to veil. The
@@ -26,7 +26,7 @@
     `panel` is the design's own — the modal is `max-height:94vh;overflow:auto`
     and everything in it moves together — and so carries no class at all.
   endcomment
-  case settings.quick_view_scroll
+  case section.settings.scroll_mode
     when 'panel'
       assign qv_scroll_class = ''
     when 'media'
@@ -36,13 +36,19 @@
   endcase
 -%}
 
-<div class="overlay overlay--quick" data-overlay="quick-view" data-overlay-modal hidden>
+<div
+  class="overlay overlay--quick"
+  data-overlay="quick-view"
+  data-quick-view-section="{{ section.id }}"
+  data-overlay-modal
+  hidden
+>
   <button class="overlay__veil" type="button" data-overlay-close="quick-view">
     <span class="visually-hidden">{{ 'navigation.close' | t }}</span>
   </button>
 
   <div
-    class="quick-view{{ qv_scroll_class }} scheme-{{ settings.quick_view_color_scheme }}"
+    class="quick-view{{ qv_scroll_class }} scheme-{{ section.settings.color_scheme }}"
     role="dialog"
     aria-modal="true"
     aria-label="{{ 'products.quick_view' | t }}"
@@ -53,16 +59,8 @@
       comes first in the document, so without this the overlay would open with
       focus on a full-screen invisible button.
     {%- endcomment -%}
-    <button
-      class="quick-view__close"
-      type="button"
-      data-overlay-close="quick-view"
-      data-overlay-autofocus
-      data-tip="{{ 'navigation.close' | t }}"
-    >
-      <span class="visually-hidden">{{ 'navigation.close' | t }}</span>
-      <span aria-hidden="true">{% render 'icon', icon: 'close' %}</span>
-    </button>
+    {%- capture close_attributes -%}data-overlay-close="quick-view" data-overlay-autofocus data-tip="{{ 'navigation.close' | t }}"{%- endcapture -%}
+    {% render 'overlay-close', class: 'quick-view__close', attributes: close_attributes %}
 
     <div class="quick-view__contents" data-quick-view-contents></div>
 

@@ -6,6 +6,8 @@
       "type": "header",
       "settings": {
         "color_scheme": "scheme_2",
+        "header_layout": "art_directed",
+        "huge_text_value": "STORE NAME",
         "nav_mode_home": "morph",
         "nav_mode": "bar",
         "scroll_threshold": 60,
@@ -16,29 +18,12 @@
         "show_account": true,
         "show_search": true,
         "show_cart": true,
-        "search_overlay": true,
         "search_popular": "New arrivals, Best sellers, Gifts, Essentials"
       },
       "blocks": {
-        "link-home": {
-          "type": "link",
-          "settings": { "label": "Home", "url": "/" }
-        },
-        "link-collection": {
-          "type": "link",
-          "settings": { "label": "The Collection", "url": "/collections/all" }
-        },
-        "link-about": {
-          "type": "link",
-          "settings": { "label": "About Us", "url": "/pages/about" }
-        },
-        "link-contact": {
-          "type": "link",
-          "settings": { "label": "Contact", "url": "/pages/contact" }
-        },
-        "link-account": {
-          "type": "link",
-          "settings": { "label": "Account", "url": "/account" }
+        "menu": {
+          "type": "menu",
+          "settings": { "menu": "main-menu" }
         },
         "cat-new": {
           "type": "category",
@@ -62,11 +47,7 @@
         }
       },
       "block_order": [
-        "link-home",
-        "link-collection",
-        "link-about",
-        "link-contact",
-        "link-account",
+        "menu",
         "cat-new",
         "cat-best",
         "cat-featured",
@@ -76,10 +57,64 @@
     },
     "cart-drawer": {
       "type": "cart-drawer",
+      "blocks": {
+        "upsell": {
+          "type": "cart_upsell",
+          "blocks": {
+            "product-card": {
+              "type": "_product-card",
+              "static": true,
+              "blocks": {
+                "media": { "type": "_product-card-media", "settings": { "image_ratio": "1/1", "image_fit": "contain" } },
+                "info": {
+                  "type": "_product-card-group",
+                  "blocks": {
+                    "kind": { "type": "text", "settings": { "text": "{{ closest.product.vendor }}", "style": "caption", "element": "span", "override_case": "uppercase", "override_tracking": "wide" } },
+                    "title": { "type": "text", "settings": { "text": "{{ closest.product.title }}", "style": "small", "element": "h3" } },
+                    "price": { "type": "_product-card-price", "settings": {} }
+                  },
+                  "block_order": ["kind", "title", "price"],
+                  "settings": { "direction": "vertical", "distribute": "start", "align": "start", "wrap": false, "stack_below": "never", "gap": "tiny", "vertical_gap": "tiny" }
+                }
+              },
+              "block_order": ["media", "info"],
+              "settings": { "text_align": "left", "fixed_size": true, "show_carousel": false, "hover_next": false, "show_video": false, "quick_view_desktop": true, "quick_view_compact": true }
+            }
+          },
+          "settings": {
+            "heading": "Recommended for you",
+            "collection": "featured-products-homepage",
+            "products_to_show": 3,
+            "padding_inline": "small",
+            "padding_block": "small",
+            "carousel_motion": "slide"
+          }
+        }
+      },
+      "block_order": ["upsell"],
       "settings": {
         "color_scheme": "scheme_1",
         "secondary_label": "Salon",
         "secondary_link": "/#visit"
+      }
+    },
+    "quick-view": {
+      "type": "quick-view",
+      "blocks": {
+        "media-gallery": { "type": "_product-media-gallery", "static": true, "settings": { "layout": "carousel", "first_media_large": true, "video_first": false, "sticky_mode": "none", "media_fit": "contain", "show_arrows": true, "show_dots": true, "video_label": "Video", "autoplay_video": false } },
+        "badges": { "type": "product_badges", "settings": { "position": "top-left", "max_badges": 2 } },
+        "vendor": { "type": "product_vendor", "settings": { "style": "caption", "element": "span", "override_case": "uppercase", "override_tracking": "wide" } },
+        "title": { "type": "product_title", "settings": { "style": "heading_2", "element": "h2", "override_size": "4xl", "override_case": "uppercase", "link_to_product": false } },
+        "price": { "type": "product_price", "settings": { "style": "heading_4", "element": "span" } },
+        "variants": { "type": "product_variant_picker", "settings": { "picker_type": "automatic", "swatch_shape": "round", "show_sold_out": true, "option_gap": 8 } },
+        "quantity": { "type": "product_quantity", "settings": {} },
+        "buy-buttons": { "type": "product_buy_buttons", "settings": { "show_dynamic_checkout": false, "show_installments": true, "show_gift_card_recipient": false } }
+      },
+      "block_order": ["badges", "vendor", "title", "price", "variants", "quantity", "buy-buttons"],
+      "settings": {
+        "enabled": true,
+        "color_scheme": "scheme_1",
+        "scroll_mode": "panel"
       }
     },
     "newsletter-popup": {
@@ -112,5 +147,5 @@
       }
     }
   },
-  "order": ["header", "cart-drawer", "newsletter-popup", "cookie-banner"]
+  "order": ["header", "cart-drawer", "quick-view", "newsletter-popup", "cookie-banner"]
 }

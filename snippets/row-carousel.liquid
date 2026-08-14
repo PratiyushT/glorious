@@ -21,10 +21,20 @@
     count        how many marks to render — the most pages there could ever be,
                  which is one card per page, so the number of cells
     motion       `slide` or `fade`
-    arrows       `bottom`, `top` or `side`
+    arrows       `bottom`, `top`, `side` or `header`
+    heading      optional heading text; rendered only by the `header`
+                 placement, on the left of the band the arrows sit in
     label        the accessible name for the group
     track_class  the grid classes the track carries, e.g. `grid-auto--products`
     track_style  inline custom properties for that grid
+    layout_desktop, layout_tablet, layout_mobile
+                 `grid` or `carousel`; omitted means carousel at that size
+
+  `header` is a hairline band above the track: the heading on the left, the
+  two arrows together on the right, and no marks — the band is the whole
+  statement of position, an end saying so by its arrow disabling. The heading
+  sits outside `data-row-controls`, so a row with nothing to cycle through
+  keeps its title while the arrows go.
 {%- endcomment -%}
 
 {%- liquid
@@ -119,6 +129,9 @@
   data-row-carousel
   data-row-motion="{{ motion | default: 'slide' }}"
   data-row-arrows="{{ arrows_at }}"
+  data-row-layout-desktop="{{ layout_desktop | default: 'carousel' }}"
+  data-row-layout-tablet="{{ layout_tablet | default: 'carousel' }}"
+  data-row-layout-mobile="{{ layout_mobile | default: 'carousel' }}"
   role="group"
   aria-roledescription="{{ 'general.carousel.role' | t }}"
   aria-label="{{ label | escape }}"
@@ -137,6 +150,16 @@
       {{ arrow_next }}
       {{ marks }}
     </div>
+  {%- elsif arrows_at == 'header' -%}
+    <div class="row-carousel__header">
+      {%- if heading != blank -%}
+        <h2 class="row-carousel__heading">{{ heading }}</h2>
+      {%- endif -%}
+      <div class="row-carousel__header-arrows" data-row-controls hidden>
+        {{ arrow_prev }}{{ arrow_next }}
+      </div>
+    </div>
+    {{ viewport }}
   {%- elsif arrows_at == 'top' -%}
     <div class="row-carousel__controls" data-row-controls hidden>
       {{ arrow_prev }}{{ marks }}{{ arrow_next }}

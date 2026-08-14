@@ -1,0 +1,134 @@
+{%- comment -%}
+  Cart upsell — one reusable cart-context block for drawer and page, and it
+  belongs to the **empty** cart only. A bag with pieces in it is a checkout
+  surface: everything under the lines is the money and the way out, and a row
+  of other products beside the checkout action is noise where it costs most.
+  An empty bag is a doorway, and this is what fills it. The old
+  show-when-empty/show-when-items pair gave "should it show?" two answers and
+  is gone; the block renders when the cart is empty and never otherwise.
+
+  That also retires the recommendations machinery this block used to carry. A
+  recommendation needs a seed product and an empty cart has none, so the
+  source is always a merchant collection — no pending placeholder, no
+  section re-fetch, no second render path.
+
+  Each item is still the shared composed Product card, projected to a
+  horizontal row: the photograph a fixed square on the left, the merchant's
+  composed text beside it, the quick-view disc on the photograph. Price,
+  badges and choices belong to the card's composition; purchase controls
+  belong to the destination product page. The shared row-carousel owns all
+  motion and controls, in its `header` placement — the heading on the left of
+  a hairline band, the two arrows together on the right, one piece per page.
+{%- endcomment -%}
+
+{%- liquid
+  assign upsell_collection = block.settings.collection | default: collections.all
+  assign upsell_products = upsell_collection.products
+
+  assign padding_inline_setting = block.settings.padding_inline | default: 'small'
+  assign padding_block_setting = block.settings.padding_block | default: 'small'
+  assign padding_inline = '0'
+  unless padding_inline_setting == 'none'
+    assign padding_inline = 'var(--step-' | append: padding_inline_setting | append: ')'
+  endunless
+  assign padding_block = '0'
+  unless padding_block_setting == 'none'
+    assign padding_block = 'var(--step-' | append: padding_block_setting | append: ')'
+  endunless
+
+  assign rendered_products = 0
+-%}
+
+{%- if cart.item_count == 0 -%}
+  {%- capture upsell_cards -%}
+    {%- for upsell_product in upsell_products limit: block.settings.products_to_show -%}
+      <div class="row-carousel__cell" data-row-cell>
+        {% content_for 'block', type: '_product-card', id: 'product-card', closest.product: upsell_product %}
+      </div>
+      {%- assign rendered_products = rendered_products | plus: 1 -%}
+    {%- endfor -%}
+  {%- endcapture -%}
+
+  {%- if rendered_products > 0 -%}
+    <aside
+      class="cart-upsell"
+      aria-label="{{ block.settings.heading | escape }}"
+      style="--cart-upsell-padding-inline: {{ padding_inline }}; --cart-upsell-padding-block: {{ padding_block }};"
+      {{ block.shopify_attributes }}
+    >
+      {%- render 'row-carousel',
+        cells: upsell_cards,
+        count: rendered_products,
+        motion: block.settings.carousel_motion,
+        arrows: 'header',
+        heading: block.settings.heading,
+        label: block.settings.heading,
+        track_class: 'cart-upsell__track'
+      -%}
+    </aside>
+  {%- endif -%}
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "t:blocks.cart_upsell.name",
+  "tag": null,
+  "blocks": [{ "type": "_product-card" }],
+  "settings": [
+    { "type": "text", "id": "heading", "label": "t:blocks.cart_upsell.heading", "default": "You may also like" },
+    { "type": "collection", "id": "collection", "label": "t:blocks.cart_upsell.collection", "info": "t:blocks.cart_upsell.collection_info" },
+    { "type": "range", "id": "products_to_show", "label": "t:blocks.cart_upsell.products_to_show", "min": 1, "max": 6, "step": 1, "default": 3 },
+    { "type": "header", "content": "t:blocks.cart_upsell.layout_header" },
+    {
+      "type": "select", "id": "padding_inline", "label": "t:blocks.cart_upsell.padding_inline",
+      "options": [
+        { "value": "none", "label": "t:blocks.all.step.none" }, { "value": "minimal", "label": "t:blocks.all.step.minimal" },
+        { "value": "tiny", "label": "t:blocks.all.step.tiny" }, { "value": "small", "label": "t:blocks.all.step.small" },
+        { "value": "medium", "label": "t:blocks.all.step.medium" }, { "value": "large", "label": "t:blocks.all.step.large" },
+        { "value": "xlarge", "label": "t:blocks.all.step.xlarge" }
+      ], "default": "small"
+    },
+    {
+      "type": "select", "id": "padding_block", "label": "t:blocks.cart_upsell.padding_block",
+      "options": [
+        { "value": "none", "label": "t:blocks.all.step.none" }, { "value": "minimal", "label": "t:blocks.all.step.minimal" },
+        { "value": "tiny", "label": "t:blocks.all.step.tiny" }, { "value": "small", "label": "t:blocks.all.step.small" },
+        { "value": "medium", "label": "t:blocks.all.step.medium" }, { "value": "large", "label": "t:blocks.all.step.large" },
+        { "value": "xlarge", "label": "t:blocks.all.step.xlarge" }
+      ], "default": "small"
+    },
+    {
+      "type": "select", "id": "carousel_motion", "label": "t:sections.all.carousel_motion.label",
+      "options": [
+        { "value": "slide", "label": "t:sections.all.carousel_motion.slide" },
+        { "value": "fade", "label": "t:sections.all.carousel_motion.fade" }
+      ], "default": "slide"
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:blocks.cart_upsell.name",
+      "blocks": [
+        {
+          "type": "_product-card",
+          "static": true,
+          "id": "product-card",
+          "blocks": [
+            { "type": "_product-card-media", "settings": { "image_ratio": "1/1", "image_fit": "contain" } },
+            {
+              "type": "_product-card-group",
+              "blocks": [
+                { "type": "text", "settings": { "text": "{{ closest.product.vendor }}", "style": "caption", "element": "span", "override_case": "uppercase", "override_tracking": "wide" } },
+                { "type": "text", "settings": { "text": "{{ closest.product.title }}", "style": "small", "element": "h3" } },
+                { "type": "_product-card-price" }
+              ],
+              "settings": { "direction": "vertical", "distribute": "start", "align": "start", "wrap": false, "stack_below": "never", "gap": "tiny", "vertical_gap": "tiny" }
+            }
+          ],
+          "settings": { "fixed_size": true, "show_carousel": false, "hover_next": false, "show_video": false, "quick_view_desktop": true, "quick_view_compact": true }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

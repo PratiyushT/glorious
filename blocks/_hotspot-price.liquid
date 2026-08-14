@@ -16,34 +16,7 @@
   never touched."
 {%- endcomment -%}
 
-{%- liquid
-  assign product = closest.product
-  assign chosen = blank
-  if product != blank
-    capture card_option_raw
-      render 'card-option', product: product
-    endcapture
-    assign card_option = card_option_raw | strip | split: '||'
-    assign chosen_id = card_option | last | plus: 0
-    for variant in product.variants
-      if variant.id == chosen_id
-        assign chosen = variant
-        break
-      endif
-    endfor
-  endif
--%}
-
-<span class="card__price" data-card-price {{ block.shopify_attributes }}>
-  {%- if product == blank -%}
-    {{- 1999 | money -}}
-  {%- else -%}
-    {%- if chosen.compare_at_price > chosen.price -%}
-      <s>{{ chosen.compare_at_price | money }}</s>
-    {%- endif -%}
-    {{- chosen.price | money -}}
-  {%- endif -%}
-</span>
+{% render 'card-price', product: closest.product, show_unit_price: false, attributes: block.shopify_attributes %}
 
 {% schema %}
 {

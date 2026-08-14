@@ -1,0 +1,5 @@
+{%- comment -%}Saved-block compatibility. New custom markup uses global Custom Liquid.{%- endcomment -%}
+<div {{ block.shopify_attributes }}>{{ block.settings.custom_liquid }}</div>
+{% schema %}
+{ "name": "t:sections.main_product.blocks.custom_liquid", "tag": null, "settings": [{ "type": "liquid", "id": "custom_liquid", "label": "t:sections.main_product.custom_liquid.label" }] }
+{% endschema %}

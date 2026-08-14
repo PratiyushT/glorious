@@ -34,6 +34,7 @@
     appearance - an optional block.settings drop carrying every value above;
                  explicit arguments remain the ordinary global Button API
     class    - extra classes for the caller's own layout
+    icon, icon_class - optional shared-library icon after the label
     attributes - Shopify editor attributes for a block render
     new_tab  - true to open off-site, adding rel="noopener". A caller works
                this out itself (`link contains '://'`) and passes a variable,
@@ -102,94 +103,29 @@
   endif
 -%}
 
-{%- comment -%}
-  `inherit` is the sentinel meaning "leave it to the theme setting", so the
-  resolver is never asked about it. Relying on it simply failing to match a
-  `when` would work by accident; saying so is what makes the fallback in
-  `.btn` — `var(--btn-radius, var(--button-radius))` — the deliberate path.
-{%- endcomment -%}
-{%- liquid
-  assign want_size = size
-  assign want_radius = radius
-  assign want_border_width = border_width
-  if want_size == 'inherit'
-    assign want_size = blank
-  endif
-  if want_radius == 'inherit'
-    assign want_radius = blank
-  endif
-  if want_border_width == 'inherit'
-    assign want_border_width = blank
-  endif
--%}
-{%- capture btn_size -%}{%- if want_size != blank -%}{%- render 'scale-step', scale: 'button_size', step: want_size -%}{%- endif -%}{%- endcapture -%}
-{%- capture btn_radius -%}{%- if want_radius != blank -%}{%- render 'scale-step', scale: 'button_radius', step: want_radius -%}{%- endif -%}{%- endcapture -%}
-{%- capture btn_border_width -%}{%- if want_border_width != blank -%}{%- render 'scale-step', scale: 'button_border_width', step: want_border_width -%}{%- endif -%}{%- endcapture -%}
-
-{%- liquid
-  assign style_attr = ''
-  if btn_size != blank
-    assign s = btn_size | split: ','
-    capture style_attr
-      echo '--btn-pad-x: '
-      echo s[0]
-      echo 'px; --btn-pad-y: '
-      echo s[1]
-      echo 'px; --btn-font: '
-      echo s[2]
-      echo 'px;'
-    endcapture
-  endif
-  if btn_radius != blank
-    capture style_attr
-      echo style_attr
-      echo ' --btn-radius: '
-      echo btn_radius
-      echo 'px;'
-    endcapture
-  endif
-  if btn_border_width != blank
-    capture style_attr
-      echo style_attr
-      echo ' --btn-border-width: '
-      echo btn_border_width
-      echo 'px;'
-    endcapture
-  endif
-  if background_color != blank
-    assign style_attr = style_attr | append: ' --btn-bg: ' | append: background_color | append: ';'
-  endif
-  if text_color != blank
-    assign style_attr = style_attr | append: ' --btn-text: ' | append: text_color | append: ';'
-  endif
-  if border_color != blank
-    assign style_attr = style_attr | append: ' --btn-border: ' | append: border_color | append: ';'
-  endif
-  if underline_color != blank
-    assign style_attr = style_attr | append: ' --btn-underline: ' | append: underline_color | append: ';'
-  endif
-  if arrow_color != blank
-    assign style_attr = style_attr | append: ' --btn-arrow: ' | append: arrow_color | append: ';'
-  endif
-  if hover_background_color != blank
-    assign style_attr = style_attr | append: ' --btn-bg-hover: ' | append: hover_background_color | append: ';'
-  endif
-  if hover_text_color != blank
-    assign style_attr = style_attr | append: ' --btn-text-hover: ' | append: hover_text_color | append: ';'
-  endif
-  if hover_border_color != blank
-    assign style_attr = style_attr | append: ' --btn-border-hover: ' | append: hover_border_color | append: ';'
-  endif
-  if hover_underline_color != blank
-    assign style_attr = style_attr | append: ' --btn-underline-hover: ' | append: hover_underline_color | append: ';'
-  endif
-  if hover_arrow_color != blank
-    assign style_attr = style_attr | append: ' --btn-arrow-hover: ' | append: hover_arrow_color | append: ';'
-  endif
--%}
+{%- capture style_attr -%}
+  {%- render 'button-style',
+    size: size,
+    radius: radius,
+    border_width: border_width,
+    background_color: background_color,
+    text_color: text_color,
+    border_color: border_color,
+    underline_color: underline_color,
+    arrow_color: arrow_color,
+    hover_background_color: hover_background_color,
+    hover_text_color: hover_text_color,
+    hover_border_color: hover_border_color,
+    hover_underline_color: hover_underline_color,
+    hover_arrow_color: hover_arrow_color
+  -%}
+{%- endcapture -%}
 
 {%- capture button_contents -%}
   {%- if mutable_label -%}<span data-button-label>{{- label -}}</span>{%- else -%}{{- label -}}{%- endif -%}
+  {%- if icon != blank -%}
+    <span class="btn__icon{% if icon_class != blank %} {{ icon_class }}{% endif %}" aria-hidden="true">{% render 'icon', icon: icon %}</span>
+  {%- endif -%}
   {%- comment -%}
     The arrow is decoration: the label already says where this goes, so it is
     hidden from assistive technology rather than announced as "right arrow".

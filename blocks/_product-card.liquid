@@ -41,13 +41,6 @@
   what a block is for: the caption, the option control, the price, the "in
   stock" note, the button.
 
-  **`data-card-multi` is the one thing the root states for a child**, because
-  the CSS selector that drives the no-JavaScript hover swap is
-  `.card[data-card-multi]` — it has to be here. It is gated on the photograph
-  count rather than the slide count, for the reason recorded in CLAUDE.md, and
-  it costs nothing when the image block is removed, there being no slides for
-  it to act on.
-
   **The quick view is a setting rather than a block, and per device.** It is
   the one control here that is not about arranging anything: the disc is a
   fixed corner of the photograph, and whether it is worth showing is a question
@@ -58,6 +51,10 @@
 
 {%- liquid
   assign product = closest.product
+  assign product_url = product.url
+  if collection != blank
+    assign product_url = product.url | within: collection
+  endif
   assign card_photos = product.media | where: 'media_type', 'image'
 
   assign quick_class = ''
@@ -114,19 +111,21 @@
 <div
   class="card card--composed"
   data-card
-  {% if card_photos.size > 1 %}data-card-multi{% endif %}
   {% unless block.settings.show_carousel %}data-card-carousel="off"{% endunless %}
   data-card-arrows-wide="{{ block.settings.arrows_wide }}"
   data-card-arrows-compact="{{ block.settings.arrows_compact }}"
   {% unless block.settings.hover_next %}data-card-hover="off"{% endunless %}
   {% unless block.settings.show_video %}data-card-video="off"{% endunless %}
+  {% if block.settings.fixed_size %}data-card-fixed-size{% endif %}
+  data-card-column-gap="{{ block.settings.column_gap | default: 'inherit' }}"
+  data-card-row-gap="{{ block.settings.row_gap | default: 'inherit' }}"
   style="--card-align: {{ block.settings.text_align }};"
   {{ block.shopify_attributes }}
 >
   {% content_for 'blocks' %}
 
   {%- if product != blank -%}
-    <a class="card__link" href="{{ product.url }}" aria-label="{{ product.title | escape }}"></a>
+    <a class="card__link" href="{{ product_url }}" aria-label="{{ product.title | escape }}"></a>
   {%- endif -%}
 
   {%- comment -%}
@@ -142,7 +141,7 @@
   {%- if quick_view_on and product != blank -%}
     <a
       class="card__quick{{ quick_class }}"
-      href="{{ product.url }}"
+      href="{{ product_url }}"
       data-quick-view
       data-tip="{{ 'products.quick_view' | t }}"
       aria-label="{{ quick_view_label }}"
@@ -170,10 +169,12 @@
   "tag": null,
   "blocks": [
     { "type": "_product-card-media" },
+    { "type": "product_badges" },
     { "type": "_product-card-option-values" },
     { "type": "_product-card-option-control" },
     { "type": "text" },
     { "type": "rich-text" },
+    { "type": "accordion" },
     { "type": "button" },
     { "type": "icon" },
     { "type": "border" },
@@ -191,6 +192,47 @@
         { "value": "center", "label": "t:settings_schema.options.center" }
       ],
       "default": "left"
+    },
+    {
+      "type": "checkbox",
+      "id": "fixed_size",
+      "label": "t:blocks.product_card.fixed_size.label",
+      "info": "t:blocks.product_card.fixed_size.info",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "column_gap",
+      "label": "t:blocks.product_card.column_gap.label",
+      "info": "t:blocks.product_card.column_gap.info",
+      "options": [
+        { "value": "inherit", "label": "t:blocks.product_card.gap.inherit" },
+        { "value": "none", "label": "t:blocks.all.step.none" },
+        { "value": "minimal", "label": "t:blocks.all.step.minimal" },
+        { "value": "tiny", "label": "t:blocks.all.step.tiny" },
+        { "value": "small", "label": "t:blocks.all.step.small" },
+        { "value": "medium", "label": "t:blocks.all.step.medium" },
+        { "value": "large", "label": "t:blocks.all.step.large" },
+        { "value": "xlarge", "label": "t:blocks.all.step.xlarge" }
+      ],
+      "default": "inherit"
+    },
+    {
+      "type": "select",
+      "id": "row_gap",
+      "label": "t:blocks.product_card.row_gap.label",
+      "info": "t:blocks.product_card.row_gap.info",
+      "options": [
+        { "value": "inherit", "label": "t:blocks.product_card.gap.inherit" },
+        { "value": "none", "label": "t:blocks.all.step.none" },
+        { "value": "minimal", "label": "t:blocks.all.step.minimal" },
+        { "value": "tiny", "label": "t:blocks.all.step.tiny" },
+        { "value": "small", "label": "t:blocks.all.step.small" },
+        { "value": "medium", "label": "t:blocks.all.step.medium" },
+        { "value": "large", "label": "t:blocks.all.step.large" },
+        { "value": "xlarge", "label": "t:blocks.all.step.xlarge" }
+      ],
+      "default": "inherit"
     },
     {
       "type": "header",

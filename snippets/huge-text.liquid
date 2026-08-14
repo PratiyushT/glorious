@@ -1,0 +1,84 @@
+{%- comment -%}
+  One renderer for every Huge Text placement.
+
+  Accepts:
+    source     - merchant-authored text
+    placement  - hero | header | header-overlay | footer; blank is global
+    attributes - optional Shopify editor attributes from the owning block
+    on_dark    - true where the placement always sits on a dark ground
+
+  Header, Hero, and Footer use section settings because Shopify forbids a
+  static theme block in a section that also has local blocks. The public Huge
+  Text block and Password's static block call this same renderer, so that
+  platform boundary never creates a second implementation.
+
+  **An image logo replaces the letters wherever it can.** Theme settings →
+  Brand holds `logo` and an optional `logo_inverted` for dark grounds — the
+  menu and search overlay heads, and the footer's noir spread, take the
+  inverted one when it exists. The hero deliberately stays text: its
+  letter-by-letter entrance, the nav's morph anchor, and `fitHero`'s geometry
+  all assume letters, so a shop with an image logo pairs it with the hero's
+  own Huge Text value rather than losing the art direction. The accessible
+  name is the placement's text either way.
+{%- endcomment -%}
+
+{%- liquid
+  assign huge_source = source | strip | upcase
+  assign huge_letters = huge_source | split: ''
+
+  assign huge_logo = settings.logo
+  if on_dark and settings.logo_inverted != blank
+    assign huge_logo = settings.logo_inverted
+  endif
+-%}
+
+{%- case placement -%}
+  {%- when 'hero' -%}
+    <h1 class="hero__wordmark huge-text huge-text--hero" data-nav-anchor {% if attributes != blank %}{{ attributes }}{% endif %}>
+      <span class="visually-hidden">{{ huge_source }}</span>
+      <span class="hero__wordmark-inner" aria-hidden="true">
+        <span class="hero__letters">
+          {%- for letter in huge_letters -%}
+            <span style="--letter: {{ forloop.index0 }};">{{ letter }}</span>
+          {%- endfor -%}
+        </span>
+      </span>
+    </h1>
+
+  {%- when 'header' -%}
+    <span class="huge-text huge-text--header" {% if attributes != blank %}{{ attributes }}{% endif %}>
+      {%- if huge_logo != blank -%}
+        {{ huge_logo | image_url: width: 480 | image_tag: class: 'huge-text__logo', widths: '160,240,360,480', alt: huge_source, data-image-lqip: 'off' }}
+      {%- else -%}
+        {% render 'wordmark-lockup', source: huge_source, size: 'sm' %}
+      {%- endif -%}
+    </span>
+
+  {%- when 'header-overlay' -%}
+    <span class="huge-text huge-text--header-overlay" {% if attributes != blank %}{{ attributes }}{% endif %}>
+      {%- if huge_logo != blank -%}
+        {{ huge_logo | image_url: width: 600 | image_tag: class: 'huge-text__logo huge-text__logo--lg', widths: '240,360,480,600', alt: huge_source, data-image-lqip: 'off' }}
+      {%- else -%}
+        {% render 'wordmark-lockup', source: huge_source, size: 'lg' %}
+      {%- endif -%}
+    </span>
+
+  {%- when 'footer' -%}
+    <div class="footer__wordmark huge-text huge-text--footer" {% if attributes != blank %}{{ attributes }}{% endif %}>
+      {%- if huge_logo != blank -%}
+        {{ huge_logo | image_url: width: 900 | image_tag: class: 'huge-text__logo huge-text__logo--footer', widths: '360,600,900', alt: huge_source, data-image-lqip: 'off' }}
+      {%- else -%}
+        {% render 'wordmark', source: huge_source, variant: 'ivory' %}
+      {%- endif -%}
+    </div>
+    <div class="hairline"></div>
+
+  {%- else -%}
+    <div class="huge-text" {% if attributes != blank %}{{ attributes }}{% endif %}>
+      {%- if huge_logo != blank -%}
+        {{ huge_logo | image_url: width: 600 | image_tag: class: 'huge-text__logo', widths: '240,360,480,600', alt: huge_source, data-image-lqip: 'off' }}
+      {%- else -%}
+        {% render 'wordmark', source: huge_source %}
+      {%- endif -%}
+    </div>
+{%- endcase -%}

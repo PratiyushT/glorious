@@ -17,7 +17,9 @@
       class="video-lqip-frame__play"
       type="button"
       data-video-lqip-play
-      aria-label="Play video"
+      aria-label="{{ 'general.video_play' | t }}"
+      data-play-label="{{ 'general.video_play' | t | escape }}"
+      data-retry-label="{{ 'general.video_retry' | t | escape }}"
       hidden
     ><span aria-hidden="true">{% render 'icon', icon: 'play' %}</span></button>
   </span>

@@ -587,6 +587,249 @@ def R13_central_icon_library():
                 'CSS-generated icon belongs in the shared icon library')
 
 
+def R14_shared_setting_contracts():
+    """Specialised blocks keep the complete settings of the base they extend.
+
+    A Product title is Text whose content comes from a product; Add to cart is
+    Button whose action submits a product form. Their behaviour is allowed to
+    differ, but their appearance controls are one editor contract. This catches
+    the quiet drift where one copy gains an option, label or visibility rule
+    and its siblings do not. Group's private contextual copies are covered for
+    the same reason.
+    """
+    def top_settings(path):
+        full = os.path.join(ROOT, path)
+        match = SCHEMA_RE.search(read(full))
+        if not match:
+            err('R14', path, 'shared-contract file has no schema')
+            return {}
+        try:
+            schema = json.loads(match.group(1))
+        except json.JSONDecodeError:
+            # R00 owns the detailed JSON error.
+            return {}
+        return {s['id']: s for s in schema.get('settings', []) if 'id' in s}
+
+    def normalise(setting, allow_role_default=False):
+        # Sections and blocks use different owner drops in visible_if, but the
+        # editor contract is otherwise identical.
+        value = json.loads(json.dumps(setting).replace(
+            'section.settings.', 'block.settings.'))
+        if allow_role_default:
+            value.pop('default', None)
+        return value
+
+    families = (
+        ('blocks/text.liquid', {'text'}, set(), (
+            'blocks/product_title.liquid',
+            'blocks/product_vendor.liquid',
+            'blocks/product_price.liquid',
+            'blocks/_collection-count-text.liquid',
+            'blocks/_hotspot-count-text.liquid',
+        )),
+        ('blocks/rich-text.liquid', {'text'}, set(), (
+            'blocks/product_description.liquid',
+            'blocks/product_text.liquid',
+        )),
+        ('blocks/button.liquid', {'button_label', 'button_link'}, {'button_style'}, (
+            'blocks/product_variant_picker.liquid',
+            'blocks/product_buy_buttons.liquid',
+            'blocks/_product-card-add.liquid',
+            'blocks/_hotspot-add.liquid',
+            'sections/newsletter-popup.liquid',
+        )),
+        ('blocks/group.liquid', set(), set(), (
+            'blocks/_product-card-group.liquid',
+            'blocks/_collection-card-group.liquid',
+            'blocks/_collection-card-header.liquid',
+            'blocks/_hotspot-actions.liquid',
+            'blocks/_hotspot-card.liquid',
+            'blocks/_interactive-media-list-header.liquid',
+            'blocks/accordion.liquid',
+        )),
+        ('sections/main-product.liquid', set(), set(), (
+            'sections/featured-product.liquid',
+        )),
+        ('sections/collection-header.liquid', set(), {'height'}, (
+            'sections/search-header.liquid',
+        )),
+        ('sections/featured-products.liquid',
+         {'collection', 'limit_products', 'products_to_show'},
+         {'padding_top', 'padding_bottom'}, (
+            'sections/product-recommendations.liquid',
+        )),
+        ('sections/main-list-collections.liquid', {'columns'}, {'padding_bottom'}, (
+            'sections/main-blog.liquid',
+        )),
+    )
+
+    for base_path, excluded, role_defaults, target_paths in families:
+        base = top_settings(base_path)
+        for target_path in target_paths:
+            target = top_settings(target_path)
+            for setting_id, base_setting in base.items():
+                if setting_id in excluded:
+                    continue
+                if setting_id not in target:
+                    err('R14', target_path, "%s contract is missing setting '%s'"
+                        % (base_path, setting_id))
+                    continue
+                role_default = setting_id in role_defaults
+                if normalise(base_setting, role_default) != normalise(
+                        target[setting_id], role_default):
+                    err('R14', target_path, "%s setting '%s' has drifted from %s"
+                        % (base_path, setting_id, base_path))
+
+
+def R15_shared_renderers():
+    """Blocks sharing an editor contract also call its one runtime renderer."""
+    contracts = {
+        'text-block': (
+            'blocks/text.liquid',
+            'blocks/product_title.liquid',
+            'blocks/product_vendor.liquid',
+            'blocks/product_price.liquid',
+            'blocks/_collection-count-text.liquid',
+            'blocks/_hotspot-count-text.liquid',
+        ),
+        'rich-text-block': (
+            'blocks/rich-text.liquid',
+            'blocks/product_description.liquid',
+            'blocks/product_text.liquid',
+        ),
+        'button': (
+            'blocks/button.liquid',
+            'blocks/product_variant_picker.liquid',
+            'blocks/product_buy_buttons.liquid',
+            'blocks/_product-card-add.liquid',
+            'blocks/_hotspot-add.liquid',
+            'sections/newsletter-popup.liquid',
+            'sections/cookie-banner.liquid',
+        ),
+        'layout-group': (
+            'blocks/group.liquid',
+            'blocks/_product-card-group.liquid',
+            'blocks/_collection-card-group.liquid',
+            'blocks/_collection-card-header.liquid',
+            'blocks/_hotspot-actions.liquid',
+            'blocks/_hotspot-card.liquid',
+            'blocks/_interactive-media-list-header.liquid',
+            'blocks/accordion.liquid',
+            'sections/group.liquid',
+        ),
+        'card-price': (
+            'blocks/_product-card-price.liquid',
+            'blocks/_hotspot-price.liquid',
+        ),
+        'catalog-header': (
+            'sections/collection-header.liquid',
+            'sections/search-header.liquid',
+        ),
+        'huge-text': (
+            'blocks/huge-text.liquid',
+            'sections/header.liquid',
+            'sections/hero.liquid',
+            'sections/footer.liquid',
+        ),
+    }
+    for snippet, paths in contracts.items():
+        pattern = re.compile(r"render\s+['\"]" + re.escape(snippet) + r"['\"]")
+        for path in paths:
+            if not pattern.search(strip_comments(read(os.path.join(ROOT, path)))):
+                err('R15', path, "shared contract must render '%s'" % snippet)
+
+
+def R16_shared_button_markup():
+    """CTA-style .btn markup is emitted only by snippets/button.liquid.
+
+    Structural controls such as close buttons, carousel arrows and quantity
+    steppers deliberately keep their own semantic markup and component class.
+    Any element that opts into the theme's Button appearance contract must go
+    through the shared renderer so global and local overrides stay aligned.
+    """
+    class_with_btn = re.compile(
+        r'class\s*=\s*([\'\"])[^\'\"]*(?<![\w-])btn(?![\w-])[^\'\"]*\1',
+        re.I,
+    )
+    for sub in ('sections', 'blocks', 'snippets'):
+        for path in walk_files(sub, '.liquid'):
+            if rel(path) == 'snippets/button.liquid':
+                continue
+            src = strip_inert(strip_comments(read(path)))
+            for match in class_with_btn.finditer(src):
+                line = src.count('\n', 0, match.start()) + 1
+                err('R16', '%s:%d' % (rel(path), line),
+                    "Button appearance markup must render 'button'")
+
+
+def R17_snippet_graph():
+    """Every literal snippet call resolves, and every snippet is reachable.
+
+    A renderer left behind after a component migration still ships as theme
+    payload and misleads the next maintainer into extending the wrong code.
+    Missing targets fail only when that branch renders, so both directions of
+    the graph are release errors.
+    """
+    have = {os.path.basename(p)[:-7] for p in walk_files('snippets', '.liquid')}
+    used = set()
+    call = re.compile(r"(?:render|include)\s+['\"]([^'\"]+)['\"]")
+    for sub in ('layout', 'sections', 'blocks', 'snippets', 'templates'):
+        for path in walk_files(sub, '.liquid'):
+            used.update(call.findall(strip_comments(read(path))))
+
+    for name in sorted(used - have):
+        err('R17', 'snippets/%s.liquid' % name,
+            'literal render/include target does not exist')
+    for name in sorted(have - used):
+        err('R17', 'snippets/%s.liquid' % name,
+            'snippet is orphaned; remove it or connect it to one owner')
+
+
+def R18_json_composition():
+    """JSON templates/groups reference real sections and stay within limits."""
+    section_types = {
+        os.path.basename(p)[:-7] for p in walk_files('sections', '.liquid')
+    }
+    json_paths = list(walk_files('templates', '.json'))
+    json_paths += [p for p in walk_files('sections', '.json')
+                   if os.path.basename(p).endswith('-group.json')]
+
+    for path in json_paths:
+        data = read_json(path)
+        sections = data.get('sections') or {}
+        order = data.get('order') or []
+        where = rel(path)
+
+        if len(sections) > 25:
+            err('R18', where, '%d sections; Shopify allows 25 per template/group'
+                % len(sections))
+        if len(order) != len(set(order)):
+            err('R18', where, 'order contains duplicate section ids')
+        for section_id in order:
+            if section_id not in sections:
+                err('R18', where, "order references missing section '%s'"
+                    % section_id)
+
+        for section_id, section in sections.items():
+            section_type = section.get('type', '')
+            if section_type not in section_types:
+                err('R18', where, "section '%s' uses missing type '%s'"
+                    % (section_id, section_type))
+
+            blocks = section.get('blocks') or {}
+            block_order = section.get('block_order') or []
+            if len(blocks) > 50:
+                err('R18', where, "section '%s' has %d blocks; Shopify allows 50"
+                    % (section_id, len(blocks)))
+            if len(block_order) != len(set(block_order)):
+                err('R18', where, "section '%s' block_order has duplicates"
+                    % section_id)
+            for block_id in block_order:
+                if block_id not in blocks:
+                    err('R18', where, "section '%s' block_order references "
+                        "missing block '%s'" % (section_id, block_id))
+
+
 RULES = OrderedDict([
     ('R01', (R01_range_steps, 'range steps are legal (Shopify validates server-side)')),
     ('R02', (R02_select_defaults, "a select's default is one of its options")),
@@ -601,6 +844,11 @@ RULES = OrderedDict([
     ('R11', (R11_theme_js_stays_es5, 'assets/*.js stays ES5 so Shopify minifies it')),
     ('R12', (R12_icon_uid, 'an icon declaring an SVG id is rendered with a uid')),
     ('R13', (R13_central_icon_library, 'all icon drawings use the shared icon library')),
+    ('R14', (R14_shared_setting_contracts, 'specialised blocks keep their base settings contract')),
+    ('R15', (R15_shared_renderers, 'shared contracts call one runtime renderer')),
+    ('R16', (R16_shared_button_markup, 'CTA button markup uses the shared renderer')),
+    ('R17', (R17_snippet_graph, 'snippet calls resolve and no snippet is orphaned')),
+    ('R18', (R18_json_composition, 'JSON templates/groups use real sections within limits')),
 ])
 
 

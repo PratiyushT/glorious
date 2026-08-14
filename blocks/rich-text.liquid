@@ -10,22 +10,7 @@
   for a heading.
 {%- endcomment -%}
 
-{%- liquid
-  assign align_class = ''
-  if block.settings.alignment != blank and block.settings.alignment != 'inherit'
-    assign align_class = ' align-' | append: block.settings.alignment
-  endif
--%}
-
-{%- if block.settings.text != blank -%}
-  <div
-    class="rte measure{{ align_class }}"
-    style="{% render 'text-style', preset: block.settings.style, font_style: block.settings.override_font, font_size: block.settings.override_size, color: block.settings.color, line_height: block.settings.override_leading, text_case: block.settings.override_case, letter_spacing: block.settings.override_tracking %}"
-    {{ block.shopify_attributes }}
-  >
-    {{- block.settings.text -}}
-  </div>
-{%- endif -%}
+{% render 'rich-text-block', block: block, content: block.settings.text %}
 
 {% schema %}
 {

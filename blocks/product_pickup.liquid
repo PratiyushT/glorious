@@ -1,0 +1,9 @@
+{%- assign selected_variant = closest.product.selected_or_first_available_variant -%}
+{%- if selected_variant != blank -%}
+  <div class="pickup-availability" data-pickup-availability data-root-url="{{ routes.root_url }}" {{ block.shopify_attributes }}>
+    {% render 'pickup-availability-contents', product_variant: selected_variant %}
+  </div>
+{%- endif -%}
+{% schema %}
+{ "name": "t:sections.main_product.blocks.pickup", "tag": null, "settings": [], "presets": [{ "name": "t:sections.main_product.blocks.pickup" }] }
+{% endschema %}

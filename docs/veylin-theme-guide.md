@@ -97,6 +97,20 @@ Add an accessible label only when the icon communicates information that nearby 
 
 Border draws a rule without carrying content. It can follow the content width or span its available container.
 
+### Accordion
+
+Accordion is a foldable Group: it accepts child blocks, uses the same layout
+controls as Group, can begin expanded, and can remain expanded on desktop while
+staying collapsible on smaller screens. Its motion and plus/minus treatment are
+shared with footer link columns.
+
+### Menu, Email signup, Policy links, Payment icons, and Spacer
+
+Menu renders one native Shopify navigation menu horizontally or vertically,
+with optional nested links. Email signup is a reusable Shopify customer form.
+Policy links and Payment icons read native store configuration. Spacer provides
+responsive whitespace without empty content blocks.
+
 ### Group
 
 Group is the primary layout primitive. It can contain theme blocks, app blocks, and nested Groups. Use it to arrange blocks side by side or stack them, distribute available space, align blocks, allow wrapping, make widths natural or equal, and choose container-aware stacking behavior.
@@ -113,19 +127,26 @@ Custom Liquid accepts merchant-authored Liquid or HTML and follows the surroundi
 
 The general Group section is a flexible canvas for global and app blocks. Existing editorial areas such as feature grids, About, Visit, and Craft are saved block compositions rather than separate brand-specific section types.
 
-Collection and search headers are also composed from global blocks. Their sections own only layout concerns such as color scheme, width, minimum height, alignment, gap, animation, and outer spacing. Add, remove, or reorder Text, Rich text, Search form, Media, Icon, Border, Button, Group, Custom Liquid, and app blocks as needed.
+Collection and search headers are also composed from global blocks. Their sections own only layout concerns such as color scheme, width, minimum height, alignment, gap, animation, and outer spacing. Add, remove, or reorder Text, Rich text, Search form, Media, Icon, Border, Button, Group, Accordion, Menu, Email signup, Policy links, Payment icons, Spacer, Custom Liquid, and app blocks as needed.
 
 Minimum height is a floor, not a fixed height. Added content can always make the section taller.
 
 ## Header and navigation
 
-The header supports an art-directed list of individual menu rows and an optional native Shopify main menu. Use the native menu block for nested navigation up to three levels. Remove the individual rows when the selected main menu should be the only navigation source.
+The header uses one native Shopify menu as its navigation source. The default
+art-directed layout opens it as a full-screen menu; the Classic layout renders
+it inline on wide screens and keeps the same full-screen menu on compact
+screens. Category shortcut blocks remain optional campaign links below the main
+navigation.
 
 The header can use different resting states on the home page and inner pages. It also contains native search, cart, and Shopify customer account entry points. New customer accounts open through Shopify's account component; legacy customer templates remain available for stores using legacy accounts.
 
 ## Footer and localization
 
-The footer supports a native `footer` menu, social media icons, newsletter signup, country or region selection, language selection, Follow on Shop, policies, and shop details. Country and language selectors render only when the shop has more than one available option.
+The footer supports multiple native menus, social media icons, native store
+policies, enabled payment icons, country or region selection, language
+selection, Follow on Shop, and shop details. Country and language selectors
+render only when the shop has more than one available option.
 
 Leave unused social media URLs empty. Empty social links do not render.
 
@@ -153,9 +174,14 @@ JavaScript progressively enhances filtering, sorting, and pagination through Sho
 
 Search can return products, articles, pages, and other enabled resource types. Predictive search uses Shopify's predictive search endpoint. Empty searches and searches with no results display a clear next step.
 
+Theme settings let Search behave as the art-directed menu overlay, a side
+drawer, or a dedicated page. All three preserve a real `/search` form/link as
+their no-JavaScript fallback.
+
 ## Product and Featured product
 
-The main Product and Featured product sections support:
+Main Product, Featured product, and Quick view use the same Product blocks,
+gallery renderer, variant data, styles, and runtime. They support:
 
 - Images, hosted video, external video, and 3D models
 - Variant media changes
@@ -166,8 +192,10 @@ The main Product and Featured product sections support:
 - Pickup availability
 - Gift-card recipient details and scheduled delivery
 - App blocks and Custom Liquid
+- Carousel or stacked gallery, large first media, video-first ordering, and
+  adaptive sticky Gallery/Details behavior
 
-Featured product uses a product picker and the same native product-form behavior as the product page. Accelerated checkout is enabled by default but renders only when the shop has an eligible payment method.
+Featured product uses a product picker and the same native product-form behavior as the product page. Quick view is independently composed in the Header group and adds only its View full details shell link. Accelerated checkout is enabled by default on full Product surfaces but renders only when the shop has an eligible payment method.
 
 ## Product recommendations
 
@@ -178,6 +206,13 @@ Related products are generated by Shopify. Configure complementary products in S
 ## Quick view
 
 Quick view supports every Shopify product media type and uses the same variant, unit-price, swatch, and add-to-cart contracts as the rest of the theme. Quick view is an enhancement; product links remain usable when JavaScript is unavailable.
+
+## Product badges
+
+Theme settings define one badge policy for cards and all Product surfaces.
+Toggle custom, Sale, Sold out, and automatic New badges; set the New age in
+days; and select a collection whose products should never show badges. Custom
+badges come from product tags such as `badge:Limited edition`.
 
 ## Cart
 
@@ -193,6 +228,11 @@ Theme settings control both the cart page and cart drawer. They support:
 - Accelerated checkout
 
 The cart uses Shopify forms and URLs so core updates continue to work without JavaScript.
+
+Cart page and drawer both host the same reusable Cart upsell block. Its compact
+carousel intentionally composes the shared Product card down to image and
+linked product name only. Choose its collection, product count, animation,
+arrow position, and whether products already in the cart are excluded.
 
 ## Gift cards
 

@@ -1,0 +1,115 @@
+{%- comment -%}
+  One contextual badge system for product cards and product information.
+  Theme settings owns the global badge policy; this block owns only placement
+  and the maximum visible count. Custom badges come from product tags whose
+  value begins with `badge:` (case-insensitive).
+{%- endcomment -%}
+
+{%- liquid
+  assign product = closest.product
+  assign badge_count = 0
+  assign max_badges = block.settings.max_badges | default: 2
+  assign badge_ignored = false
+  if product != blank and settings.badge_ignore_collection != blank
+    for product_collection in product.collections
+      if product_collection.id == settings.badge_ignore_collection.id
+        assign badge_ignored = true
+        break
+      endif
+    endfor
+  endif
+
+  assign badge_variant = product.selected_or_first_available_variant
+  assign is_sale = false
+  for candidate_variant in product.variants
+    if candidate_variant.compare_at_price > candidate_variant.price
+      assign badge_variant = candidate_variant
+      assign is_sale = true
+      break
+    endif
+  endfor
+
+  assign is_new = false
+  if product != blank and settings.badge_show_new
+    assign now_seconds = 'now' | date: '%s' | plus: 0
+    assign product_new_date = product.published_at | default: product.created_at
+    assign published_seconds = product_new_date | date: '%s' | plus: 0
+    assign age_seconds = now_seconds | minus: published_seconds
+    assign new_window = settings.badge_new_days | default: 30 | times: 86400
+    if age_seconds <= new_window
+      assign is_new = true
+    endif
+  endif
+
+  capture badge_radius
+    render 'scale-step', scale: 'button_radius', step: settings.badge_radius
+  endcapture
+  capture badge_type
+    render 'text-style', preset: settings.badge_text_style
+  endcapture
+-%}
+
+{%- if product != blank and badge_ignored == false -%}
+  {%- capture rendered_badges -%}
+    {%- if product.available == false and settings.badge_show_sold_out and badge_count < max_badges -%}
+      <span class="product-badge product-badge--sold-out">{{ 'products.sold_out' | t }}</span>
+      {%- assign badge_count = badge_count | plus: 1 -%}
+    {%- endif -%}
+
+    {%- if settings.badge_show_custom -%}
+      {%- for product_tag in product.tags -%}
+        {%- assign normalized_tag = product_tag | strip -%}
+        {%- assign tag_prefix = normalized_tag | slice: 0, 6 | downcase -%}
+        {%- assign custom_badge_label = normalized_tag | slice: 6, 200 | strip -%}
+        {%- if tag_prefix == 'badge:' and custom_badge_label != blank and badge_count < max_badges -%}
+          <span class="product-badge product-badge--custom">{{ custom_badge_label | escape }}</span>
+          {%- assign badge_count = badge_count | plus: 1 -%}
+        {%- endif -%}
+      {%- endfor -%}
+    {%- endif -%}
+
+    {%- if is_sale and settings.badge_show_sale and badge_count < max_badges -%}
+      {%- assign sale_label = 'products.on_sale' | t -%}
+      {%- if settings.badge_sale_label == 'percentage' and badge_variant.compare_at_price > 0 -%}
+        {%- assign saving = badge_variant.compare_at_price | minus: badge_variant.price | times: 100 | divided_by: badge_variant.compare_at_price -%}
+        {%- assign sale_label = 'products.sale_percentage' | t: percent: saving -%}
+      {%- elsif settings.badge_sale_label == 'amount' -%}
+        {%- assign saving = badge_variant.compare_at_price | minus: badge_variant.price | money -%}
+        {%- assign sale_label = 'products.sale_amount' | t: amount: saving -%}
+      {%- endif -%}
+      <span class="product-badge product-badge--sale">{{ sale_label }}</span>
+      {%- assign badge_count = badge_count | plus: 1 -%}
+    {%- endif -%}
+
+    {%- if is_new and badge_count < max_badges -%}
+      <span class="product-badge product-badge--new">{{ 'products.new' | t }}</span>
+    {%- endif -%}
+  {%- endcapture -%}
+
+  {%- if rendered_badges != blank -%}
+  <div
+    class="product-badges product-badges--{{ block.settings.position }}"
+    style="{{ badge_type | strip }}; --badge-radius: {{ badge_radius | default: 0 }}px;"
+    {{ block.shopify_attributes }}
+  >
+    {{- rendered_badges -}}
+  </div>
+  {%- endif -%}
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "t:blocks.product_badges.name",
+  "tag": null,
+  "settings": [
+    { "type": "select", "id": "position", "label": "t:blocks.product_badges.position.label", "options": [
+      { "value": "top-left", "label": "t:blocks.product_badges.position.top_left" },
+      { "value": "top-right", "label": "t:blocks.product_badges.position.top_right" },
+      { "value": "bottom-left", "label": "t:blocks.product_badges.position.bottom_left" },
+      { "value": "bottom-right", "label": "t:blocks.product_badges.position.bottom_right" }
+    ], "default": "top-left" },
+    { "type": "range", "id": "max_badges", "label": "t:blocks.product_badges.max_badges", "min": 1, "max": 4, "step": 1, "default": 2 }
+  ],
+  "presets": [{ "name": "t:blocks.product_badges.name" }]
+}
+{% endschema %}

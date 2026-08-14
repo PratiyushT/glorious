@@ -1,0 +1,11 @@
+{%- comment -%}
+  Shared field/input appearance properties. Controls remain native inputs;
+  this snippet only gives them one optional local override contract.
+{%- endcomment -%}
+{%- capture resolved_radius -%}{%- if radius != blank and radius != 'inherit' -%}{%- render 'scale-step', scale: 'button_radius', step: radius -%}{%- endif -%}{%- endcapture -%}
+{%- capture resolved_border -%}{%- if border_width != blank and border_width != 'inherit' -%}{%- render 'scale-step', scale: 'button_border_width', step: border_width -%}{%- endif -%}{%- endcapture -%}
+{%- if background_color != blank -%}--input-bg: {{ background_color }};{%- endif -%}
+{%- if text_color != blank -%}--input-text: {{ text_color }};{%- endif -%}
+{%- if border_color != blank -%}--input-border: {{ border_color }};{%- endif -%}
+{%- if resolved_radius != blank -%}--input-radius: {{ resolved_radius }}px;{%- endif -%}
+{%- if resolved_border != blank -%}--input-border-width: {{ resolved_border }}px;{%- endif -%}

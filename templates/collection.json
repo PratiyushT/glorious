@@ -56,6 +56,10 @@
                 "image_fit": "contain"
               }
             },
+            "badges": {
+              "type": "product_badges",
+              "settings": {}
+            },
             "title": {
               "type": "text",
               "settings": {
@@ -87,6 +91,7 @@
           },
           "block_order": [
             "media",
+            "badges",
             "title",
             "option",
             "price",
@@ -115,9 +120,7 @@
         "quick_filter_target": "auto",
         "quick_links_limit": "6",
         "show_filters": true,
-        "filter_button_label": "Filter",
         "drawer_color_scheme": "scheme_1",
-        "drawer_heading": "Refine",
         "drawer_position": "end",
         "drawer_width": "medium",
         "mobile_drawer_style": "sheet",

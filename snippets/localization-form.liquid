@@ -11,6 +11,7 @@
 
 {%- liquid
   assign ctx = context | default: 'footer'
+  assign update_label = 'localization.update' | t
 
   assign show_country = false
   assign show_language = false
@@ -46,7 +47,7 @@
       {%- endfor -%}
     </select>
     <noscript>
-      <button type="submit" class="btn btn--square">{{ 'localization.update' | t }}</button>
+      {% render 'button', label: update_label, element: 'button', button_type: 'submit', style: 'outline', class: 'btn--square' %}
     </noscript>
   {%- endform -%}
 {%- endif -%}
@@ -69,7 +70,7 @@
       {%- endfor -%}
     </select>
     <noscript>
-      <button type="submit" class="btn btn--square">{{ 'localization.update' | t }}</button>
+      {% render 'button', label: update_label, element: 'button', button_type: 'submit', style: 'outline', class: 'btn--square' %}
     </noscript>
   {%- endform -%}
 {%- endif -%}

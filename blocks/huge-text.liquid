@@ -1,0 +1,26 @@
+{% doc %}
+  Reusable wordmark-scale text with an art-directed static placement.
+
+  @param {string} placement - One of hero, header, header-overlay, or footer.
+{% enddoc %}
+
+{% render 'huge-text', source: block.settings.value, placement: placement, attributes: block.shopify_attributes %}
+
+{% schema %}
+{
+  "name": "t:blocks.huge_text.name",
+  "tag": null,
+  "settings": [
+    {
+      "type": "text",
+      "id": "value",
+      "label": "t:blocks.huge_text.value"
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:blocks.huge_text.name"
+    }
+  ]
+}
+{% endschema %}

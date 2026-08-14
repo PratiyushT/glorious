@@ -49,7 +49,7 @@
       ],
       "settings": {
         "color_scheme": "scheme_2",
-        "show_wordmark": true,
+        "huge_text_value": "STORE NAME",
         "show_sparkles": true,
         "show_arcs": true,
         "intro": "<p>Thoughtfully made products with distinctive character, considered materials, and lasting quality.</p>",
@@ -115,6 +115,10 @@
                 "zoom": ""
               }
             },
+            "badges": {
+              "type": "product_badges",
+              "settings": {}
+            },
             "name": {
               "type": "text",
               "settings": {
@@ -170,6 +174,7 @@
           },
           "block_order": [
             "photograph",
+            "badges",
             "name",
             "caption",
             "option",
@@ -195,7 +200,7 @@
       ],
       "settings": {
         "color_scheme": "scheme_1",
-        "collection": "",
+        "collection": "featured-products-homepage",
         "products_to_show": 8,
         "full_height": true,
         "padding_top": "sm",

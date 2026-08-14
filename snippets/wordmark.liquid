@@ -3,15 +3,16 @@
   measure. Used by the hero and the footer.
 
   Letters only, no emblem: the design reserves the mark for the inline lockup
-  (see wordmark-lockup). Letters come from the Brand settings, so renaming the
-  store changes the hero and the footer together.
+  (see wordmark-lockup). Huge Text supplies the source so each placement is a
+  real block instead of a hidden global brand dependency.
 
   Accepts:
+    source  - the Huge Text value.
     variant - 'accent' (default, gold) or 'ivory' (heading colour).
 {%- endcomment -%}
 
 {%- liquid
-  assign source = settings.wordmark | default: shop.name | upcase
+  assign source = source | strip | upcase
   assign letters = source | split: ''
 -%}
 

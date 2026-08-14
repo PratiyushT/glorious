@@ -40,6 +40,8 @@
   class="cat-card"
   href="{{ url }}"
   aria-label="{{ accessible_label | escape }}"
+  data-card-column-gap="{{ block.settings.column_gap | default: 'inherit' }}"
+  data-card-row-gap="{{ block.settings.row_gap | default: 'inherit' }}"
   {{ block.shopify_attributes }}
 >
   {% content_for 'blocks' %}
@@ -62,6 +64,40 @@
     { "type": "_collection-card-header" }
   ],
   "settings": [
+    {
+      "type": "select",
+      "id": "column_gap",
+      "label": "t:blocks.collection_card.column_gap.label",
+      "info": "t:blocks.collection_card.column_gap.info",
+      "options": [
+        { "value": "inherit", "label": "t:blocks.product_card.gap.inherit" },
+        { "value": "none", "label": "t:blocks.all.step.none" },
+        { "value": "minimal", "label": "t:blocks.all.step.minimal" },
+        { "value": "tiny", "label": "t:blocks.all.step.tiny" },
+        { "value": "small", "label": "t:blocks.all.step.small" },
+        { "value": "medium", "label": "t:blocks.all.step.medium" },
+        { "value": "large", "label": "t:blocks.all.step.large" },
+        { "value": "xlarge", "label": "t:blocks.all.step.xlarge" }
+      ],
+      "default": "inherit"
+    },
+    {
+      "type": "select",
+      "id": "row_gap",
+      "label": "t:blocks.collection_card.row_gap.label",
+      "info": "t:blocks.collection_card.row_gap.info",
+      "options": [
+        { "value": "inherit", "label": "t:blocks.product_card.gap.inherit" },
+        { "value": "none", "label": "t:blocks.all.step.none" },
+        { "value": "minimal", "label": "t:blocks.all.step.minimal" },
+        { "value": "tiny", "label": "t:blocks.all.step.tiny" },
+        { "value": "small", "label": "t:blocks.all.step.small" },
+        { "value": "medium", "label": "t:blocks.all.step.medium" },
+        { "value": "large", "label": "t:blocks.all.step.large" },
+        { "value": "xlarge", "label": "t:blocks.all.step.xlarge" }
+      ],
+      "default": "inherit"
+    },
     {
       "type": "checkbox",
       "id": "show_hover_reveal",

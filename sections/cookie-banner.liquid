@@ -16,6 +16,10 @@
   panel; on the wrapper it would paint an opaque band across the page.
 {%- endcomment -%}
 {%- if section.settings.enabled -%}
+  {%- liquid
+    assign decline_label = section.settings.decline_label | default: 'Decline'
+    assign accept_label = section.settings.accept_label | default: 'Accept'
+  -%}
   <div
     class="cookie-banner"
     data-overlay="cookie-preferences"
@@ -41,12 +45,20 @@
       </div>
 
       <div class="cookie-banner__actions">
-        <button class="btn btn--square cookie-banner__btn" type="button" data-cookie-choice="essential">
-          {{ section.settings.decline_label | default: 'Decline' }}
-        </button>
-        <button class="btn btn--primary cookie-banner__btn" type="button" data-cookie-choice="all">
-          {{ section.settings.accept_label | default: 'Accept' }}
-        </button>
+        {%- render 'button',
+          label: decline_label,
+          element: 'button',
+          style: 'outline',
+          class: 'cookie-banner__btn',
+          attributes: 'data-cookie-choice="essential"'
+        -%}
+        {%- render 'button',
+          label: accept_label,
+          element: 'button',
+          style: 'filled',
+          class: 'cookie-banner__btn',
+          attributes: 'data-cookie-choice="all"'
+        -%}
       </div>
     </div>
   </div>

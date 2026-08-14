@@ -2,10 +2,44 @@
   "sections": {
     "main": {
       "type": "main-cart",
+      "blocks": {
+        "upsell": {
+          "type": "cart_upsell",
+          "blocks": {
+            "product-card": {
+              "type": "_product-card",
+              "static": true,
+              "blocks": {
+                "media": { "type": "_product-card-media", "settings": { "image_ratio": "1/1", "image_fit": "contain" } },
+                "info": {
+                  "type": "_product-card-group",
+                  "blocks": {
+                    "kind": { "type": "text", "settings": { "text": "{{ closest.product.vendor }}", "style": "caption", "element": "span", "override_case": "uppercase", "override_tracking": "wide" } },
+                    "title": { "type": "text", "settings": { "text": "{{ closest.product.title }}", "style": "small", "element": "h3" } },
+                    "price": { "type": "_product-card-price", "settings": {} }
+                  },
+                  "block_order": ["kind", "title", "price"],
+                  "settings": { "direction": "vertical", "distribute": "start", "align": "start", "wrap": false, "stack_below": "never", "gap": "tiny", "vertical_gap": "tiny" }
+                }
+              },
+              "block_order": ["media", "info"],
+              "settings": { "text_align": "left", "fixed_size": true, "show_carousel": false, "hover_next": false, "show_video": false, "quick_view_desktop": true, "quick_view_compact": true }
+            }
+          },
+          "settings": {
+            "heading": "Recommended for you",
+            "collection": "featured-products-homepage",
+            "products_to_show": 4,
+            "padding_inline": "small",
+            "padding_block": "small",
+            "carousel_motion": "slide"
+          }
+        }
+      },
+      "block_order": ["upsell"],
       "settings": {
         "color_scheme": "scheme_1", "title": "", "title_style": "heading_2", "show_count": true,
         "show_vendor": true, "show_update_button": true, "summary_width": "medium",
-        "image_ratio": "1/1", "image_fit": "contain",
         "empty_message": "Your cart is waiting for something good.", "empty_button_label": "Continue shopping",
         "padding_top": "lg", "padding_bottom": "xl"
       }

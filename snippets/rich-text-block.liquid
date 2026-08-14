@@ -1,0 +1,24 @@
+{%- comment -%}
+  Shared renderer for formatted text and contextual rich-text values.
+
+  Global Rich text owns editable content. Contextual blocks such as Product
+  description own their value and hand it to this renderer, while keeping the
+  same typography, colour and alignment contract.
+{%- endcomment -%}
+
+{%- liquid
+  assign align_class = ''
+  if block.settings.alignment != blank and block.settings.alignment != 'inherit'
+    assign align_class = ' align-' | append: block.settings.alignment
+  endif
+-%}
+
+{%- if content != blank -%}
+  <div
+    class="rte measure{{ align_class }}{% if class != blank %} {{ class }}{% endif %}"
+    style="{% render 'text-style', preset: block.settings.style, font_style: block.settings.override_font, font_size: block.settings.override_size, color: block.settings.color, line_height: block.settings.override_leading, text_case: block.settings.override_case, letter_spacing: block.settings.override_tracking %}"
+    {{ block.shopify_attributes }}
+  >
+    {{- content -}}
+  </div>
+{%- endif -%}

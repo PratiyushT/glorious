@@ -4,30 +4,8 @@
   section markup.
 {%- endcomment -%}
 
-{%- liquid
-  assign width_class = 'catalog-shell'
-  case section.settings.content_width
-    when 'narrow'
-      assign width_class = 'catalog-shell catalog-block-header__width--narrow'
-    when 'reading'
-      assign width_class = 'catalog-shell catalog-block-header__width--reading'
-    when 'edge'
-      assign width_class = 'catalog-block-header__width--edge'
-  endcase
--%}
-
-<section
-  class="section catalog-block-header catalog-block-header--search catalog-block-header--{{ section.settings.height }} catalog-block-header--align-{{ section.settings.content_alignment }} catalog-block-header--vertical-{{ section.settings.vertical_alignment }} catalog-block-header--motion-{{ section.settings.motion }} scheme-{{ section.settings.color_scheme }}"
-  data-catalog-block-header
-  data-catalog-header-motion="{{ section.settings.motion }}"
-  style="{% render 'section-style', padding_top: section.settings.padding_top, padding_bottom: section.settings.padding_bottom %}{% render 'block-spacing', gap: section.settings.block_gap %}"
->
-  <div class="{{ width_class }}">
-    <div class="catalog-block-header__content">
-      {% content_for 'blocks' %}
-    </div>
-  </div>
-</section>
+{%- capture header_content -%}{% content_for 'blocks' %}{%- endcapture -%}
+{% render 'catalog-header', header_settings: section.settings, content: header_content, search: true %}
 
 {% schema %}
 {

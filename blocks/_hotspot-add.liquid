@@ -35,6 +35,12 @@
   assign cart_name = settings.cart_name | default: 'Cart'
   assign label = 'products.add_to_cart' | t: cart_name: cart_name
   assign sold_out_label = 'products.sold_out' | t
+  if block.settings.add_label != blank
+    assign label = block.settings.add_label
+  endif
+  if block.settings.sold_out_label != blank
+    assign sold_out_label = block.settings.sold_out_label
+  endif
 
   assign chosen = blank
   if product != blank
@@ -55,37 +61,57 @@
 -%}
 
 {%- if product == blank -%}
-  <span class="btn btn--square card__add" aria-disabled="true" {{ block.shopify_attributes }}>
-    {{- label -}}
-    <span class="lookbook-card__add-icon" aria-hidden="true">{% render 'icon', icon: 'plus' %}</span>
-  </span>
+  {%- render 'button', label: label, element: 'span', disabled: true, appearance: block.settings, class: 'card__add', icon: 'plus', icon_class: 'lookbook-card__add-icon', attributes: block.shopify_attributes -%}
 {%- elsif product.available -%}
   {%- form 'product', product, id: form_id, class: 'card__add-form', data-cart-add: '' -%}
     <input type="hidden" name="id" value="{{ chosen.id }}" data-card-add-id>
-    <button
-      type="submit"
-      name="add"
-      class="btn btn--square card__add"
-      data-add-label="{{ label | escape }}"
-      data-sold-out-label="{{ sold_out_label | escape }}"
-      {{ block.shopify_attributes }}
-    >
-      {{- label -}}
-      <span class="lookbook-card__add-icon" aria-hidden="true">{% render 'icon', icon: 'plus' %}</span>
-    </button>
+    {%- capture add_attributes -%}data-add-label="{{ label | escape }}" data-sold-out-label="{{ sold_out_label | escape }}" {{ block.shopify_attributes }}{%- endcapture -%}
+    {%- render 'button', label: label, element: 'button', button_type: 'submit', button_name: 'add', mutable_label: true, appearance: block.settings, class: 'card__add', icon: 'plus', icon_class: 'lookbook-card__add-icon', attributes: add_attributes -%}
   {%- endform -%}
 {%- else -%}
-  <span class="btn btn--square card__add" aria-disabled="true" {{ block.shopify_attributes }}>
-    {{- sold_out_label -}}
-    <span class="lookbook-card__add-icon" aria-hidden="true">{% render 'icon', icon: 'plus' %}</span>
-  </span>
+  {%- render 'button', label: sold_out_label, element: 'span', disabled: true, appearance: block.settings, class: 'card__add', icon: 'plus', icon_class: 'lookbook-card__add-icon', attributes: block.shopify_attributes -%}
 {%- endif -%}
 
 {% schema %}
 {
   "name": "t:blocks.product_card_add.name",
   "tag": null,
-  "settings": [],
+  "settings": [
+    { "type": "text", "id": "add_label", "label": "t:blocks.product_card_add.add_label.label", "info": "t:blocks.product_card_add.add_label.info" },
+    { "type": "text", "id": "sold_out_label", "label": "t:blocks.product_card_add.sold_out_label.label", "info": "t:blocks.product_card_add.sold_out_label.info" },
+    { "type": "header", "content": "t:blocks.button.appearance_header" },
+    { "type": "select", "id": "button_style", "label": "t:sections.all.button_style.label", "options": [
+      { "value": "filled", "label": "t:settings_schema.button_style.filled" }, { "value": "outline", "label": "t:settings_schema.button_style.outline" },
+      { "value": "link", "label": "t:settings_schema.button_style.link" }, { "value": "quiet", "label": "t:settings_schema.button_style.quiet" },
+      { "value": "arrow", "label": "t:settings_schema.button_style.arrow" }, { "value": "arrow_outline", "label": "t:settings_schema.button_style.arrow_outline" }
+    ], "default": "outline" },
+    { "type": "select", "id": "button_size", "label": "t:sections.all.button_size.label", "options": [
+      { "value": "inherit", "label": "t:settings_schema.button_size.inherit" }, { "value": "xs", "label": "t:settings_schema.button_size.xs" },
+      { "value": "sm", "label": "t:settings_schema.button_size.sm" }, { "value": "md", "label": "t:settings_schema.button_size.md" },
+      { "value": "lg", "label": "t:settings_schema.button_size.lg" }, { "value": "xl", "label": "t:settings_schema.button_size.xl" }
+    ], "default": "inherit" },
+    { "type": "select", "id": "button_radius", "label": "t:sections.all.button_radius.label", "options": [
+      { "value": "inherit", "label": "t:settings_schema.button_radius.inherit" }, { "value": "square", "label": "t:settings_schema.button_radius.square" },
+      { "value": "soft", "label": "t:settings_schema.button_radius.soft" }, { "value": "rounded", "label": "t:settings_schema.button_radius.rounded" },
+      { "value": "pill", "label": "t:settings_schema.button_radius.pill" }
+    ], "default": "inherit", "visible_if": "{{ block.settings.button_style == 'filled' or block.settings.button_style == 'outline' or block.settings.button_style == 'arrow_outline' }}" },
+    { "type": "select", "id": "button_border_width", "label": "t:blocks.button.border_width.label", "options": [
+      { "value": "inherit", "label": "t:blocks.button.inherit" }, { "value": "xs", "label": "t:settings_schema.buttons.button_border_width.options__xs" },
+      { "value": "sm", "label": "t:settings_schema.buttons.button_border_width.options__sm" }, { "value": "md", "label": "t:settings_schema.buttons.button_border_width.options__md" },
+      { "value": "lg", "label": "t:settings_schema.buttons.button_border_width.options__lg" }, { "value": "xl", "label": "t:settings_schema.buttons.button_border_width.options__xl" }
+    ], "default": "inherit", "visible_if": "{{ block.settings.button_style == 'outline' or block.settings.button_style == 'arrow_outline' }}" },
+    { "type": "color", "id": "background_color", "label": "t:blocks.button.background_color.label", "info": "t:blocks.button.color_info", "visible_if": "{{ block.settings.button_style == 'filled' }}" },
+    { "type": "color", "id": "text_color", "label": "t:blocks.button.text_color.label", "info": "t:blocks.button.color_info" },
+    { "type": "color", "id": "border_color", "label": "t:blocks.button.border_color.label", "info": "t:blocks.button.color_info", "visible_if": "{{ block.settings.button_style == 'outline' or block.settings.button_style == 'arrow_outline' }}" },
+    { "type": "color", "id": "underline_color", "label": "t:blocks.button.underline_color.label", "info": "t:blocks.button.color_info", "visible_if": "{{ block.settings.button_style == 'link' or block.settings.button_style == 'quiet' }}" },
+    { "type": "color", "id": "arrow_color", "label": "t:blocks.button.arrow_color.label", "info": "t:blocks.button.color_info", "visible_if": "{{ block.settings.button_style == 'arrow' }}" },
+    { "type": "header", "content": "t:blocks.button.hover_header" },
+    { "type": "color", "id": "hover_background_color", "label": "t:blocks.button.hover_background_color.label", "info": "t:blocks.button.color_info", "visible_if": "{{ block.settings.button_style == 'filled' or block.settings.button_style == 'outline' or block.settings.button_style == 'arrow_outline' }}" },
+    { "type": "color", "id": "hover_text_color", "label": "t:blocks.button.hover_text_color.label", "info": "t:blocks.button.color_info" },
+    { "type": "color", "id": "hover_border_color", "label": "t:blocks.button.hover_border_color.label", "info": "t:blocks.button.color_info", "visible_if": "{{ block.settings.button_style == 'outline' or block.settings.button_style == 'arrow_outline' }}" },
+    { "type": "color", "id": "hover_underline_color", "label": "t:blocks.button.hover_underline_color.label", "info": "t:blocks.button.color_info", "visible_if": "{{ block.settings.button_style == 'link' or block.settings.button_style == 'quiet' }}" },
+    { "type": "color", "id": "hover_arrow_color", "label": "t:blocks.button.hover_arrow_color.label", "info": "t:blocks.button.color_info", "visible_if": "{{ block.settings.button_style == 'arrow' }}" }
+  ],
   "presets": [
     {
       "name": "t:blocks.product_card_add.name"

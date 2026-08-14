@@ -56,36 +56,8 @@
   as on a phone — which is a question about the block, not the screen.
 {%- endcomment -%}
 
-{%- liquid
-  assign content_alignment_css = ''
-  if block.settings.content_alignment == 'left'
-    assign content_alignment_css = '--group-content-align: left; --group-content-items: flex-start; --section-align: left; --section-align-jc: flex-start;'
-  elsif block.settings.content_alignment == 'center'
-    assign content_alignment_css = '--group-content-align: center; --group-content-items: center; --section-align: center; --section-align-jc: center;'
-  elsif block.settings.content_alignment == 'right'
-    assign content_alignment_css = '--group-content-align: right; --group-content-items: flex-end; --section-align: right; --section-align-jc: flex-end;'
-  endif
--%}
-
-<div
-  class="layout-group{% if block.settings.show_borders %} layout-group--bordered{% endif %}"
-  data-direction="{{ block.settings.direction }}"
-  data-stack="{% if block.settings.direction == 'horizontal' %}{{ block.settings.stack_below }}{% else %}never{% endif %}"
-  data-mobile-align="{{ block.settings.content_alignment_mobile | default: 'inherit' }}"
-  data-items="{{ block.settings.items_width }}"
-  data-wrap="{{ block.settings.wrap }}"
-  {% if block.settings.show_borders %}
-    style="--group-border-width: {{ block.settings.group_border_width }}px; --group-border-color: {% if block.settings.border_color != blank %}{{ block.settings.border_color }}{% else %}var(--c-hairline){% endif %}; --group-border-top: {% if block.settings.border_top %}var(--group-border-width){% else %}0px{% endif %}; --group-border-right: {% if block.settings.border_right %}var(--group-border-width){% else %}0px{% endif %}; --group-border-bottom: {% if block.settings.border_bottom %}var(--group-border-width){% else %}0px{% endif %}; --group-border-left: {% if block.settings.border_left %}var(--group-border-width){% else %}0px{% endif %};"
-  {% endif %}
-  {{ block.shopify_attributes }}
->
-  <div
-    class="layout-group__inner"
-    style="{% render 'layout-group-style', layout_settings: block.settings %}{{ content_alignment_css }}"
-  >
-    {% content_for 'blocks' %}
-  </div>
-</div>
+{%- capture group_content -%}{% content_for 'blocks' %}{%- endcapture -%}
+{% render 'layout-group', layout_settings: block.settings, content: group_content, attributes: block.shopify_attributes %}
 
 {% schema %}
 {

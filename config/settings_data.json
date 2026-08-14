@@ -6,10 +6,8 @@
  * or related systems. Please exercise caution as any changes
  * made to this file may be overwritten.
  * ------------------------------------------------------------
- */
-{
+ */{
   "current": {
-    "wordmark": "STORE NAME",
     "shop_address": "",
     "shop_phone": "",
     "shop_email": "",
@@ -30,7 +28,15 @@
           "button_label": "#f4f0e8",
           "button_hover": "#80601f",
           "secondary_button_label": "#191510",
-          "link": "#191510"
+          "link": "#191510",
+          "badge_sale_background": "#191510",
+          "badge_sale_text": "#f4f0e8",
+          "badge_sold_background": "#6e6558",
+          "badge_sold_text": "#ffffff",
+          "badge_new_background": "#9a7836",
+          "badge_new_text": "#ffffff",
+          "badge_custom_background": "#f4f0e8",
+          "badge_custom_text": "#191510"
         }
       },
       "scheme_2": {
@@ -47,7 +53,15 @@
           "button_label": "#14110d",
           "button_hover": "#f4efe4",
           "secondary_button_label": "#efe9dc",
-          "link": "#efe9dc"
+          "link": "#efe9dc",
+          "badge_sale_background": "#191510",
+          "badge_sale_text": "#f4f0e8",
+          "badge_sold_background": "#6e6558",
+          "badge_sold_text": "#ffffff",
+          "badge_new_background": "#9a7836",
+          "badge_new_text": "#ffffff",
+          "badge_custom_background": "#f4f0e8",
+          "badge_custom_text": "#191510"
         }
       },
       "scheme_3": {
@@ -64,7 +78,15 @@
           "button_label": "#f4f0e8",
           "button_hover": "#80601f",
           "secondary_button_label": "#191510",
-          "link": "#191510"
+          "link": "#191510",
+          "badge_sale_background": "#191510",
+          "badge_sale_text": "#f4f0e8",
+          "badge_sold_background": "#6e6558",
+          "badge_sold_text": "#ffffff",
+          "badge_new_background": "#9a7836",
+          "badge_new_text": "#ffffff",
+          "badge_custom_background": "#f4f0e8",
+          "badge_custom_text": "#191510"
         }
       },
       "scheme_4": {
@@ -81,7 +103,15 @@
           "button_label": "#14110d",
           "button_hover": "#f4efe4",
           "secondary_button_label": "#efe9dc",
-          "link": "#efe9dc"
+          "link": "#efe9dc",
+          "badge_sale_background": "#191510",
+          "badge_sale_text": "#f4f0e8",
+          "badge_sold_background": "#6e6558",
+          "badge_sold_text": "#ffffff",
+          "badge_new_background": "#9a7836",
+          "badge_new_text": "#ffffff",
+          "badge_custom_background": "#f4f0e8",
+          "badge_custom_text": "#191510"
         }
       }
     }

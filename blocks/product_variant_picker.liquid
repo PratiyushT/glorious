@@ -1,0 +1,166 @@
+{%- comment -%}
+  Product choices build on the shared Button appearance contract. Swatches keep
+  their native Shopify paint; written choices render through button.liquid and
+  add only the selected state that a mutually-exclusive choice requires.
+{%- endcomment -%}
+
+{%- assign product = closest.product -%}
+{%- comment -%}
+  A merchant may pin one choice to the front of its row: `first_value` is a
+  written option value — "18K", "Yellow Gold" — matched case-insensitively
+  against every option's values. The match renders first and everything else
+  keeps admin order; no match changes nothing, which is also why the blank
+  setting needs no special case — the pinned pass simply finds nothing.
+
+  Two passes over the same markup rather than a re-sorted list, because the
+  values must stay `product_option_value` drops — a drop is what carries a
+  merchant's native swatch, and a round trip through `split` would flatten it
+  to a string (see "the swatch row is in the merchant's order").
+{%- endcomment -%}
+{%- assign pinned_choice = block.settings.first_value | strip | downcase -%}
+{%- assign choice_phases = 'pinned,rest' | split: ',' -%}
+{%- unless product == blank or product.has_only_default_variant -%}
+  <div
+    class="product-options"
+    data-product-options
+    style="--product-option-label-gap: {{ block.settings.option_gap }}px; {% render 'choice-style', selected_background_color: block.settings.selected_background_color, selected_text_color: block.settings.selected_text_color, selected_border_color: block.settings.selected_border_color %}"
+    {{ block.shopify_attributes }}
+  >
+    {%- for option in product.options_with_values -%}
+      {%- assign option_has_swatches = false -%}
+      {%- for value in option.values -%}
+        {%- if value.swatch.color != blank or value.swatch.image != blank -%}
+          {%- assign option_has_swatches = true -%}
+          {%- break -%}
+        {%- endif -%}
+      {%- endfor -%}
+      {%- assign picker_type = block.settings.picker_type -%}
+      {%- if picker_type == 'automatic' -%}
+        {%- if option_has_swatches -%}{%- assign picker_type = 'swatch' -%}{%- else -%}{%- assign picker_type = 'pill' -%}{%- endif -%}
+      {%- endif -%}
+
+      <fieldset class="product-option" data-product-option-group>
+        <legend><span>{{ option.name }}</span><span data-product-option-selected>{{ option.selected_value }}</span></legend>
+        {%- if picker_type == 'dropdown' -%}
+          <span class="product-option__select">
+            <select data-product-option aria-label="{{ option.name | escape }}">
+              {%- for choice_phase in choice_phases -%}
+                {%- for value in option.values -%}
+                  {%- liquid
+                    assign value_name = value | downcase
+                    assign value_pinned = false
+                    if pinned_choice != blank and value_name == pinned_choice
+                      assign value_pinned = true
+                    endif
+                    if choice_phase == 'pinned' and value_pinned == false
+                      continue
+                    endif
+                    if choice_phase == 'rest' and value_pinned
+                      continue
+                    endif
+                  -%}
+                  <option value="{{ value | escape }}" {% if value.selected %}selected{% endif %} {% unless value.available or block.settings.show_sold_out %}disabled{% endunless %}>{{ value }}</option>
+                {%- endfor -%}
+              {%- endfor -%}
+            </select>
+            {% render 'icon', icon: 'chevron-down', width: '11', height: '7' %}
+          </span>
+        {%- else -%}
+          <div class="product-option__values product-option__values--{{ picker_type }}" style="--product-swatch-radius: {% if block.settings.swatch_shape == 'square' %}var(--radius-base, 0){% else %}50%{% endif %};">
+            {%- assign choice_index = 0 -%}
+            {%- for choice_phase in choice_phases -%}
+              {%- for value in option.values -%}
+                {%- liquid
+                  assign value_name = value | downcase
+                  assign value_pinned = false
+                  if pinned_choice != blank and value_name == pinned_choice
+                    assign value_pinned = true
+                  endif
+                  if choice_phase == 'pinned' and value_pinned == false
+                    continue
+                  endif
+                  if choice_phase == 'rest' and value_pinned
+                    continue
+                  endif
+                  assign choice_index = choice_index | plus: 1
+                -%}
+                {%- assign option_input_id = block.id | append: '-' | append: option.position | append: '-' | append: choice_index -%}
+                <label class="product-option__choice" for="{{ option_input_id }}">
+                  <input
+                    id="{{ option_input_id }}"
+                    type="radio"
+                    name="{{ block.id }}-{{ option.name | escape }}"
+                    value="{{ value | escape }}"
+                    data-product-option
+                    {% if value.selected %}checked{% endif %}
+                    {% unless value.available or block.settings.show_sold_out %}disabled{% endunless %}
+                  >
+                  {%- if picker_type == 'swatch' -%}
+                    <span class="product-option__swatch" data-tip="{{ value | escape }}">{% render 'option-swatch', option_value: value, size: 96 %}</span>
+                  {%- else -%}
+                    {% render 'button', label: value, element: 'span', appearance: block.settings, class: 'product-option__pill' %}
+                  {%- endif -%}
+                </label>
+              {%- endfor -%}
+            {%- endfor -%}
+          </div>
+        {%- endif -%}
+      </fieldset>
+    {%- endfor -%}
+  </div>
+{%- endunless -%}
+
+{% schema %}
+{
+  "name": "t:sections.main_product.blocks.variant_picker", "tag": null,
+  "settings": [
+    { "type": "select", "id": "picker_type", "label": "t:sections.main_product.picker_type.label", "options": [
+      { "value": "automatic", "label": "t:sections.main_product.picker_type.automatic" }, { "value": "pill", "label": "t:sections.main_product.picker_type.pill" },
+      { "value": "swatch", "label": "t:sections.main_product.picker_type.swatch" }, { "value": "dropdown", "label": "t:sections.main_product.picker_type.dropdown" }
+    ], "default": "automatic" },
+    { "type": "select", "id": "swatch_shape", "label": "t:sections.main_product.swatch_shape.label", "options": [
+      { "value": "round", "label": "t:sections.main_product.swatch_shape.round" }, { "value": "square", "label": "t:sections.main_product.swatch_shape.square" }
+    ], "default": "round" },
+    { "type": "text", "id": "first_value", "label": "t:sections.main_product.first_value.label", "info": "t:sections.main_product.first_value.info" },
+    { "type": "checkbox", "id": "show_sold_out", "label": "t:sections.main_product.show_sold_out.label", "default": true },
+    { "type": "range", "id": "option_gap", "label": "t:sections.main_product.option_gap.label", "min": 0, "max": 40, "step": 2, "unit": "px", "default": 12 },
+    { "type": "header", "content": "t:blocks.button.appearance_header" },
+    { "type": "select", "id": "button_style", "label": "t:sections.all.button_style.label", "options": [
+      { "value": "filled", "label": "t:settings_schema.button_style.filled" }, { "value": "outline", "label": "t:settings_schema.button_style.outline" },
+      { "value": "link", "label": "t:settings_schema.button_style.link" }, { "value": "quiet", "label": "t:settings_schema.button_style.quiet" },
+      { "value": "arrow", "label": "t:settings_schema.button_style.arrow" }, { "value": "arrow_outline", "label": "t:settings_schema.button_style.arrow_outline" }
+    ], "default": "outline" },
+    { "type": "select", "id": "button_size", "label": "t:sections.all.button_size.label", "options": [
+      { "value": "inherit", "label": "t:settings_schema.button_size.inherit" }, { "value": "xs", "label": "t:settings_schema.button_size.xs" },
+      { "value": "sm", "label": "t:settings_schema.button_size.sm" }, { "value": "md", "label": "t:settings_schema.button_size.md" },
+      { "value": "lg", "label": "t:settings_schema.button_size.lg" }, { "value": "xl", "label": "t:settings_schema.button_size.xl" }
+    ], "default": "inherit" },
+    { "type": "select", "id": "button_radius", "label": "t:sections.all.button_radius.label", "options": [
+      { "value": "inherit", "label": "t:settings_schema.button_radius.inherit" }, { "value": "square", "label": "t:settings_schema.button_radius.square" },
+      { "value": "soft", "label": "t:settings_schema.button_radius.soft" }, { "value": "rounded", "label": "t:settings_schema.button_radius.rounded" },
+      { "value": "pill", "label": "t:settings_schema.button_radius.pill" }
+    ], "default": "inherit", "visible_if": "{{ block.settings.button_style == 'filled' or block.settings.button_style == 'outline' or block.settings.button_style == 'arrow_outline' }}" },
+    { "type": "select", "id": "button_border_width", "label": "t:blocks.button.border_width.label", "options": [
+      { "value": "inherit", "label": "t:blocks.button.inherit" }, { "value": "xs", "label": "t:settings_schema.buttons.button_border_width.options__xs" },
+      { "value": "sm", "label": "t:settings_schema.buttons.button_border_width.options__sm" }, { "value": "md", "label": "t:settings_schema.buttons.button_border_width.options__md" },
+      { "value": "lg", "label": "t:settings_schema.buttons.button_border_width.options__lg" }, { "value": "xl", "label": "t:settings_schema.buttons.button_border_width.options__xl" }
+    ], "default": "inherit", "visible_if": "{{ block.settings.button_style == 'outline' or block.settings.button_style == 'arrow_outline' }}" },
+    { "type": "color", "id": "background_color", "label": "t:blocks.button.background_color.label", "info": "t:blocks.button.color_info", "visible_if": "{{ block.settings.button_style == 'filled' }}" },
+    { "type": "color", "id": "text_color", "label": "t:blocks.button.text_color.label", "info": "t:blocks.button.color_info" },
+    { "type": "color", "id": "border_color", "label": "t:blocks.button.border_color.label", "info": "t:blocks.button.color_info", "visible_if": "{{ block.settings.button_style == 'outline' or block.settings.button_style == 'arrow_outline' }}" },
+    { "type": "color", "id": "underline_color", "label": "t:blocks.button.underline_color.label", "info": "t:blocks.button.color_info", "visible_if": "{{ block.settings.button_style == 'link' or block.settings.button_style == 'quiet' }}" },
+    { "type": "color", "id": "arrow_color", "label": "t:blocks.button.arrow_color.label", "info": "t:blocks.button.color_info", "visible_if": "{{ block.settings.button_style == 'arrow' }}" },
+    { "type": "header", "content": "t:blocks.button.hover_header" },
+    { "type": "color", "id": "hover_background_color", "label": "t:blocks.button.hover_background_color.label", "info": "t:blocks.button.color_info", "visible_if": "{{ block.settings.button_style == 'filled' or block.settings.button_style == 'outline' or block.settings.button_style == 'arrow_outline' }}" },
+    { "type": "color", "id": "hover_text_color", "label": "t:blocks.button.hover_text_color.label", "info": "t:blocks.button.color_info" },
+    { "type": "color", "id": "hover_border_color", "label": "t:blocks.button.hover_border_color.label", "info": "t:blocks.button.color_info", "visible_if": "{{ block.settings.button_style == 'outline' or block.settings.button_style == 'arrow_outline' }}" },
+    { "type": "color", "id": "hover_underline_color", "label": "t:blocks.button.hover_underline_color.label", "info": "t:blocks.button.color_info", "visible_if": "{{ block.settings.button_style == 'link' or block.settings.button_style == 'quiet' }}" },
+    { "type": "color", "id": "hover_arrow_color", "label": "t:blocks.button.hover_arrow_color.label", "info": "t:blocks.button.color_info", "visible_if": "{{ block.settings.button_style == 'arrow' }}" },
+    { "type": "header", "content": "t:sections.main_product.selected_style.header" },
+    { "type": "color", "id": "selected_background_color", "label": "t:sections.main_product.selected_style.background" },
+    { "type": "color", "id": "selected_text_color", "label": "t:sections.main_product.selected_style.text" },
+    { "type": "color", "id": "selected_border_color", "label": "t:sections.main_product.selected_style.border" }
+  ],
+  "presets": [{ "name": "t:sections.main_product.blocks.variant_picker" }]
+}
+{% endschema %}

@@ -19,9 +19,6 @@
 {%- endcomment -%}
 
 {%- liquid
-  assign wordmark_source = settings.wordmark | default: shop.name | upcase
-  assign wordmark_letters = wordmark_source | split: ''
-
   assign tab_blocks = section.blocks | where: 'type', 'collection_tab'
   assign detail_blocks = section.blocks | where: 'type', 'hero_detail'
   assign button_block = section.blocks | where: 'type', 'hero_cta' | first
@@ -49,30 +46,7 @@
     </div>
   {%- endif -%}
 
-  {%- comment -%}
-    The wordmark is the page's heading, not a picture of one. It was a `div`
-    carrying `role="img"`, so the homepage announced no heading at all — and a
-    document whose only headings are five `h3` feature cards has a
-    hierarchy that starts at level three.
-
-    Spans rather than divs because an `h1` takes phrasing content: nesting a
-    `div` in it is invalid HTML, and this theme has a store review to pass. The
-    letters stay one element each — the entrance animates them 60ms apart off
-    `--letter` — so the whole lockup is hidden from assistive technology and
-    the accessible name is a single text node instead.
-  {%- endcomment -%}
-  {%- if section.settings.show_wordmark -%}
-    <h1 class="hero__wordmark" data-nav-anchor>
-      <span class="visually-hidden">{{ wordmark_source }}</span>
-      <span class="hero__wordmark-inner" aria-hidden="true">
-        <span class="hero__letters">
-          {%- for letter in wordmark_letters -%}
-            <span style="--letter: {{ forloop.index0 }};">{{ letter }}</span>
-          {%- endfor -%}
-        </span>
-      </span>
-    </h1>
-  {%- endif -%}
+  {% render 'huge-text', source: section.settings.huge_text_value, placement: 'hero' %}
 
   <div class="hero__fit" data-hero-fit>
     <div class="hero__grid" data-hero-grid>
@@ -133,22 +107,55 @@
       </div>
 
       <div class="hero__portrait">
-        <div class="hero__portrait-frame">
-          {%- if section.settings.image != blank -%}
-            <img
-              src="{{ section.settings.image | image_url: width: 1200 }}"
-              data-image-lqip="{{ section.settings.image | image_url: width: 40 }}"
-              srcset="{{ section.settings.image | image_url: width: 500 }} 500w, {{ section.settings.image | image_url: width: 800 }} 800w, {{ section.settings.image | image_url: width: 1200 }} 1200w"
-              sizes="(min-width: 68.75rem) 44vh, (min-width: 61.875rem) 46vh, 62vw"
-              alt="{{ section.settings.image.alt | escape }}"
-              width="{{ section.settings.image.width }}"
-              height="{{ section.settings.image.height }}"
-              style="object-position: {{ section.settings.image.presentation.focal_point }};"
-              loading="eager"
-              fetchpriority="high"
-            >
+        {%- assign initial_portrait_ratio = tab_blocks.first.settings.image_ratio | default: '3 / 4' -%}
+        <div class="hero__portrait-frame" data-hero-portrait-frame style="--hero-portrait-ratio: {{ initial_portrait_ratio }};">
+          {%- if tab_blocks.size > 0 -%}
+            {%- for block in tab_blocks -%}
+              {%- assign portrait_image = block.settings.image | default: section.settings.image -%}
+              <div
+                class="hero__portrait-image"
+                data-hero-portrait="{{ forloop.index0 }}"
+                data-media-ratio="{{ block.settings.image_ratio | default: '3 / 4' }}"
+                style="--hero-media-fit: {{ block.settings.image_fit | default: 'cover' }};"
+                {% unless forloop.first %}hidden{% endunless %}
+              >
+                {%- if portrait_image != blank -%}
+                  <img
+                    src="{{ portrait_image | image_url: width: 1200 }}"
+                    data-image-lqip="{{ portrait_image | image_url: width: 40 }}"
+                    srcset="{{ portrait_image | image_url: width: 500 }} 500w, {{ portrait_image | image_url: width: 800 }} 800w, {{ portrait_image | image_url: width: 1200 }} 1200w"
+                    sizes="(min-width: 68.75rem) 44vh, (min-width: 61.875rem) 46vh, 62vw"
+                    alt="{{ portrait_image.alt | escape }}"
+                    width="{{ portrait_image.width }}"
+                    height="{{ portrait_image.height }}"
+                    style="object-position: {{ portrait_image.presentation.focal_point }};"
+                    loading="{% if forloop.first %}eager{% else %}lazy{% endif %}"
+                    {% if forloop.first %}fetchpriority="high"{% endif %}
+                  >
+                {%- else -%}
+                  {{ 'lifestyle-1' | placeholder_svg_tag: 'placeholder-svg' }}
+                {%- endif -%}
+              </div>
+            {%- endfor -%}
           {%- else -%}
-            {{ 'lifestyle-1' | placeholder_svg_tag: 'placeholder-svg' }}
+            <div class="hero__portrait-image">
+              {%- if section.settings.image != blank -%}
+                <img
+                  src="{{ section.settings.image | image_url: width: 1200 }}"
+                  data-image-lqip="{{ section.settings.image | image_url: width: 40 }}"
+                  srcset="{{ section.settings.image | image_url: width: 500 }} 500w, {{ section.settings.image | image_url: width: 800 }} 800w, {{ section.settings.image | image_url: width: 1200 }} 1200w"
+                  sizes="(min-width: 68.75rem) 44vh, (min-width: 61.875rem) 46vh, 62vw"
+                  alt="{{ section.settings.image.alt | escape }}"
+                  width="{{ section.settings.image.width }}"
+                  height="{{ section.settings.image.height }}"
+                  style="object-position: {{ section.settings.image.presentation.focal_point }};"
+                  loading="eager"
+                  fetchpriority="high"
+                >
+              {%- else -%}
+                {{ 'lifestyle-1' | placeholder_svg_tag: 'placeholder-svg' }}
+              {%- endif -%}
+            </div>
           {%- endif -%}
           <span class="hero__portrait-fade" aria-hidden="true"></span>
         </div>
@@ -176,7 +183,7 @@
               >
                 {%- if pool != blank and pool.products.size > 0 -%}
                   {%- for product in pool.products limit: 12 -%}
-                    <a class="hero-card" href="{{ product.url }}" data-hero-card>
+                    <a class="hero-card" href="{{ product.url }}" data-hero-card{% if section.settings.card_action == 'quick_view' %} data-quick-view{% endif %}>
                       <span class="hero-card__frame">
                         {%- if product.featured_media -%}
                           <img
@@ -250,14 +257,10 @@
       "default": "scheme_2"
     },
     {
-      "type": "header",
-      "content": "t:sections.hero.wordmark_header"
-    },
-    {
-      "type": "checkbox",
-      "id": "show_wordmark",
-      "label": "t:sections.hero.show_wordmark.label",
-      "default": true
+      "type": "text",
+      "id": "huge_text_value",
+      "label": "t:blocks.huge_text.value",
+      "default": "STORE NAME"
     },
     {
       "type": "checkbox",
@@ -300,6 +303,16 @@
       "id": "tab_label",
       "label": "t:sections.hero.tab_label.label",
       "default": "Collection:"
+    },
+    {
+      "type": "select",
+      "id": "card_action",
+      "label": "t:sections.hero.card_action.label",
+      "options": [
+        { "value": "product_page", "label": "t:sections.hero.card_action.product_page" },
+        { "value": "quick_view", "label": "t:sections.hero.card_action.quick_view" }
+      ],
+      "default": "product_page"
     }
   ],
   "blocks": [
@@ -326,6 +339,10 @@
       "name": "t:sections.hero.blocks.collection_tab.name",
       "settings": [
         {
+          "type": "header",
+          "content": "t:sections.hero.blocks.collection_tab.content_header"
+        },
+        {
           "type": "text",
           "id": "label",
           "label": "t:sections.all.link_label.label",
@@ -336,6 +353,39 @@
           "id": "collection",
           "label": "t:sections.hero.blocks.collection_tab.collection.label",
           "info": "t:sections.hero.blocks.collection_tab.collection.info"
+        },
+        {
+          "type": "header",
+          "content": "t:sections.hero.blocks.collection_tab.image_header"
+        },
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "t:sections.hero.blocks.collection_tab.image.label",
+          "info": "t:sections.hero.blocks.collection_tab.image.info"
+        },
+        {
+          "type": "select",
+          "id": "image_ratio",
+          "label": "t:sections.hero.blocks.collection_tab.image_ratio.label",
+          "options": [
+            { "value": "1 / 1", "label": "t:settings_schema.options.square" },
+            { "value": "4 / 5", "label": "t:settings_schema.options.portrait" },
+            { "value": "3 / 4", "label": "t:settings_schema.options.tall_portrait" },
+            { "value": "4 / 3", "label": "t:settings_schema.options.landscape" },
+            { "value": "16 / 9", "label": "t:settings_schema.options.wide" }
+          ],
+          "default": "3 / 4"
+        },
+        {
+          "type": "select",
+          "id": "image_fit",
+          "label": "t:sections.hero.blocks.collection_tab.image_fit.label",
+          "options": [
+            { "value": "cover", "label": "t:settings_schema.options.cover" },
+            { "value": "contain", "label": "t:settings_schema.options.contain" }
+          ],
+          "default": "cover"
         }
       ]
     },

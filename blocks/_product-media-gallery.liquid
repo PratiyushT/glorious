@@ -1,0 +1,52 @@
+{%- comment -%}
+  Static contextual Media specialization. Main product and Featured product
+  render this same block with different closest products; one gallery schema
+  and one renderer therefore serve both surfaces.
+{%- endcomment -%}
+
+{%- assign product = closest.product -%}
+{%- assign gallery_style = '--product-media-fit: ' | append: block.settings.media_fit | append: ';' -%}
+{% render 'product-gallery',
+  product: product,
+  layout: block.settings.layout,
+  first_media_large: block.settings.first_media_large,
+  video_first: block.settings.video_first,
+  sticky_mode: block.settings.sticky_mode,
+  media_fit: block.settings.media_fit,
+  show_arrows: block.settings.show_arrows,
+  show_dots: block.settings.show_dots,
+  video_label: block.settings.video_label,
+  autoplay_video: block.settings.autoplay_video,
+  eager_first: true,
+  style: gallery_style,
+  attributes: block.shopify_attributes
+%}
+
+{% schema %}
+{
+  "name": "t:sections.main_product.gallery_header",
+  "tag": null,
+  "settings": [
+    { "type": "select", "id": "layout", "label": "t:sections.main_product.gallery_layout.label", "options": [
+      { "value": "carousel", "label": "t:sections.main_product.gallery_layout.carousel" },
+      { "value": "stacked", "label": "t:sections.main_product.gallery_layout.stacked" }
+    ], "default": "carousel" },
+    { "type": "checkbox", "id": "first_media_large", "label": "t:sections.main_product.first_media_large.label", "info": "t:sections.main_product.first_media_large.info", "visible_if": "{{ block.settings.layout == 'stacked' }}", "default": true },
+    { "type": "checkbox", "id": "video_first", "label": "t:sections.main_product.video_first.label", "info": "t:sections.main_product.video_first.info", "default": false },
+    { "type": "select", "id": "sticky_mode", "label": "t:sections.main_product.sticky_mode.label", "info": "t:sections.main_product.sticky_mode.info", "options": [
+      { "value": "adaptive", "label": "t:sections.main_product.sticky_mode.adaptive" },
+      { "value": "gallery", "label": "t:sections.main_product.sticky_mode.gallery" },
+      { "value": "details", "label": "t:sections.main_product.sticky_mode.details" },
+      { "value": "none", "label": "t:sections.main_product.sticky_mode.none" }
+    ], "default": "adaptive" },
+    { "type": "select", "id": "media_fit", "label": "t:sections.main_product.media_fit.label", "options": [
+      { "value": "contain", "label": "t:sections.main_product.media_fit.contain" },
+      { "value": "cover", "label": "t:sections.main_product.media_fit.cover" }
+    ], "default": "contain" },
+    { "type": "checkbox", "id": "show_arrows", "label": "t:sections.main_product.show_arrows.label", "visible_if": "{{ block.settings.layout == 'carousel' }}", "default": true },
+    { "type": "checkbox", "id": "show_dots", "label": "t:sections.main_product.show_dots.label", "visible_if": "{{ block.settings.layout == 'carousel' }}", "default": true },
+    { "type": "text", "id": "video_label", "label": "t:sections.main_product.video_label.label", "default": "360°" },
+    { "type": "checkbox", "id": "autoplay_video", "label": "t:sections.main_product.autoplay_video.label", "info": "t:sections.main_product.autoplay_video.info", "default": false }
+  ]
+}
+{% endschema %}

@@ -28,8 +28,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="format-detection" content="telephone=no">
 
-  <title>{{ 'gift_cards.title' | t: value: formatted_initial_value_stripped, shop: shop.name }}</title>
-  <meta name="description" content="{{ 'gift_cards.meta_description' | t: shop: shop.name | escape }}">
+  {%- assign brand_name = settings.store_display_name | default: shop.name -%}
+  <title>{{ 'gift_cards.title' | t: value: formatted_initial_value_stripped, shop: brand_name }}</title>
+  <meta name="description" content="{{ 'gift_cards.meta_description' | t: shop: brand_name | escape }}">
 
   {{ content_for_header }}
 
@@ -133,7 +134,7 @@
   <div class="wrap">
 
     <header role="banner" id="header">
-      <a href="{{ shop.url }}" class="logo">{{ shop.name }}</a>
+      <a href="{{ shop.url }}" class="logo">{{ settings.store_display_name | default: shop.name }}</a>
       <a href="{{ shop.url }}" class="shop-url">{{ shop.url | remove: 'http://' }}</a>
     </header>
 

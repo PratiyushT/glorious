@@ -1,0 +1,33 @@
+{%- assign product_form_id = 'ProductForm-' | append: section.id -%}
+{%- capture input_style -%}{% render 'input-style', background_color: block.settings.background_color, text_color: block.settings.text_color, border_color: block.settings.border_color, radius: block.settings.radius, border_width: block.settings.border_width %}{%- endcapture -%}
+<label class="product-quantity" style="{{ input_style | strip }}" {{ block.shopify_attributes }}>
+  <span>{{ 'products.quantity' | t }}</span>
+  <span class="product-quantity__control">
+    <button type="button" data-quantity-step="-1" aria-label="{{ 'products.decrease_quantity' | t }}">−</button>
+    <input type="number" name="quantity" value="1" min="1" step="1" inputmode="numeric" form="{{ product_form_id }}" data-product-quantity aria-label="{{ 'products.quantity' | t }}">
+    <button type="button" data-quantity-step="1" aria-label="{{ 'products.increase_quantity' | t }}">+</button>
+  </span>
+</label>
+
+{% schema %}
+{
+  "name": "t:sections.main_product.blocks.quantity", "tag": null,
+  "settings": [
+    { "type": "header", "content": "t:sections.main_product.input_style.header" },
+    { "type": "select", "id": "radius", "label": "t:sections.all.button_radius.label", "options": [
+      { "value": "inherit", "label": "t:settings_schema.button_radius.inherit" }, { "value": "square", "label": "t:settings_schema.button_radius.square" },
+      { "value": "soft", "label": "t:settings_schema.button_radius.soft" }, { "value": "rounded", "label": "t:settings_schema.button_radius.rounded" },
+      { "value": "pill", "label": "t:settings_schema.button_radius.pill" }
+    ], "default": "inherit" },
+    { "type": "select", "id": "border_width", "label": "t:blocks.button.border_width.label", "options": [
+      { "value": "inherit", "label": "t:blocks.button.inherit" }, { "value": "xs", "label": "t:settings_schema.buttons.button_border_width.options__xs" },
+      { "value": "sm", "label": "t:settings_schema.buttons.button_border_width.options__sm" }, { "value": "md", "label": "t:settings_schema.buttons.button_border_width.options__md" },
+      { "value": "lg", "label": "t:settings_schema.buttons.button_border_width.options__lg" }, { "value": "xl", "label": "t:settings_schema.buttons.button_border_width.options__xl" }
+    ], "default": "inherit" },
+    { "type": "color", "id": "background_color", "label": "t:blocks.button.background_color.label" },
+    { "type": "color", "id": "text_color", "label": "t:blocks.button.text_color.label" },
+    { "type": "color", "id": "border_color", "label": "t:blocks.button.border_color.label" }
+  ],
+  "presets": [{ "name": "t:sections.main_product.blocks.quantity" }]
+}
+{% endschema %}

@@ -1,0 +1,7 @@
+{%- assign variant = closest.product.selected_or_first_available_variant -%}
+{%- if variant.inventory_management and variant.inventory_quantity <= block.settings.low_inventory_threshold -%}
+  <div class="product-inventory" {{ block.shopify_attributes }}>{{ 'products.low_inventory' | t: count: variant.inventory_quantity }}</div>
+{%- endif -%}
+{% schema %}
+{ "name": "t:sections.main_product.blocks.inventory", "tag": null, "settings": [{ "type": "range", "id": "low_inventory_threshold", "label": "t:sections.main_product.low_inventory_threshold.label", "min": 0, "max": 20, "step": 1, "default": 5 }], "presets": [{ "name": "t:sections.main_product.blocks.inventory" }] }
+{% endschema %}

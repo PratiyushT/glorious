@@ -22,8 +22,9 @@ them from `glorious-mark-*` — which changed the filename and not the artwork. 
 theme offered for sale cannot carry another business's mark, so they are
 deleted rather than merely unreferenced.
 
-A merchant's own mark still uploads to the `wordmark_mark` setting and renders
-as an `<img>`; the theme never recolours it.
+The emblem is now theme-owned and always follows `currentColor`. Wordmark text
+is not a theme setting: the global Huge Text block supplies each value in
+Header, Hero, Footer and any merchant-composed placement.
 
 ## Originality
 

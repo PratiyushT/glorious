@@ -30,14 +30,14 @@
   {%- case block.settings.layout -%}
     {%- when 'display' -%}
       <{{ tag }}
-        class="text-block display reveal{{ align_class }}"
+        class="text-block display reveal{{ align_class }}{% if class != blank %} {{ class }}{% endif %}"
         {% if marker != blank %}{{ marker }}{% endif %}
         style="{% render 'block-spacing', padding: block.settings.padding %}{% render 'text-style', preset: block.settings.style, font_style: block.settings.override_font, font_size: block.settings.override_size, color: block.settings.color, line_height: block.settings.override_leading, text_case: block.settings.override_case, letter_spacing: block.settings.override_tracking %}"
         {{ block.shopify_attributes }}
       >{{ content }}</{{ tag }}>
     {%- when 'eyebrow' -%}
       <div
-        class="section-eyebrow reveal{{ align_class }}"
+        class="section-eyebrow reveal{{ align_class }}{% if class != blank %} {{ class }}{% endif %}"
         {% if marker != blank %}{{ marker }}{% endif %}
         style="{% render 'block-spacing', padding: block.settings.padding %}"
         {{ block.shopify_attributes }}
@@ -46,14 +46,14 @@
       </div>
     {%- when 'lede' -%}
       <{{ tag }}
-        class="text-block section-lede reveal{{ align_class }}"
+        class="text-block section-lede reveal{{ align_class }}{% if class != blank %} {{ class }}{% endif %}"
         {% if marker != blank %}{{ marker }}{% endif %}
         style="{% render 'block-spacing', padding: block.settings.padding %}{% render 'text-style', preset: block.settings.style, font_style: block.settings.override_font, font_size: block.settings.override_size, color: block.settings.color, line_height: block.settings.override_leading, text_case: block.settings.override_case, letter_spacing: block.settings.override_tracking %}"
         {{ block.shopify_attributes }}
       >{{ content }}</{{ tag }}>
     {%- else -%}
       <{{ tag }}
-        class="text-block{{ align_class }}"
+        class="text-block{{ align_class }}{% if class != blank %} {{ class }}{% endif %}"
         {% if marker != blank %}{{ marker }}{% endif %}
         style="{% render 'block-spacing', padding: block.settings.padding %}{% render 'text-style', preset: block.settings.style, font_style: block.settings.override_font, font_size: block.settings.override_size, color: block.settings.color, line_height: block.settings.override_leading, text_case: block.settings.override_case, letter_spacing: block.settings.override_tracking %}"
         {{ block.shopify_attributes }}

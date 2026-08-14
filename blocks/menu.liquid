@@ -1,0 +1,51 @@
+{%- comment -%}Reusable Shopify navigation menu for any composable section.{%- endcomment -%}
+{%- assign menu_id = 'MenuBlock-' | append: block.id -%}
+<nav class="menu-block" aria-label="{{ block.settings.heading | default: block.settings.menu.title | escape }}" {{ block.shopify_attributes }}>
+  {%- if block.settings.heading != blank -%}
+    <p class="menu-block__heading" style="{% render 'text-style', preset: block.settings.heading_style %}">{{ block.settings.heading }}</p>
+  {%- endif -%}
+  <ul class="menu-block__list menu-block__list--{{ block.settings.layout }}" id="{{ menu_id }}" role="list">
+    {%- for link in block.settings.menu.links -%}
+      <li>
+        <a href="{{ link.url }}"{% if link.current %} aria-current="page"{% endif %}>{{ link.title }}</a>
+        {%- if block.settings.show_nested and link.links.size > 0 -%}
+          <ul class="menu-block__children" role="list">
+            {%- for child_link in link.links -%}
+              <li><a href="{{ child_link.url }}"{% if child_link.current %} aria-current="page"{% endif %}>{{ child_link.title }}</a></li>
+            {%- endfor -%}
+          </ul>
+        {%- endif -%}
+      </li>
+    {%- endfor -%}
+  </ul>
+</nav>
+
+{% schema %}
+{
+  "name": "Menu",
+  "tag": null,
+  "settings": [
+    { "type": "link_list", "id": "menu", "label": "Menu", "default": "main-menu" },
+    { "type": "inline_richtext", "id": "heading", "label": "Heading" },
+    {
+      "type": "select", "id": "heading_style", "label": "Heading style",
+      "options": [
+        { "value": "heading_3", "label": "Heading 3" },
+        { "value": "heading_4", "label": "Heading 4" },
+        { "value": "heading_5", "label": "Heading 5" },
+        { "value": "subheading", "label": "Subheading" },
+        { "value": "caption", "label": "Caption" }
+      ], "default": "subheading", "visible_if": "{{ block.settings.heading != blank }}"
+    },
+    {
+      "type": "select", "id": "layout", "label": "Layout",
+      "options": [
+        { "value": "vertical", "label": "Vertical" },
+        { "value": "horizontal", "label": "Horizontal" }
+      ], "default": "vertical"
+    },
+    { "type": "checkbox", "id": "show_nested", "label": "Show nested links", "default": true }
+  ],
+  "presets": [{ "name": "Menu" }]
+}
+{% endschema %}

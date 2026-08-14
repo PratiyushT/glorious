@@ -1,18 +1,70 @@
 {%- comment -%}
-  Quick view — the panel's contents, rendered on demand.
-
-  Deliberately schema-less, exactly like sections/predictive-search.liquid: a
-  merchant never places this, it only answers theme.js's request for
-  `<product url>?section_id=quick-view`. Because that request is made against
-  the product's own URL, `product` here is the real product object and every
-  price, translation and image size is Liquid's.
-
-  The wrapper is what the script looks for — it takes the inner HTML and drops
-  it into the overlay shell in snippets/quick-view.liquid.
+  Quick view is a header-group shell around the same contextual product blocks
+  used by Main product and Featured product. The Section Rendering API requests
+  this saved section id against a product URL, giving every block the real
+  `closest.product` while keeping the editor composition site-wide.
 {%- endcomment -%}
 
-<div data-quick-view-inner>
-  {%- if product != blank -%}
-    {% render 'quick-view-contents', product: product %}
-  {%- endif -%}
-</div>
+{%- if section.settings.enabled -%}
+  {% render 'quick-view', section: section %}
+
+  <template data-quick-view-inner>
+    {%- if product != blank -%}
+      {%- assign selected_variant = product.selected_or_first_available_variant -%}
+      <section
+        class="main-product quick-view-product"
+        data-main-product
+        data-initial-variant-id="{{ selected_variant.id }}"
+      >
+        <div class="quick-view__frame">
+          <div class="quick-view__grid">
+            {% content_for 'block', type: '_product-media-gallery', id: 'media-gallery', closest.product: product %}
+
+            <div class="quick-view__info">
+              {% content_for 'blocks', closest.product: product %}
+            </div>
+          </div>
+
+          <a class="quick-view__full" href="{{ product.url }}" data-product-full-details>
+            <span>{{ 'products.view_full_details' | t }}</span>
+            <span class="quick-view__full-arrow" aria-hidden="true">{% render 'icon', icon: 'arrow-right' %}</span>
+          </a>
+        </div>
+
+        {% render 'product-variants-json', product: product %}
+      </section>
+    {%- endif -%}
+  </template>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "t:settings_schema.quick_view.name",
+  "tag": "div",
+  "class": "quick-view-section",
+  "enabled_on": { "groups": ["header"] },
+  "blocks": [{ "type": "@theme" }, { "type": "@app" }],
+  "settings": [
+    { "type": "checkbox", "id": "enabled", "label": "t:settings_schema.quick_view.quick_view_enabled.label", "default": true },
+    { "type": "color_scheme", "id": "color_scheme", "label": "t:sections.all.color_scheme.label", "default": "scheme_1" },
+    { "type": "select", "id": "scroll_mode", "label": "t:settings_schema.quick_view.quick_view_scroll.label", "info": "t:settings_schema.quick_view.quick_view_scroll.info", "options": [
+      { "value": "panel", "label": "t:settings_schema.quick_view.quick_view_scroll.panel" },
+      { "value": "media", "label": "t:settings_schema.quick_view.quick_view_scroll.media" },
+      { "value": "details", "label": "t:settings_schema.quick_view.quick_view_scroll.details" }
+    ], "default": "panel" }
+  ],
+  "presets": [{
+    "name": "t:settings_schema.quick_view.name",
+    "blocks": [
+      { "type": "_product-media-gallery", "static": true, "id": "media-gallery" },
+      { "type": "product_badges" },
+      { "type": "product_vendor" },
+      { "type": "product_title", "settings": { "style": "heading_2", "element": "h2", "override_size": "4xl" } },
+      { "type": "product_price" },
+      { "type": "product_variant_picker" },
+      { "type": "product_quantity" },
+      { "type": "product_buy_buttons", "settings": { "show_dynamic_checkout": false } }
+    ]
+  }]
+}
+{% endschema %}

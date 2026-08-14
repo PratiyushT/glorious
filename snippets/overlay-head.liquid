@@ -8,14 +8,14 @@
     close_action - 'menu' or an overlay name. Drives which controller the
                    close button talks to.
     row          - animation rank, so the head joins the staggered cascade.
+    huge_text    - rendered Header Huge Text block markup.
 {%- endcomment -%}
 
 <div class="overlay-head" style="--row: {{ row | default: 0 }};">
   <a class="overlay-head__logo" href="{{ routes.root_url }}">
-    {% render 'wordmark-lockup', size: 'lg' %}
+    {{ huge_text }}
   </a>
 
-  <button class="overlay-head__close" type="button" data-overlay-close="{{ close_action }}">
-    {{ 'navigation.close' | t }}
-  </button>
+  {%- capture close_attributes -%}data-overlay-close="{{ close_action }}"{%- endcapture -%}
+  {% render 'overlay-close', attributes: close_attributes %}
 </div>

@@ -9,6 +9,15 @@
       assign content_gap = 'var(--step-' | append: section.settings.gap | append: ')'
     endif
   endunless
+
+  comment
+    Theme settings → Catalog → Hidden collections: merchandising groupings a
+    shop keeps for a display or feature rather than for browsing. They are
+    excluded from this automatic index; a section where the merchant picks
+    collections by hand still shows them. `contains` cannot compare drops, so
+    the list is projected to handles first.
+  endcomment
+  assign hidden_handles = settings.hidden_collections | map: 'handle'
 -%}
 
 <section
@@ -18,7 +27,9 @@
   <div class="page-width">
     <div class="collection-index-grid">
       {%- for collection in collections -%}
-        {% content_for 'block', type: '_collection-card', id: 'collection-card', closest.collection: collection %}
+        {%- unless hidden_handles contains collection.handle -%}
+          {% content_for 'block', type: '_collection-card', id: 'collection-card', closest.collection: collection %}
+        {%- endunless -%}
       {%- else -%}
         {%- for i in (1..section.settings.columns) -%}
           {% content_for 'block', type: '_collection-card', id: 'collection-card', closest.collection: blank %}

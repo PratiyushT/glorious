@@ -18,6 +18,97 @@
   margin-inline: auto;
 }
 
+.policy-layout {
+  display: grid;
+  grid-template-columns: minmax(11rem, 15rem) minmax(0, 1fr);
+  gap: clamp(var(--step-large), 6vw, var(--step-max));
+  align-items: start;
+}
+
+.policy-layout--single {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.policy-nav {
+  position: sticky;
+  top: calc(var(--nav-h, 4rem) + var(--step-medium));
+  min-width: 0;
+}
+
+.policy-nav__eyebrow {
+  margin: 0 0 var(--step-small);
+  color: var(--c-muted);
+  font-size: var(--text-caption-size);
+  letter-spacing: var(--track-wide);
+  text-transform: uppercase;
+}
+
+.policy-nav__list {
+  display: grid;
+  gap: var(--step-tiny);
+  margin: 0;
+  padding: 0;
+}
+
+.policy-nav a {
+  display: block;
+  padding-block: var(--step-tiny);
+  border-block-end: 1px solid transparent;
+  color: var(--c-muted);
+  text-decoration: none;
+}
+
+.policy-nav a:hover,
+.policy-nav a[aria-current='page'] {
+  border-color: var(--c-hairline);
+  color: var(--c-text);
+}
+
+.policy-native-content {
+  min-width: 0;
+  width: min(100%, 50rem);
+}
+
+.policy-native-content .shopify-policy__container {
+  max-width: none;
+  margin: 0;
+  padding: 0;
+}
+
+.policy-native-content .shopify-policy__title {
+  text-align: start;
+}
+
+.policy-native-content .shopify-policy__title h1 {
+  margin-block: 0 var(--step-large);
+  font-family: var(--font-heading);
+  font-size: var(--text-title-size);
+  font-style: var(--font-heading-style);
+  font-weight: var(--font-heading-weight);
+  line-height: var(--text-title-leading);
+  letter-spacing: var(--text-title-tracking);
+  text-transform: var(--text-title-case);
+}
+
+.policy-native-content .shopify-policy__body {
+  font-size: var(--text-paragraph-size);
+  line-height: var(--text-paragraph-leading);
+}
+
+.policy-native-content .shopify-policy__body h2,
+.policy-native-content .shopify-policy__body h3,
+.policy-native-content .shopify-policy__body h4 {
+  margin-block: var(--step-large) var(--step-small);
+  font-family: var(--font-heading);
+  font-style: var(--font-heading-style);
+  font-weight: var(--font-heading-weight);
+  line-height: var(--lead-snug);
+}
+
+.policy-native-content .shopify-policy__body h2 { font-size: var(--text-heading_3-size); }
+.policy-native-content .shopify-policy__body h3 { font-size: var(--text-heading_4-size); }
+.policy-native-content .shopify-policy__body h4 { font-size: var(--text-heading_5-size); }
+
 .content-prose {
   font-size: var(--text-paragraph-size);
   line-height: var(--text-paragraph-leading);
@@ -285,6 +376,41 @@
 }
 
 @media (max-width: 46.9375rem) {
+  .policy-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .policy-nav {
+    position: static;
+    overflow-x: auto;
+    margin-inline: calc(var(--page-gutter) * -1);
+    padding-inline: var(--page-gutter);
+    scrollbar-width: none;
+  }
+
+  .policy-nav::-webkit-scrollbar { display: none; }
+
+  .policy-nav__eyebrow { display: none; }
+
+  .policy-nav__list {
+    display: flex;
+    width: max-content;
+    gap: var(--step-tiny);
+  }
+
+  .policy-nav a {
+    padding: .65rem .9rem;
+    border: 1px solid var(--c-hairline);
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+
+  .policy-nav a[aria-current='page'] {
+    color: var(--c-button-label);
+    background: var(--c-button);
+    border-color: var(--c-button);
+  }
+
   .article-grid,
   .collection-index-grid,
   .contact-form__grid {

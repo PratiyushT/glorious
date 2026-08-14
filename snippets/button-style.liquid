@@ -1,0 +1,51 @@
+{%- comment -%}
+  Emits only the shared Button custom properties. This lets form-owned controls
+  such as Shopify's accelerated checkout inherit the same merchant appearance
+  as a rendered Button without duplicating the settings contract.
+{%- endcomment -%}
+{%- liquid
+  if appearance != blank
+    assign size = appearance.button_size
+    assign radius = appearance.button_radius
+    assign border_width = appearance.button_border_width
+    assign background_color = appearance.background_color
+    assign text_color = appearance.text_color
+    assign border_color = appearance.border_color
+    assign underline_color = appearance.underline_color
+    assign arrow_color = appearance.arrow_color
+    assign hover_background_color = appearance.hover_background_color
+    assign hover_text_color = appearance.hover_text_color
+    assign hover_border_color = appearance.hover_border_color
+    assign hover_underline_color = appearance.hover_underline_color
+    assign hover_arrow_color = appearance.hover_arrow_color
+  endif
+
+  if size == 'inherit'
+    assign size = blank
+  endif
+  if radius == 'inherit'
+    assign radius = blank
+  endif
+  if border_width == 'inherit'
+    assign border_width = blank
+  endif
+-%}
+{%- capture resolved_size -%}{%- if size != blank -%}{%- render 'scale-step', scale: 'button_size', step: size -%}{%- endif -%}{%- endcapture -%}
+{%- capture resolved_radius -%}{%- if radius != blank -%}{%- render 'scale-step', scale: 'button_radius', step: radius -%}{%- endif -%}{%- endcapture -%}
+{%- capture resolved_border -%}{%- if border_width != blank -%}{%- render 'scale-step', scale: 'button_border_width', step: border_width -%}{%- endif -%}{%- endcapture -%}
+{%- if resolved_size != blank -%}
+  {%- assign parts = resolved_size | split: ',' -%}
+  --btn-pad-x: {{ parts[0] }}px; --btn-pad-y: {{ parts[1] }}px; --btn-font: {{ parts[2] }}px;
+{%- endif -%}
+{%- if resolved_radius != blank -%} --btn-radius: {{ resolved_radius }}px;{%- endif -%}
+{%- if resolved_border != blank -%} --btn-border-width: {{ resolved_border }}px;{%- endif -%}
+{%- if background_color != blank -%} --btn-bg: {{ background_color }};{%- endif -%}
+{%- if text_color != blank -%} --btn-text: {{ text_color }};{%- endif -%}
+{%- if border_color != blank -%} --btn-border: {{ border_color }};{%- endif -%}
+{%- if underline_color != blank -%} --btn-underline: {{ underline_color }};{%- endif -%}
+{%- if arrow_color != blank -%} --btn-arrow: {{ arrow_color }};{%- endif -%}
+{%- if hover_background_color != blank -%} --btn-bg-hover: {{ hover_background_color }};{%- endif -%}
+{%- if hover_text_color != blank -%} --btn-text-hover: {{ hover_text_color }};{%- endif -%}
+{%- if hover_border_color != blank -%} --btn-border-hover: {{ hover_border_color }};{%- endif -%}
+{%- if hover_underline_color != blank -%} --btn-underline-hover: {{ hover_underline_color }};{%- endif -%}
+{%- if hover_arrow_color != blank -%} --btn-arrow-hover: {{ hover_arrow_color }};{%- endif -%}

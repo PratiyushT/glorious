@@ -9,6 +9,8 @@
     },
     "continue_shopping": "Continue shopping",
     "loading": "Loading",
+    "video_play": "Play video",
+    "video_retry": "Retry video",
     "meta": {
       "tags": "Tagged \"{{ tags }}\"",
       "page": "Page {{ page }}"
@@ -63,6 +65,9 @@
   "products": {
     "sold_out": "Sold out",
     "on_sale": "Sale",
+    "sale_percentage": "{{ percent }}% off",
+    "sale_amount": "Save {{ amount }}",
+    "new": "New",
     "from_price": "From {{ price }}",
     "add_to_cart": "Add to {{ cart_name }}",
     "choose_options": "Choose options",
@@ -110,6 +115,7 @@
     }
   },
   "collections": {
+    "title": "Collection",
     "all": "All",
     "view_all": "View all",
     "view_all_count": {
@@ -126,6 +132,8 @@
       "heading": "Filters",
       "from": "From",
       "to": "To",
+      "active": "Selected filters",
+      "show_more": "Show {{ count }} more",
       "clear": "Clear filters",
       "apply": "Apply filters",
       "empty_heading": "No products match these filters",
@@ -168,6 +176,17 @@
       "other": "{{ count }} pieces in your {{ cart_name }}"
     },
     "cart_empty": "Empty"
+  },
+  "sections": {
+    "footer": {
+      "menu_empty": "Choose a menu to show links.",
+      "policies_empty": "Add store policies in Shopify settings to show them here.",
+      "cookie_preferences": "Cookie preferences",
+      "payment_methods": "Accepted payment methods"
+    },
+    "main_policy": {
+      "navigation": "Store policies"
+    }
   },
   "date_formats": {
     "month_day_year": "%B %d, %Y"
@@ -326,6 +345,11 @@
       "zip": "Postal code",
       "phone": "Phone",
       "set_default": "Set as default address"
+    }
+  },
+  "blocks": {
+    "accordion": {
+      "fallback": "Details"
     }
   },
   "onboarding": {

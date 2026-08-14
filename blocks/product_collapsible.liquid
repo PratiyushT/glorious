@@ -1,0 +1,18 @@
+{%- comment -%}
+  Saved-block compatibility only. New foldable product content uses the global
+  Accordion, which accepts child blocks and shares the footer disclosure
+  motion. Keeping this type loadable avoids breaking existing template data.
+{%- endcomment -%}
+<details class="product-collapsible" {{ block.shopify_attributes }}>
+  <summary>{{ block.settings.heading }}</summary>
+  <div class="product-collapsible__content rte">{{ block.settings.content }}</div>
+</details>
+{% schema %}
+{
+  "name": "t:sections.main_product.blocks.collapsible", "tag": null,
+  "settings": [
+    { "type": "text", "id": "heading", "label": "t:sections.main_product.heading.label", "default": "Details" },
+    { "type": "richtext", "id": "content", "label": "t:sections.main_product.content.label" }
+  ]
+}
+{% endschema %}
