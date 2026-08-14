@@ -1536,6 +1536,10 @@
         "morph": "Floating pill, expanding to a bar on scroll",
         "pill": "Floating pill"
       },
+      "nav_product_reveal": {
+        "label": "Hide the header at the top of product pages",
+        "info": "The header appears once the visitor scrolls down and hides again at the top. Without JavaScript it stays visible."
+      },
       "scroll_threshold": {
         "label": "Scroll distance before it expands",
         "info": "Only used on pages with no hero heading to measure against."

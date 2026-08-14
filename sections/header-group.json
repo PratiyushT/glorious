@@ -10,6 +10,7 @@
         "huge_text_value": "STORE NAME",
         "nav_mode_home": "morph",
         "nav_mode": "bar",
+        "nav_product_reveal": true,
         "scroll_threshold": 60,
         "overlay_home": true,
         "show_contact": true,

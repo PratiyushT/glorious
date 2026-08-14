@@ -2760,6 +2760,19 @@ its pill → bar expansion against.
   **two settings**: `nav_mode_home` (default `morph`) and `nav_mode` for
   everywhere else (default `bar`). The design's own values: home `morph`,
   inner pages `bar`, product page transparent-until-scrolled.
+- **The product page can veil the header entirely** — `nav_product_reveal`, a
+  checkbox beside the mode selects, off by default and on in this store.
+  Veiled at the top, revealed on the way down (the design's own nav
+  entrance: a 12px drop over 0.8s on the entrance curve), veiled again at
+  the top, with the quicker interaction-register exit. It shares the morph's
+  one scroll listener and threshold in `initNav` — on a product page there
+  is no `[data-nav-anchor]`, so the `scroll_threshold` setting is the cue.
+  Liquid emits `.nav--veiled` as the resting state; the hiding is gated on
+  `.js` because a nav only scripting can reveal must never be hidden without
+  it; `visibility` leaves on a delay so the links drop out of the tab order
+  only after the fade; and **both veil transforms carry `translateX(-50%)`**
+  — the centring lives in the nav's base transform, and a state that omits
+  it snaps the bar to the left edge, the morph's own recorded trap.
 - The nav is its own **query container**, which is what gives the pill the
   compact treatment at 264px without pill-specific overrides. That is free at
   the two resting states and **expensive in between**: the morph sweeps the

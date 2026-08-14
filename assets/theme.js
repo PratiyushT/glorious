@@ -397,7 +397,15 @@
 
   function initNav() {
     var nav = document.querySelector('[data-nav]');
-    if (!nav || (nav.dataset.navMode || 'bar') !== 'morph') return;
+    if (!nav) return;
+
+    /* Two scroll behaviours share one listener and one threshold: the home
+       page's pill-to-bar morph, and the product page's veil — hidden at the
+       top, revealed on the way down, hidden again at the top. Liquid emits
+       both resting states, so a nav that never changes needs nothing here. */
+    var isMorph = (nav.dataset.navMode || 'bar') === 'morph';
+    var isReveal = nav.hasAttribute('data-nav-reveal');
+    if (!isMorph && !isReveal) return;
     if (!bindOnce(nav, 'boundScroll')) return;
 
     var fallback = parseInt(nav.dataset.navThreshold, 10);
@@ -415,8 +423,13 @@
     function apply() {
       ticking = false;
       var past = window.scrollY > threshold();
-      nav.classList.toggle('nav--pill', !past);
-      nav.classList.toggle('is-solid', past);
+      if (isMorph) {
+        nav.classList.toggle('nav--pill', !past);
+        nav.classList.toggle('is-solid', past);
+      }
+      if (isReveal) {
+        nav.classList.toggle('nav--veiled', !past);
+      }
     }
 
     window.addEventListener('scroll', function () {

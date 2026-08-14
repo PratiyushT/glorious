@@ -6033,6 +6033,42 @@ a {
 
    Holding left, right and transform constant means the expansion is the
    width transition alone, growing symmetrically from the centre. */
+/* ---- Product-page reveal --------------------------------------------
+   The nav rests invisible at the top of a product page, arrives once the
+   visitor scrolls down, and leaves again at the top (Header → "Hide the
+   header at the top of product pages"). Liquid emits .nav--veiled as the
+   resting state so the first paint is right; the hiding is gated on .js
+   because a nav only scripting can reveal must never be hidden without it.
+   visibility leaves with a delay matching the exit so the links drop out
+   of the tab order only once the fade has finished, and both transforms
+   carry the nav's own translateX(-50%) — the centring is in the base
+   transform, and a state that omits it snaps the bar to the left edge.
+   The arrival is the design's own nav entrance: a 12px drop over 0.8s on
+   the entrance curve; the exit is the interaction register, quicker. */
+.js .nav--veiled {
+  opacity: 0;
+  transform: translateX(-50%) translateY(-0.75rem);
+  visibility: hidden;
+  transition:
+    opacity 0.3s var(--ease-ui),
+    transform 0.3s var(--ease-ui),
+    visibility 0s 0.3s;
+}
+
+.js [data-nav-reveal]:not(.nav--veiled) {
+  transition:
+    opacity 0.8s var(--ease),
+    transform 0.8s var(--ease),
+    visibility 0s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .js .nav--veiled,
+  .js [data-nav-reveal]:not(.nav--veiled) {
+    transition: none;
+  }
+}
+
 .nav {
   /* The pill's height, named because the corner radius has to be derived from
      it — see .nav--pill. */
