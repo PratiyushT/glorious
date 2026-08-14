@@ -9,6 +9,12 @@
     display    - auto (default) | wordmark | logo | both — the surface's own
                  choice of brand mark
     logo_side  - start (default) | end — where the logo stands when both show
+    logo_variant - auto (default) | logo | inverted — which uploaded brand
+                 image this surface wears; auto keeps the on_dark preference
+    transparent  - header only: true while the bar rests transparent
+    logo_variant_transparent - header only: match (default) | logo | inverted
+                 — the logo worn while transparent, stacked and handed over
+                 to the bar's own as the nav turns solid
 
   Header, Hero, and Footer use section settings because Shopify forbids a
   static theme block in a section that also has local blocks. The public Huge
@@ -36,6 +42,42 @@
   assign huge_logo = settings.logo
   if on_dark and settings.logo_inverted != blank
     assign huge_logo = settings.logo_inverted
+  endif
+
+  comment
+    The variant is the surface's explicit choice; auto is the resolution
+    above, preferring the dark-background logo on dark grounds. An explicit
+    choice whose image is not uploaded leaves auto's answer standing — the
+    same rule as display: a brand mark that renders nothing is a broken
+    header, not a choice.
+  endcomment
+  assign huge_variant = logo_variant | default: 'auto'
+  if huge_variant == 'logo' and settings.logo != blank
+    assign huge_logo = settings.logo
+  elsif huge_variant == 'inverted' and settings.logo_inverted != blank
+    assign huge_logo = settings.logo_inverted
+  endif
+
+  comment
+    The transparent rest may wear its own logo — an image cannot follow the
+    borrowed brand tokens the way the lettered wordmark follows currentColor
+    — and hands over to the bar's logo as the nav turns solid. Resolved only
+    for the header placement, only while the surface actually rests
+    transparent, and only when it lands on a different image: match and a
+    missing upload both resolve to no second rendition rather than to a
+    duplicate.
+  endcomment
+  assign huge_logo_transparent = blank
+  if placement == 'header' and transparent
+    assign huge_t_variant = logo_variant_transparent | default: 'match'
+    if huge_t_variant == 'logo' and settings.logo != blank
+      assign huge_logo_transparent = settings.logo
+    elsif huge_t_variant == 'inverted' and settings.logo_inverted != blank
+      assign huge_logo_transparent = settings.logo_inverted
+    endif
+    if huge_logo_transparent != blank and huge_logo_transparent.id == huge_logo.id
+      assign huge_logo_transparent = blank
+    endif
   endif
 
   assign huge_display = display | default: 'auto'
@@ -81,7 +123,21 @@
     <span class="huge-text huge-text--header{% if huge_pair %} huge-text--pair{% endif %}" {% if attributes != blank %}{{ attributes }}{% endif %}>
       {%- capture huge_logo_html -%}
         {%- if show_logo -%}
-          {{ huge_logo | image_url: width: 480 | image_tag: class: 'huge-text__logo', widths: '160,240,360,480', alt: huge_source, data-image-lqip: 'off' }}
+          {%- if huge_logo_transparent != blank -%}
+            {%- comment -%}
+              Both renditions render and stack; the nav's state chooses
+              which shows, so the hand-over can fade with the bar's own
+              ground instead of swapping images in one frame. The second
+              img is a decorative duplicate — the first carries the
+              accessible name.
+            {%- endcomment -%}
+            <span class="huge-text__logo-swap">
+              {{ huge_logo | image_url: width: 480 | image_tag: class: 'huge-text__logo huge-text__logo--solid', widths: '160,240,360,480', alt: huge_source, data-image-lqip: 'off' }}
+              {{ huge_logo_transparent | image_url: width: 480 | image_tag: class: 'huge-text__logo huge-text__logo--transparent', widths: '160,240,360,480', alt: '', aria-hidden: 'true', data-image-lqip: 'off' }}
+            </span>
+          {%- else -%}
+            {{ huge_logo | image_url: width: 480 | image_tag: class: 'huge-text__logo', widths: '160,240,360,480', alt: huge_source, data-image-lqip: 'off' }}
+          {%- endif -%}
         {%- endif -%}
       {%- endcapture -%}
       {%- capture huge_letters_html -%}

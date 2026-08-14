@@ -6138,6 +6138,39 @@ a {
   --c-accent: var(--c-gold);
 }
 
+/* Which brand image the bar wears is the header's explicit choice, and the
+   transparent rest may wear the other one — an image cannot follow the
+   borrowed brand tokens above the way the lettered wordmark follows
+   currentColor. Liquid stacks the two renditions only when they actually
+   differ; the state here chooses which shows, and the merchant-toggleable
+   fade rides the bar's own 0.4s ground transition so the logos and the
+   background hand over as one movement. Without the fade attribute the
+   swap is the state flip itself. */
+.huge-text__logo-swap {
+  display: inline-grid;
+}
+
+.huge-text__logo-swap > .huge-text__logo {
+  grid-area: 1 / 1;
+}
+
+.huge-text__logo--transparent {
+  opacity: 0;
+}
+
+[data-nav-logo-fade] .huge-text__logo--solid,
+[data-nav-logo-fade] .huge-text__logo--transparent {
+  transition: opacity 0.4s ease;
+}
+
+[data-nav-transparent]:not(.is-solid) .huge-text__logo--solid {
+  opacity: 0;
+}
+
+[data-nav-transparent]:not(.is-solid) .huge-text__logo--transparent {
+  opacity: 1;
+}
+
 /* The cap lives inside width rather than in a separate max-width. The design
    pairs a 264px width with max-width:min(94vw,760px), but 264px is under
    760px at every viewport, so the only thing that guard ever does is stop the

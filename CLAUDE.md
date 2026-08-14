@@ -1666,7 +1666,19 @@ see the search overlay below.
   no logo uploaded falls back to the letters, because a brand mark that
   renders nothing is a broken header, not a choice. The inverted logo is
   still preferred on dark grounds; R15 keeps every branch in the one
-  renderer. **The hero deliberately stays text**: its letter-by-letter
+  renderer. **Which of the two images a surface wears is explicit too**:
+  `brand_logo_variant` on Header and Footer picks Automatic — the main
+  logo, preferring the dark-background one on dark grounds — or either
+  image outright, an explicit choice following into the overlay heads,
+  and a choice with no matching upload keeping the automatic answer. On
+  the transparent product nav the bar may rest in the *other* logo
+  (`brand_logo_variant_transparent`), because an image cannot follow the
+  borrowed brand tokens the way the letters follow `currentColor`; the
+  renderer stacks the two renditions only when they actually differ (the
+  second a decorative `aria-hidden` duplicate), the nav state chooses
+  which shows, and a merchant-toggleable fade (`brand_logo_swap_fade`,
+  emitted as `data-nav-logo-fade`) rides the bar's own 0.4s ground
+  transition so logo and background hand over as one movement. **The hero deliberately stays text**: its letter-by-letter
   entrance, the nav's morph anchor, and `fitHero`'s geometry are all drawn
   from the letters. The wordmark's *text* remains the Header, Hero, and
   Footer sections' own `huge_text_value` settings — a global override would

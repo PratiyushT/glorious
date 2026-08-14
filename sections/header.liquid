@@ -111,7 +111,7 @@
 -%}
 
 {%- capture overlay_huge_text -%}
-  {% render 'huge-text', source: section.settings.huge_text_value, placement: 'header-overlay', on_dark: true, display: section.settings.brand_display, logo_side: section.settings.brand_logo_side %}
+  {% render 'huge-text', source: section.settings.huge_text_value, placement: 'header-overlay', on_dark: true, display: section.settings.brand_display, logo_side: section.settings.brand_logo_side, logo_variant: section.settings.brand_logo_variant %}
 {%- endcapture -%}
 
 <nav
@@ -119,6 +119,7 @@
   data-nav
   data-nav-mode="{{ nav_mode }}"
   {% if nav_transparent %}data-nav-transparent{% endif %}
+  {% if nav_transparent and section.settings.brand_logo_swap_fade %}data-nav-logo-fade{% endif %}
   data-nav-threshold="{{ section.settings.scroll_threshold }}"
   aria-label="{{ 'accessibility.primary_navigation' | t }}"
 >
@@ -138,7 +139,7 @@
   </button>
 
   <a class="nav__logo" href="{{ routes.root_url }}">
-    {% render 'huge-text', source: section.settings.huge_text_value, placement: 'header', display: section.settings.brand_display, logo_side: section.settings.brand_logo_side %}
+    {% render 'huge-text', source: section.settings.huge_text_value, placement: 'header', display: section.settings.brand_display, logo_side: section.settings.brand_logo_side, logo_variant: section.settings.brand_logo_variant, transparent: nav_transparent, logo_variant_transparent: section.settings.brand_logo_variant_transparent %}
   </a>
 
   {%- if section.settings.header_layout == 'classic' and menu_links.size > 0 -%}
@@ -306,6 +307,40 @@
       ],
       "default": "start",
       "visible_if": "{{ section.settings.brand_display == 'both' }}"
+    },
+    {
+      "type": "select",
+      "id": "brand_logo_variant",
+      "label": "t:sections.all.brand_logo_variant.label",
+      "info": "t:sections.all.brand_logo_variant.info",
+      "options": [
+        { "value": "auto", "label": "t:sections.all.brand_logo_variant.auto" },
+        { "value": "logo", "label": "t:sections.all.brand_logo_variant.logo" },
+        { "value": "inverted", "label": "t:sections.all.brand_logo_variant.inverted" }
+      ],
+      "default": "auto",
+      "visible_if": "{{ section.settings.brand_display != 'wordmark' }}"
+    },
+    {
+      "type": "select",
+      "id": "brand_logo_variant_transparent",
+      "label": "t:sections.header.brand_logo_variant_transparent.label",
+      "info": "t:sections.header.brand_logo_variant_transparent.info",
+      "options": [
+        { "value": "match", "label": "t:sections.header.brand_logo_variant_transparent.match" },
+        { "value": "logo", "label": "t:sections.all.brand_logo_variant.logo" },
+        { "value": "inverted", "label": "t:sections.all.brand_logo_variant.inverted" }
+      ],
+      "default": "match",
+      "visible_if": "{{ section.settings.nav_product_transparent and section.settings.brand_display != 'wordmark' }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "brand_logo_swap_fade",
+      "label": "t:sections.header.brand_logo_swap_fade.label",
+      "info": "t:sections.header.brand_logo_swap_fade.info",
+      "default": true,
+      "visible_if": "{{ section.settings.nav_product_transparent and section.settings.brand_logo_variant_transparent != 'match' }}"
     },
     {
       "type": "header",

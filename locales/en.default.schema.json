@@ -1460,6 +1460,13 @@
         "start": "Before the wordmark",
         "end": "After the wordmark"
       },
+      "brand_logo_variant": {
+        "label": "Logo image",
+        "info": "Which uploaded brand image this surface uses. Automatic shows the main logo, preferring the dark-background logo on dark grounds. A choice with no matching upload keeps the automatic answer.",
+        "auto": "Automatic",
+        "logo": "Logo",
+        "inverted": "Logo for dark backgrounds"
+      },
       "card_column_gap": {
         "label": "Horizontal card gap",
         "info": "Space between cards across a row. Rows above and below keep the theme's grid gap."
@@ -1576,6 +1583,15 @@
       "nav_product_transparent": {
         "label": "Transparent at the top of product pages",
         "info": "The bar stands over the gallery in the page's own ink and turns into the ordinary solid bar on the way down. Without JavaScript it simply never turns solid."
+      },
+      "brand_logo_variant_transparent": {
+        "label": "Logo while transparent",
+        "info": "Worn while the bar rests transparent over the gallery, handing over to the bar's own logo on the way down.",
+        "match": "Match the bar"
+      },
+      "brand_logo_swap_fade": {
+        "label": "Fade between the two logos",
+        "info": "Cross-fades with the bar's background as it turns solid. Off, the logo changes the moment the bar does."
       },
       "scroll_threshold": {
         "label": "Scroll distance before the bar changes",

@@ -55,7 +55,7 @@
       <div class="hairline"></div>
     {%- endif -%}
 
-    {% render 'huge-text', source: section.settings.huge_text_value, placement: 'footer', on_dark: true, display: section.settings.brand_display, logo_side: section.settings.brand_logo_side %}
+    {% render 'huge-text', source: section.settings.huge_text_value, placement: 'footer', on_dark: true, display: section.settings.brand_display, logo_side: section.settings.brand_logo_side, logo_variant: section.settings.brand_logo_variant %}
 
     {%- if column_blocks.size > 0 or policy_blocks.size > 0 or contact_blocks.size > 0 -%}
       {%- comment -%}
@@ -262,6 +262,19 @@
       ],
       "default": "start",
       "visible_if": "{{ section.settings.brand_display == 'both' }}"
+    },
+    {
+      "type": "select",
+      "id": "brand_logo_variant",
+      "label": "t:sections.all.brand_logo_variant.label",
+      "info": "t:sections.all.brand_logo_variant.info",
+      "options": [
+        { "value": "auto", "label": "t:sections.all.brand_logo_variant.auto" },
+        { "value": "logo", "label": "t:sections.all.brand_logo_variant.logo" },
+        { "value": "inverted", "label": "t:sections.all.brand_logo_variant.inverted" }
+      ],
+      "default": "auto",
+      "visible_if": "{{ section.settings.brand_display != 'wordmark' }}"
     },
     {
       "type": "checkbox",
