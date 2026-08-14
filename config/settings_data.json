@@ -115,5 +115,111 @@
         }
       }
     }
+  },
+  "presets": {
+    "Veylin": {
+      "color_schemes": {
+        "scheme_1": {
+          "settings": {
+            "background": "#f4f0e8",
+            "background_gradient": "",
+            "text": "#191510",
+            "heading": "#191510",
+            "muted": "#6e6962",
+            "accent": "#80601f",
+            "border": "#d5d1ca",
+            "surface": "#ffffff",
+            "button": "#191510",
+            "button_label": "#f4f0e8",
+            "button_hover": "#80601f",
+            "secondary_button_label": "#191510",
+            "link": "#191510",
+            "badge_sale_background": "#191510",
+            "badge_sale_text": "#f4f0e8",
+            "badge_sold_background": "#6e6558",
+            "badge_sold_text": "#ffffff",
+            "badge_new_background": "#9a7836",
+            "badge_new_text": "#ffffff",
+            "badge_custom_background": "#f4f0e8",
+            "badge_custom_text": "#191510"
+          }
+        },
+        "scheme_2": {
+          "settings": {
+            "background": "#0d0c0a",
+            "background_gradient": "",
+            "text": "#efe9dc",
+            "heading": "#f4efe4",
+            "muted": "#a6a299",
+            "accent": "#c7a15c",
+            "border": "#362d1c",
+            "surface": "#14110d",
+            "button": "#c7a15c",
+            "button_label": "#14110d",
+            "button_hover": "#f4efe4",
+            "secondary_button_label": "#efe9dc",
+            "link": "#efe9dc",
+            "badge_sale_background": "#191510",
+            "badge_sale_text": "#f4f0e8",
+            "badge_sold_background": "#6e6558",
+            "badge_sold_text": "#ffffff",
+            "badge_new_background": "#9a7836",
+            "badge_new_text": "#ffffff",
+            "badge_custom_background": "#f4f0e8",
+            "badge_custom_text": "#191510"
+          }
+        },
+        "scheme_3": {
+          "settings": {
+            "background": "#ffffff",
+            "background_gradient": "",
+            "text": "#191510",
+            "heading": "#191510",
+            "muted": "#6e6962",
+            "accent": "#80601f",
+            "border": "#ececeb",
+            "surface": "#fbf8f2",
+            "button": "#191510",
+            "button_label": "#f4f0e8",
+            "button_hover": "#80601f",
+            "secondary_button_label": "#191510",
+            "link": "#191510",
+            "badge_sale_background": "#191510",
+            "badge_sale_text": "#f4f0e8",
+            "badge_sold_background": "#6e6558",
+            "badge_sold_text": "#ffffff",
+            "badge_new_background": "#9a7836",
+            "badge_new_text": "#ffffff",
+            "badge_custom_background": "#f4f0e8",
+            "badge_custom_text": "#191510"
+          }
+        },
+        "scheme_4": {
+          "settings": {
+            "background": "#191510",
+            "background_gradient": "",
+            "text": "#efe9dc",
+            "heading": "#f4efe4",
+            "muted": "#a6a299",
+            "accent": "#c7a15c",
+            "border": "#362d1c",
+            "surface": "#1a1712",
+            "button": "#c7a15c",
+            "button_label": "#14110d",
+            "button_hover": "#f4efe4",
+            "secondary_button_label": "#efe9dc",
+            "link": "#efe9dc",
+            "badge_sale_background": "#191510",
+            "badge_sale_text": "#f4f0e8",
+            "badge_sold_background": "#6e6558",
+            "badge_sold_text": "#ffffff",
+            "badge_new_background": "#9a7836",
+            "badge_new_text": "#ffffff",
+            "badge_custom_background": "#f4f0e8",
+            "badge_custom_text": "#191510"
+          }
+        }
+      }
+    }
   }
 }
