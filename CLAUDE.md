@@ -154,7 +154,7 @@ number), and Border.
   `{% render 'icon', icon: 'name' %}`. Shopify themes support the standard
   `snippets/` directory but not a nested `snippets/icons/` directory, so the
   `icon-` prefix is the folder-like namespace. This includes interface marks,
-  product-card controls, hero decoration, the loader and the wordmark emblem.
+  product-card controls, hero decoration and the loader.
   JavaScript toggles pre-rendered icons; it never writes SVG or character
   glyphs. R13 enforces the boundary.
 - Group's `padding` is internal container spacing. It is optional and
@@ -1154,7 +1154,6 @@ a block type is a data contract.
 | snippet | replaced | callers |
 | --- | --- | --- |
 | `button.liquid` | four hand-written button pairs | about, craft, visit |
-| `wordmark-mark.liquid` | three PNG cuts | the lockup |
 | `icon.liquid` + `icon-*.liquid` | inline SVGs, entities, CSS glyphs and JavaScript SVG strings | every theme icon caller |
 
 - **The hero is not a caller of either, deliberately.** `.hero__choice` looks
@@ -1671,7 +1670,13 @@ see the search overlay below.
   entrance, the nav's morph anchor, and `fitHero`'s geometry are all drawn
   from the letters. The wordmark's *text* remains the Header, Hero, and
   Footer sections' own `huge_text_value` settings — a global override would
-  give "what does the wordmark say?" two answers.
+  give "what does the wordmark say?" two answers. **The letters are only ever
+  the letters.** The theme owns no emblem or monogram: the nav lockup once
+  substituted a drawn mark for the first repeated letter of the wordmark, and
+  that feature is removed outright — snippet, icon-library entry, CSS and
+  design-system specimen — not left as a latent branch. Do not reintroduce a
+  mark that stands in for any part of the merchant's own wordmark; a shop
+  with a graphic mark uploads it as the Brand logo.
 - **Shop details remain the source for shared shop contact facts.**
   `shop_address`, `shop_address_link`, `shop_phone`, and `shop_email` live under
   "Shop details". The Visit section's visible text is intentionally ordinary

@@ -133,7 +133,7 @@ between the two.
 | Overlays | `overlay-head`, `search-overlay`, `quick-view` shell |
 | Layout and tokens | `section-style`, `block-spacing`, `layout-group`, `layout-group-style`, `space-step`, `scale-step`, `theme-tokens` |
 | Media | `responsive-image`, `video-lqip-frame` |
-| Icons and brand | `icon` dispatcher and `icon-*` implementations; `wordmark`, `wordmark-lockup`, `wordmark-mark` |
+| Icons and brand | `icon` dispatcher and `icon-*` implementations; `wordmark`, `wordmark-lockup` |
 
 ## Extension rules
 

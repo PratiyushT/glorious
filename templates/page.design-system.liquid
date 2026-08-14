@@ -120,10 +120,6 @@
   .ds__ink { padding: var(--space-lg); margin-block-start: var(--space-sm); }
   .ds__loaders { display: flex; align-items: center; gap: var(--space-xl); }
 
-  .ds__marks { display: flex; align-items: center; gap: var(--space-lg); flex-wrap: wrap; }
-  .ds__mark { display: inline-flex; padding: var(--space-sm); }
-  .ds__mark svg { inline-size: 3rem; block-size: auto; }
-  .ds__mark--ink { color: var(--c-champagne); }
 </style>
 
 <div class="page-width ds">
@@ -135,23 +131,6 @@
       Resize the window — everything fluid is meant to move.
     </p>
   </header>
-
-  {%- comment -%} ---- Emblem -------------------------------------------- {%- endcomment -%}
-  <section class="ds__block">
-    <h2 class="h2">Emblem</h2>
-    <p class="rte measure">
-      Inline SVG on <code>currentColor</code>, so it takes the colour of the
-      surface it sits on — which is what the two PNG cuts it replaced were
-      faking. It only appears in the lockup when the wordmark has a repeated
-      letter to stand in for; "VEYLIN" has none, which is why the homepage
-      shows no emblem today.
-    </p>
-    <div class="ds__marks">
-      <span class="ds__mark">{%- render 'wordmark-mark' -%}</span>
-      <span class="ds__mark" style="color: var(--c-accent)">{%- render 'wordmark-mark' -%}</span>
-      <span class="ds__mark ds__mark--ink scheme-scheme_2">{%- render 'wordmark-mark' -%}</span>
-    </div>
-  </section>
 
   {%- comment -%} ---- Brand palette ------------------------------------- {%- endcomment -%}
   <section class="ds__block">

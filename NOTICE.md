@@ -12,19 +12,22 @@ License 1.1. The full licence and the copyright holders are in
 
 ## The emblem
 
-`snippets/wordmark-mark.liquid` is drawn for this theme — a lozenge with a
-girdle and two crown facets, in inline SVG on `currentColor`.
+There is none. The theme carries no brand emblem or monogram: every wordmark
+surface renders the merchant's Huge Text letters and nothing else.
 
-It replaced `wordmark-mark.png`, `wordmark-mark-dark.png` and
-`wordmark-mark-white.png`, **which were a real jeweller's logo**. Those files
-arrived with the design work this theme grew out of, and an earlier pass renamed
-them from `glorious-mark-*` — which changed the filename and not the artwork. A
-theme offered for sale cannot carry another business's mark, so they are
-deleted rather than merely unreferenced.
+Two marks existed here once and both are deleted. `wordmark-mark.png`,
+`wordmark-mark-dark.png` and `wordmark-mark-white.png` **were a real
+jeweller's logo** — they arrived with the design work this theme grew out of,
+and an earlier pass renamed them from `glorious-mark-*`, which changed the
+filename and not the artwork. A theme offered for sale cannot carry another
+business's mark, so they were deleted rather than merely unreferenced. An
+inline-SVG lozenge drawn for this theme replaced them and stood in for the
+first repeated letter of the nav wordmark; that substitution was then removed
+as a feature — a monogram is not part of this brand — and the SVG, its
+`wordmark-mark` snippet and its icon-library entry went with it.
 
-The emblem is now theme-owned and always follows `currentColor`. Wordmark text
-is not a theme setting: the global Huge Text block supplies each value in
-Header, Hero, Footer and any merchant-composed placement.
+Wordmark text is not a theme setting: the global Huge Text block supplies each
+value in Header, Hero, Footer and any merchant-composed placement.
 
 ## Originality
 

@@ -79,14 +79,13 @@ exists; there are no orphan or missing snippets.
 | `responsive-image` | Responsive Shopify image URL, dimensions, crop, loading, and LQIP contract. |
 | `video-lqip-frame` | Poster/LQIP wrapper for hosted/external video. |
 | `huge-text` | Shared art-directed oversized word treatment. |
-| `wordmark` | Letters-only wordmark renderer. |
-| `wordmark-lockup` | Mark plus wordmark composition. |
-| `wordmark-mark` | Brand mark renderer. |
+| `wordmark` | Letters-only spread wordmark renderer. |
+| `wordmark-lockup` | Letters-only inline wordmark at nav/overlay sizes. |
 | `social-meta-tags` | Open Graph and social sharing metadata. |
 
 ## Icon library
 
-`icon` is the only dispatcher. The 117 `icon-*` snippets are intentionally
+`icon` is the only dispatcher. The 118 `icon-*` snippets are intentionally
 small drawing files so every control/block calls one named library rather than
 copying SVG paths. R12 verifies unique IDs for drawings that define SVG IDs;
 R13 rejects inline SVG drawings and CSS-generated icon glyphs outside this

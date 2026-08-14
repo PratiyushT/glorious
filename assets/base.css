@@ -6419,36 +6419,25 @@ a {
   letter-spacing: var(--lockup-tracking);
 }
 
-/* The emblem stands in for a letter, so the letter before it keeps its
-   tracking while the run after it must not push a trailing gap. */
+/* Letter-spacing hangs its gap after every letter, the last included, so the
+   run would end on a phantom gap and the lockup would sit off-centre by half
+   a tracking unit; the negative margin takes that trailing gap back. */
 .lockup__letter:last-child {
   margin-inline-end: calc(var(--lockup-tracking) * -1);
 }
 
-.lockup__mark {
-  flex: 0 0 auto;
-  aspect-ratio: 139 / 154;
-  width: auto;
-  height: var(--lockup-mark);
-  margin-inline: 1px 7px;
-  transform: translateY(-4%);
-}
-
 .lockup--sm {
   --lockup-tracking: clamp(0.14em, 1.2vw, 0.28em);
-  --lockup-mark: clamp(1.25rem, 5vw, 1.7rem);
   font-size: clamp(1.06rem, 4.6vw, 1.44rem);
 }
 
 .lockup--md {
   --lockup-tracking: 0.2em;
-  --lockup-mark: clamp(1.4rem, 3.4vw, 2.2rem);
   font-size: clamp(1.25rem, 3.2vw, 2rem);
 }
 
 .lockup--lg {
   --lockup-tracking: 0.2em;
-  --lockup-mark: clamp(1.4rem, 3.4vw, 2.5rem);
   font-size: clamp(1.25rem, 3.2vw, 2.25rem);
 }
 

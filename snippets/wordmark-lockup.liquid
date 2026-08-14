@@ -1,52 +1,24 @@
 {%- comment -%}
-  Inline wordmark lockup — the emblem stands in for the first repeated letter,
-  so the brand reads GL[mark]RIOUS on one line. Used in the nav bar, the nav
-  pill and the menu overlay header.
+  Inline wordmark — the brand letters on one line. Used in the nav bar, the
+  nav pill and the menu overlay header.
 
-  The theme's own emblem is inline SVG on `currentColor`, so it takes the
-  colour of the surface it sits on. It used to be two PNG cuts, light and
-  dark, chosen by an `on_dark` flag — which is what `currentColor` does by
-  itself, and correctly for any colour scheme rather than only for black and
-  white. `on_dark` is therefore accepted and ignored, so existing callers do
-  not need touching.
+  Letters only. There is no emblem and no letter substitution: a mark standing
+  in for a letter of the merchant's own wordmark was removed outright rather
+  than left as a latent branch, and the theme owns no monogram.
 
   Accepts:
     source  - the Huge Text value.
     size    - 'sm' (nav), 'md' (default), 'lg' (menu overlay).
-    on_dark - accepted for compatibility; the emblem follows currentColor.
 {%- endcomment -%}
 
 {%- liquid
   assign source = source | strip | upcase
   assign letters = source | split: ''
   assign scale = size | default: 'md'
-
-  comment
-    Find the first letter that has already appeared — the emblem replaces it.
-  endcomment
-  assign mark_index = -1
-  assign seen = ''
-  for letter in letters
-    if seen contains letter
-      assign mark_index = forloop.index0
-      break
-    endif
-    assign seen = seen | append: letter
-  endfor
 -%}
 
 <span class="lockup lockup--{{ scale }}" role="img" aria-label="{{ source }}">
   {%- for letter in letters -%}
-    {%- if forloop.index0 == mark_index -%}
-      {%- render 'wordmark-mark' -%}
-    {%- else -%}
-      {%- liquid
-        assign is_lead = false
-        if mark_index > 0 and forloop.index0 < mark_index
-          assign is_lead = true
-        endif
-      -%}
-      <span class="lockup__letter{% if is_lead %} lockup__letter--lead{% endif %}" aria-hidden="true">{{ letter }}</span>
-    {%- endif -%}
+    <span class="lockup__letter" aria-hidden="true">{{ letter }}</span>
   {%- endfor -%}
 </span>
