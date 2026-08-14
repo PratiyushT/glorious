@@ -16,6 +16,17 @@
   endif
 
   comment
+    The word-break preset, guarded like the element tag: an unknown stored
+    value emits no class rather than an unstyled invention. The underscore
+    ids become kebab classes.
+  endcomment
+  assign wrap_class = ''
+  assign wraps = 'pretty,balance,nowrap,two_line,three_line' | split: ','
+  if wraps contains block.settings.wrap
+    assign wrap_class = block.settings.wrap | replace: '_', '-' | prepend: ' text-wrap--'
+  endif
+
+  comment
     A guard rather than interpolating whatever is stored: an unknown value would
     print as a tag name and Liquid would emit `<foo>`.
   endcomment
@@ -30,7 +41,7 @@
   {%- case block.settings.layout -%}
     {%- when 'display' -%}
       <{{ tag }}
-        class="text-block display reveal{{ align_class }}{% if class != blank %} {{ class }}{% endif %}"
+        class="text-block display reveal{{ align_class }}{{ wrap_class }}{% if class != blank %} {{ class }}{% endif %}"
         {% if marker != blank %}{{ marker }}{% endif %}
         style="{% render 'block-spacing', padding: block.settings.padding %}{% render 'text-style', preset: block.settings.style, font_style: block.settings.override_font, font_size: block.settings.override_size, color: block.settings.color, line_height: block.settings.override_leading, text_case: block.settings.override_case, letter_spacing: block.settings.override_tracking %}"
         {{ block.shopify_attributes }}
@@ -42,18 +53,18 @@
         style="{% render 'block-spacing', padding: block.settings.padding %}"
         {{ block.shopify_attributes }}
       >
-        <{{ tag }} class="text-block micro" style="{% render 'text-style', preset: block.settings.style, font_style: block.settings.override_font, font_size: block.settings.override_size, color: block.settings.color, line_height: block.settings.override_leading, text_case: block.settings.override_case, letter_spacing: block.settings.override_tracking %}">{{ content }}</{{ tag }}>
+        <{{ tag }} class="text-block micro{{ wrap_class }}" style="{% render 'text-style', preset: block.settings.style, font_style: block.settings.override_font, font_size: block.settings.override_size, color: block.settings.color, line_height: block.settings.override_leading, text_case: block.settings.override_case, letter_spacing: block.settings.override_tracking %}">{{ content }}</{{ tag }}>
       </div>
     {%- when 'lede' -%}
       <{{ tag }}
-        class="text-block section-lede reveal{{ align_class }}{% if class != blank %} {{ class }}{% endif %}"
+        class="text-block section-lede reveal{{ align_class }}{{ wrap_class }}{% if class != blank %} {{ class }}{% endif %}"
         {% if marker != blank %}{{ marker }}{% endif %}
         style="{% render 'block-spacing', padding: block.settings.padding %}{% render 'text-style', preset: block.settings.style, font_style: block.settings.override_font, font_size: block.settings.override_size, color: block.settings.color, line_height: block.settings.override_leading, text_case: block.settings.override_case, letter_spacing: block.settings.override_tracking %}"
         {{ block.shopify_attributes }}
       >{{ content }}</{{ tag }}>
     {%- else -%}
       <{{ tag }}
-        class="text-block{{ align_class }}{% if class != blank %} {{ class }}{% endif %}"
+        class="text-block{{ align_class }}{{ wrap_class }}{% if class != blank %} {{ class }}{% endif %}"
         {% if marker != blank %}{{ marker }}{% endif %}
         style="{% render 'block-spacing', padding: block.settings.padding %}{% render 'text-style', preset: block.settings.style, font_style: block.settings.override_font, font_size: block.settings.override_size, color: block.settings.color, line_height: block.settings.override_leading, text_case: block.settings.override_case, letter_spacing: block.settings.override_tracking %}"
         {{ block.shopify_attributes }}

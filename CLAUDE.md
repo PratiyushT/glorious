@@ -2141,6 +2141,18 @@ height Tight … Loose, letter spacing Tighter … Wider and case one of the nam
 choices. Font colour is the only free picker. `Default` inherits the preset;
 `As typed` is a distinct case override that explicitly emits no transform.
 
+**Word breaks are a preset on the whole Text contract, not a product-title
+special.** `wrap` — Default, Pretty (`text-wrap: pretty`, no orphan word),
+Balanced lines (`text-wrap: balance`), Single line (ellipsis), and At most
+two/three lines (the card caption's clamp offered as a choice) — rendered as
+a `text-wrap--*` class by the one `text-block` snippet, so the product page,
+Featured product, Quick view, and every card title get it from the same
+setting. R14 keeps the six schema copies identical. Inside a composed card
+the preset re-sizes the reserved caption box to its own line count (1.5em /
+3em / 4.5em), so a row of cards stays level at whatever height the merchant
+chose — the 3em two-line reservation is the default, not the law. An
+unknown stored value emits no class, the same guard as the element tag.
+
 **`snippets/text-style.liquid` is the one resolver.** It guards every stored
 value and prints inline declarations so a chosen preset or override wins over a
 component fallback class without depending on stylesheet order. It also maps

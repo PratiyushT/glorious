@@ -492,6 +492,30 @@ a {
   padding: var(--block-padding, 0);
 }
 
+/* Word-break presets, on the shared Text contract (blocks.all.wrap). Pretty
+   and Balanced are the browser's own wrapping intelligence; the line-count
+   presets are the card caption's clamp offered as a choice. An engine
+   without text-wrap support simply wraps normally — the declarations are
+   progressive, never load-bearing. */
+.text-wrap--pretty { text-wrap: pretty; }
+.text-wrap--balance { text-wrap: balance; }
+
+.text-wrap--nowrap {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.text-wrap--two-line,
+.text-wrap--three-line {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.text-wrap--two-line { -webkit-line-clamp: 2; text-wrap: balance; }
+.text-wrap--three-line { -webkit-line-clamp: 3; text-wrap: pretty; }
+
 .section-eyebrow .text-block {
   padding: 0;
   /* The wrapper owns the eyebrow's spacing; its inner label must not pick up
@@ -3090,6 +3114,25 @@ a {
   overflow: hidden;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
+}
+
+/* A wrap preset re-sizes the card's reserved box to its own line count, so
+   a row of cards stays level at whatever height the merchant chose — the
+   3em two-line reservation is the default, not the law. Single line drops
+   the box to one 1.5em row (and the ellipsis needs a plain block, not the
+   -webkit-box); three lines grows it to 4.5em and outranks the box's own
+   clamp at three classes. Two lines is the box's own shape and needs no
+   rule; Pretty and Balanced change only how words divide inside it. */
+.card--composed > .text-block.text-wrap--nowrap {
+  display: block;
+  min-height: 1.5em;
+  max-height: 1.5em;
+}
+
+.card--composed > .text-block.text-wrap--three-line {
+  min-height: 4.5em;
+  max-height: 4.5em;
+  -webkit-line-clamp: 3;
 }
 
 .card__price {

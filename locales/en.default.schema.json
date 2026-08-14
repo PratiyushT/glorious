@@ -632,6 +632,16 @@
   },
   "blocks": {
     "all": {
+      "wrap": {
+        "label": "Word breaks",
+        "info": "How the text divides across lines. Pretty keeps a last word from standing alone; Balanced evens the lines out.",
+        "default": "Default",
+        "pretty": "Pretty",
+        "balance": "Balanced lines",
+        "nowrap": "Single line",
+        "two_line": "At most two lines",
+        "three_line": "At most three lines"
+      },
       "spacing_header": "Spacing",
       "padding": {
         "label": "Padding"
