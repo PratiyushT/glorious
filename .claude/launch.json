@@ -43,6 +43,21 @@
         "9303"
       ],
       "port": 9303
+    },
+    {
+      "name": "glorious-theme-9309",
+      "runtimeExecutable": "shopify",
+      "runtimeArgs": [
+        "theme",
+        "dev",
+        "--store",
+        "glorious-jweller.myshopify.com",
+        "--path",
+        "D:\\Code\\glorious",
+        "--port",
+        "9309"
+      ],
+      "port": 9309
     }
   ]
 }
