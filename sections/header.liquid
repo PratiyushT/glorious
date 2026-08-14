@@ -256,10 +256,8 @@
   "tag": "div",
   "settings": [
     {
-      "type": "color_scheme",
-      "id": "color_scheme",
-      "label": "t:sections.all.color_scheme.label",
-      "default": "scheme_2"
+      "type": "header",
+      "content": "t:sections.header.style_header"
     },
     {
       "type": "select",
@@ -273,10 +271,22 @@
       "default": "art_directed"
     },
     {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:sections.all.color_scheme.label",
+      "info": "t:sections.header.color_scheme.info",
+      "default": "scheme_2"
+    },
+    {
       "type": "text",
       "id": "huge_text_value",
-      "label": "t:blocks.huge_text.value",
+      "label": "t:sections.header.wordmark_text.label",
+      "info": "t:sections.header.wordmark_text.info",
       "default": "STORE NAME"
+    },
+    {
+      "type": "header",
+      "content": "t:sections.header.behavior_header"
     },
     {
       "type": "paragraph",
@@ -294,10 +304,16 @@
       "default": "morph"
     },
     {
+      "type": "checkbox",
+      "id": "overlay_home",
+      "label": "t:sections.header.overlay_home.label",
+      "info": "t:sections.header.overlay_home.info",
+      "default": true
+    },
+    {
       "type": "select",
       "id": "nav_mode",
       "label": "t:sections.header.nav_mode.inner_label",
-      "info": "t:sections.header.nav_mode.info",
       "options": [
         { "value": "bar", "label": "t:sections.header.nav_mode.bar" },
         { "value": "morph", "label": "t:sections.header.nav_mode.morph" },
@@ -316,18 +332,13 @@
       "type": "range",
       "id": "scroll_threshold",
       "label": "t:sections.header.scroll_threshold.label",
+      "info": "t:sections.header.scroll_threshold.info",
       "min": 0,
       "max": 400,
       "step": 10,
       "unit": "px",
-      "default": 60
-    },
-    {
-      "type": "checkbox",
-      "id": "overlay_home",
-      "label": "t:sections.header.overlay_home.label",
-      "info": "t:sections.header.overlay_home.info",
-      "default": true
+      "default": 60,
+      "visible_if": "{{ section.settings.nav_mode_home == 'morph' or section.settings.nav_mode == 'morph' or section.settings.nav_product_transparent }}"
     },
     {
       "type": "header",
@@ -343,12 +354,14 @@
       "type": "text",
       "id": "contact_label",
       "label": "t:sections.header.contact_label.label",
-      "default": "Contact"
+      "default": "Contact",
+      "visible_if": "{{ section.settings.show_contact }}"
     },
     {
       "type": "url",
       "id": "contact_link",
-      "label": "t:sections.header.contact_link.label"
+      "label": "t:sections.header.contact_link.label",
+      "visible_if": "{{ section.settings.show_contact }}"
     },
     {
       "type": "checkbox",
@@ -361,7 +374,8 @@
       "id": "customer_account_menu",
       "label": "t:sections.header.customer_account_menu.label",
       "info": "t:sections.header.customer_account_menu.info",
-      "default": "main-menu"
+      "default": "main-menu",
+      "visible_if": "{{ section.settings.show_account }}"
     },
     {
       "type": "checkbox",
@@ -400,6 +414,10 @@
     {
       "type": "header",
       "content": "t:sections.header.menu_header"
+    },
+    {
+      "type": "paragraph",
+      "content": "t:sections.header.menu_presentation_paragraph"
     },
     {
       "type": "paragraph",

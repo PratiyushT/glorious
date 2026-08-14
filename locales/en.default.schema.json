@@ -1531,11 +1531,20 @@
     },
     "header": {
       "name": "Header",
+      "style_header": "Style",
+      "behavior_header": "On scroll",
       "header_layout": {
         "label": "Header style",
         "info": "Both styles use the same native Shopify menu and the same account, search, and cart actions.",
         "art_directed": "Art-directed menu overlay",
         "classic": "Classic inline navigation"
+      },
+      "color_scheme": {
+        "info": "One scheme for the solid bar on every page. While transparent, the bar borrows the page's own ink instead."
+      },
+      "wordmark_text": {
+        "label": "Wordmark text",
+        "info": "The lettered wordmark in the bar and the overlay heads. An image logo from Theme settings → Brand replaces the letters."
       },
       "nav_mode": {
         "paragraph": "The design gives the home page a floating pill and the inner pages a full bar, so the two are set separately.",
@@ -1551,8 +1560,8 @@
         "info": "The bar stands over the gallery in the page's own ink and turns into the ordinary solid bar on the way down. Without JavaScript it simply never turns solid."
       },
       "scroll_threshold": {
-        "label": "Scroll distance before it expands",
-        "info": "Only used on pages with no hero heading to measure against."
+        "label": "Scroll distance before the bar changes",
+        "info": "The cue for the pill's expansion and the product page's transparent bar turning solid. Where the page has a hero heading, that heading is the cue instead."
       },
       "overlay_home": {
         "label": "Let the home page hero sit under the bar",
@@ -1591,7 +1600,8 @@
         "label": "Featured pieces",
         "info": "Shown in the overlay before anything is typed."
       },
-      "menu_header": "Menu overlay",
+      "menu_header": "Menu",
+      "menu_presentation_paragraph": "How the menu opens — the full-screen overlay or a side drawer — is chosen once in Theme settings → Navigation.",
       "menu_paragraph": "Menu rows are numbered automatically in the order they appear here. Cart and Search are added last when they are switched on above.",
       "blocks": {
         "link": {
