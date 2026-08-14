@@ -16,7 +16,11 @@
     {% if value.active %}checked{% endif %}
     {% if value.count == 0 and value.active == false %}disabled{% endif %}
   >
-  <span class="catalog-filter-option__check" aria-hidden="true">{% render 'icon', icon: 'check' %}</span>
+  {%- comment -%}
+    The drawn box alone: filling it is the whole selected state, on request —
+    no glyph inside. The real input above carries the actual state.
+  {%- endcomment -%}
+  <span class="catalog-filter-option__check" aria-hidden="true"></span>
   {%- if section.settings.show_filter_visuals -%}
     {%- if value.swatch.image != blank or value.swatch.color != blank -%}
       <span

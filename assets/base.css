@@ -3886,18 +3886,12 @@ a {
               background var(--duration) var(--ease-ui);
 }
 
-.catalog-filter-option__check svg {
-  width: 0.75rem;
-  height: 0.75rem;
-  opacity: 0;
-}
-
+/* Checked is the box filling, and only that — the glyph was removed on
+   request; a filled square against an empty one needs no second signal. */
 .catalog-filter-option input:checked + .catalog-filter-option__check {
   border-color: var(--c-text);
   background: var(--c-text);
 }
-
-.catalog-filter-option input:checked + .catalog-filter-option__check svg { opacity: 1; }
 .catalog-filter-option input:focus-visible + .catalog-filter-option__check {
   outline: 2px solid var(--c-accent);
   outline-offset: 2px;
@@ -6290,7 +6284,9 @@ a {
   display: flex;
   align-items: center;
   gap: 0.45em;
-  padding: var(--space-3xs) 0.6rem;
+  /* The design's compact action padding is 8px a side; the wide tier
+     restores the roomier padding below, where the actions are words. */
+  padding: var(--space-3xs) 0.5rem;
   border: 0;
   background: none;
   color: inherit;
@@ -6349,6 +6345,7 @@ a {
   .nav:not(.nav--pill) .nav__action-label { display: inline; }
   .nav:not(.nav--pill) .nav__action svg { display: none; }
   .nav:not(.nav--pill) .nav__action--contact { display: flex; }
+  .nav:not(.nav--pill) .nav__action { padding-inline: 0.6rem; }
 
   .nav:not(.nav--pill) .nav__logo {
     position: absolute;
