@@ -50,7 +50,8 @@ responsible for being safe wherever a merchant can add it.
 The homepage blocks fall into four contracts:
 
 - **Global composition blocks** are public and require no resource context:
-  `text`, `rich-text`, `button`, `border`, `media`, `icon`, and `group`. Text
+  `text`, `rich-text`, `button`, `border`, `media`, `icon`, `huge-text`, `group`, and
+  `accordion`. Text
   covers every single inline value; Rich text is reserved for paragraphs,
   lists, links, and emphasis. Both content settings support compatible dynamic
   sources. A testimonial is private `_testimonial` structure whose quotation
@@ -81,6 +82,17 @@ The homepage blocks fall into four contracts:
   `interactive-media` block replaced `scene`. The
   Hero introduction is a section field because it occupies one fixed,
   art-directed position; it is not a third text block.
+
+**Huge Text owns the renderer; Shopify decides where its value can live.**
+`blocks/huge-text.liquid` has one setting, `Value`, with no default, and calls
+`snippets/huge-text.liquid` for every placement. Password can render that
+theme block statically because it accepts only theme blocks. Header, Hero, and
+Footer still need local section blocks whose settings the section iterates, and
+Shopify rejects mixing those with a static theme block. They therefore expose
+one section-level Huge Text value and call the same snippet. The old global
+`wordmark`, `wordmark_mark`, and per-section show toggles do not exist. Empty
+is a valid merchant choice and never falls back to the shop name. R15 enforces
+the shared renderer so this platform exception cannot fork its markup.
 
 Underscore targeting is the restriction, not a label. Product-card blocks are
 accepted only by Product card and its private Group; collection-card blocks are
@@ -299,6 +311,22 @@ walking the tree. Nothing in it traverses `.card__body`, so the markup could be
 rearranged without touching a line of script. **Keep it that way**: a handler
 that reaches for a parent would tie the two cards' structures together again.
 
+**Theme settings → Catalog owns the filter word and the hidden collections.**
+`catalog_filter_word` (default "Filter") is the one word the filter button and
+the filter drawer's heading use — the per-section `filter_button_label` and
+`drawer_heading` pair is gone, because two settings for one word is the
+cart_name mistake, and "Refine" was the only second word in the system.
+Sentences like "Clear filters" stay locale-owned: pluralising an arbitrary
+merchant word breaks them, the same boundary the tax note settled on. The
+last-resort fallback routes through the previously-dead
+`collections.filters.label` key rather than a literal. `hidden_collections`
+is a collection list excluded from every *automatic* enumeration — the
+collections index, predictive search's rows *and its announced count*, and
+the collection quick links, where hidden entries back-fill naturally through
+the existing render counters. Merchant-picked lists still show them: a shop
+that chose one explicitly wins. `contains` cannot compare drops, so every
+check projects to handles first.
+
 **Collection and search share one native catalogue control system.**
 `snippets/catalog-controls.liquid` renders Shopify's `filters`, `sort_options`
 and active-value URLs; `snippets/catalog-pagination.liquid` renders Shopify's
@@ -341,24 +369,81 @@ a merchant-entered filter label. No catalogue vocabulary belongs in Liquid.
   must remain a direct child of the catalogue section, outside the sticky
   blurred control bar: `backdrop-filter` creates a containing block and would
   clip a nested fixed drawer to the bar's height.
+- **Variant filters are store configuration, not a theme inference.** Shopify's
+  official Search & Discovery app must expose Color, Metal, Karat, Size and any
+  other option/metafield filters through `results.filters`. The theme renders
+  those native list values, swatches/images and counts; it must never derive a
+  second filter vocabulary from the products on the current paginated page.
+  The drawer shows ten list values before a progressive “Show more”, includes
+  Shopify-authoritative active-filter removal URLs, and pairs the visual price
+  range with labelled numeric From/To fields.
 - A product URL returned by search already carries Shopify tracking query
   parameters. Any card link adding `variant=` must use `&` when `product.url`
   already contains `?`; blindly appending a second question mark breaks the
   variant link only on search and recommendation-like contexts.
 
-**The product template is JSON and the main product is a contextual block
-surface.** `templates/product.json` replaced the legacy Liquid template.
-`main-product` owns the two-column product stage and loops ordered local blocks
-for breadcrumbs, vendor, title, price, description, variant picker, quantity,
-buy buttons, pickup, SKU, inventory, merchant text, collapsibles, custom
-Liquid, and apps. Those blocks are contextual because their value is the
-current product or selected variant; ordinary editorial copy remains a global
-Text/Rich text concern elsewhere.
+**The product template is JSON and Main product and Featured product are the
+same contextual block surface.** Both sections own only the two-column shell,
+render the same static `_product-media-gallery`, and accept the same ordered
+theme blocks for breadcrumbs, badges, vendor, title, price, description,
+variant picker, quantity, buy buttons, pickup, SKU, inventory, merchant text,
+collapsibles, custom Liquid, and apps. The shared gallery, rich-text renderer,
+variant JSON, and contextual blocks are the implementation; neither section
+may grow a second product UI. Those blocks are contextual because their value
+is the current product or selected variant; ordinary editorial copy remains a
+global Text/Rich text concern elsewhere.
 
+- **A contextual product block extends a global base; it does not invent an
+  editor.** Product title, vendor, and price carry the complete Text appearance
+  contract minus editable content. Product description carries Rich text minus
+  editable content. Variant pills, Add to cart, product-card Add, and the offer
+  popup carry Button's complete appearance contract, with only their role and
+  intentional default added. Main product and Featured product also share the
+  complete layout contract, with Featured product adding only its product
+  selector. `veylin-lint` R14 compares the actual schema objects so a future
+  setting cannot be added to one copy and missed in the others.
+- **Accordion is Group with disclosure behavior, not a second content model.**
+  It accepts its own `@theme` and `@app` children, carries Group's complete
+  layout contract, and renders them through `layout-group`. Its only additions
+  are a heading, initial open state, divider, and whether desktop stays
+  collapsible or is always expanded. The panel uses the footer's shared
+  `.disclosure__*` three-layer markup and motion. `product_collapsible` remains
+  readable for saved templates but has no preset; new product disclosures are
+  ordinary Accordion blocks with children.
+- **Every visual CTA renders through `snippets/button.liquid`.** Cart, customer,
+  catalog, newsletter, contact, article, password, cookie, and offer actions
+  are not exceptions. Purpose-built controls—close buttons, carousel arrows,
+  quantity steppers, sorting choices—keep their own classes because they are
+  interface controls, not merchant Button instances. R16 prevents `.btn`
+  markup from being written anywhere else.
+- **Product badges are one contextual block, not markup hidden inside Media.**
+  `product_badges` owns automatic Sold out, Sale, New, and custom/metafield
+  badges. The block chooses facts, order limit, and card position; Theme
+  settings → Product badges owns the shared type, shape, and state colors.
+  Product cards, Main product, Featured product, collection, search, homepage,
+  and recommendations all compose this same block.
+
+- **The product-page swatch ring hugs the dot.** The selection is drawn on the
+  dot itself, the card's own language — hairline off, a 2px spacer, a light
+  1px stroke at 3px — with the spacer in `--c-bg`, because these swatches sit
+  on the page background where the card's `--c-surface` spacer paints a
+  visible white halo (the card comment's trap, mirrored). The legacy detached
+  `::after` ring that floated 4.8px outside the button is gone and must stay
+  gone. A card's `:focus-within` border became `:has(:focus-visible)`, and the
+  card-covering link draws no outline of its own — a mouse click on Choose
+  options was leaving the whole card framed in the global accent ring.
 - The picker loops `product.options_with_values`; no option name or position is
   built into the section. Automatic presentation uses Shopify's native swatch
   data when present and written pills otherwise, with explicit pill, swatch,
   and dropdown presets still available.
+- **`first_value` pins one choice to the front of its row.** A written option
+  value — "18K", "Yellow Gold" — matched case-insensitively against every
+  option's values; the match renders first, everything else keeps admin order,
+  and no match changes nothing. Display order only: the selected variant, the
+  checked control, and the legend's selected value are untouched. It is two
+  passes over one copy of the choice markup rather than a re-sorted list,
+  because the values must stay `product_option_value` drops — the same
+  no-`split` rule the card's swatch row records.
 - One variant synchronization path updates the hidden form id, price, compare
   price, unit price, SKU, availability wording, featured media, pickup request,
   URL, and each option header's selected value. A checked control with a stale
@@ -366,6 +451,41 @@ Text/Rich text concern elsewhere.
 - The gallery keeps image, hosted video, external video, and 3D model media
   native. Images open the zoom dialog; navigation changes the one visible
   media item and pauses video when it leaves the stage.
+- **Ambient video pauses off screen, resumably, behind one Motion setting.**
+  `video_pause_offscreen` (default on, emitted as a body attribute) gates the
+  viewport engine: an autoplaying video — the Media block's ambient videos and
+  the gallery's `autoplay_video`, which now carries `data-video-autoplay` too
+  — pauses when less than 30% of it is visible and plays again when it
+  returns, a manual pause included; coming back to an ambient video means it
+  plays. Off, it starts once and plays on, the same behaviour a browser
+  without IntersectionObserver gets. The gallery swipes as well: a horizontal
+  swipe steps it on every product surface, the same intent test the row
+  carousel makes, through the one step function its arrows use.
+- **With scripting the gallery draws no native video chrome, on every product
+  surface at once** — Main product, Featured product, and Quick view render
+  the same gallery block, and the product card's video never had controls.
+  The one merchant control is `autoplay_video` (muted, looping); off, the
+  LQIP facade's accessible Play action is how a video starts, and a click on
+  the stage toggles playback thereafter. `controls: true` is still *served*,
+  because `theme.js` strips it on adoption and a visitor without JavaScript
+  keeps the browser's own controls — for them the native chrome is the only
+  way in, which is the video-LQIP contract's own sentence. External
+  YouTube/Vimeo video is the exception the platform imposes: provider chrome
+  lives inside the provider's iframe and cannot be removed, only left native.
+  The facade's Play/Retry labels come from Liquid data attributes
+  (`general.video_play` / `general.video_retry`); the English literals in
+  `theme.js` are only the floor for a facade the script had to create itself.
+- **Buy Now wears exactly what Add to cart wears.** The Buy buttons block
+  publishes its `button_style` as `data-button-style` on `.product-buy-form`,
+  because Shopify's injected payment button cannot take the theme's classes
+  and CSS cannot read a sibling's settings. `main-product.css` maps the value
+  onto `.shopify-payment-button__button--unbranded`: filled mirrors
+  `.btn--primary`'s exact fallback chains — the border following the fill,
+  hover falling through the resting override before the scheme — and every
+  other style maps to the outline frame, because a wallet button with no
+  boundary is not a presentation Shopify supports. The transition reads
+  `var(--duration) var(--ease-ui)` rather than restating 0.3s, so turning
+  motion down does not leave this one button animating.
 - The selected variant and quantity are submitted through Shopify's product
   form. Accelerated checkout, installments, gift-card recipients, pickup, and
   a complete no-script form remain Shopify-native features, not simulated UI.
@@ -394,10 +514,11 @@ render up to 50. Keep the two source contracts separate rather than exposing a
   hover band again. Everything else auto-places into implicit rows underneath,
   in the merchant's order.
 
-  **Only the disc can be split out that way.** `.card__arrow` is `top: 50%`
+  **Only the disc and badges can be split out that way.** `.card__arrow` is `top: 50%`
   against its containing block, so out in the card it would centre itself on
-  the whole card and land over the price. The arrows, the spin badge and the
-  sold-out badge stay inside the image block.
+  the whole card and land over the price. The arrows and spin badge stay inside
+  the image block; `product_badges` is a sibling pinned to the same named media
+  grid area so it remains independently removable and reorderable.
 
 - **A theme block cannot read its parent's settings or a sibling's, so option
   rows publish the complete variant they resolve.** Price and Add begin on the
@@ -563,22 +684,11 @@ render up to 50. Keep the two source contracts separate rather than exposing a
   | `data-card-hover="off"` | the stylesheet's no-JavaScript swap and `theme.js`'s `shown()` both test it |
   | `data-card-video="off"` | CSS hides the spin slide, **and `theme.js` drops it from the slide list** |
 
-  **The carousel's fetch saving is the one claim here not measured, and it is
-  worth being exact about why.** Slides 2 and up are deferred behind `data-src`
-  and the script never promotes them once its list is cut to one, so those cost
-  nothing by construction. Slide 1 is different: it carries a real `src`
-  because it is what the no-JavaScript hover swap reveals. With the carousel off
-  it is `display: none`, and a `display: none` image with `loading="lazy"` is
-  not fetched — but that is an engine behaviour, not a fact about the markup,
-  and it **could not be measured here**: the browser pane is not displayed, so
-  `document.visibilityState` is `hidden` and *no* lazy image loads, including
-  the one that should. Measured anyway and recorded for the next pass: with the
-  carousel off, 14 of 25 card images still carry a real `src` — two per card.
-
-  Making it a fact of the markup means the slides being rendered by something
-  that can read the setting, which is the card. That is a real refactor — the
-  Media block would keep the frame and give up the pictures — and it is not
-  done.
+  **Only the opening card image has a source at first paint.** Every later image
+  is deferred behind `data-src`/`data-srcset`, and `initCards` promotes only the
+  view that hover, swipe, or an arrow is actually about to show. Enabling all
+  images therefore makes them reachable without downloading unopened views;
+  disabling the carousel keeps the script's list at one and promotes none.
 
   The video needs both halves. Hiding it alone would leave the script stepping
   to something invisible, so `initCards` filters it out before it counts — and
@@ -619,9 +729,10 @@ render up to 50. Keep the two source contracts separate rather than exposing a
   before it is printed, because a metafield one product is missing would
   otherwise emit `--card-zoom: 0` and collapse the photograph to a point.
 
-  `snippets/product-card.liquid` and `snippets/quick-view-contents.liquid` lost
-  the table too and read `custom.card_zoom` alone. Neither is built on blocks,
-  so the metafield's name stays hardcoded in those two until they are.
+  Product cards and every product-detail surface now use their own composable
+  Media settings. Do not reintroduce a product-type lookup table in a snippet;
+  use a dynamic source on the relevant Media/Gallery block when a catalogue
+  needs per-product framing.
 
 - **The swatch row is in the merchant's order.** `metal-order.liquid` — the
   design's own table of white, yellow, rose, mixed, platinum, palladium,
@@ -632,7 +743,8 @@ render up to 50. Keep the two source contracts separate rather than exposing a
   directly, and stay `product_option_value` drops rather than being flattened
   through `split`, which is what carries a merchant's native swatch — so the
   re-lookup that round trip needed is gone too. The snippet stays for the quick
-  view and the snippet card.
+  product card. Quick view uses the same Product variant picker as the full and
+  featured product surfaces.
 
 - **The quick view is two settings on the card, not a block** — show on
   desktop, show on tablet and mobile. It is the one control here that is not
@@ -1165,6 +1277,13 @@ or an unavailable `span`. That keeps one appearance API without turning a form
 submit into a fake link. `mutable_label` wraps only the words, leaving the
 decorative arrow intact when JavaScript changes an action label.
 
+The newsletter offer popup submits to Shopify's real customer form and calls
+this same renderer for Subscribe and Continue; its editor exposes the complete
+Button appearance contract. The cookie banner also calls the renderer, using
+the shared global Button defaults for its filled Accept and outline Decline
+actions. Popup behavior and consent behavior remain section-owned; their UI is
+not a separate button system.
+
 The design states its own model: *"Four variants carry every action across the
 store. Pill geometry, uppercase Karla at .15em, and a single gold accent.
 Nothing else."*
@@ -1210,6 +1329,29 @@ Nothing else."*
 - **A filled button no longer carries an arrow.** about and visit had one, and
   "filled with an arrow" is not one of the design's four. The travel is now an
   explicit choice — pick `arrow` or `arrow_outline`.
+
+### Contract margins
+
+**A component's own block margin is declared at zero specificity, in
+`:where()`.** `.section-eyebrow`'s ratio margins, `.section-lede`'s 14px, and
+the composed card's meta-line shoulder used to tie, at one class each, with
+every container's `> * { margin-block: 0 }` reset — so whichever sat later in
+`base.css` won, and the contracts sit late. The result was the reset rules
+silently losing everywhere: a gap and a margin added inside Groups, the
+products list, the collection list, the catalog header, and `.stack`, which is
+how text blocks grew "random margins" no setting accounted for. (The
+`.collection-list__content > *` comment even named `.section-lede`'s 14px as
+the thing it zeroes; at equal specificity that was never actually true.)
+
+Demoted, the contract loses to any reset by construction, wherever either rule
+lives, and a component standing alone keeps its spacing exactly as before.
+Only the *margin* is demoted — typography stays at its normal weight or
+unrelated rules start winning font sizes. Two structural notes: `.stack` now
+carries the same child reset as every other gap owner (it had none, which is
+where the rich-text and newsletter sections' extra spacing came from), and the
+eyebrow's inner label zeroes its own margins at the source, because it is the
+wrapper's child, not the container's — no ancestor reset can reach it. A new
+component margin follows this shape or it will reintroduce the tie.
 
 ### Text alignment
 
@@ -1304,6 +1446,9 @@ diligent, and this theme has already paid for that twice — see the footer unde
 | R11 | `assets/*.js` stays ES5 — ES6 stops Shopify auto-minifying the file |
 | R12 | an icon whose SVG declares an id is rendered with a `uid` |
 | R13 | all icon SVGs and glyphs live in the centralized Liquid icon library |
+| R14 | specialised Text, Rich text, Button, Group, and product-section surfaces retain the complete base settings contract |
+| R15 | every shared settings contract calls one canonical runtime renderer |
+| R16 | CTA-style `.btn` markup is emitted only by `snippets/button.liquid` |
 
 **R05 is the one written from a scar.** `section-style.liquid` stopped
 understanding numbers when padding became a step, the footer kept its range, and
@@ -1352,12 +1497,35 @@ guess at its values.
 highest N is not always the one already unpacked, and a loose `.dc.html` may
 sit in `D:\Downloads` ahead of the zip it came from. Work was once done against
 revision 12 while 13 was already on disk; the whole port had to be re-examined.
-Current revision: **14** (2026-08-11), the **facets release**. Checked file by
-file against 13: **no `.dc.html` changed at all**, so nothing already ported
-needs re-examining. It adds `gj-facets.js`, wired into All Products and Search
-only, and gives `gj-variants.js`'s price filter a karat-pinning argument
-(`range(id, base, purity)` — "what would these cost in 14k"). Both land in
-templates this theme has not built yet, so neither is ported.
+Current revision: **17**. Checked file by file against 14: two `.dc.html`
+changed and three are new, all small.
+
+- **Bag Drawer** — the head gains a "View Full Bag" micro-link beside "Your
+  Bag N", pointing at the new Cart page. **Unported, deliberately for now**:
+  this theme's `cart_type` makes the drawer and the cart page alternatives,
+  and a drawer that links to the page reopens that decision — surface it as
+  a product question rather than quietly porting a link to a page the shop
+  may have turned off.
+- **Product** — the gallery is now `position: sticky; top: 0` on desktop,
+  relaxing to in-flow at the mobile query. This is the design arriving at
+  the theme's own sticky-column system: Adaptive already pins the gallery
+  whenever it is the shorter column, and the explicit Gallery mode states
+  the design's unconditional pin.
+- **Glorious Cart** — a full cart page design, new. The theme's `main-cart`
+  predates it; a comparison pass is future work.
+- **Buttons / Glorious Buttons** — two button specimen sheets (they differ
+  from each other; both are reference material, not storefront pages).
+
+A loose `Product Card.dc.html` (2026-08-09, revision-13 era) sits in
+`D:\Downloads` and matches neither 14 nor 17 — it is stale, not ahead;
+ignore it.
+
+Revision **14** (2026-08-11) was the **facets release**. Checked file by
+file against 13: no `.dc.html` changed at all. It adds `gj-facets.js`, wired
+into All Products and Search only, and gives `gj-variants.js`'s price filter
+a karat-pinning argument (`range(id, base, purity)` — "what would these cost
+in 14k"). Neither is ported: the native Search & Discovery filter system is
+this theme's facets implementation.
 
 Revision **13** (2026-08-09) was the **variants release** — it added
 `gj-variants.js` and touched Product Card, Quick View, Product, Home, Bag
@@ -1468,6 +1636,18 @@ see the search overlay below.
 
 ### Conventions
 
+- **Brand holds the store's name and its image logo.** Theme settings → Brand
+  gained `store_display_name` (used where the storefront says the shop's name
+  in prose — the gift card page, the footer copyright fallback, the password
+  logo's accessible name; empty falls back to `shop.name`), `logo`, and
+  `logo_inverted`. An image logo replaces the lettered wordmark through the
+  shared `huge-text` renderer — header, overlay heads, footer — with the
+  inverted one preferred on dark grounds; R15 keeps that branch in the one
+  renderer. **The hero deliberately stays text**: its letter-by-letter
+  entrance, the nav's morph anchor, and `fitHero`'s geometry are all drawn
+  from the letters. The wordmark's *text* remains the Header, Hero, and
+  Footer sections' own `huge_text_value` settings — a global override would
+  give "what does the wordmark say?" two answers.
 - **Shop details remain the source for shared shop contact facts.**
   `shop_address`, `shop_address_link`, `shop_phone`, and `shop_email` live under
   "Shop details". The Visit section's visible text is intentionally ordinary
@@ -1593,6 +1773,24 @@ see the search overlay below.
   changes the count only between about 661px and 675px. It is kept because it
   is the design's own value and because without it those few pixels would show
   one column and then jump to two.
+- **A sparse product row is fluid, with a panel guard.** Fixed-size cards
+  used to sit at exactly the design column (`minmax(col, col)`, auto-fill),
+  so three cards on a four-column row hugged the left of a field of dead
+  space. The template is `auto-fit, minmax(col, 1fr)` now — empty tracks
+  collapse and the live ones grow to fill, three cards filling the row
+  exactly — with a separate rule capping tracks at 1.4 columns **only when
+  the shell row holds at most two cells**, which is what keeps "grow" from
+  becoming the two enormous feature panels the fixed-size rule exists to
+  prevent. The split is not stylistic: **`auto-fit` counts its repetitions by
+  the MAX track size when that is definite**, so putting the 1.4 ceiling on
+  the general rule collapsed a seven-card row to two fat columns — measured,
+  not assumed. `1fr` keeps the count on the column floor, so the row breaks
+  where it always did and the carousel's ruler measurement is untouched. The
+  rules live on
+  `.grid-auto--products:not([data-row-live] *):has(.card[data-card-fixed-size])`
+  — see the comments there for why the `:not()` asks about the *shell*, not
+  the track, and for how "at most two cells" is asked with the ruler being
+  the track's first child.
 - **A product grid drops to one column below 660px**, whatever the floor above
   says. **660px is a departure from the design's 440px, on request** — it
   carries the one-column treatment through the whole band the removed "Columns
@@ -1637,6 +1835,17 @@ see the search overlay below.
   `clamp(12px, 2vw, 22px)` — and keeping them on one token is what keeps them
   reading as a set. Note it is deliberately *not* on the `--space-*` scale:
   `--space-md` lands about half again too wide.
+
+  **The horizontal half is separately merchant-settable.** Product List,
+  Collection List, and Recommended Product List each carry a `column_gap`
+  select — Use theme default (which emits nothing and keeps both axes on
+  `--grid-gap`), None, or a named step. It works because `.grid-auto`
+  already reads `column-gap: var(--column-gap, var(--gap))` and **every**
+  place a column width is computed reads the same pair — the grid template,
+  the carousel ruler, the live track's `grid-auto-columns`, and the page
+  translate — so one emitted property moves the columns and the grid and
+  the carousel keep agreeing about the count. Emit `--column-gap` from the
+  section's `grid_vars`; never restate the gap in a second place.
 - Per-scheme derived colours (`--c-hairline`, `--c-shadow`, `--c-veil`) are
   emitted from each scheme's literal colours inside the scheme class, not from
   `var(--c-text)` in `:root` — custom properties inherit their *computed*
@@ -1692,11 +1901,13 @@ but its two behavior blocks are reusable outside that section.
 `hero`, `featured-products` (Most Loved), `collection-list` (Our Products),
 `lookbook` (Shop the look), four `group` instances (feature cards, Craft,
 About, Visit), and `testimonials` — plus `header`,
-`announcement-bar`, `cart-drawer`, `newsletter-popup`, `cookie-banner` in the
-header group, `footer` in the footer group, and general-purpose `rich-text`
-and `newsletter`. `predictive-search` and `quick-view` are sections with **no
-schema**: a merchant never places either, they only answer a fetch — the
-search-suggest endpoint, and `?section_id=quick-view` on a product URL.
+`announcement-bar`, `header`, `cart-drawer`, composed `quick-view`,
+`newsletter-popup`, and `cookie-banner` in the header group; `footer` in the
+footer group; and general-purpose `rich-text` and `newsletter` sections.
+`predictive-search` remains a schema-less Section Rendering endpoint. Quick
+view is a real header-group section with merchant-ordered Product blocks; its
+saved section id is fetched against a product URL so those blocks receive the
+real product context.
 
 Most Loved's **"View all" goes to the collection it is showing**, which needs
 no setting to be right, and `view_all_link` overrides it for the case where it
@@ -2073,11 +2284,33 @@ swatch and field in the theme.
   `calc(var(--duration) * 2)`, so 350→300 took it from 0.7s to 0.6s — which is
   the design's own `transform .6s cubic-bezier(.22,1,.36,1)`.
 
-**Still not split: the keyframes.** The design's second-commonest curve,
-`cubic-bezier(.19,1,.22,1)` at 54 uses, is its animation easing and appears
-**once** here (`base.css:925`). `base.css` still carries ~25 `animation:` lines
-on a bare `ease` and ~40 hand-written durations. That is the next motion pass;
-it needs the same per-declaration care rather than a sweep.
+**The keyframes are split now, and an audit against revision 17 confirms it
+per declaration.** The design's animations run in three registers, not one —
+so "put the animation curve on every animation" would have been exactly the
+sweep this note warned against:
+
+- `gjUp .8s` and `gjHeroLine .95s` carry `cubic-bezier(.19,1,.22,1)` — the
+  page-entrance register. The theme's `catalog-title-rise` and `gj-hero-line`
+  match it, and the curve is tokenized as `--ease-out`
+  (`theme-tokens.liquid`), which the icon hover bounce and the arrow
+  button's gap travel also read.
+- `gjMenuIn`, `gjDrawerIn`, `gjModal`, `gjCkIn`, `gjLookCard`, `gjToast`,
+  `gjRise`, and the All Products grid item (`gjUp .7s`, the one `gjUp` on
+  this curve) carry `.22,1,.36,1` — the theme's `--ease`, which
+  `gj-row-in`, `gj-drawer-in`, `gj-modal-in`, `gj-cookie-in`,
+  `gj-look-card`, and `catalog-item-in` (700ms exactly) already use.
+- `gjCard`, `gjFadeIn`, `gjFadeOut`, `gjDrop`, `gjCkOut`, `gjNlIn` sit on
+  **plain `ease` in the design itself** — so the theme's bare-`ease`
+  `animation:` lines are not the unfinished half of the split; they are the
+  design's own third register, quoted. The asymmetric exits match too:
+  `gjMenuOut`'s `.64,0,.78,0` and the `gjDrawerOut`/`gjModalOut`
+  `.4,0,.2,1` both appear verbatim on their theme counterparts.
+
+The theme-owned animations with no design counterpart — the loader draw, the
+LQIP fades, the drawer hand-over's `gj-fade-out`/`gj-value-in`, the nested
+menu branch — keep their documented, deliberate choices. Design animations
+with no theme feature yet (`gjBagPop`, `gjKen`, `gjFloat`) are not ported
+because their components are not.
 
 ### Block spacing
 
@@ -2155,6 +2388,44 @@ arrangements on **Most Loved** and on **Our Products**, and both get the same
 three settings — `layout`, `carousel_motion`, `carousel_arrows`, the last two
 shown only in carousel mode. Their schema strings live under `sections.all.*`
 for that reason; they belong to no one section.
+
+**Layout is per device now, and the markup is one shell in both modes.**
+`layout`, `layout_tablet` and `layout_mobile` each choose grid or carousel;
+`theme.js` reads them off `data-row-layout-*` and switches by `matchMedia`, so
+a desktop grid can still be a phone carousel. The track is the same
+`.grid-auto` element either way — grid mode is simply the shell without
+`data-row-live`. Three consequences were paid for and are worth keeping:
+
+- **`data-row-live` lives on the shell root, never on the track.** A track-level
+  `:not([data-row-live])` is therefore *always true*, and `:has()` carries its
+  argument's specificity — so the fixed-size capped template outweighed the live
+  rule's `grid-template-columns: none` and kept painting under the carousel:
+  the first auto-fill columns stayed capped while overflow cards took the
+  implicit 100% column (some cards thin, some full-width), and below 660px the
+  explicit `1fr` starved against the implicit columns and collapsed the
+  *active* cell to 0px — which also threw its absolutely-positioned quick-view
+  disc over the neighbouring card. The guard is `:not([data-row-live] *)`: a
+  standalone catalog grid is inside no shell and keeps the cap, a shell in grid
+  mode keeps it too, and only a live carousel steps out of it.
+- **Live is granted only after a real measurement.** The bag drawer's upsell
+  boots inside a `hidden` panel, where the viewport is 0 wide; a page count
+  derived from that latched `--row-per: 1` and presented one full-width card
+  per page, which is what crushed the cart lines and read as "no upsell with
+  items". `measure()` now records whether it saw geometry, `paint()` states
+  nothing until it has, and the ResizeObserver completes the hand-over on the
+  frame the container first gets a size — before paint, so nothing wrong is
+  ever shown.
+- **The cells carry the grid layout's reveal** — 60ms apart on a product row,
+  80ms on the collection row — because grid is a mode of the shell rather than
+  separate markup now. Live mode steps the cell's reveal aside exactly as the
+  root's is stepped aside: `gj-card` is the carousel's entrance, and two
+  entrances on one element's account is the same bug twice. The upsell's cells
+  deliberately carry none: they boot in a hidden drawer, where an
+  IntersectionObserver cannot fire until the panel opens.
+
+`showCarousel` restores the `aria-roledescription` Liquid rendered rather than
+writing the word `carousel`, so switching layouts cannot swap a translated
+role for an English literal.
 
 `snippets/row-carousel.liquid` is the shell and **the shell only**: the root,
 the arrows, the viewport with its ruler, the marks. The caller renders its own
@@ -2406,10 +2677,15 @@ on their own media query. Between 1000 and 1100 the design runs the medium
 two-column arrangement with the larger cards, and folding that into the
 1100px tier is wrong.
 
-The **piece carousel** shows two at a time out of one collection per metal.
-Each `metal` block carries its own label and collection, which is how the
-design's White Gold / Yellow Gold switch becomes real product data. The whole
-pool is rendered and the carousel picks the visible pair, so stepping never
+The **piece carousel** shows two at a time out of one collection per Collection
+tab. Each `collection_tab` block carries its own label, collection and optional
+portrait image, so the tab is a complete content choice rather than only a
+product-pool switch. Its editor is deliberately narrow: Content contains the
+label and collection; Image contains the media picker, size and fit controls.
+The size choices use the same square, portrait, tall portrait, landscape and
+wide vocabulary as Lookbook media. A blank tab image falls back to the
+section's default portrait while retaining the selected tab's framing. The whole pool is rendered
+and the carousel picks the visible pair, so stepping never
 waits on a request and every piece is a real link without scripting — a
 visitor without it simply sees the first pair. Arrows hide themselves when
 the pool is too short to cycle.
@@ -2500,6 +2776,17 @@ its pill → bar expansion against.
 - Menu rows are **section blocks, not a Shopify linklist**, so the design's
   content ships working without the merchant first building navigation menus.
   Numbering is generated from block order; Bag and Search are appended last.
+- **Nested menus are the theme's own, and they are styled as a branch, not a
+  fallthrough.** The design has no nested menus at all — its overlay is six
+  flat rows — so a Shopify menu item with children renders the theme's
+  `<details>` disclosure: the parent row identical to a flat row, a champagne
+  `+` that rotates to `×`, and the child list indented behind a champagne
+  hairline. Opening replays `gj-row-in` on the links, staggered — `details`
+  going display-none-to-grid restarts descendant animations, the drawer empty
+  state's own mechanism — and closing the overlay folds every open branch, or
+  a reopened menu would greet the visitor mid-tree with its entrance already
+  spent. No JavaScript opens or closes a branch; the reset listener is the
+  only script that touches one.
 
 ### Footer
 
@@ -2741,13 +3028,12 @@ The old `snippets/product-card.liquid` remains only on the design-system page.
   width, and in a two-column phone grid the card is about 159px. One
   `ResizeObserver` serves every row on the page rather than one apiece; without
   it the row simply clips.
-- **`data-card-multi` is gated on the photograph count, not the slide count.**
-  It drives only the no-JavaScript hover swap, and that swap can reveal only a
-  photograph — `base.css` excludes a spin from it, a spin having nothing to
-  show until its source is fetched. Gated on slides, a piece with **one
-  photograph and a spin** faded its only photograph out on hover and revealed
-  nothing. The arrows are a separate question and stay on the slide count,
-  since the script steps to a spin perfectly well.
+- **No-script cards keep the opening photograph.** Every later photograph is
+  deferred without `src`/`srcset`, so only `theme.js` may reveal one: it first
+  promotes that requested source and then changes the active slide. A CSS-only
+  hover swap would expose an empty slide and is intentionally not provided.
+  Arrows and swipe remain progressive enhancements; the card-wide product link
+  remains the complete no-script path.
 - **The spin counts only once an mp4 rendition is known to exist.** The slide
   is guarded on `sources | where: 'format', 'mp4'` and the count was not, so a
   video without one shipped arrows and a badge for a slide that never
@@ -2796,248 +3082,36 @@ The old `snippets/product-card.liquid` remains only on the design-system page.
 
 ### Quick view
 
-A 1:1 rebuild of `Quick View.dc.html`. Three files, following the search
-overlay's shape exactly:
+Quick view is a separate overlay shell, not a separate product implementation.
 
-- `snippets/quick-view.liquid` — the empty shell, rendered by
-  `sections/header.liquid` into the header group.
-- `sections/quick-view.liquid` — **schema-less, like `predictive-search`**. A
-  merchant never places it; it only answers
-  `<product url>?section_id=quick-view`. Because that request is made against
-  the product's own URL, `product` inside it is the real product object, so
-  money, translation and image sizing never leave Liquid.
-- `snippets/quick-view-contents.liquid` — the panel itself.
+- `sections/quick-view.liquid` is saved in `header-group.json`. It owns
+  only enablement, colour scheme, scroll mode, Product block order, and the
+  shell-only “View full details” link.
+- Its static `_product-media-gallery` and ordered `product_*` blocks are the
+  same block files used by Main product and Featured product. Variant options,
+  quantity, price, inventory, badges, accelerated checkout, and media therefore
+  have one renderer and one behavior contract across all three surfaces.
+- The section emits fetched product markup inside an inert
+  `<template data-quick-view-inner>`. The always-present shell is
+  `snippets/quick-view.liquid`; there is no quick-view-contents renderer.
+- `theme.js` fetches the saved section id against the product URL, caches the
+  response per URL, injects the template contents, and calls
+  `window.VeylinProducts.init` on the injected root. Product behavior stays in
+  `main-product.js`; quick view JavaScript owns only fetch/open/close.
+- The trigger remains a real product link. If the section is disabled, absent,
+  or cannot be fetched, navigation still reaches the product page.
+- `panel`, `media`, and `details` scrolling are mutually exclusive shell
+  choices. Their CSS may position the shared `.product-gallery` or scroll the
+  shared details column, but must never introduce `.quick-view__pill`, a
+  second variant resolver, or a second gallery implementation.
+- The loading state is a transparent carrier for the shared loader; the actual
+  modal entrance begins after its product markup arrives. Keep the close action
+  focusable throughout loading.
 
-The panel's contents are replaced wholesale on every open, so **every handler
-is delegated from the document**; one bound inside the panel would be pointing
-at detached markup by the second piece. Responses are cached per URL.
-
-- **The overlay opens on the click, not on the response**, so the piece is
-  never a wait with nothing on screen. The trigger was a real link to the
-  product before the script touched it and goes back to being one if the
-  request fails.
-- **The entrance is held until the piece lands, and there is no panel surface
-  around the wait.** Every entrance value is already exact to the design —
-  `gj-modal-in` is `gjModal` keyframe for keyframe at `.45s
-  cubic-bezier(.22,1,.36,1) both`, the veil is `gjFadeIn .3s ease both`, and the
-  geometry (1300px, 94vh, z-index 250, veil at 62% and `blur(8px)`) matches. The
-  defect was *when* it played: an empty loading box was visible at its intrinsic
-  size, then became the much larger two-column panel when the response arrived.
-  Its height is set by the info column and varies by piece, so guessing a
-  placeholder size merely moves the jump.
-
-  `.quick-view.is-loading` is therefore a transparent, content-sized carrier
-  for the diamond, with the close control fixed at the overlay corner. Dropping
-  the class flips `animation-name` from `gj-fade-in` to `gj-modal-in`, which
-  restarts it at time 0 — the first visible panel has its real geometry and its
-  product already in it. The cached and fetched paths both converge on that one
-  entrance.
-
-  **The specificity is load-bearing.** `.overlay.is-closing .quick-view` (0,3,0)
-  still outranks `.quick-view.is-loading` (0,2,0), so closing mid-fetch plays
-  the exit — checked in both states. And do **not** move the entrance onto
-  `.quick-view__contents`: the panel's own animation would still restart when
-  the class drops, compounding to `translateY(36px) scale(0.970)`, and
-  `.quick-view__close` is a sibling of the contents so it would fall out of an
-  entrance the design includes.
-- **`.overlay`'s padding floor is 10px, not 9.6px.** The design states
-  `clamp(10px,3vw,40px)`; `0.6rem` was 9.6px. Shared with the newsletter popup
-  deliberately — its design file states the same clamp — so the correction
-  belongs on `.overlay`, not on `.overlay--quick`.
-- **The gallery slides where the card cross-fades** — one track translated by
-  whole slots. Double-click zooms to 2.2× at the point clicked, with drag,
-  pinch, ctrl-wheel and the design's minimap. Changing slide resets the zoom.
-- **What scrolls in two columns is one setting of three — `quick_view_scroll` —
-  because the three are alternatives.**
-
-  - `panel` is the design's own: the modal is `max-height:94vh;overflow:auto`
-    and everything in it moves together. It carries no class.
-  - `media` caps the gallery to the panel's visible block size and keeps it
-    sticky there while the taller details column scrolls the panel past it, so
-    the gallery never inherits that column's height. Its width still fills the
-    left grid track.
-  - `details` is the **default and a departure made on request**: the panel
-    itself stops scrolling and only the middle of the details column moves.
-
-  It is a select rather than a second checkbox because two would offer four
-  combinations of which one is meaningless — with only the details scrolling
-  the panel does not scroll at all, so the gallery is capped to it by
-  construction and there is nothing left for a "keep it pinned" to do, and
-  nothing to be sticky against. Same rule the tax note is written to: "is it
-  on?" has exactly one answer. The two-column trigger in all three is the
-  `.quick-view__contents` container at 52.5rem, not a viewport guess; below it
-  the panel scrolls as a whole whichever is chosen.
-- **`details` pins the name, the price, Add to Bag, the reassurance line and
-  View full details. The axes and the specification are what scroll.**
-  `.quick-view__details` wraps that middle and is `display: contents` under the
-  other two modes, so it changes no geometry there whatever.
-
-  **It is gated on `min-height: 40rem` as well as on the container's width, and
-  that gate is not optional.** The pinned rows and the bar are a fixed cost —
-  measured, 290px of rows at 1280 wide, 312 at the narrowest two-column width,
-  about 46 more for a title that wraps, and a 74px bar — and the scroller is
-  only what is left. Where that remainder reaches zero the scroller collapses,
-  and **a zero-height scrollport shows nothing however much it holds**: every
-  axis and the whole specification would be invisible, with the panel no longer
-  scrolling to compensate. Measured at **932×430 — an iPhone Pro Max in
-  landscape, not a contrived window** — the container is 876px so two columns
-  fired and `.quick-view__details` came out **0px tall holding 823px**. It
-  shipped that way for one revision of this change and a review pass caught it;
-  the verification that missed it had checked that Add to Bag was reachable,
-  which it was, and never asked whether the axes were.
-
-  Below the gate the panel scrolls as a whole, which is `panel`'s behaviour and
-  known good. Just above it, at 1280×648, the region measures 163px against
-  823px of content — small but real, and never zero. It is a *media* query
-  because the arrangement depends on block size, which a container query cannot
-  ask: `container-type: size` needs a height independent of contents, and the
-  panel's is not.
-
-  Seven things are load-bearing, each documented beside its rule in `base.css`:
-
-  - **`.quick-view__frame`.** The column of exactly the panel's visible height
-    has to be a *descendant* of the element carrying `container-type`, never
-    that element itself — the `.row-carousel__frame` trap, hit again here. On
-    `.quick-view__contents` it parses, uploads and never fires; measurement is
-    what caught it, since every rule on a descendant applied and that one did
-    not. It is also what keeps the loading state safe: `theme.js` empties the
-    contents before adding `is-loading`, so the frame does not exist while the
-    diamond is on screen and no empty box can be given a screen of height.
-  - **`grid-template-rows: minmax(0, 1fr)`**, or the implicit `auto` row sizes
-    to its content first and a long details column grows it past the panel,
-    carrying View full details off the bottom of the screen.
-  - **`flex: 0 1 auto` on the scroller** — it shrinks but never grows, which is
-    what keeps `justify-content: center` meaningful.
-  - **`flex: none` on everything else in the column**, or the pinned rows give
-    way alongside the scroller and it is the title that shrinks. The scroller
-    beats that rule on specificity, (0,3,0) against (0,2,0), not on source
-    order, so neither can be moved and quietly lose.
-  - **The column keeps an `auto` overflow of its own** for the band the height
-    gate cannot reach — a title wrapping to three lines just past 40rem, say —
-    **and `justify-content: safe center` is what makes that reachable.** A
-    centred flex column splits its overflow across *both* ends and `scrollTop`
-    clamps at 0, so the start-side half is clipped away from every input. That
-    is the classic centred-overflow trap and it had shipped here: at 1280×400
-    the eyebrow sat 23px above the scroll origin with no way to reach it.
-    `safe` falls back to `start` exactly when the column overflows and is plain
-    `center` when it does not, so short-piece geometry is untouched.
-  - **The scroller grows sideways and is pulled back by the same amount**, so
-    the rows keep the width and x they have in every other mode. Two things
-    need that room: the focus ring, which reaches 5px out (`:focus-visible` is
-    a 2px stroke at a 3px offset) against the 2px a control sits inside the
-    region, and the scrollbar, which is subtracted from the content box and
-    would otherwise narrow every row by 11px and crowd the values against it.
-    The end margin gives back the ring's reach, 6px of air *and*
-    `--scrollbar-size`, derived from the token rather than typed. 22px in all,
-    against a column padding of at least 33.6px wherever two columns fit.
-    **`scrollbar-gutter: stable` is what keeps that honest** — the margin is
-    unconditional and a scrollbar is not, so without it a piece whose details
-    do not overflow would have its rows hanging 11px into the padding. It is
-    the one place in this theme the property belongs; the global note under
-    "Scrollbars" rules it out on `html`, where it would break theme.js's live
-    measurement, and nothing measures this one.
-  - **The panel keeps `overflow: auto`**, not `hidden`, so anything that does
-    overflow stays reachable rather than clipped.
-
-  **The region is a tab stop only when it actually scrolls, and `theme.js`
-  decides that by measuring.** A scroll container has to be reachable by
-  keyboard and nothing gives this one that for free: it holds focusable
-  children, which is exactly the case where Chrome's keyboard-focusable-
-  scrollers behaviour declines to add it to the tab order, and no other engine
-  adds it either. Tabbing its own controls is not a substitute — the
-  specification sits after every one of them, and each `<select>` axis eats the
-  arrow keys to change the variant, so the tail of the region was mouse-only.
-  `syncQuickDetails()` sets `tabindex`, `role` and the label when
-  `scrollHeight > clientHeight`, and takes all three off when it does not: a
-  stray tab stop on a region that cannot move is worse than none. Under the
-  other two modes the wrapper is `display: contents` and has no box, so both
-  values read 0 and the test is false by construction. It runs on fill and on
-  resize, since both thresholds it depends on move with the window.
-
-  Measured at 1280×900 against a six-axis piece: the panel is 823px and does
-  not scroll, the gallery is 748 (823 less the 75px bar), the details region
-  scrolls 406px, and the title, the price, Add to Bag, the bar and the gallery
-  all move **0**. A short piece's stack is *pixel-identical* to `panel` mode —
-  title at 247, Add to Bag at 523 in both — because the scroller only shrinks
-  and the column stays centred. A row measures 499.01px wide and 1.71px inside
-  the column whether the region scrolls or not, with 11px of air to the bar.
-
-  **The panel surface is always the full visible height here**, though, where
-  `panel` shrink-wraps a short piece to 715. That is the fixed frame height,
-  and it is the same thing `media` does (which is always 823 for any piece);
-  the stack inside lands on the same screen position either way, so what
-  changes is the porcelain around it. It cannot be given up without giving up
-  the gallery's minimum too: the gallery's `min-block-size: 0` is what lets it
-  take the row's height, so a shrink-wrapping frame would let a short piece
-  squeeze the well below the design's own floor.
-
-  At 420px wide every mode is identical: one column, both wrappers inert, the
-  panel scrolling. At 932×430 and at 1280×400 the height gate hands over to
-  that same whole-panel scroll, and every axis and spec row is reachable again.
-- Clarity, colour and certification are **theme settings** with the design's
-  values as defaults, and the matching `custom.diamond_clarity_grade` /
-  `custom.diamond_color_grade` / `custom.certification_lab` product metafield
-  in front of each. `custom.spin_360_video` similarly overrides the first
-  product-media video in the gallery. Beside them sits the design's **Total
-  carat weight** row, from the same `custom.total_carat_weight` the card's
-  caption reads.
-- **The axes are the product's options, one row each** — revision 13's variant
-  release. A rule, the option's name at the left, the chosen value at the right,
-  and the control beneath. This replaced a `<select name="id">` listing every
-  variant, which was neither the design's nor usable.
-
-  **Which control an axis gets is derived, not tabled.** The design fixes each
-  `kind` by hand because it owns its own axis table (`axisDefs`); here they are
-  the merchant's options, so: the metal — or any option whose values carry a
-  native Shopify swatch — is painted with swatches; three values or fewer is a
-  row of pills; more is a select. That reproduces the design's own arrangement
-  on the design's own data (karat, origin, cut, purchase option, backing and
-  clasp are pills at two and three values; ring size at thirteen, chain at five
-  and wrist at four are selects). **Never add a table of option names here** —
-  the same rule `metal-swatch.liquid` is written to.
-
-  **The metal row always leads, and the metal only.** The design's `axisDefs()`
-  opens with `out.push({ key: 'metal', … kind: 'swatch' })` and pushes the rest
-  after it. Rendering `options_with_values` in its own order gave whatever the
-  merchant typed in admin, which put "Gold Karat" above "Metal" on this shop.
-  Hoisting *every* swatch-kind option instead would make row order depend on
-  admin metafield data — connect the Color metafield to a "Finish" option and
-  the panel silently reorders, and if it sits before Metal it would lead, which
-  the design never does. `gj-variants.js` has exactly one `kind: 'swatch'`, so
-  the design states no precedence between two and inventing one is not porting.
-  Everything after the metal keeps the merchant's order.
-
-  **The positions are never renumbered.** `option_order` is a list of *original*
-  indices and the row loop does `assign opt_index = position | plus: 0` — the
-  `| plus: 0` is not optional, since `split` yields strings and
-  `options_with_values["1"]` is nil. `data-qv-group`, `data-qv-prefix`,
-  `data-qv-pick`, `data-qv-select` and `current_variant.options[…]` share that
-  one numbering space, and `theme.js` compares `options[j] !== choice[j]`
-  positionally against `variant.options`. Renumber to the display order and
-  every multi-option product resolves the wrong variant, or none — and Add to
-  Bag then disables itself permanently. Verified after the change: Metal renders
-  first carrying `data-qv-group="1"`, Gold Karat second carrying `"0"`, and a
-  pick on either still resolves the right variant and price.
-
-  The **metal row's caption composes the karat** — "18K Yellow Gold" — which is
-  the design's own `metalName(v)` and matches how a bag line reads
-  (`line-options.liquid`). The karat keeps its own row below, as in the design.
-  The swatch row is ordered by `snippets/metal-order.liquid`, shared with the
-  card, and the selected ring is a 3px gap in `--c-bg` — the *panel's* colour,
-  where a card's is `--c-surface`.
-
-  A pick resolves against a variant list Liquid embeds beside the rows, every
-  figure in it `money`-formatted, so nothing in the browser formats a price. A
-  combination the shop does not make leaves the price standing and says so on
-  the button; values stay listed whatever the stock, as the card's note does.
-- **Engraving looks like an axis and is a line item property.** Gated on
-  `custom.engraving_available`, so it appears only where admin says the piece
-  can be engraved. Its input is tied to the form by `form="…"` rather than by
-  nesting — the control belongs up in the rows — and stays `disabled` until
-  asked for, since a disabled control is not submitted.
-- The close button is named `data-overlay-autofocus` deliberately: the veil is
-  also a close control and comes first, so without it the overlay opens with
-  focus on a full-screen invisible button.
+The acceptance test is behavioral parity: select the same option in Main
+product, Featured product, and Quick view and confirm the selected value, hidden
+variant id, price, availability, add button, dynamic checkout visibility, and
+full-details URL all describe that same variant.
 
 ### Scrollbars
 
@@ -3071,11 +3145,15 @@ theme rather than a component's.
 - **The design hides some rails, and those must be hidden here too.** It marks
   them `data-rail`, with
   `[data-rail]{scrollbar-width:none}[data-rail]::-webkit-scrollbar{display:none}`.
-  Two of its four are ported: `.lookbook__rail`, which already had it, and
+  All four are ported: `.lookbook__rail`, which already had it;
   **`.search-overlay__results`, which did not** — its box was ported declaration
   for declaration and the hiding was not, which only became visible once the
-  bars were themed. The other two are the filter chip rail on All Products and
-  Search, whose templates are not built yet; hide them when they are.
+  bars were themed; and the filter chip rail on All Products and Search, which
+  is one component here — `.catalog-controls__rail` in
+  `snippets/catalog-controls.liquid` serves both templates, and it carries the
+  same `scrollbar-width: none` / `::-webkit-scrollbar { display: none }` pair
+  on the class. An audit found only those two `overflow-x: auto` rails in the
+  whole stylesheet, so nothing else scrolls a bar the design would hide.
 - Both hidden rails win on their own: `scrollbar-width: none` at (0,1,0) beats
   `*` at (0,0,0), and `.x::-webkit-scrollbar{display:none}` at (0,1,1) beats
   `::-webkit-scrollbar` at (0,0,1) — and the universal rule declares no
@@ -3089,6 +3167,16 @@ theme rather than a component's.
   every page; theirs is a gap to close if either is ever styled.
 
 ### Loading
+
+**The mark, its colour, and the veil behind it are merchant-facing now.**
+Theme settings → Colors → Loading holds `loader_style` (Diamond, Ring, Orbit —
+each variant reuses the same `loader__line`/`pathLength` contract, so the draw
+engine, stagger, exits, and reduced motion apply unchanged), `loader_color`
+(empty falls back to each surface's accent; the mark itself never has a
+background), and `veil_color`, which tints the translucent wash behind
+drawers, quick view, and popups through `--veil-tint` with the theme's noir as
+the fallback. A new variant is a sibling `icon-loader-*.liquid` with inline
+`--n`/`--exit` on each path and a `when` in the dispatcher — nothing else.
 
 **One mark for every wait in the theme**, from `snippets/loader.liquid`: the
 quick view while the piece is fetched, the search overlay while a query is in
@@ -3262,8 +3350,41 @@ The markup contract:
   in, and inheriting the page's accent would drop the light-background gold
   (`#9A7836`) onto a near-black surface.
 
+### Close controls
+
+**Every overlay close is one renderer and one theme setting.** Quick view wore
+an icon disc, the newsletter a bare glyph, the drawers a word — the same
+action in three costumes. `snippets/overlay-close.liquid` is now the only
+thing that emits a close control, and Theme settings → Buttons → Close
+controls chooses its form for all of them at once: Text (default — the
+"Close" pill) or Icon (the same bordered disc holding the theme's one close
+glyph). Callers pass *placement* — a context class that positions the control
+and the attributes that wire it — never appearance; a context class carrying
+visual style again is how quick view drifted in the first place. Both forms
+paint from `currentColor`, so one rule serves the noir overlay heads and the
+light panels, and both take their corner radius from the global button shape.
+Deliberately not `snippets/button.liquid`: a close is a purpose-built
+interface control, the R16 exemption. Veils, the cookie banner's
+Accept/Decline, and the newsletter's "No thanks" are dismissals, not close
+chrome, and stay their own things.
+
 ### Search overlay
 
+- **Three presentations, one markup.** Theme settings → Search chooses
+  full-screen menu (default), drawer, or straight to the search page. The
+  field, popular terms, resting state, and results are one Liquid capture
+  shared by menu and drawer modes, so they cannot drift and `theme.js` needs
+  no mode awareness. `page` renders no overlay at all and every trigger stays
+  a real link.
+- **Drawer mode is the cart drawer's shell to the letter** — the same
+  `.drawer` root, veil, sliding scheme-classed `.drawer__panel`, and
+  `.drawer__head` with the shared close control — so it reads as the same
+  furniture as the bag, on its own merchant-chosen scheme. The palette
+  hand-over is a single property: the full-screen mode's styling paints
+  entirely from `--c-ivory` mixes (noir whatever the page says), and the
+  drawer's panel redefines `--c-ivory: var(--c-text)` — every shared rule then
+  follows the scheme, light or dark, with the accent likewise the scheme's own
+  rather than the overlay's champagne.
 - Opens over the page, and on ⌘K / Ctrl+K / `/` — the design's shortcuts.
 - **No client-side index.** Typing fetches
   `/search/suggest?q=…&section_id=predictive-search`, and
@@ -3275,6 +3396,42 @@ The markup contract:
   the overlay**, so opening shows something before any request.
 - The whole thing wraps a real GET form to the search route, and the nav's
   search action is a real link to it, so it degrades to the search page.
+
+### Cart upsell
+
+**The upsell belongs to the empty cart, and only to it.** A bag with pieces in
+it is a checkout surface — everything under the lines is the money and the way
+out, and a row of other products beside the checkout action is noise where it
+costs most. An empty bag is a doorway, and the upsell is what fills it.
+`blocks/cart_upsell.liquid` renders when `cart.item_count == 0` and never
+otherwise; the old show-when-empty/show-when-items pair gave "should it show?"
+two answers and is gone.
+
+- **The source is a merchant collection, full stop.** The recommendations
+  machinery the block used to carry — pending placeholder, per-section
+  re-fetch, `initCartRecommendations` in `theme.js` — is removed with the
+  with-items state, because a recommendation needs a seed product and an empty
+  cart has none. All products stands in when no collection is chosen.
+- **One piece per page, as a row.** The block projects the same composed
+  `_product-card` sideways: the photograph a fixed square on the left
+  (`--cart-upsell-thumb`), the merchant's composed text in a card-local Group
+  beside it, the quick-view disc moved to the row's end on its centreline.
+  Flex rather than the card's named `media` grid, because nothing stacks under
+  the photograph here. `.cart-upsell__track` pins `--cols: 1` with a 100%
+  floor, so the shared ruler measurement finds exactly one column whatever
+  container the band is in.
+- **The heading and the arrows are the shell's `header` placement** — a new
+  `arrows: 'header'` arrangement in `snippets/row-carousel.liquid`: a hairline
+  band above the track, the heading on the left, the two arrows together on
+  the right, no marks. The heading sits outside `data-row-controls`, so one
+  product keeps its title while the arrows go. The band's arrows are the bare
+  glyph at 34px rather than the 46px track control. Any section can use the
+  placement; the upsell no longer offers an arrows setting because the band
+  *is* its presentation.
+- Both stored copies — the drawer's in `sections/header-group.json` and the
+  cart page's in `templates/cart.json` — compose photograph, product type
+  eyebrow, title, and price, which is the drawer band the design sketch
+  states: thumb left, facts beside it, quick view at the end.
 
 ### Cart drawer and cart naming
 
@@ -3543,6 +3700,46 @@ said. The old **Pricing** group held only that one checkbox and is gone.
   `lookbook` and `cart-drawer` each carried one ANDed with the shop-wide
   switch, which gave "is it on?" two answers.
 
+### Compare-at prices
+
+**A compare-at price is struck through beside the current price on every
+product surface, and which side it sits on is one shop-wide choice.** Theme
+settings → Prices → `price_compare_position` — Before the price (the default)
+or After it. Liquid renders the two figures in the chosen order on every
+surface; CSS never reorders them, because the struck figure sits in inline
+text flow where structural pseudo-classes cannot tell an element from the
+text node beside it. The one thing CSS moves is the *gap's side*:
+`theme.liquid` emits `data-price-compare="after"` on the body only in that
+mode, and `.card__price s`, `.drawer-row__compare` and `.cart-line__compare`
+swap their 0.5em margin under it.
+
+- **The surfaces that price a variant all strike `compare_at_price`**: the
+  shared `card-price` renderer (Product card, Hotspot card, the upsell), the
+  Product price block (Main product, Featured product, Quick view), and the
+  option rows' pre-rendered fragments in `_product-card-option-control` and
+  `_product-card-add` — which is what keeps a swatch pick honest, since
+  `theme.js` swaps `[data-card-price]`'s whole `innerHTML` from those
+  fragments and never assembles money itself. `main-product.js` is
+  order-agnostic by construction: it finds `[data-product-compare]` by
+  attribute and toggles `hidden`, so the block's Liquid owns the order.
+- **The meta rows say it in the sentence.** The lookbook hotspot row, the
+  search overlay's featured rows and predictive search's live rows carry
+  "kind · price" as one string, so the struck figure joins that string with a
+  literal space rather than a margin — text flow is what spaces words. A
+  "From" price never carries a struck figure: `price_min` against a
+  compare-at chosen from a different variant would strike one number with
+  another product's story.
+- **The cart strikes what a discount changed, never the compare-at.**
+  `original_price` against `final_price` per piece, or the line pair when
+  `cart_unit_price` shows line totals — the same unit-or-line mode as the
+  visible figure, because a per-piece price struck through by a line total
+  pairs two quantities in one sentence, which is the bug the cart page
+  actually had. Compare-at stays out of the bag deliberately: checkout will
+  not echo a compare-at saving, and a figure the bag claims that checkout
+  withdraws is the dearest-variant price trap again. The drawer and the cart
+  page render the identical pair, which is the "every Cart setting acts on
+  both" rule doing its job.
+
 ### Cart settings
 
 **The drawer and the cart page are alternatives, and every Cart setting acts on
@@ -3561,7 +3758,19 @@ in `snippets/cart-drawer-contents.liquid` and in `templates/cart.liquid`.
 | `cart_installments` | `payment_terms` |
 | `cart_accelerated_checkout` | `payment_button` |
 | `cart_empty_link` | where an empty cart's button goes |
+| `cart_image_ratio` `cart_image_fit` | the frame a line's photograph sits in — drawer **and** page |
 
+- **The image pair genuinely acts on both surfaces now.** It did not: the cart
+  page carried its own duplicate `image_ratio`/`image_fit` on the Main cart
+  section, so Theme settings → Cart → "Image shape" changed the drawer and
+  left `/cart` exactly as it was — "what shape is a line's photograph?" had
+  two answers, only one of which the theme-settings control could reach. The
+  section pair is removed; `main-cart.liquid` reads the theme settings, and
+  `adapt` — which has no single value to put on the section root — is emitted
+  per line from each photograph's own dimensions, exactly as the drawer does
+  it. A drawer line with `adapt` and no photograph falls back to the pair's
+  own 3/4 rather than emitting the invalid `--drawer-thumb-ratio: /` that
+  collapsed the empty bordered thumb.
 - **The drawer's actions became `{% form 'cart', cart %}`, and that is what
   makes three of these possible at all.** `payment_terms` and `payment_button`
   are filters *on a form object*, so a hand-written `<form action="/cart">` —
@@ -3769,9 +3978,11 @@ the checkout button is intact, and the subtotal carries the note.
   collapsed panel keeps showing a sliver of its first row. The footer
   accordion and the bag drawer's row removal both use this shape; copy it
   rather than flattening it.
-- **The footer accordion opens one row at a time**, as the design does —
-  opening a section closes whichever was open. That lives in `initFooter`, not
-  in CSS.
+- **Footer disclosures and the global Accordion share markup and motion, but
+  not content policy.** Both use `.disclosure__toggle`, the plus/minus mark,
+  and the same three-layer 0fr/1fr panel transition. Footer opens one link
+  column at a time in `initFooter`; global Accordion instances are independent,
+  can begin open, and may become permanently expanded at the desktop query.
 - **Never edit a theme file in place with a tool that writes a temp file
   beside it.** `sed -i` does exactly that — it writes `sedXXXXXX` in the same
   directory and renames it over the original — and `shopify theme dev` watches
@@ -3790,6 +4001,18 @@ the checkout button is intact, and the subtotal carries the note.
   Use an editor that writes the file in place. The same caution applies to any
   `python -c "... open(p,'w') ..."` that writes to a sibling path first, and to
   editor swap files if one is ever pointed at this tree.
+
+  **Claude Code's own Edit/Write tools are a carrier**, and `assets/` is where
+  it bites. An edit to `assets/base.css` produced an upload attempt for
+  `assets/base.css.tmp.50276.a4f0c56b82c3` — the tool's atomic write, a temp
+  file renamed over the original in the same directory. Sections and blocks
+  merely upload junk and delete it; **assets also burn the Asset API's rate
+  bucket**, so a run of quick edits to `base.css`/`theme.js` ends in
+  `Too many updates in a short period` and the dev server serving its error
+  page for several minutes — with every retry the watcher makes extending the
+  window. Batch asset edits, and when the throttle hits, stop touching
+  `assets/` entirely until the storefront serves again; one clean save after
+  the quiet period is what clears it.
 - **Audit every `range` after touching one.** Shopify validates the two rules
   server-side and `theme check` does not, so a bad step only shows up as
   `Failed to Upload Theme Files` with `default must be a step in the range`.
@@ -3867,6 +4090,10 @@ Things `shopify theme check` rejects that are easy to get wrong:
 
 ### Templates
 
-Everything other than `templates/index.json` is a minimal unstyled placeholder
-that exists so the store is browsable. They are not the design and should be
-rebuilt as section-based JSON templates when their turn comes.
+Every storefront route is treated as a production surface. JSON templates own
+section composition. Shopify emits policy markup directly through
+`content_for_layout`; `theme.liquid` wraps that platform output with the native
+policy rail and shared content typography. Product, featured product, and quick
+view keep separate shells but one Product component contract. Search and cart
+support their configured page/drawer/menu surfaces without forking product
+cards or recommendation markup.
