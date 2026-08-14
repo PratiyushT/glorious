@@ -55,8 +55,24 @@
     Overlay the first section only where a section is designed to sit under the
     nav. Elsewhere reserve the bar's height so content is not covered.
   endcomment
+  comment
+    The design's product page holds the nav transparent until the visitor
+    scrolls: the bar's links stand over the gallery with no ground of their
+    own, and the solid ground arrives with the scroll — the home hero's
+    overlay arrangement on the product template, behind a checkbox. The bar
+    also takes the product page's own scheme, because a noir bar over a
+    porcelain gallery was nobody's decision.
+  endcomment
+  assign nav_transparent = false
+  if template.name == 'product' and section.settings.nav_product_transparent
+    assign nav_transparent = true
+  endif
+
   assign overlay = false
   if section.settings.overlay_home and template.name == 'index'
+    assign overlay = true
+  endif
+  if nav_transparent
     assign overlay = true
   endif
 
@@ -75,15 +91,14 @@
   endif
 
   comment
-    The design holds the product page's nav back until the visitor scrolls.
-    Veiled at the top, revealed on the way down, veiled again at the top —
-    and a checkbox, so it is the merchant's choice. Liquid emits the veiled
-    resting state so the first paint is already right; the CSS gates the
-    hiding on .js, so a visitor without scripting always has the header.
+    On product pages the bar wears the product page's own scheme; every
+    other template keeps the header's global choice. The default filter is
+    what keeps a store saved before this setting existed on its global
+    scheme rather than on an empty class.
   endcomment
-  assign nav_reveal = false
-  if template.name == 'product' and section.settings.nav_product_reveal
-    assign nav_reveal = true
+  assign nav_scheme = section.settings.color_scheme
+  if template.name == 'product'
+    assign nav_scheme = section.settings.nav_scheme_product | default: section.settings.color_scheme
   endif
 
   comment
@@ -103,10 +118,10 @@
 {%- endcapture -%}
 
 <nav
-  class="nav nav--{{ section.settings.header_layout | default: 'art_directed' }} scheme-{{ section.settings.color_scheme }}{% if overlay %} nav--overlay{% endif %}{% if is_pill %} nav--pill{% endif %}{% if nav_mode != 'morph' %} is-solid{% endif %}{% if nav_reveal %} nav--veiled{% endif %}"
+  class="nav nav--{{ section.settings.header_layout | default: 'art_directed' }} scheme-{{ nav_scheme }}{% if overlay %} nav--overlay{% endif %}{% if is_pill %} nav--pill{% endif %}{% if nav_mode != 'morph' and nav_transparent == false %} is-solid{% endif %}"
   data-nav
   data-nav-mode="{{ nav_mode }}"
-  {% if nav_reveal %}data-nav-reveal{% endif %}
+  {% if nav_transparent %}data-nav-transparent{% endif %}
   data-nav-threshold="{{ section.settings.scroll_threshold }}"
   aria-label="{{ 'accessibility.primary_navigation' | t }}"
 >
@@ -295,10 +310,17 @@
     },
     {
       "type": "checkbox",
-      "id": "nav_product_reveal",
-      "label": "t:sections.header.nav_product_reveal.label",
-      "info": "t:sections.header.nav_product_reveal.info",
+      "id": "nav_product_transparent",
+      "label": "t:sections.header.nav_product_transparent.label",
+      "info": "t:sections.header.nav_product_transparent.info",
       "default": false
+    },
+    {
+      "type": "color_scheme",
+      "id": "nav_scheme_product",
+      "label": "t:sections.header.nav_scheme_product.label",
+      "info": "t:sections.header.nav_scheme_product.info",
+      "default": "scheme_1"
     },
     {
       "type": "range",

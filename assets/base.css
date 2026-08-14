@@ -6076,42 +6076,6 @@ a {
 
    Holding left, right and transform constant means the expansion is the
    width transition alone, growing symmetrically from the centre. */
-/* ---- Product-page reveal --------------------------------------------
-   The nav rests invisible at the top of a product page, arrives once the
-   visitor scrolls down, and leaves again at the top (Header → "Hide the
-   header at the top of product pages"). Liquid emits .nav--veiled as the
-   resting state so the first paint is right; the hiding is gated on .js
-   because a nav only scripting can reveal must never be hidden without it.
-   visibility leaves with a delay matching the exit so the links drop out
-   of the tab order only once the fade has finished, and both transforms
-   carry the nav's own translateX(-50%) — the centring is in the base
-   transform, and a state that omits it snaps the bar to the left edge.
-   The arrival is the design's own nav entrance: a 12px drop over 0.8s on
-   the entrance curve; the exit is the interaction register, quicker. */
-.js .nav--veiled {
-  opacity: 0;
-  transform: translateX(-50%) translateY(-0.75rem);
-  visibility: hidden;
-  transition:
-    opacity 0.3s var(--ease-ui),
-    transform 0.3s var(--ease-ui),
-    visibility 0s 0.3s;
-}
-
-.js [data-nav-reveal]:not(.nav--veiled) {
-  transition:
-    opacity 0.8s var(--ease),
-    transform 0.8s var(--ease),
-    visibility 0s;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .js .nav--veiled,
-  .js [data-nav-reveal]:not(.nav--veiled) {
-    transition: none;
-  }
-}
-
 .nav {
   /* The pill's height, named because the corner radius has to be derived from
      it — see .nav--pill. */
@@ -6668,8 +6632,15 @@ a {
   list-style: none;
 }
 
+/* Every row — link or branch toggle — is the same flex arrangement, which
+   is what makes their alignment identical by construction. The old split
+   (links in inline flow with a vertical-align raise, the toggle a flex row
+   with neither) put the branch row's number a full step lower and its title
+   a space-width to the right of its neighbours. */
 .nav-menu__link {
-  display: block;
+  display: flex;
+  align-items: baseline;
+  gap: 0.35em;
   font-family: var(--font-display);
   font-size: clamp(2.4rem, min(7.2vw, 7.4vh), 4.9rem);
   line-height: 1.14;
@@ -6686,13 +6657,10 @@ a {
 /* A branch is the theme's shared disclosure — the footer's plus/minus mark
    and three-layer 0fr/1fr panel — dressed in the menu's own type. The
    generic .disclosure__* rules supply the collapse motion, the mark swap,
-   and the no-script open state; everything here is the navigation's skin
-   over them. The toggle shares the row's .nav-menu__link class, which is
-   what keeps a branch row and a plain row identical to the eye. */
+   and the no-script open state. The toggle shares the row's .nav-menu__link
+   class, which is what keeps a branch row and a plain row identical to the
+   eye — all that is left here is unbuttoning the button. */
 .nav-menu__branch-toggle {
-  display: flex;
-  align-items: baseline;
-  gap: 0.35em;
   width: 100%;
   padding: 0;
   border: 0;
@@ -6700,12 +6668,27 @@ a {
   cursor: pointer;
 }
 
+/* The row's focus is its colour, the same signal as its hover — the global
+   accent outline reads as a gold box drawn around display type. The mark
+   swap and the unfolding panel already state the open state twice over. */
+.nav-menu__branch-toggle:focus-visible {
+  outline: none;
+}
+
 /* Champagne so it reads as a control against the ivory title; centred on
-   the row so it holds at the overlay's display scale and the drawer's. */
+   the row, and sized in the row's own em so it keeps its proportion at the
+   overlay's display scale and the drawer's panel scale alike. */
 .nav-menu__branch-mark {
   align-self: center;
-  margin-inline-start: 0.15em;
+  width: 0.45em;
+  height: 0.45em;
+  margin-inline-start: 0.1em;
   color: var(--c-accent);
+}
+
+.nav-menu__branch-mark svg {
+  width: 100%;
+  height: 100%;
 }
 
 /* The open branch is a column of its own: indented to the title's own text
@@ -6770,14 +6753,19 @@ a {
   padding-inline-start: var(--step-small);
 }
 
+/* The rows are flex now, where vertical-align is inert — the raise is a
+   relative offset in the number's own em, the same 0.9em the old
+   vertical-align stated, so every row's number sits identically whether
+   the row is a link or a branch toggle. */
 .nav-menu__num {
-  display: inline-block;
+  flex: none;
   width: clamp(1.6rem, 3vw, 2.5rem);
   font-family: var(--font-body);
   font-size: var(--micro-size);
   letter-spacing: 0.2em;
   color: var(--c-accent);
-  vertical-align: 0.9em;
+  position: relative;
+  top: -0.9em;
 }
 
 .nav-menu__aside {
@@ -6786,7 +6774,8 @@ a {
   font-size: var(--micro-size);
   letter-spacing: calc(var(--micro-tracking) * 0.77);
   color: var(--c-accent);
-  vertical-align: 0.55em;
+  position: relative;
+  top: -0.55em;
 }
 
 .nav-menu__categories {
@@ -8509,6 +8498,18 @@ a.nav-menu__address:hover {
   max-height: none;
   overflow: visible;
   background: transparent;
+  /* The border and shadow are the panel's dress and must go with its
+     background, or the wait sits inside a hairline-and-shadow rectangle —
+     a box drawn around a mark whose whole point is to stand alone on the
+     veil. */
+  border: 0;
+  box-shadow: none;
+  /* On the veil, not on the panel: the dark ground takes the dark ground's
+     champagne and ivory whatever scheme the panel will arrive in — the
+     light schemes' deep gold disappears into the noir wash. The same pair
+     the dark overlays declare. */
+  --c-accent: var(--c-champagne);
+  color: var(--c-ivory);
   animation: gj-fade-in 0.3s ease both;
 }
 

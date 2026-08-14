@@ -2772,19 +2772,24 @@ its pill → bar expansion against.
   **two settings**: `nav_mode_home` (default `morph`) and `nav_mode` for
   everywhere else (default `bar`). The design's own values: home `morph`,
   inner pages `bar`, product page transparent-until-scrolled.
-- **The product page can veil the header entirely** — `nav_product_reveal`, a
-  checkbox beside the mode selects, off by default and on in this store.
-  Veiled at the top, revealed on the way down (the design's own nav
-  entrance: a 12px drop over 0.8s on the entrance curve), veiled again at
-  the top, with the quicker interaction-register exit. It shares the morph's
-  one scroll listener and threshold in `initNav` — on a product page there
-  is no `[data-nav-anchor]`, so the `scroll_threshold` setting is the cue.
-  Liquid emits `.nav--veiled` as the resting state; the hiding is gated on
-  `.js` because a nav only scripting can reveal must never be hidden without
-  it; `visibility` leaves on a delay so the links drop out of the tab order
-  only after the fade; and **both veil transforms carry `translateX(-50%)`**
-  — the centring lives in the nav's base transform, and a state that omits
-  it snaps the bar to the left edge, the morph's own recorded trap.
+- **The product page's transparent-until-scrolled nav is the design's own,
+  built from parts that already existed** — `nav_product_transparent`, a
+  checkbox beside the mode selects, off by default and on in this store. It
+  sets `overlay` (no spacer, so the gallery starts at the very top under the
+  bar) and withholds the resting `is-solid`; the existing
+  `.nav--overlay:not(.is-solid):not(.nav--pill)` rule paints the transparent
+  state, and `initNav` toggles `is-solid` past the same threshold the morph
+  uses — on a product page there is no `[data-nav-anchor]`, so the
+  `scroll_threshold` setting is the cue. The base nav already transitions
+  `background-color`/`border-color` at 0.4s, so the solid ground fades in
+  and out with the scroll for free. **A fully hidden header was built first
+  and taken out on request** — the bar's links stay visible over the
+  gallery; do not reintroduce a `.nav--veiled` state.
+- **On product pages the bar wears its own scheme** — `nav_scheme_product`,
+  defaulting to `scheme_1`, because the global header scheme is noir and a
+  noir bar over a porcelain gallery was nobody's decision. Every other
+  template keeps the global choice; the Liquid falls back to it where the
+  setting has never been saved.
 - The nav is its own **query container**, which is what gives the pill the
   compact treatment at 264px without pill-specific overrides. That is free at
   the two resting states and **expensive in between**: the morph sweeps the
