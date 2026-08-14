@@ -6568,6 +6568,12 @@ a {
    here assumes a particular number of menu items.                     */
 
 .nav-menu {
+  /* The space between a row's number column and its title, mirrored by the
+     submenu's indent so child links land exactly on the title column. A
+     token rather than an em gap because the submenu inherits a different
+     font-size than the row and an em could never match it. */
+  --nav-num-gap: clamp(0.85rem, 1.5vw, 1.7rem);
+
   /* Cascade timing. --menu-span is when the last row has finished leaving. */
   --menu-step: 60ms;
   --menu-lead: 50ms;
@@ -6640,7 +6646,7 @@ a {
 .nav-menu__link {
   display: flex;
   align-items: baseline;
-  gap: 0.35em;
+  gap: var(--nav-num-gap, 0.35em);
   font-family: var(--font-display);
   font-size: clamp(2.4rem, min(7.2vw, 7.4vh), 4.9rem);
   line-height: 1.14;
@@ -6699,8 +6705,11 @@ a {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
   gap: 0 var(--step-medium);
+  /* The hairline stands at the number column's edge and the padding is the
+     row's own gap token minus the hairline, so a child link's text starts
+     exactly on the title column — measured to the pixel, not near it. */
   margin: var(--step-tiny) 0 var(--step-small) clamp(1.6rem, 3vw, 2.5rem);
-  padding-inline-start: var(--step-small);
+  padding-inline-start: calc(var(--nav-num-gap, 0.35em) - var(--border-width));
   border-inline-start: var(--border-width) solid color-mix(in srgb, var(--c-accent) 45%, transparent);
 }
 
@@ -6753,29 +6762,32 @@ a {
   padding-inline-start: var(--step-small);
 }
 
-/* The rows are flex now, where vertical-align is inert — the raise is a
-   relative offset in the number's own em, the same 0.9em the old
-   vertical-align stated, so every row's number sits identically whether
-   the row is a link or a branch toggle. */
+/* The number stretches to the row and centres in it, which is what makes
+   its position identical on a link row and a branch row by construction. A
+   baseline raise was tried twice — vertical-align in inline flow, then a
+   relative offset in the number's own em — and both resolved differently
+   against a link's bare text node than against the toggle's span, a 3px
+   wobble measured, not guessed. Centring is derived from the row box the
+   two kinds share. */
 .nav-menu__num {
   flex: none;
+  align-self: stretch;
+  display: flex;
+  align-items: center;
   width: clamp(1.6rem, 3vw, 2.5rem);
   font-family: var(--font-body);
   font-size: var(--micro-size);
   letter-spacing: 0.2em;
   color: var(--c-accent);
-  position: relative;
-  top: -0.9em;
 }
 
 .nav-menu__aside {
+  align-self: center;
   margin-inline-start: 1.1rem;
   font-family: var(--font-body);
   font-size: var(--micro-size);
   letter-spacing: calc(var(--micro-tracking) * 0.77);
   color: var(--c-accent);
-  position: relative;
-  top: -0.55em;
 }
 
 .nav-menu__categories {
@@ -7227,6 +7239,7 @@ a.nav-menu__address:hover {
    screen's. */
 .nav-drawer .drawer__panel {
   --c-ivory: var(--c-text);
+  --nav-num-gap: 0.6rem;
   --menu-step: 45ms;
   --menu-lead: 150ms;
 
