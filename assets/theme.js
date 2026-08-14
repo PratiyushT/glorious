@@ -292,15 +292,47 @@
     scope.querySelectorAll('[data-overlay]').forEach(registerOverlay);
   }
 
-  /* A reopened menu starts folded. `details` keeps its open state through the
-     overlay's display toggle, so a branch left open would greet the visitor
-     mid-tree, with its entrance already spent. */
+  /* A reopened menu starts folded. The branch keeps its data-open state
+     through the overlay's display toggle, so a branch left open would greet
+     the visitor mid-tree, with its entrance already spent. */
   document.addEventListener('overlay:close', function (event) {
     if (!event.target || event.target.getAttribute('data-overlay') !== 'menu') return;
-    event.target.querySelectorAll('.nav-menu__details[open]').forEach(function (details) {
-      details.removeAttribute('open');
+    event.target.querySelectorAll('[data-nav-branch][data-open]').forEach(function (branch) {
+      branch.removeAttribute('data-open');
+      var toggle = branch.querySelector('[data-nav-branch-toggle]');
+      if (toggle) toggle.setAttribute('aria-expanded', 'false');
     });
   });
+
+  /* The menu's branches are the footer's disclosure — the same three-layer
+     0fr/1fr panel and plus/minus mark — with the footer's one-at-a-time
+     rule: opening a branch folds whichever was open. */
+  function initNavBranches(scope) {
+    scope.querySelectorAll('[data-nav-branch-toggle]').forEach(function (btn) {
+      if (!bindOnce(btn, 'boundNavBranch')) return;
+
+      btn.addEventListener('click', function () {
+        var branch = btn.closest('[data-nav-branch]');
+        var group = branch && branch.closest('[data-nav-branches]');
+        if (!branch) return;
+
+        var open = branch.hasAttribute('data-open');
+
+        if (group) {
+          group.querySelectorAll('[data-nav-branch][data-open]').forEach(function (other) {
+            other.removeAttribute('data-open');
+            var toggle = other.querySelector('[data-nav-branch-toggle]');
+            if (toggle) toggle.setAttribute('aria-expanded', 'false');
+          });
+        }
+
+        if (!open) {
+          branch.setAttribute('data-open', '');
+          btn.setAttribute('aria-expanded', 'true');
+        }
+      });
+    });
+  }
 
   /* The controls are delegated from the document and bound once, never bound
      to the elements themselves.
@@ -4347,6 +4379,7 @@
     initLocalization(scope);
     initAccordions(scope);
     initFooter(scope);
+    initNavBranches(scope);
     initHero(scope);
     initRowCarousels(scope);
     initLookbook(scope);

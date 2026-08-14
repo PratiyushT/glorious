@@ -1,5 +1,10 @@
 {%- comment -%}
-  Full-screen navigation overlay.
+  The navigation menu, in the shop's chosen presentation.
+
+  Theme settings → Navigation picks the shell, exactly as Search does: the
+  design's full-screen noir overlay (the default), or the cart drawer's shell
+  sliding from the start edge. One capture holds the rows, categories, and
+  foot, so the two presentations cannot drift.
 
   Rows are numbered continuously across links and the two action rows, matching
   the design, and the numbering is generated from block order so adding or
@@ -7,14 +12,23 @@
 
   Each row carries its rank as --row, and the container carries the total as
   --rows. That pair is what lets the close animation run the design's reverse
-  cascade — the last row leaves first — without hardcoding a row count.
+  cascade — the last row leaves first — without hardcoding a row count. The
+  drawer shell declares its own smaller step and lead, so the same markup
+  cascades at panel scale.
+
+  A row with children is the theme's shared disclosure — the footer's
+  three-layer 0fr/1fr panel and plus/minus mark, dressed in the menu's own
+  type, indent, and champagne hairline. Grandchildren render flat inside their
+  child's group rather than as a third disclosure level: one fold is a menu,
+  two is a tree. Without JavaScript every panel stands open and the toggle is
+  inert, so no link is ever unreachable.
 
   Rendered inert (hidden, not focusable) until opened, so the links never
   appear in the tab order behind the page.
 
   Accepts:
     section, menu_id, cart_number, search_number, cart_drawer,
-    search_overlay, overlay_huge_text
+    search_overlay, overlay_huge_text, mode
 {%- endcomment -%}
 
 {%- liquid
@@ -46,48 +60,49 @@
   assign total_rows = tail_row | plus: 1
 -%}
 
-<div
-  class="nav-menu"
-  id="{{ menu_id }}"
-  data-overlay="menu"
-  data-overlay-modal
-  role="dialog"
-  aria-modal="true"
-  aria-label="{{ 'accessibility.menu' | t }}"
-  style="--rows: {{ total_rows }};"
-  hidden
->
-  {% render 'overlay-head', close_action: 'menu', row: 0, huge_text: overlay_huge_text %}
-
+{%- capture menu_inner -%}
   <div class="nav-menu__body">
-    <ul class="nav-menu__list">
+    <ul class="nav-menu__list" data-nav-branches>
       {%- for link in menu_links -%}
         {%- assign row_number = forloop.index -%}
         <li class="nav-menu__item" style="--row: {{ row_number | minus: 1 }};" {{ menu_block.shopify_attributes }}>
           {%- if link.links.size > 0 -%}
-            <details class="nav-menu__details">
-              <summary class="nav-menu__link">
+            {%- assign branch_id = menu_id | append: '-branch-' | append: row_number -%}
+            <div class="nav-menu__branch" data-nav-branch>
+              <button
+                class="nav-menu__link nav-menu__branch-toggle disclosure__toggle"
+                type="button"
+                data-nav-branch-toggle
+                aria-controls="{{ branch_id }}"
+                aria-expanded="false"
+              >
                 <span class="nav-menu__num" aria-hidden="true">{{ row_number | prepend: '0' | slice: -2, 2 }}</span>
                 <span>{{ link.title }}</span>
-                <span class="nav-menu__branch-mark" aria-hidden="true">+</span>
-              </summary>
-              <div class="nav-menu__submenu">
-                <a href="{{ link.url }}">{{ 'navigation.view_all' | t: title: link.title }}</a>
-                {%- for child_link in link.links -%}
-                  {%- if child_link.links.size > 0 -%}
-                    <details class="nav-menu__subbranch">
-                      <summary>{{ child_link.title }}</summary>
-                      <div>
-                        <a href="{{ child_link.url }}">{{ 'navigation.view_all' | t: title: child_link.title }}</a>
-                        {%- for grandchild_link in child_link.links -%}<a href="{{ grandchild_link.url }}">{{ grandchild_link.title }}</a>{%- endfor -%}
-                      </div>
-                    </details>
-                  {%- else -%}
-                    <a href="{{ child_link.url }}">{{ child_link.title }}</a>
-                  {%- endif -%}
-                {%- endfor -%}
+                <span class="nav-menu__branch-mark disclosure__mark" aria-hidden="true">
+                  <span class="disclosure__plus">{% render 'icon', icon: 'plus' %}</span>
+                  <span class="disclosure__minus">{% render 'icon', icon: 'minus' %}</span>
+                </span>
+              </button>
+              <div class="disclosure__panel" id="{{ branch_id }}">
+                <div class="disclosure__clip">
+                  <div class="nav-menu__submenu">
+                    <a href="{{ link.url }}">{{ 'navigation.view_all' | t: title: link.title }}</a>
+                    {%- for child_link in link.links -%}
+                      {%- if child_link.links.size > 0 -%}
+                        <div class="nav-menu__subgroup">
+                          <a href="{{ child_link.url }}">{{ child_link.title }}</a>
+                          <div class="nav-menu__subgroup-links">
+                            {%- for grandchild_link in child_link.links -%}<a href="{{ grandchild_link.url }}">{{ grandchild_link.title }}</a>{%- endfor -%}
+                          </div>
+                        </div>
+                      {%- else -%}
+                        <a href="{{ child_link.url }}">{{ child_link.title }}</a>
+                      {%- endif -%}
+                    {%- endfor -%}
+                  </div>
+                </div>
               </div>
-            </details>
+            </div>
           {%- else -%}
             <a class="nav-menu__link" href="{{ link.url }}">
               <span class="nav-menu__num" aria-hidden="true">{{ row_number | prepend: '0' | slice: -2, 2 }}</span>
@@ -201,4 +216,48 @@
       {%- endif -%}
     {%- endif -%}
   </div>
-</div>
+{%- endcapture -%}
+
+{%- if mode == 'drawer' -%}
+  <div
+    class="drawer nav-drawer"
+    id="{{ menu_id }}"
+    data-overlay="menu"
+    data-overlay-modal
+    hidden
+  >
+    <div class="overlay__veil" data-overlay-close="menu"></div>
+
+    <aside
+      class="drawer__panel scheme-{{ settings.menu_drawer_color_scheme | default: 'scheme_1' }}"
+      role="dialog"
+      aria-modal="true"
+      aria-label="{{ 'accessibility.menu' | t }}"
+      style="--rows: {{ total_rows }};"
+    >
+      <div class="drawer__inner">
+        <header class="drawer__head">
+          <span class="drawer__title">{{ 'accessibility.menu' | t }}</span>
+          {%- capture close_attributes -%}data-overlay-close="menu"{%- endcapture -%}
+          {% render 'overlay-close', class: 'drawer__close', attributes: close_attributes %}
+        </header>
+        {{ menu_inner }}
+      </div>
+    </aside>
+  </div>
+{%- else -%}
+  <div
+    class="nav-menu"
+    id="{{ menu_id }}"
+    data-overlay="menu"
+    data-overlay-modal
+    role="dialog"
+    aria-modal="true"
+    aria-label="{{ 'accessibility.menu' | t }}"
+    style="--rows: {{ total_rows }};"
+    hidden
+  >
+    {% render 'overlay-head', close_action: 'menu', row: 0, huge_text: overlay_huge_text %}
+    {{ menu_inner }}
+  </div>
+{%- endif -%}

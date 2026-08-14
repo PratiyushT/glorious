@@ -507,6 +507,19 @@
         "label": "Drawer color scheme"
       }
     },
+    "navigation": {
+      "name": "Navigation",
+      "paragraph": "Choose how the header menu opens. Menu rows, categories, and the footer details are the same in both presentations.",
+      "menu_type": {
+        "label": "Opening the menu",
+        "info": "The drawer slides in from the start edge, in the cart drawer's shell.",
+        "menu": "Full-screen menu",
+        "drawer": "Slide out a drawer"
+      },
+      "drawer_color_scheme": {
+        "label": "Drawer color scheme"
+      }
+    },
     "catalog": {
       "name": "Catalog",
       "filter_word": {

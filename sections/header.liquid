@@ -33,6 +33,8 @@
     assign search_overlay = true
   endunless
 
+  assign menu_mode = settings.menu_type | default: 'menu'
+
   comment
     The overlay numbers every row continuously, including the two action rows,
     so the count has to follow whatever the merchant has switched on.
@@ -215,7 +217,8 @@
   search_number: search_number,
   cart_drawer: cart_drawer,
   search_overlay: search_overlay,
-  overlay_huge_text: overlay_huge_text
+  overlay_huge_text: overlay_huge_text,
+  mode: menu_mode
 %}
 
 {%- if search_overlay -%}

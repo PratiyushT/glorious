@@ -6604,32 +6604,30 @@ a {
   color: var(--c-accent);
 }
 
-.nav-menu__details > summary {
+/* A branch is the theme's shared disclosure — the footer's plus/minus mark
+   and three-layer 0fr/1fr panel — dressed in the menu's own type. The
+   generic .disclosure__* rules supply the collapse motion, the mark swap,
+   and the no-script open state; everything here is the navigation's skin
+   over them. The toggle shares the row's .nav-menu__link class, which is
+   what keeps a branch row and a plain row identical to the eye. */
+.nav-menu__branch-toggle {
   display: flex;
   align-items: baseline;
   gap: 0.35em;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
   cursor: pointer;
-  list-style: none;
 }
 
-.nav-menu__details > summary::-webkit-details-marker,
-.nav-menu__subbranch > summary::-webkit-details-marker {
-  display: none;
-}
-
-/* The branch mark is the row's own affordance — champagne so it reads as a
-   control against the ivory title, and half a step larger than the tiny 0.4em
-   it wore, which at display-title scale was nearly invisible. The rotate is
-   what turns the + into an × while the branch is open. */
+/* Champagne so it reads as a control against the ivory title; centred on
+   the row so it holds at the overlay's display scale and the drawer's. */
 .nav-menu__branch-mark {
+  align-self: center;
   margin-inline-start: 0.15em;
-  font-family: var(--font-body);
-  font-size: 0.5em;
   color: var(--c-accent);
-  transition: transform var(--duration) var(--ease-ui);
 }
-
-.nav-menu__details[open] .nav-menu__branch-mark { transform: rotate(45deg); }
 
 /* The open branch is a column of its own: indented to the title's own text
    start, held by a champagne hairline, and breathing at both ends. It was a
@@ -6644,8 +6642,7 @@ a {
   border-inline-start: var(--border-width) solid color-mix(in srgb, var(--c-accent) 45%, transparent);
 }
 
-.nav-menu__submenu a,
-.nav-menu__subbranch > summary {
+.nav-menu__submenu a {
   display: flex;
   min-height: 2.75rem;
   align-items: center;
@@ -6659,32 +6656,37 @@ a {
   transition: color var(--duration) var(--ease-ui);
 }
 
-/* Opening a branch replays the overlay's own row entrance on its links —
-   `details` goes display:none → grid, which restarts descendant animations,
-   the same mechanism the drawer's empty state rides. Eight explicit delays
-   rather than a --row variable, because a merchant menu is short and Liquid
-   does not number these children. */
-.nav-menu__details[open] .nav-menu__submenu > * {
+/* Opening a branch staggers its links in behind the panel's unfolding —
+   data-open arriving is what starts these, so they ride the shared 0fr/1fr
+   transition rather than a display toggle. Eight explicit delays rather
+   than a --row variable, because a merchant menu is short and Liquid does
+   not number these children. */
+[data-nav-branch][data-open] .nav-menu__submenu > * {
   animation: gj-row-in 0.4s var(--ease) both;
 }
 
-.nav-menu__details[open] .nav-menu__submenu > :nth-child(1) { animation-delay: 0.03s; }
-.nav-menu__details[open] .nav-menu__submenu > :nth-child(2) { animation-delay: 0.08s; }
-.nav-menu__details[open] .nav-menu__submenu > :nth-child(3) { animation-delay: 0.13s; }
-.nav-menu__details[open] .nav-menu__submenu > :nth-child(4) { animation-delay: 0.18s; }
-.nav-menu__details[open] .nav-menu__submenu > :nth-child(5) { animation-delay: 0.23s; }
-.nav-menu__details[open] .nav-menu__submenu > :nth-child(6) { animation-delay: 0.28s; }
-.nav-menu__details[open] .nav-menu__submenu > :nth-child(7) { animation-delay: 0.33s; }
-.nav-menu__details[open] .nav-menu__submenu > :nth-child(n+8) { animation-delay: 0.38s; }
+[data-nav-branch][data-open] .nav-menu__submenu > :nth-child(1) { animation-delay: 0.03s; }
+[data-nav-branch][data-open] .nav-menu__submenu > :nth-child(2) { animation-delay: 0.08s; }
+[data-nav-branch][data-open] .nav-menu__submenu > :nth-child(3) { animation-delay: 0.13s; }
+[data-nav-branch][data-open] .nav-menu__submenu > :nth-child(4) { animation-delay: 0.18s; }
+[data-nav-branch][data-open] .nav-menu__submenu > :nth-child(5) { animation-delay: 0.23s; }
+[data-nav-branch][data-open] .nav-menu__submenu > :nth-child(6) { animation-delay: 0.28s; }
+[data-nav-branch][data-open] .nav-menu__submenu > :nth-child(7) { animation-delay: 0.33s; }
+[data-nav-branch][data-open] .nav-menu__submenu > :nth-child(n+8) { animation-delay: 0.38s; }
 
 .nav-menu__submenu a:hover,
-.nav-menu__submenu a:focus-visible,
-.nav-menu__subbranch > summary:hover,
-.nav-menu__subbranch > summary:focus-visible {
+.nav-menu__submenu a:focus-visible {
   color: var(--c-accent);
 }
 
-.nav-menu__subbranch > div {
+/* A child with children of its own is a flat group, not a third fold — its
+   heading is the child's own link and the grandchildren stand inset beneath
+   it. One fold is a menu; two is a tree. */
+.nav-menu__subgroup {
+  display: grid;
+}
+
+.nav-menu__subgroup-links {
   display: grid;
   padding-inline-start: var(--step-small);
 }
@@ -7143,6 +7145,69 @@ a.nav-menu__address:hover {
 @keyframes gj-drawer-out {
   from { transform: translateX(0); }
   to   { transform: translateX(103%); }
+}
+
+/* ---- Menu drawer ----------------------------------------------------
+   The menu's rows in the cart drawer's shell, from the start edge — the
+   search drawer's arrangement mirrored left. Only animation-name changes
+   for the slide, so the panel keeps the drawer's own duration, curve and
+   fill; the closing rule ties the base one at three classes and must sit
+   after it, which is why this block lives below the drawer core. The
+   panel redefines --c-ivory exactly as the search drawer does, so every
+   menu rule follows the merchant's scheme, and declares its own cascade
+   step and lead so the rows arrive on a panel's clock, not the full
+   screen's. */
+.nav-drawer .drawer__panel {
+  --c-ivory: var(--c-text);
+  --menu-step: 45ms;
+  --menu-lead: 150ms;
+
+  right: auto;
+  left: 0;
+  border-inline-start: 0;
+  border-inline-end: var(--border-width) solid
+    color-mix(in srgb, var(--c-text) 12%, transparent);
+  box-shadow: 24px 0 60px var(--c-shadow);
+  animation-name: gj-drawer-in-start;
+}
+
+.nav-drawer.is-closing .drawer__panel {
+  animation-name: gj-drawer-out-start;
+}
+
+/* 103% again: the mirrored shadow has to clear the edge too. */
+@keyframes gj-drawer-in-start {
+  from { transform: translateX(-103%); }
+  to   { transform: translateX(0); }
+}
+
+@keyframes gj-drawer-out-start {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-103%); }
+}
+
+/* The body is the drawer's scrolling middle, exactly as the bag's lines
+   are: the head holds still, the rows move. The full-screen overlay
+   centres a room; a panel is a column, so the body top-aligns and
+   stretches. */
+.nav-drawer .nav-menu__body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  align-items: stretch;
+  justify-content: flex-start;
+  padding: var(--space-sm) clamp(1.25rem, 5vw, 1.88rem);
+}
+
+/* Display type at panel proportions rather than the overlay's viewport
+   scale. */
+.nav-drawer .nav-menu__link {
+  font-size: clamp(1.55rem, 5.4vw, 1.9rem);
+}
+
+.nav-drawer .nav-menu__foot {
+  padding: var(--space-xs) clamp(1.25rem, 5vw, 1.88rem) var(--space-sm);
 }
 
 .drawer__inner {
