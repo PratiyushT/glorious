@@ -55,20 +55,77 @@
     }
     if (!target) target = slides[0];
 
+    var gallery = target.closest('.product-gallery');
+    var isStacked = gallery && gallery.dataset.productGalleryLayout === 'stacked';
+    var track = gallery && gallery.querySelector('.product-gallery__track');
+
     Array.prototype.forEach.call(slides, function (slide) {
       var active = slide === target;
-      slide.hidden = !active;
-      slide.setAttribute('aria-hidden', active ? 'false' : 'true');
+      slide.hidden = false;
+      slide.classList.toggle('is-active', active);
+      slide.setAttribute('aria-hidden', isStacked || active ? 'false' : 'true');
       Array.prototype.forEach.call(slide.querySelectorAll('video'), function (video) {
         if (!active) video.pause();
       });
     });
+
+    if (track && !isStacked) {
+      track.style.setProperty('--product-media-index', target.dataset.mediaIndex || 0);
+    } else if (isStacked && target.scrollIntoView) {
+      target.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
 
     Array.prototype.forEach.call(root.querySelectorAll('[data-product-media-control]'), function (control) {
       var active = String(control.dataset.mediaId) === String(target.dataset.mediaId);
       control.setAttribute('aria-current', active ? 'true' : 'false');
       control.classList.toggle('is-active', active);
     });
+  }
+
+  function initStickyColumns(root) {
+    var showcase = root.querySelector('.product-showcase');
+    var gallery = showcase && showcase.querySelector('.product-gallery');
+    var details = showcase && showcase.querySelector('.product-details');
+    if (!showcase || !gallery || !details) return;
+
+    function syncStickyColumn() {
+      var mode = gallery.dataset.stickyMode || 'adaptive';
+      var column = mode;
+      if (mode === 'adaptive') {
+        /* Pin the shorter column: a sticky element that is the tallest thing
+           in its row has no room to move, so pinning the taller one is a
+           no-op and nothing sticks. */
+        column = gallery.scrollHeight >= details.scrollHeight ? 'details' : 'gallery';
+      }
+      if (column !== 'gallery' && column !== 'details') column = 'none';
+      showcase.dataset.stickyColumn = column;
+      if (mode === 'adaptive' && column !== 'none') {
+        /* The shorter column must also fit. A pinned column taller than the
+           viewport holds its top at the nav offset, so its tail sits below
+           the fold for as long as the showcase is on screen — on a stacked
+           gallery that hides the end of the details column for the whole
+           browse. Explicit Gallery/Details modes keep the merchant's pin
+           regardless. The dataset is set first so the sticky top offset can
+           be read back resolved to pixels. */
+        var pinned = column === 'gallery' ? gallery : details;
+        var offset = parseFloat(window.getComputedStyle(pinned).top) || 0;
+        if (pinned.offsetHeight + offset > window.innerHeight + 1) {
+          showcase.dataset.stickyColumn = 'none';
+        }
+      }
+    }
+
+    if (window.ResizeObserver) {
+      var stickyObserver = new ResizeObserver(syncStickyColumn);
+      stickyObserver.observe(gallery);
+      stickyObserver.observe(details);
+    }
+    /* The fit check reads window.innerHeight, which a ResizeObserver on the
+       columns cannot see change — a window-height resize alone must still
+       re-decide. */
+    window.addEventListener('resize', syncStickyColumn, { passive: true });
+    root.addEventListener('load', syncStickyColumn, true);
+    window.setTimeout(syncStickyColumn, 0);
   }
 
   function pickupAvailability(root, variantId) {
@@ -107,7 +164,7 @@
     if (!variant) {
       if (submit) {
         submit.disabled = true;
-        submit.textContent = submit.dataset.unavailableLabel;
+        (submit.querySelector('[data-button-label]') || submit).textContent = submit.dataset.unavailableLabel;
       }
       if (variantInput) variantInput.value = '';
       return;
@@ -127,15 +184,24 @@
 
     if (submit) {
       submit.disabled = !variant.available;
-      submit.textContent = variant.available ? submit.dataset.addLabel : submit.dataset.soldOutLabel;
+      (submit.querySelector('[data-button-label]') || submit).textContent = variant.available ? submit.dataset.addLabel : submit.dataset.soldOutLabel;
     }
 
     if (variant.featuredMediaId) showMedia(root, variant.featuredMediaId);
     pickupAvailability(root, variant.id);
 
-    var url = new URL(window.location.href);
-    url.searchParams.set('variant', variant.id);
-    window.history.replaceState({}, '', url.href);
+    if (root.hasAttribute('data-product-update-url')) {
+      var url = new URL(window.location.href);
+      url.searchParams.set('variant', variant.id);
+      window.history.replaceState({}, '', url.href);
+    }
+
+    var fullDetails = root.querySelector('[data-product-full-details]');
+    if (fullDetails) {
+      var fullUrl = new URL(fullDetails.href, window.location.origin);
+      fullUrl.searchParams.set('variant', variant.id);
+      fullDetails.href = fullUrl.href;
+    }
   }
 
   function syncRecipient(root, toggle) {
@@ -154,9 +220,41 @@
     if (offset && toggle.checked) offset.value = String(new Date().getTimezoneOffset());
   }
 
+  /* One step function for the arrows and the swipe, wrapping at either end.
+     Stacked mode renders no media controls, so both callers are inert there. */
+  function stepGallery(root, delta) {
+    var controls = Array.prototype.slice.call(root.querySelectorAll('[data-product-media-control]'));
+    if (!controls.length) return;
+    var activeIndex = controls.findIndex(function (control) { return control.classList.contains('is-active'); });
+    var nextIndex = (activeIndex + delta + controls.length) % controls.length;
+    if (controls[nextIndex]) showMedia(root, controls[nextIndex].dataset.mediaId);
+  }
+
   function initProduct(root) {
     if (root.dataset.productBound === 'true') return;
     root.dataset.productBound = 'true';
+
+    /* A swipe across the gallery steps it, the same horizontal-intent test the
+       row carousel makes: short movements and vertical scrolls pass through.
+       Passive listeners — nothing here prevents the page's own gestures. */
+    var gallery = root.querySelector('.product-gallery');
+    if (gallery) {
+      var gallerySwipe = null;
+      gallery.addEventListener('touchstart', function (event) {
+        var touch = event.touches && event.touches[0];
+        gallerySwipe = touch ? { x: touch.clientX, y: touch.clientY } : null;
+      }, { passive: true });
+      gallery.addEventListener('touchend', function (event) {
+        var start = gallerySwipe;
+        gallerySwipe = null;
+        var touch = event.changedTouches && event.changedTouches[0];
+        if (!start || !touch) return;
+        var dx = touch.clientX - start.x;
+        var dy = touch.clientY - start.y;
+        if (Math.abs(dx) < 40 || Math.abs(dx) < Math.abs(dy) * 1.2) return;
+        stepGallery(root, dx < 0 ? 1 : -1);
+      }, { passive: true });
+    }
 
     var variants = parseVariants(root);
 
@@ -177,11 +275,7 @@
 
       var direction = event.target.closest('[data-product-gallery-step]');
       if (direction) {
-        var controls = Array.prototype.slice.call(root.querySelectorAll('[data-product-media-control]'));
-        var activeIndex = controls.findIndex(function (control) { return control.classList.contains('is-active'); });
-        var delta = direction.dataset.productGalleryStep === 'next' ? 1 : -1;
-        var nextIndex = (activeIndex + delta + controls.length) % controls.length;
-        if (controls[nextIndex]) showMedia(root, controls[nextIndex].dataset.mediaId);
+        stepGallery(root, direction.dataset.productGalleryStep === 'next' ? 1 : -1);
         return;
       }
 
@@ -223,6 +317,7 @@
     if (recipientToggle) syncRecipient(root, recipientToggle);
     syncOptionLabels(root);
     if (initial) pickupAvailability(root, initial.id);
+    initStickyColumns(root);
   }
 
   function initProducts(scope) {
@@ -232,6 +327,9 @@
   function bootProducts() {
     initProducts(document);
   }
+
+  window.VeylinProducts = window.VeylinProducts || {};
+  window.VeylinProducts.init = initProducts;
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', bootProducts);
