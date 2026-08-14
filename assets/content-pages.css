@@ -18,96 +18,381 @@
   margin-inline: auto;
 }
 
-.policy-layout {
-  display: grid;
-  grid-template-columns: minmax(11rem, 15rem) minmax(0, 1fr);
-  gap: clamp(var(--step-large), 6vw, var(--step-max));
-  align-items: start;
+/* ---- Policy pages -------------------------------------------------
+   A 1:1 port of the design's five legal pages (Terms, Privacy, Cookies,
+   Disclaimer, Returns — revision 17), formatting Shopify's *native*
+   policy objects. The content stays admin-edited rich text; the scaffold
+   maps its elements onto the design's own treatments:
+
+     h2      → numbered, hairline-topped section head (CSS counters
+               supply the design's gold two-digit numerals)
+     ul li   → the gold em-dash rows
+     ol li   → the gold "1." numbered step rows
+     h3/h4   → the uppercase micro sub-heading
+     strong  → the 500-weight full-ink lead-in
+     p       → 15px/1.85 prose at 62% ink on the design's 680px measure
+
+   The literals live in --policy-* properties, the hero's arrangement:
+   the design art-directs these pages in fixed sizes the fluid scales
+   cannot express without changing them, so each number is design-exact
+   and still one edit. Colors route through the scheme tokens — the
+   design's gold is --c-accent, its rgba inks are color-mix() of
+   --c-text — and the faces through --font-display / --font-body, so the
+   formatting is the design's while the palette and fonts stay the
+   merchant's. */
+
+.policy-shell {
+  --policy-gutter: clamp(18px, 4vw, 44px);
+  --policy-width: 72.5rem;
+  --policy-measure: 680px;
+  --policy-section-pad: clamp(24px, 3.5vw, 38px);
+  --policy-hairline: color-mix(in srgb, var(--c-text) 16%, transparent);
+  --policy-rail-hairline: color-mix(in srgb, var(--c-text) 14%, transparent);
+  --policy-pill-hairline: color-mix(in srgb, var(--c-text) 22%, transparent);
+  --policy-ink-soft: color-mix(in srgb, var(--c-text) 62%, transparent);
+  --policy-ink-mid: color-mix(in srgb, var(--c-text) 55%, transparent);
+  --policy-ink-faint: color-mix(in srgb, var(--c-text) 45%, transparent);
 }
 
-.policy-layout--single {
-  grid-template-columns: minmax(0, 1fr);
+@keyframes policy-rise {
+  from { opacity: 0; transform: translateY(26px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-.policy-nav {
-  position: sticky;
-  top: calc(var(--nav-h, 4rem) + var(--step-medium));
-  min-width: 0;
+.policy-hero {
+  padding: clamp(96px, 15vw, 128px) var(--policy-gutter) 0;
 }
 
-.policy-nav__eyebrow {
-  margin: 0 0 var(--step-small);
-  color: var(--c-muted);
-  font-size: var(--text-caption-size);
-  letter-spacing: var(--track-wide);
-  text-transform: uppercase;
+.policy-hero__inner {
+  max-width: var(--policy-width);
+  margin: 0 auto;
 }
 
-.policy-nav__list {
-  display: grid;
-  gap: var(--step-tiny);
-  margin: 0;
-  padding: 0;
-}
-
-.policy-nav a {
+.policy-hero__eyebrow {
   display: block;
-  padding-block: var(--step-tiny);
-  border-block-end: 1px solid transparent;
-  color: var(--c-muted);
-  text-decoration: none;
+  margin: 0;
+  font-size: 12px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--c-accent);
+  animation: gj-fade-in 0.8s ease 0.1s both;
 }
 
-.policy-nav a:hover,
-.policy-nav a[aria-current='page'] {
-  border-color: var(--c-hairline);
+.policy-hero__title {
+  margin: 12px 0 0;
+  font-family: var(--font-display);
+  font-weight: var(--font-heading-weight);
+  font-style: var(--font-heading-style);
+  font-size: clamp(2.4rem, 6.5vw, 5.2rem);
+  line-height: 1.05;
+  text-transform: uppercase;
+  animation: policy-rise 0.8s var(--ease-out) 0.12s both;
+}
+
+.policy-hero__meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px 28px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+  animation: gj-fade-in 1s ease 0.3s both;
+}
+
+.policy-hero__meta span {
+  font-size: 12px;
+  letter-spacing: 0.17em;
+  text-transform: uppercase;
+  color: var(--policy-ink-faint);
+}
+
+/* The section is full-bleed, so its container width is the viewport's and
+   this query's 47.5rem threshold is the design's own 760px media query. */
+.policy-page {
+  container-type: inline-size;
+  padding: clamp(36px, 5vw, 64px) var(--policy-gutter) clamp(70px, 9vw, 120px);
+}
+
+.policy-page__inner {
+  max-width: var(--policy-width);
+  margin: 0 auto;
+  display: flex;
+  gap: clamp(28px, 5vw, 70px);
+  flex-wrap: wrap;
+  align-items: flex-start;
+}
+
+.policy-rail {
+  flex: 0 0 200px;
+  position: sticky;
+  top: 104px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  animation: gj-fade-in 0.9s ease 0.25s both;
+}
+
+.policy-rail__head {
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--c-accent);
+}
+
+.policy-rail__link {
+  font-size: 12px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--policy-ink-mid);
+  text-decoration: none;
+  transition: color var(--duration) var(--ease-ui);
+}
+
+.policy-rail__link:hover,
+.policy-rail__link:focus-visible {
   color: var(--c-text);
 }
 
-.policy-native-content {
-  min-width: 0;
-  width: min(100%, 50rem);
+.policy-rail__divider {
+  height: 1px;
+  background: var(--policy-rail-hairline);
+  margin: 6px 0;
 }
 
-.policy-native-content .shopify-policy__container {
+@container (max-width: 47.5rem) {
+  .policy-rail {
+    position: static;
+    flex: 1 1 100%;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    row-gap: 8px;
+    column-gap: 8px;
+  }
+
+  .policy-rail__head,
+  .policy-rail__divider {
+    display: none;
+  }
+
+  /* The related links sit after the divider; on the pill row only the
+     page's own headings remain — the design's [data-div]~a rule. */
+  .policy-rail__divider ~ .policy-rail__link {
+    display: none;
+  }
+
+  .policy-rail__link {
+    border: 1px solid var(--policy-pill-hairline);
+    border-radius: 999px;
+    padding: 8px 14px;
+  }
+}
+
+.policy-content {
+  flex: 1 1 460px;
+  min-width: 0;
+  animation: policy-rise 0.8s var(--ease-out) 0.2s both;
+}
+
+.policy-content .shopify-policy__container {
   max-width: none;
   margin: 0;
   padding: 0;
 }
 
-.policy-native-content .shopify-policy__title {
+/* The hero already stated this policy's title; the platform's copy would
+   say it twice. Hidden only when the Liquid lookup matched, so a route no
+   policy claims still shows the native heading, dressed below. */
+.policy-shell--own-title .shopify-policy__title {
+  display: none;
+}
+
+.policy-shell:not(.policy-shell--own-title) .shopify-policy__title {
   text-align: start;
 }
 
-.policy-native-content .shopify-policy__title h1 {
-  margin-block: 0 var(--step-large);
-  font-family: var(--font-heading);
-  font-size: var(--text-title-size);
-  font-style: var(--font-heading-style);
+.policy-shell:not(.policy-shell--own-title) .shopify-policy__title h1 {
+  margin: 0;
+  font-family: var(--font-display);
   font-weight: var(--font-heading-weight);
-  line-height: var(--text-title-leading);
-  letter-spacing: var(--text-title-tracking);
-  text-transform: var(--text-title-case);
-}
-
-.policy-native-content .shopify-policy__body {
-  font-size: var(--text-paragraph-size);
-  line-height: var(--text-paragraph-leading);
-}
-
-.policy-native-content .shopify-policy__body h2,
-.policy-native-content .shopify-policy__body h3,
-.policy-native-content .shopify-policy__body h4 {
-  margin-block: var(--step-large) var(--step-small);
-  font-family: var(--font-heading);
   font-style: var(--font-heading-style);
-  font-weight: var(--font-heading-weight);
-  line-height: var(--lead-snug);
+  font-size: clamp(1.65rem, 2.8vw, 2.2rem);
+  line-height: 1.22;
+  text-transform: uppercase;
 }
 
-.policy-native-content .shopify-policy__body h2 { font-size: var(--text-heading_3-size); }
-.policy-native-content .shopify-policy__body h3 { font-size: var(--text-heading_4-size); }
-.policy-native-content .shopify-policy__body h4 { font-size: var(--text-heading_5-size); }
+/* The design's numbered sections, rebuilt from the merchant's own flat
+   rich text: each h2 opens a section (border above, the section's padding
+   split into the h2's margin and padding so between-section rhythm
+   matches the design's stacked paddings across the hairline), and the
+   counter supplies the gold numeral — so the numbering can never disagree
+   with the content. The closing hairline is gated on :has(h2): a policy
+   written as plain paragraphs is not framed by rules that belong to
+   sections. */
+.policy-content .shopify-policy__body {
+  counter-reset: policy-section;
+}
+
+.policy-content .shopify-policy__body:has(h2) {
+  border-bottom: 1px solid var(--policy-hairline);
+  padding-bottom: var(--policy-section-pad);
+}
+
+.policy-content .shopify-policy__body h2 {
+  counter-increment: policy-section;
+  display: flex;
+  align-items: baseline;
+  gap: 18px;
+  margin: var(--policy-section-pad) 0 0;
+  border-top: 1px solid var(--policy-hairline);
+  padding: var(--policy-section-pad) 0 0;
+  font-family: var(--font-display);
+  font-weight: var(--font-heading-weight);
+  font-style: var(--font-heading-style);
+  font-size: clamp(1.65rem, 2.8vw, 2.2rem);
+  line-height: 1.22;
+  letter-spacing: 0.012em;
+  scroll-margin-top: 110px;
+}
+
+.policy-content .shopify-policy__body h2:first-child {
+  margin-top: 0;
+}
+
+.policy-content .shopify-policy__body h2::before {
+  content: counter(policy-section, decimal-leading-zero);
+  flex: 0 0 auto;
+  font-family: var(--font-display);
+  font-size: 17px;
+  letter-spacing: 0.14em;
+  color: var(--c-accent);
+}
+
+/* 14px marks a change of block kind, 12px a paragraph following a
+   paragraph, 8px a row following a row — the design's three distances. */
+.policy-content .shopify-policy__body p {
+  margin: 12px 0 0;
+  font-size: 15px;
+  line-height: 1.85;
+  color: var(--policy-ink-soft);
+  max-width: var(--policy-measure);
+}
+
+.policy-content .shopify-policy__body h2 + p,
+.policy-content .shopify-policy__body ul + p,
+.policy-content .shopify-policy__body ol + p {
+  margin-top: 14px;
+}
+
+.policy-content .shopify-policy__body h3 + p,
+.policy-content .shopify-policy__body h4 + p {
+  margin-top: 10px;
+}
+
+.policy-content .shopify-policy__body ul,
+.policy-content .shopify-policy__body ol {
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+  max-width: var(--policy-measure);
+}
+
+.policy-content .shopify-policy__body h2 + ul,
+.policy-content .shopify-policy__body h2 + ol {
+  margin-top: 14px;
+}
+
+.policy-content .shopify-policy__body li {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 12px;
+  font-size: 14.5px;
+  line-height: 1.8;
+  color: var(--policy-ink-soft);
+}
+
+.policy-content .shopify-policy__body li + li {
+  margin-top: 8px;
+}
+
+/* The design's markers inherit the body scale, not the row's 14.5px. */
+.policy-content .shopify-policy__body ul li::before {
+  content: '—';
+  color: var(--c-accent);
+  font-size: 1rem;
+}
+
+.policy-content .shopify-policy__body ol {
+  counter-reset: policy-step;
+}
+
+.policy-content .shopify-policy__body ol li::before {
+  counter-increment: policy-step;
+  content: counter(policy-step) '.';
+  color: var(--c-accent);
+  font-size: 1rem;
+}
+
+/* The design's sub-heading is body-face micro type at full ink — a label,
+   not a display heading. */
+.policy-content .shopify-policy__body h3,
+.policy-content .shopify-policy__body h4 {
+  margin: 22px 0 0;
+  font-family: var(--font-body);
+  font-weight: var(--font-body-weight, 400);
+  font-size: 12.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--c-text);
+  max-width: var(--policy-measure);
+}
+
+.policy-content .shopify-policy__body h2 + h3,
+.policy-content .shopify-policy__body h2 + h4 {
+  margin-top: 16px;
+}
+
+.policy-content .shopify-policy__body strong,
+.policy-content .shopify-policy__body b {
+  font-weight: 500;
+  color: var(--c-text);
+}
+
+.policy-content .shopify-policy__body a {
+  color: var(--c-text);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.policy-all {
+  margin-top: clamp(26px, 3.5vw, 40px);
+  display: flex;
+  gap: 10px 22px;
+  flex-wrap: wrap;
+  align-items: baseline;
+}
+
+.policy-all__head {
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--c-accent);
+}
+
+.policy-all__link {
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--policy-ink-mid);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: color var(--duration) var(--ease-ui);
+}
+
+.policy-all__link:hover,
+.policy-all__link:focus-visible {
+  color: var(--c-text);
+}
 
 .content-prose {
   font-size: var(--text-paragraph-size);
@@ -376,41 +661,6 @@
 }
 
 @media (max-width: 46.9375rem) {
-  .policy-layout {
-    grid-template-columns: 1fr;
-  }
-
-  .policy-nav {
-    position: static;
-    overflow-x: auto;
-    margin-inline: calc(var(--page-gutter) * -1);
-    padding-inline: var(--page-gutter);
-    scrollbar-width: none;
-  }
-
-  .policy-nav::-webkit-scrollbar { display: none; }
-
-  .policy-nav__eyebrow { display: none; }
-
-  .policy-nav__list {
-    display: flex;
-    width: max-content;
-    gap: var(--step-tiny);
-  }
-
-  .policy-nav a {
-    padding: .65rem .9rem;
-    border: 1px solid var(--c-hairline);
-    border-radius: 999px;
-    white-space: nowrap;
-  }
-
-  .policy-nav a[aria-current='page'] {
-    color: var(--c-button-label);
-    background: var(--c-button);
-    border-color: var(--c-button);
-  }
-
   .article-grid,
   .collection-index-grid,
   .contact-form__grid {

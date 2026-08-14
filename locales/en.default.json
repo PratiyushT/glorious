@@ -189,6 +189,12 @@
       "navigation": "Store policies"
     }
   },
+  "policies": {
+    "eyebrow": "Policies",
+    "on_this_page": "On this page",
+    "related": "Related",
+    "all": "All policies"
+  },
   "date_formats": {
     "month_day_year": "%B %d, %Y"
   },

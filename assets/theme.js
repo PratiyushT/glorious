@@ -4065,6 +4065,45 @@
     });
   }
 
+  /* ---- Policy pages --------------------------------------------------
+     The rail's "On this page" list is built from the merchant's own h2s in
+     the platform-rendered policy body, so the table of contents can never
+     disagree with the content the way a stored list could. Liquid renders
+     the head and the divider hidden; they appear only once links exist, so
+     a policy written without headings keeps a clean rail. Links go in
+     before the divider — the design puts the page's own headings above it
+     and the other policies below, and the mobile pill row hides exactly
+     what follows it. */
+
+  function initPolicyToc(scope) {
+    scope.querySelectorAll('[data-policy-rail]').forEach(function (rail) {
+      if (!bindOnce(rail, 'boundPolicyToc')) return;
+
+      var body = document.querySelector('.shopify-policy__body');
+      var head = rail.querySelector('[data-policy-toc-head]');
+      var divider = rail.querySelector('[data-policy-divider]');
+      if (!body || !head || !divider) return;
+
+      var headings = body.querySelectorAll('h2');
+      if (!headings.length) return;
+
+      headings.forEach(function (heading, index) {
+        if (!heading.id) heading.id = 'policy-section-' + (index + 1);
+        var link = document.createElement('a');
+        link.className = 'policy-rail__link';
+        link.href = '#' + heading.id;
+        link.textContent = heading.textContent;
+        rail.insertBefore(link, divider);
+      });
+
+      head.hidden = false;
+      /* The divider separates this page's headings from the other
+         policies; with nothing rendered below it there is nothing to
+         separate. */
+      if (divider.nextElementSibling) divider.hidden = false;
+    });
+  }
+
   /* ---- Scroll reveal -------------------------------------------------
      Elements are visible by default in CSS for no-JS and reduced-motion
      visitors; the class is only added once we know we can animate. */
@@ -4490,6 +4529,7 @@
     initProductBreadcrumbs(scope);
     initOverlays(scope);
     initCookieChoice(scope);
+    initPolicyToc(scope);
   }
 
   function boot() {

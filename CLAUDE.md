@@ -3915,11 +3915,58 @@ Shopify checkout, and the subtotal carries the note.
 - **The collection index reuses Collection card exactly.** Its title, count,
   media, reveal and arrow therefore inherit one card contract instead of a
   lookalike maintained by the template.
-- **`policy` is the platform exception.** Shopify rejects a JSON policy
-  template, so `templates/policy.liquid` contains one static `main-policy`
-  section. The section still exposes colour, measure, title preset, alignment,
-  spacing, app blocks and theme blocks; the Liquid filename is a Shopify
-  constraint, not permission to hardcode a branded policy page.
+- **`policy` is the platform exception, and the wrap lives in the layout.**
+  Shopify has no policy template type at all: `/policies/*` renders the
+  platform's own `.shopify-policy__*` markup through `content_for_layout`,
+  so `theme.liquid`'s policy branch is the one hook a theme has. (An earlier
+  note here described a `templates/policy.liquid` holding a static
+  `main-policy` section; no such files ever shipped, and the orphaned
+  `sections.main_policy` schema-locale keys went with this rewrite.) The
+  branch renders the design's legal-page scaffold — its Terms, Privacy,
+  Cookies, Disclaimer, and Returns pages all share it — around the native,
+  admin-edited content:
+
+  - **The hero is Liquid's.** It looks the current policy up by URL in
+    `shop.policies` and states its title; only when that lookup succeeds
+    does CSS hide the platform's own `.shopify-policy__title`, so an
+    unmatched route keeps a heading. The meta row states the shop
+    (`store_display_name`, `shop.name` fallback) and its city from
+    `shop.address` — platform data, not new settings. The design's "Last
+    updated" date has no native source — the policy drop carries no date —
+    so the theme does not invent one.
+  - **Merchant content maps onto the design's treatments by element.** An
+    `h2` opens a numbered, hairline-topped section — CSS counters supply
+    the gold two-digit numerals, so the numbering can never disagree with
+    the content — with the design's between-section rhythm rebuilt by
+    splitting each section's padding into the h2's margin and padding
+    across the hairline. `ul` rows are the gold em-dash rows, `ol` rows the
+    gold "1." step rows, `h3`/`h4` the uppercase micro sub-heading at body
+    face, `strong` the 500-weight full-ink lead-in, and body links
+    underline at the design's 3px offset. The three distances are sibling
+    rules: 14px marks a change of block kind, 12px a paragraph following a
+    paragraph, 8px a row following a row. The body's closing hairline is
+    gated on `:has(h2)` so a policy written as plain paragraphs is not
+    framed by rules that belong to sections.
+  - **The rail's "On this page" list is built by `initPolicyToc` from the
+    rendered h2s**, assigning ids only where missing — a stored list could
+    disagree with the content; this one cannot. Liquid renders the head
+    and divider `hidden`, so without scripting the rail holds only the
+    server-rendered links to the other policies, and the divider appears
+    only with something on both sides of it. Links insert *before* the
+    divider: the design keeps the page's own headings above it, and the
+    mobile tier hides exactly what follows it. Below the design's 760px
+    the rail becomes a wrapping pill row — a container query on
+    `.policy-page`, which is full-bleed, so the 47.5rem threshold equals
+    the design's own viewport query.
+  - **The literals live in `--policy-*` properties** on `.policy-shell` in
+    `content-pages.css`, the hero's arrangement: these pages are
+    art-directed in fixed sizes the fluid scales cannot express without
+    changing them. Colors route through scheme tokens — the design's gold
+    is `--c-accent`, its rgba inks are `color-mix()` of `--c-text` — and
+    the faces through `--font-display`/`--font-body`, so the formatting is
+    the design's while the palette and fonts stay the merchant's. The
+    design's `.3s color` hovers ride `var(--duration) var(--ease-ui)`, its
+    `gjUp` entrances the tokenized `--ease-out` curve.
 - Replacing a remote Liquid template with a same-name JSON template is a
   two-step development-theme migration: delete only the old Liquid filename
   first, then upload the JSON file. A watcher that has already recorded the
@@ -4202,8 +4249,9 @@ Things `shopify theme check` rejects that are easy to get wrong:
 
 Every storefront route is treated as a production surface. JSON templates own
 section composition. Shopify emits policy markup directly through
-`content_for_layout`; `theme.liquid` wraps that platform output with the native
-policy rail and shared content typography. Product, featured product, and quick
+`content_for_layout`; `theme.liquid` wraps that platform output with the
+design's legal-page scaffold — see "`policy` is the platform exception" under
+Content and utility templates. Product, featured product, and quick
 view keep separate shells but one Product component contract. Search and cart
 support their configured page/drawer/menu surfaces without forking product
 cards or recommendation markup.

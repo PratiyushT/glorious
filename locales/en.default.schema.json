@@ -1974,11 +1974,6 @@
       "show_navigation": "Show previous and next articles",
       "comments_per_page": "Comments per page"
     },
-    "main_policy": {
-      "name": "Policy content",
-      "show_title": "Show policy heading",
-      "show_policy_navigation": "Show policy navigation"
-    },
     "main_cart": {
       "name": "Cart",
       "title": "Heading override",

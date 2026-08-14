@@ -114,23 +114,90 @@
 
     <main id="main">
       {%- if request.path contains '/policies/' -%}
-        <section class="section content-surface">
-          <div class="page-width policy-layout">
-            {%- if shop.policies.size > 0 -%}
-              <nav class="policy-nav" aria-label="{{ 'sections.main_policy.navigation' | t | escape }}">
-                <p class="policy-nav__eyebrow">{{ 'sections.main_policy.navigation' | t }}</p>
-                <ul class="policy-nav__list" role="list">
+        {%- liquid
+          comment
+            Shopify has no policy template type: the platform renders the
+            policy markup itself through content_for_layout, and this wrap
+            is the one hook a theme has. The scaffold is the design's
+            legal-page system — its Terms, Privacy, Cookies, Disclaimer,
+            and Returns pages all share it. Liquid looks the current
+            policy up by URL so the hero can state its title; only when
+            that lookup succeeds does CSS hide the platform's own title,
+            so an unmatched route still shows a heading.
+          endcomment
+          assign current_policy = blank
+          for shop_policy in shop.policies
+            if shop_policy != blank and request.path == shop_policy.url
+              assign current_policy = shop_policy
+            endif
+          endfor
+          assign policy_shop_name = settings.store_display_name | default: shop.name
+        -%}
+        <article class="content-surface policy-shell{% if current_policy != blank %} policy-shell--own-title{% endif %}">
+          <header class="policy-hero">
+            <div class="policy-hero__inner">
+              <span class="policy-hero__eyebrow">{{ 'policies.eyebrow' | t }}</span>
+              {%- if current_policy != blank -%}
+                <h1 class="policy-hero__title">{{ current_policy.title }}</h1>
+              {%- endif -%}
+              {%- comment -%}
+                The design's meta row states the shop and its city; both
+                come from data the platform already holds. Its "Last
+                updated" date has no native source — the policy drop
+                carries no date — so the theme does not invent one.
+              {%- endcomment -%}
+              <div class="policy-hero__meta">
+                <span>
+                  {{- policy_shop_name -}}
+                  {%- if shop.address.city != blank %} · {{ shop.address.city }}{% if shop.address.province != blank %}, {{ shop.address.province }}{% endif %}{% endif -%}
+                </span>
+              </div>
+            </div>
+          </header>
+          <section class="policy-page">
+            <div class="policy-page__inner">
+              {%- comment -%}
+                The rail's "On this page" head and divider render hidden:
+                initPolicyToc builds that list from the merchant's own h2s
+                and unhides them, so without scripting the rail holds only
+                the server-rendered links to the other policies.
+              {%- endcomment -%}
+              <aside class="policy-rail" data-policy-rail aria-label="{{ 'sections.main_policy.navigation' | t | escape }}">
+                <span class="policy-rail__head" data-policy-toc-head hidden>{{ 'policies.on_this_page' | t }}</span>
+                <span class="policy-rail__divider" data-policy-divider hidden></span>
+                {%- liquid
+                  assign related_count = 0
+                  for shop_policy in shop.policies
+                    if shop_policy != blank and shop_policy.url != request.path
+                      assign related_count = related_count | plus: 1
+                    endif
+                  endfor
+                -%}
+                {%- if related_count > 0 -%}
+                  <span class="policy-rail__head">{{ 'policies.related' | t }}</span>
                   {%- for shop_policy in shop.policies -%}
-                    {%- if shop_policy != blank -%}
-                      <li><a href="{{ shop_policy.url }}"{% if request.path == shop_policy.url %} aria-current="page"{% endif %}>{{ shop_policy.title }}</a></li>
+                    {%- if shop_policy != blank and shop_policy.url != request.path -%}
+                      <a class="policy-rail__link" href="{{ shop_policy.url }}">{{ shop_policy.title }}</a>
                     {%- endif -%}
                   {%- endfor -%}
-                </ul>
-              </nav>
-            {%- endif -%}
-            <div class="policy-native-content">{{ content_for_layout }}</div>
-          </div>
-        </section>
+                {%- endif -%}
+              </aside>
+              <div class="policy-content">
+                {{ content_for_layout }}
+                {%- if shop.policies.size > 0 -%}
+                  <nav class="policy-all" aria-label="{{ 'policies.all' | t | escape }}">
+                    <span class="policy-all__head">{{ 'policies.all' | t }}</span>
+                    {%- for shop_policy in shop.policies -%}
+                      {%- if shop_policy != blank -%}
+                        <a class="policy-all__link" href="{{ shop_policy.url }}"{% if request.path == shop_policy.url %} aria-current="page"{% endif %}>{{ shop_policy.title }}</a>
+                      {%- endif -%}
+                    {%- endfor -%}
+                  </nav>
+                {%- endif -%}
+              </div>
+            </div>
+          </section>
+        </article>
       {%- else -%}
         {{ content_for_layout }}
       {%- endif -%}
