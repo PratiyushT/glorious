@@ -1,25 +1,74 @@
 {%- comment -%}
-  Announcement bar. Each message is a block, so merchants add, reorder and
-  remove them from the editor without touching code.
+  Animated announcement header.
+
+  Messages remain native blocks: merchants can add, reorder, link, and select
+  them in the editor. With scripting, one-message mode rotates through every
+  nonblank block. Without scripting the first message remains visible.
 {%- endcomment -%}
 
-{%- if section.blocks.size > 0 -%}
-  <div class="announcement scheme-{{ section.settings.color_scheme }}">
-    <div class="page-width">
-      {%- for block in section.blocks -%}
-        {%- if block.settings.text != blank -%}
-          <div {{ block.shopify_attributes }}>
-            {%- if block.settings.link != blank -%}
-              <a href="{{ block.settings.link }}">{{ block.settings.text }}</a>
-            {%- else -%}
-              {{ block.settings.text }}
-            {%- endif -%}
-          </div>
-          {%- unless section.settings.show_all -%}
-            {%- break -%}
-          {%- endunless -%}
-        {%- endif -%}
-      {%- endfor -%}
+{%- liquid
+  assign message_count = 0
+  for block in section.blocks
+    if block.settings.text != blank
+      assign message_count = message_count | plus: 1
+    endif
+  endfor
+-%}
+
+{%- if message_count > 0 -%}
+  <div
+    class="announcement announcement--{{ section.settings.animation_style | default: 'slide' }}{% if section.settings.show_all %} announcement--all{% endif %} scheme-{{ section.settings.color_scheme }}"
+    data-announcement
+    data-announcement-autoplay="{{ section.settings.auto_rotate }}"
+    data-announcement-interval="{{ section.settings.interval | times: 1000 }}"
+  >
+    <div class="announcement__inner page-width">
+      <div
+        class="announcement__viewport"
+        data-announcement-viewport
+        aria-live="{% if section.settings.auto_rotate %}off{% else %}polite{% endif %}"
+      >
+        {%- assign rendered_index = 0 -%}
+        {%- for block in section.blocks -%}
+          {%- if block.settings.text != blank -%}
+            <div
+              class="announcement__message{% if rendered_index == 0 %} is-active{% endif %}"
+              data-announcement-message
+              {% unless section.settings.show_all or rendered_index == 0 %}hidden{% endunless %}
+              {{ block.shopify_attributes }}
+            >
+              {%- if block.settings.link != blank -%}
+                <a href="{{ block.settings.link }}">{{ block.settings.text }}</a>
+              {%- else -%}
+                <span>{{ block.settings.text }}</span>
+              {%- endif -%}
+            </div>
+            {%- assign rendered_index = rendered_index | plus: 1 -%}
+          {%- endif -%}
+        {%- endfor -%}
+      </div>
+
+      {%- if message_count > 1 and section.settings.show_all == false and section.settings.show_controls -%}
+        <div class="announcement__controls" role="group" aria-label="{{ 'announcement.controls' | t }}">
+          <button class="announcement__control" type="button" data-announcement-prev aria-label="{{ 'announcement.previous' | t }}">
+            {% render 'icon', icon: 'chevron-left', width: 8, height: 12 %}
+          </button>
+          <button
+            class="announcement__control announcement__control--toggle"
+            type="button"
+            data-announcement-toggle
+            data-pause-label="{{ 'announcement.pause' | t | escape }}"
+            data-play-label="{{ 'announcement.play' | t | escape }}"
+            aria-label="{% if section.settings.auto_rotate %}{{ 'announcement.pause' | t }}{% else %}{{ 'announcement.play' | t }}{% endif %}"
+          >
+            <span data-announcement-pause-icon{% unless section.settings.auto_rotate %} hidden{% endunless %}>{% render 'icon', icon: 'pause', width: 9, height: 9 %}</span>
+            <span data-announcement-play-icon{% if section.settings.auto_rotate %} hidden{% endif %}>{% render 'icon', icon: 'play', width: 9, height: 9 %}</span>
+          </button>
+          <button class="announcement__control" type="button" data-announcement-next aria-label="{{ 'announcement.next' | t }}">
+            {% render 'icon', icon: 'chevron-right', width: 8, height: 12 %}
+          </button>
+        </div>
+      {%- endif -%}
     </div>
   </div>
 {%- endif -%}
@@ -41,6 +90,42 @@
       "label": "t:sections.announcement_bar.show_all.label",
       "info": "t:sections.announcement_bar.show_all.info",
       "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "auto_rotate",
+      "label": "t:sections.announcement_bar.auto_rotate.label",
+      "default": true,
+      "visible_if": "{{ section.settings.show_all == false }}"
+    },
+    {
+      "type": "select",
+      "id": "animation_style",
+      "label": "t:sections.announcement_bar.animation_style.label",
+      "options": [
+        { "value": "fade", "label": "t:sections.announcement_bar.animation_style.fade" },
+        { "value": "slide", "label": "t:sections.announcement_bar.animation_style.slide" }
+      ],
+      "default": "slide",
+      "visible_if": "{{ section.settings.show_all == false }}"
+    },
+    {
+      "type": "range",
+      "id": "interval",
+      "label": "t:sections.announcement_bar.interval.label",
+      "min": 3,
+      "max": 10,
+      "step": 1,
+      "unit": "s",
+      "default": 6,
+      "visible_if": "{{ section.settings.show_all == false and section.settings.auto_rotate }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_controls",
+      "label": "t:sections.announcement_bar.show_controls.label",
+      "default": true,
+      "visible_if": "{{ section.settings.show_all == false }}"
     }
   ],
   "blocks": [
@@ -65,8 +150,15 @@
   "presets": [
     {
       "name": "t:sections.announcement_bar.name",
-      "blocks": [{ "type": "message" }]
+      "blocks": [
+        { "type": "message", "settings": { "text": "Complimentary insured shipping on every order" } },
+        { "type": "message", "settings": { "text": "A private welcome offer awaits" } },
+        { "type": "message", "settings": { "text": "Designed with intention. Made to endure." } }
+      ]
     }
-  ]
+  ],
+  "enabled_on": {
+    "groups": ["header"]
+  }
 }
 {% endschema %}

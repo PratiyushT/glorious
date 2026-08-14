@@ -1989,19 +1989,6 @@
         "default": "scheme_2"
       },
       {
-        "type": "color",
-        "id": "scrollbar_thumb",
-        "label": "t:settings_schema.colors.scrollbar_thumb.label",
-        "info": "t:settings_schema.colors.scrollbar_thumb.info",
-        "default": "#8A8072"
-      },
-      {
-        "type": "color",
-        "id": "scrollbar_thumb_hover",
-        "label": "t:settings_schema.colors.scrollbar_thumb_hover.label",
-        "default": "#6E6558"
-      },
-      {
         "type": "header",
         "content": "t:settings_schema.colors.loading.header"
       },
@@ -2015,25 +2002,6 @@
           { "value": "orbit", "label": "t:settings_schema.colors.loading.style.orbit" }
         ],
         "default": "diamond"
-      },
-      {
-        "type": "color",
-        "id": "loader_color",
-        "label": "t:settings_schema.colors.loading.color.label",
-        "info": "t:settings_schema.colors.loading.color.info"
-      },
-      {
-        "type": "color",
-        "id": "veil_color",
-        "label": "t:settings_schema.colors.loading.veil.label",
-        "info": "t:settings_schema.colors.loading.veil.info"
-      },
-      {
-        "type": "color",
-        "id": "color_error",
-        "label": "t:settings_schema.colors.error.label",
-        "info": "t:settings_schema.colors.error.info",
-        "default": "#A2422C"
       },
       {
         "type": "color_scheme_group",
@@ -2089,33 +2057,229 @@
           },
           {
             "type": "color",
-            "id": "button",
-            "label": "t:settings_schema.colors.button.label",
+            "id": "focus",
+            "label": "t:settings_schema.colors.interface.focus",
+            "default": "#80601F"
+          },
+          {
+            "type": "header",
+            "content": "t:settings_schema.colors.filled.header"
+          },
+          {
+            "type": "color",
+            "id": "filled_background",
+            "label": "t:settings_schema.colors.button_colors.background",
             "default": "#191510"
           },
           {
             "type": "color",
-            "id": "button_label",
-            "label": "t:settings_schema.colors.button_label.label",
+            "id": "filled_text",
+            "label": "t:settings_schema.colors.button_colors.text",
             "default": "#F4F0E8"
           },
           {
             "type": "color",
-            "id": "button_hover",
-            "label": "t:settings_schema.colors.button_hover.label",
+            "id": "filled_hover_background",
+            "label": "t:settings_schema.colors.button_colors.hover_background",
             "default": "#80601F"
           },
           {
             "type": "color",
-            "id": "secondary_button_label",
-            "label": "t:settings_schema.colors.secondary_button_label.label",
+            "id": "filled_hover_text",
+            "label": "t:settings_schema.colors.button_colors.hover_text",
+            "default": "#FFFFFF"
+          },
+          {
+            "type": "header",
+            "content": "t:settings_schema.colors.outline.header"
+          },
+          {
+            "type": "color",
+            "id": "outline_text",
+            "label": "t:settings_schema.colors.button_colors.text",
             "default": "#191510"
           },
           {
             "type": "color",
-            "id": "link",
-            "label": "t:settings_schema.colors.link.label",
+            "id": "outline_border",
+            "label": "t:settings_schema.colors.button_colors.border",
+            "default": "#80601F"
+          },
+          {
+            "type": "color",
+            "id": "outline_hover_background",
+            "label": "t:settings_schema.colors.button_colors.hover_background",
             "default": "#191510"
+          },
+          {
+            "type": "color",
+            "id": "outline_hover_text",
+            "label": "t:settings_schema.colors.button_colors.hover_text",
+            "default": "#F4F0E8"
+          },
+          {
+            "type": "color",
+            "id": "outline_hover_border",
+            "label": "t:settings_schema.colors.button_colors.hover_border",
+            "default": "#191510"
+          },
+          {
+            "type": "header",
+            "content": "t:settings_schema.colors.link_button.header"
+          },
+          {
+            "type": "color",
+            "id": "link_button_text",
+            "label": "t:settings_schema.colors.button_colors.text",
+            "default": "#191510"
+          },
+          {
+            "type": "color",
+            "id": "link_button_underline",
+            "label": "t:settings_schema.colors.button_colors.underline",
+            "default": "#80601F"
+          },
+          {
+            "type": "color",
+            "id": "link_button_hover_text",
+            "label": "t:settings_schema.colors.button_colors.hover_text",
+            "default": "#80601F"
+          },
+          {
+            "type": "color",
+            "id": "link_button_hover_underline",
+            "label": "t:settings_schema.colors.button_colors.hover_underline",
+            "default": "#80601F"
+          },
+          {
+            "type": "header",
+            "content": "t:settings_schema.colors.quiet_button.header"
+          },
+          {
+            "type": "color",
+            "id": "quiet_button_text",
+            "label": "t:settings_schema.colors.button_colors.text",
+            "default": "#6E6962"
+          },
+          {
+            "type": "color",
+            "id": "quiet_button_underline",
+            "label": "t:settings_schema.colors.button_colors.underline",
+            "default": "#D5D1CA"
+          },
+          {
+            "type": "color",
+            "id": "quiet_button_hover_text",
+            "label": "t:settings_schema.colors.button_colors.hover_text",
+            "default": "#191510"
+          },
+          {
+            "type": "color",
+            "id": "quiet_button_hover_underline",
+            "label": "t:settings_schema.colors.button_colors.hover_underline",
+            "default": "#191510"
+          },
+          {
+            "type": "header",
+            "content": "t:settings_schema.colors.arrow_button.header"
+          },
+          {
+            "type": "color",
+            "id": "arrow_button_text",
+            "label": "t:settings_schema.colors.button_colors.text",
+            "default": "#191510"
+          },
+          {
+            "type": "color",
+            "id": "arrow_button_arrow",
+            "label": "t:settings_schema.colors.button_colors.arrow",
+            "default": "#80601F"
+          },
+          {
+            "type": "color",
+            "id": "arrow_button_hover_text",
+            "label": "t:settings_schema.colors.button_colors.hover_text",
+            "default": "#80601F"
+          },
+          {
+            "type": "color",
+            "id": "arrow_button_hover_arrow",
+            "label": "t:settings_schema.colors.button_colors.hover_arrow",
+            "default": "#80601F"
+          },
+          {
+            "type": "header",
+            "content": "t:settings_schema.colors.arrow_outline.header"
+          },
+          {
+            "type": "color",
+            "id": "arrow_outline_text",
+            "label": "t:settings_schema.colors.button_colors.text",
+            "default": "#191510"
+          },
+          {
+            "type": "color",
+            "id": "arrow_outline_border",
+            "label": "t:settings_schema.colors.button_colors.border",
+            "default": "#80601F"
+          },
+          {
+            "type": "color",
+            "id": "arrow_outline_hover_background",
+            "label": "t:settings_schema.colors.button_colors.hover_background",
+            "default": "#191510"
+          },
+          {
+            "type": "color",
+            "id": "arrow_outline_hover_text",
+            "label": "t:settings_schema.colors.button_colors.hover_text",
+            "default": "#F4F0E8"
+          },
+          {
+            "type": "color",
+            "id": "arrow_outline_hover_border",
+            "label": "t:settings_schema.colors.button_colors.hover_border",
+            "default": "#191510"
+          },
+          {
+            "type": "header",
+            "content": "t:settings_schema.colors.interface.header"
+          },
+          {
+            "type": "color",
+            "id": "scrollbar",
+            "label": "t:settings_schema.colors.interface.scrollbar",
+            "default": "#8A8072"
+          },
+          {
+            "type": "color",
+            "id": "scrollbar_hover",
+            "label": "t:settings_schema.colors.interface.scrollbar_hover",
+            "default": "#6E6558"
+          },
+          {
+            "type": "color",
+            "id": "loader",
+            "label": "t:settings_schema.colors.interface.loader",
+            "default": "#80601F"
+          },
+          {
+            "type": "color",
+            "id": "veil",
+            "label": "t:settings_schema.colors.interface.veil",
+            "default": "#0D0C0A"
+          },
+          {
+            "type": "color",
+            "id": "success",
+            "label": "t:settings_schema.colors.interface.success",
+            "default": "#34735B"
+          },
+          {
+            "type": "color",
+            "id": "error",
+            "label": "t:settings_schema.colors.interface.error",
+            "default": "#A2422C"
           },
           {
             "type": "header",
@@ -2186,13 +2350,13 @@
             "gradient": "background_gradient"
           },
           "text": "text",
-          "primary_button": "button",
-          "on_primary_button": "button_label",
-          "primary_button_border": "button",
+          "primary_button": "filled_background",
+          "on_primary_button": "filled_text",
+          "primary_button_border": "filled_background",
           "secondary_button": "background",
-          "on_secondary_button": "secondary_button_label",
-          "secondary_button_border": "border",
-          "links": "link",
+          "on_secondary_button": "outline_text",
+          "secondary_button_border": "outline_border",
+          "links": "link_button_text",
           "icons": "accent"
         }
       }
@@ -2280,18 +2444,6 @@
     "settings": [
       {
         "type": "select",
-        "id": "button_radius",
-        "label": "t:settings_schema.buttons.button_radius.label",
-        "options": [
-        { "value": "square", "label": "t:settings_schema.buttons.button_radius.options__square" },
-        { "value": "soft", "label": "t:settings_schema.buttons.button_radius.options__soft" },
-        { "value": "rounded", "label": "t:settings_schema.buttons.button_radius.options__rounded" },
-        { "value": "pill", "label": "t:settings_schema.buttons.button_radius.options__pill" }
-        ],
-        "default": "pill"
-      },
-      {
-        "type": "select",
         "id": "close_style",
         "label": "t:settings_schema.buttons.close_style.label",
         "info": "t:settings_schema.buttons.close_style.info",
@@ -2302,50 +2454,454 @@
         "default": "text"
       },
       {
+        "type": "header",
+        "content": "t:settings_schema.buttons.styles.filled"
+      },
+      {
         "type": "select",
-        "id": "button_size",
+        "id": "filled_button_radius",
+        "label": "t:settings_schema.buttons.button_radius.label",
+        "options": [
+          { "value": "square", "label": "t:settings_schema.buttons.button_radius.options__square" },
+          { "value": "soft", "label": "t:settings_schema.buttons.button_radius.options__soft" },
+          { "value": "rounded", "label": "t:settings_schema.buttons.button_radius.options__rounded" },
+          { "value": "pill", "label": "t:settings_schema.buttons.button_radius.options__pill" }
+        ],
+        "default": "pill"
+      },
+      {
+        "type": "select",
+        "id": "filled_button_size",
         "label": "t:settings_schema.buttons.button_size.label",
         "info": "t:settings_schema.buttons.button_size.info",
         "options": [
-        { "value": "xs", "label": "t:settings_schema.buttons.button_size.options__xs" },
-        { "value": "sm", "label": "t:settings_schema.buttons.button_size.options__sm" },
-        { "value": "md", "label": "t:settings_schema.buttons.button_size.options__md" },
-        { "value": "lg", "label": "t:settings_schema.buttons.button_size.options__lg" },
-        { "value": "xl", "label": "t:settings_schema.buttons.button_size.options__xl" }
+          { "value": "xs", "label": "t:settings_schema.buttons.button_size.options__xs" },
+          { "value": "sm", "label": "t:settings_schema.buttons.button_size.options__sm" },
+          { "value": "md", "label": "t:settings_schema.buttons.button_size.options__md" },
+          { "value": "lg", "label": "t:settings_schema.buttons.button_size.options__lg" },
+          { "value": "xl", "label": "t:settings_schema.buttons.button_size.options__xl" }
         ],
         "default": "md"
       },
       {
         "type": "select",
-        "id": "button_tracking",
+        "id": "filled_button_tracking",
         "label": "t:settings_schema.buttons.button_tracking.label",
         "options": [
-        { "value": "xs", "label": "t:settings_schema.buttons.button_tracking.options__xs" },
-        { "value": "sm", "label": "t:settings_schema.buttons.button_tracking.options__sm" },
-        { "value": "md", "label": "t:settings_schema.buttons.button_tracking.options__md" },
-        { "value": "lg", "label": "t:settings_schema.buttons.button_tracking.options__lg" },
-        { "value": "xl", "label": "t:settings_schema.buttons.button_tracking.options__xl" }
+          { "value": "xs", "label": "t:settings_schema.buttons.button_tracking.options__xs" },
+          { "value": "sm", "label": "t:settings_schema.buttons.button_tracking.options__sm" },
+          { "value": "md", "label": "t:settings_schema.buttons.button_tracking.options__md" },
+          { "value": "lg", "label": "t:settings_schema.buttons.button_tracking.options__lg" },
+          { "value": "xl", "label": "t:settings_schema.buttons.button_tracking.options__xl" }
         ],
         "default": "md"
       },
       {
         "type": "select",
-        "id": "button_border_width",
+        "id": "filled_button_border_width",
         "label": "t:settings_schema.buttons.button_border_width.label",
         "options": [
-        { "value": "xs", "label": "t:settings_schema.buttons.button_border_width.options__xs" },
-        { "value": "sm", "label": "t:settings_schema.buttons.button_border_width.options__sm" },
-        { "value": "md", "label": "t:settings_schema.buttons.button_border_width.options__md" },
-        { "value": "lg", "label": "t:settings_schema.buttons.button_border_width.options__lg" },
-        { "value": "xl", "label": "t:settings_schema.buttons.button_border_width.options__xl" }
+          { "value": "xs", "label": "t:settings_schema.buttons.button_border_width.options__xs" },
+          { "value": "sm", "label": "t:settings_schema.buttons.button_border_width.options__sm" },
+          { "value": "md", "label": "t:settings_schema.buttons.button_border_width.options__md" },
+          { "value": "lg", "label": "t:settings_schema.buttons.button_border_width.options__lg" },
+          { "value": "xl", "label": "t:settings_schema.buttons.button_border_width.options__xl" }
         ],
         "default": "sm"
       },
       {
         "type": "checkbox",
-        "id": "button_uppercase",
+        "id": "filled_button_uppercase",
         "label": "t:settings_schema.buttons.button_uppercase.label",
         "default": true
+      },
+      {
+        "type": "select",
+        "id": "filled_button_hover_motion",
+        "label": "t:settings_schema.buttons.hover_motion.label",
+        "options": [
+          { "value": "none", "label": "t:settings_schema.buttons.hover_motion.none" },
+          { "value": "fade", "label": "t:settings_schema.buttons.hover_motion.fade" },
+          { "value": "lift", "label": "t:settings_schema.buttons.hover_motion.lift" },
+          { "value": "grow", "label": "t:settings_schema.buttons.hover_motion.grow" },
+          { "value": "slide", "label": "t:settings_schema.buttons.hover_motion.slide" }
+        ],
+        "default": "lift"
+      },
+      {
+        "type": "header",
+        "content": "t:settings_schema.buttons.styles.outline"
+      },
+      {
+        "type": "select",
+        "id": "outline_button_radius",
+        "label": "t:settings_schema.buttons.button_radius.label",
+        "options": [
+          { "value": "square", "label": "t:settings_schema.buttons.button_radius.options__square" },
+          { "value": "soft", "label": "t:settings_schema.buttons.button_radius.options__soft" },
+          { "value": "rounded", "label": "t:settings_schema.buttons.button_radius.options__rounded" },
+          { "value": "pill", "label": "t:settings_schema.buttons.button_radius.options__pill" }
+        ],
+        "default": "pill"
+      },
+      {
+        "type": "select",
+        "id": "outline_button_size",
+        "label": "t:settings_schema.buttons.button_size.label",
+        "info": "t:settings_schema.buttons.button_size.info",
+        "options": [
+          { "value": "xs", "label": "t:settings_schema.buttons.button_size.options__xs" },
+          { "value": "sm", "label": "t:settings_schema.buttons.button_size.options__sm" },
+          { "value": "md", "label": "t:settings_schema.buttons.button_size.options__md" },
+          { "value": "lg", "label": "t:settings_schema.buttons.button_size.options__lg" },
+          { "value": "xl", "label": "t:settings_schema.buttons.button_size.options__xl" }
+        ],
+        "default": "md"
+      },
+      {
+        "type": "select",
+        "id": "outline_button_tracking",
+        "label": "t:settings_schema.buttons.button_tracking.label",
+        "options": [
+          { "value": "xs", "label": "t:settings_schema.buttons.button_tracking.options__xs" },
+          { "value": "sm", "label": "t:settings_schema.buttons.button_tracking.options__sm" },
+          { "value": "md", "label": "t:settings_schema.buttons.button_tracking.options__md" },
+          { "value": "lg", "label": "t:settings_schema.buttons.button_tracking.options__lg" },
+          { "value": "xl", "label": "t:settings_schema.buttons.button_tracking.options__xl" }
+        ],
+        "default": "md"
+      },
+      {
+        "type": "select",
+        "id": "outline_button_border_width",
+        "label": "t:settings_schema.buttons.button_border_width.label",
+        "options": [
+          { "value": "xs", "label": "t:settings_schema.buttons.button_border_width.options__xs" },
+          { "value": "sm", "label": "t:settings_schema.buttons.button_border_width.options__sm" },
+          { "value": "md", "label": "t:settings_schema.buttons.button_border_width.options__md" },
+          { "value": "lg", "label": "t:settings_schema.buttons.button_border_width.options__lg" },
+          { "value": "xl", "label": "t:settings_schema.buttons.button_border_width.options__xl" }
+        ],
+        "default": "sm"
+      },
+      {
+        "type": "checkbox",
+        "id": "outline_button_uppercase",
+        "label": "t:settings_schema.buttons.button_uppercase.label",
+        "default": true
+      },
+      {
+        "type": "select",
+        "id": "outline_button_hover_motion",
+        "label": "t:settings_schema.buttons.hover_motion.label",
+        "options": [
+          { "value": "none", "label": "t:settings_schema.buttons.hover_motion.none" },
+          { "value": "fade", "label": "t:settings_schema.buttons.hover_motion.fade" },
+          { "value": "lift", "label": "t:settings_schema.buttons.hover_motion.lift" },
+          { "value": "grow", "label": "t:settings_schema.buttons.hover_motion.grow" },
+          { "value": "slide", "label": "t:settings_schema.buttons.hover_motion.slide" }
+        ],
+        "default": "fade"
+      },
+      {
+        "type": "header",
+        "content": "t:settings_schema.buttons.styles.link"
+      },
+      {
+        "type": "select",
+        "id": "link_button_radius",
+        "label": "t:settings_schema.buttons.button_radius.label",
+        "options": [
+          { "value": "square", "label": "t:settings_schema.buttons.button_radius.options__square" },
+          { "value": "soft", "label": "t:settings_schema.buttons.button_radius.options__soft" },
+          { "value": "rounded", "label": "t:settings_schema.buttons.button_radius.options__rounded" },
+          { "value": "pill", "label": "t:settings_schema.buttons.button_radius.options__pill" }
+        ],
+        "default": "square"
+      },
+      {
+        "type": "select",
+        "id": "link_button_size",
+        "label": "t:settings_schema.buttons.button_size.label",
+        "info": "t:settings_schema.buttons.button_size.info",
+        "options": [
+          { "value": "xs", "label": "t:settings_schema.buttons.button_size.options__xs" },
+          { "value": "sm", "label": "t:settings_schema.buttons.button_size.options__sm" },
+          { "value": "md", "label": "t:settings_schema.buttons.button_size.options__md" },
+          { "value": "lg", "label": "t:settings_schema.buttons.button_size.options__lg" },
+          { "value": "xl", "label": "t:settings_schema.buttons.button_size.options__xl" }
+        ],
+        "default": "md"
+      },
+      {
+        "type": "select",
+        "id": "link_button_tracking",
+        "label": "t:settings_schema.buttons.button_tracking.label",
+        "options": [
+          { "value": "xs", "label": "t:settings_schema.buttons.button_tracking.options__xs" },
+          { "value": "sm", "label": "t:settings_schema.buttons.button_tracking.options__sm" },
+          { "value": "md", "label": "t:settings_schema.buttons.button_tracking.options__md" },
+          { "value": "lg", "label": "t:settings_schema.buttons.button_tracking.options__lg" },
+          { "value": "xl", "label": "t:settings_schema.buttons.button_tracking.options__xl" }
+        ],
+        "default": "md"
+      },
+      {
+        "type": "select",
+        "id": "link_button_border_width",
+        "label": "t:settings_schema.buttons.underline_width.label",
+        "options": [
+          { "value": "xs", "label": "t:settings_schema.buttons.button_border_width.options__xs" },
+          { "value": "sm", "label": "t:settings_schema.buttons.button_border_width.options__sm" },
+          { "value": "md", "label": "t:settings_schema.buttons.button_border_width.options__md" },
+          { "value": "lg", "label": "t:settings_schema.buttons.button_border_width.options__lg" },
+          { "value": "xl", "label": "t:settings_schema.buttons.button_border_width.options__xl" }
+        ],
+        "default": "sm"
+      },
+      {
+        "type": "checkbox",
+        "id": "link_button_uppercase",
+        "label": "t:settings_schema.buttons.button_uppercase.label",
+        "default": true
+      },
+      {
+        "type": "select",
+        "id": "link_button_hover_motion",
+        "label": "t:settings_schema.buttons.hover_motion.label",
+        "options": [
+          { "value": "none", "label": "t:settings_schema.buttons.hover_motion.none" },
+          { "value": "fade", "label": "t:settings_schema.buttons.hover_motion.fade" },
+          { "value": "lift", "label": "t:settings_schema.buttons.hover_motion.lift" },
+          { "value": "grow", "label": "t:settings_schema.buttons.hover_motion.grow" },
+          { "value": "slide", "label": "t:settings_schema.buttons.hover_motion.slide" }
+        ],
+        "default": "fade"
+      },
+      {
+        "type": "header",
+        "content": "t:settings_schema.buttons.styles.quiet"
+      },
+      {
+        "type": "select",
+        "id": "quiet_button_radius",
+        "label": "t:settings_schema.buttons.button_radius.label",
+        "options": [
+          { "value": "square", "label": "t:settings_schema.buttons.button_radius.options__square" },
+          { "value": "soft", "label": "t:settings_schema.buttons.button_radius.options__soft" },
+          { "value": "rounded", "label": "t:settings_schema.buttons.button_radius.options__rounded" },
+          { "value": "pill", "label": "t:settings_schema.buttons.button_radius.options__pill" }
+        ],
+        "default": "square"
+      },
+      {
+        "type": "select",
+        "id": "quiet_button_size",
+        "label": "t:settings_schema.buttons.button_size.label",
+        "info": "t:settings_schema.buttons.button_size.info",
+        "options": [
+          { "value": "xs", "label": "t:settings_schema.buttons.button_size.options__xs" },
+          { "value": "sm", "label": "t:settings_schema.buttons.button_size.options__sm" },
+          { "value": "md", "label": "t:settings_schema.buttons.button_size.options__md" },
+          { "value": "lg", "label": "t:settings_schema.buttons.button_size.options__lg" },
+          { "value": "xl", "label": "t:settings_schema.buttons.button_size.options__xl" }
+        ],
+        "default": "md"
+      },
+      {
+        "type": "select",
+        "id": "quiet_button_tracking",
+        "label": "t:settings_schema.buttons.button_tracking.label",
+        "options": [
+          { "value": "xs", "label": "t:settings_schema.buttons.button_tracking.options__xs" },
+          { "value": "sm", "label": "t:settings_schema.buttons.button_tracking.options__sm" },
+          { "value": "md", "label": "t:settings_schema.buttons.button_tracking.options__md" },
+          { "value": "lg", "label": "t:settings_schema.buttons.button_tracking.options__lg" },
+          { "value": "xl", "label": "t:settings_schema.buttons.button_tracking.options__xl" }
+        ],
+        "default": "md"
+      },
+      {
+        "type": "select",
+        "id": "quiet_button_border_width",
+        "label": "t:settings_schema.buttons.underline_width.label",
+        "options": [
+          { "value": "xs", "label": "t:settings_schema.buttons.button_border_width.options__xs" },
+          { "value": "sm", "label": "t:settings_schema.buttons.button_border_width.options__sm" },
+          { "value": "md", "label": "t:settings_schema.buttons.button_border_width.options__md" },
+          { "value": "lg", "label": "t:settings_schema.buttons.button_border_width.options__lg" },
+          { "value": "xl", "label": "t:settings_schema.buttons.button_border_width.options__xl" }
+        ],
+        "default": "sm"
+      },
+      {
+        "type": "checkbox",
+        "id": "quiet_button_uppercase",
+        "label": "t:settings_schema.buttons.button_uppercase.label",
+        "default": true
+      },
+      {
+        "type": "select",
+        "id": "quiet_button_hover_motion",
+        "label": "t:settings_schema.buttons.hover_motion.label",
+        "options": [
+          { "value": "none", "label": "t:settings_schema.buttons.hover_motion.none" },
+          { "value": "fade", "label": "t:settings_schema.buttons.hover_motion.fade" },
+          { "value": "lift", "label": "t:settings_schema.buttons.hover_motion.lift" },
+          { "value": "grow", "label": "t:settings_schema.buttons.hover_motion.grow" },
+          { "value": "slide", "label": "t:settings_schema.buttons.hover_motion.slide" }
+        ],
+        "default": "fade"
+      },
+      {
+        "type": "header",
+        "content": "t:settings_schema.buttons.styles.arrow"
+      },
+      {
+        "type": "select",
+        "id": "arrow_button_radius",
+        "label": "t:settings_schema.buttons.button_radius.label",
+        "options": [
+          { "value": "square", "label": "t:settings_schema.buttons.button_radius.options__square" },
+          { "value": "soft", "label": "t:settings_schema.buttons.button_radius.options__soft" },
+          { "value": "rounded", "label": "t:settings_schema.buttons.button_radius.options__rounded" },
+          { "value": "pill", "label": "t:settings_schema.buttons.button_radius.options__pill" }
+        ],
+        "default": "square"
+      },
+      {
+        "type": "select",
+        "id": "arrow_button_size",
+        "label": "t:settings_schema.buttons.button_size.label",
+        "info": "t:settings_schema.buttons.button_size.info",
+        "options": [
+          { "value": "xs", "label": "t:settings_schema.buttons.button_size.options__xs" },
+          { "value": "sm", "label": "t:settings_schema.buttons.button_size.options__sm" },
+          { "value": "md", "label": "t:settings_schema.buttons.button_size.options__md" },
+          { "value": "lg", "label": "t:settings_schema.buttons.button_size.options__lg" },
+          { "value": "xl", "label": "t:settings_schema.buttons.button_size.options__xl" }
+        ],
+        "default": "md"
+      },
+      {
+        "type": "select",
+        "id": "arrow_button_tracking",
+        "label": "t:settings_schema.buttons.button_tracking.label",
+        "options": [
+          { "value": "xs", "label": "t:settings_schema.buttons.button_tracking.options__xs" },
+          { "value": "sm", "label": "t:settings_schema.buttons.button_tracking.options__sm" },
+          { "value": "md", "label": "t:settings_schema.buttons.button_tracking.options__md" },
+          { "value": "lg", "label": "t:settings_schema.buttons.button_tracking.options__lg" },
+          { "value": "xl", "label": "t:settings_schema.buttons.button_tracking.options__xl" }
+        ],
+        "default": "md"
+      },
+      {
+        "type": "select",
+        "id": "arrow_button_border_width",
+        "label": "t:settings_schema.buttons.arrow_width.label",
+        "options": [
+          { "value": "xs", "label": "t:settings_schema.buttons.button_border_width.options__xs" },
+          { "value": "sm", "label": "t:settings_schema.buttons.button_border_width.options__sm" },
+          { "value": "md", "label": "t:settings_schema.buttons.button_border_width.options__md" },
+          { "value": "lg", "label": "t:settings_schema.buttons.button_border_width.options__lg" },
+          { "value": "xl", "label": "t:settings_schema.buttons.button_border_width.options__xl" }
+        ],
+        "default": "sm"
+      },
+      {
+        "type": "checkbox",
+        "id": "arrow_button_uppercase",
+        "label": "t:settings_schema.buttons.button_uppercase.label",
+        "default": true
+      },
+      {
+        "type": "select",
+        "id": "arrow_button_hover_motion",
+        "label": "t:settings_schema.buttons.hover_motion.label",
+        "options": [
+          { "value": "none", "label": "t:settings_schema.buttons.hover_motion.none" },
+          { "value": "fade", "label": "t:settings_schema.buttons.hover_motion.fade" },
+          { "value": "lift", "label": "t:settings_schema.buttons.hover_motion.lift" },
+          { "value": "grow", "label": "t:settings_schema.buttons.hover_motion.grow" },
+          { "value": "slide", "label": "t:settings_schema.buttons.hover_motion.slide" }
+        ],
+        "default": "slide"
+      },
+      {
+        "type": "header",
+        "content": "t:settings_schema.buttons.styles.arrow_outline"
+      },
+      {
+        "type": "select",
+        "id": "arrow_outline_button_radius",
+        "label": "t:settings_schema.buttons.button_radius.label",
+        "options": [
+          { "value": "square", "label": "t:settings_schema.buttons.button_radius.options__square" },
+          { "value": "soft", "label": "t:settings_schema.buttons.button_radius.options__soft" },
+          { "value": "rounded", "label": "t:settings_schema.buttons.button_radius.options__rounded" },
+          { "value": "pill", "label": "t:settings_schema.buttons.button_radius.options__pill" }
+        ],
+        "default": "pill"
+      },
+      {
+        "type": "select",
+        "id": "arrow_outline_button_size",
+        "label": "t:settings_schema.buttons.button_size.label",
+        "info": "t:settings_schema.buttons.button_size.info",
+        "options": [
+          { "value": "xs", "label": "t:settings_schema.buttons.button_size.options__xs" },
+          { "value": "sm", "label": "t:settings_schema.buttons.button_size.options__sm" },
+          { "value": "md", "label": "t:settings_schema.buttons.button_size.options__md" },
+          { "value": "lg", "label": "t:settings_schema.buttons.button_size.options__lg" },
+          { "value": "xl", "label": "t:settings_schema.buttons.button_size.options__xl" }
+        ],
+        "default": "md"
+      },
+      {
+        "type": "select",
+        "id": "arrow_outline_button_tracking",
+        "label": "t:settings_schema.buttons.button_tracking.label",
+        "options": [
+          { "value": "xs", "label": "t:settings_schema.buttons.button_tracking.options__xs" },
+          { "value": "sm", "label": "t:settings_schema.buttons.button_tracking.options__sm" },
+          { "value": "md", "label": "t:settings_schema.buttons.button_tracking.options__md" },
+          { "value": "lg", "label": "t:settings_schema.buttons.button_tracking.options__lg" },
+          { "value": "xl", "label": "t:settings_schema.buttons.button_tracking.options__xl" }
+        ],
+        "default": "md"
+      },
+      {
+        "type": "select",
+        "id": "arrow_outline_button_border_width",
+        "label": "t:settings_schema.buttons.button_border_width.label",
+        "options": [
+          { "value": "xs", "label": "t:settings_schema.buttons.button_border_width.options__xs" },
+          { "value": "sm", "label": "t:settings_schema.buttons.button_border_width.options__sm" },
+          { "value": "md", "label": "t:settings_schema.buttons.button_border_width.options__md" },
+          { "value": "lg", "label": "t:settings_schema.buttons.button_border_width.options__lg" },
+          { "value": "xl", "label": "t:settings_schema.buttons.button_border_width.options__xl" }
+        ],
+        "default": "sm"
+      },
+      {
+        "type": "checkbox",
+        "id": "arrow_outline_button_uppercase",
+        "label": "t:settings_schema.buttons.button_uppercase.label",
+        "default": true
+      },
+      {
+        "type": "select",
+        "id": "arrow_outline_button_hover_motion",
+        "label": "t:settings_schema.buttons.hover_motion.label",
+        "options": [
+          { "value": "none", "label": "t:settings_schema.buttons.hover_motion.none" },
+          { "value": "fade", "label": "t:settings_schema.buttons.hover_motion.fade" },
+          { "value": "lift", "label": "t:settings_schema.buttons.hover_motion.lift" },
+          { "value": "grow", "label": "t:settings_schema.buttons.hover_motion.grow" },
+          { "value": "slide", "label": "t:settings_schema.buttons.hover_motion.slide" }
+        ],
+        "default": "slide"
       }
     ]
   },

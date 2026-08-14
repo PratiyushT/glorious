@@ -1,0 +1,51 @@
+{%- comment -%}
+  Compiles one global Button-style group into CSS custom properties.
+
+  Each storefront button type owns its geometry, typography and hover motion.
+  Saved themes are migrated to the new keys in settings_data; schema defaults
+  cover new installs.
+
+  Accepts:
+    style          - filled | outline | link | quiet | arrow | arrow_outline
+    default_motion - none | fade | lift | grow | slide
+{%- endcomment -%}
+
+{%- liquid
+  assign size_key = style | append: '_button_size'
+  assign radius_key = style | append: '_button_radius'
+  assign tracking_key = style | append: '_button_tracking'
+  assign border_key = style | append: '_button_border_width'
+  assign uppercase_key = style | append: '_button_uppercase'
+  assign motion_key = style | append: '_button_hover_motion'
+
+  assign size = settings[size_key] | default: 'md'
+  assign radius = settings[radius_key] | default: 'pill'
+  assign tracking = settings[tracking_key] | default: 'md'
+  assign border_width = settings[border_key] | default: 'sm'
+  assign hover_motion = settings[motion_key] | default: default_motion | default: 'fade'
+
+  assign uppercase = settings[uppercase_key]
+-%}
+
+{%- capture resolved_size -%}{%- render 'scale-step', scale: 'button_size', step: size -%}{%- endcapture -%}
+{%- if resolved_size == blank -%}{%- capture resolved_size -%}{%- render 'scale-step', scale: 'button_size', step: 'md' -%}{%- endcapture -%}{%- endif -%}
+{%- capture resolved_radius -%}{%- render 'scale-step', scale: 'button_radius', step: radius -%}{%- endcapture -%}
+{%- if resolved_radius == blank -%}{%- capture resolved_radius -%}{%- render 'scale-step', scale: 'button_radius', step: 'pill' -%}{%- endcapture -%}{%- endif -%}
+{%- capture resolved_tracking -%}{%- render 'scale-step', scale: 'button_tracking', step: tracking -%}{%- endcapture -%}
+{%- if resolved_tracking == blank -%}{%- capture resolved_tracking -%}{%- render 'scale-step', scale: 'button_tracking', step: 'md' -%}{%- endcapture -%}{%- endif -%}
+{%- capture resolved_border -%}{%- render 'scale-step', scale: 'button_border_width', step: border_width -%}{%- endcapture -%}
+{%- if resolved_border == blank -%}{%- capture resolved_border -%}{%- render 'scale-step', scale: 'button_border_width', step: 'sm' -%}{%- endcapture -%}{%- endif -%}
+{%- assign size_parts = resolved_size | split: ',' -%}
+
+--button-{{ style }}-radius: {{ resolved_radius }}px;
+--button-{{ style }}-padding-x: {{ size_parts[0] }}px;
+--button-{{ style }}-padding-y: {{ size_parts[1] }}px;
+--button-{{ style }}-size: {{ size_parts[2] }}px;
+--button-{{ style }}-tracking: {{ resolved_tracking | times: 1.0 | divided_by: 1000.0 }}em;
+--button-{{ style }}-border-width: {{ resolved_border }}px;
+--button-{{ style }}-transform: {% if uppercase %}uppercase{% else %}none{% endif %};
+--button-{{ style }}-hover-duration: {% if hover_motion == 'none' %}0ms{% else %}var(--duration){% endif %};
+--button-{{ style }}-hover-x: {% if hover_motion == 'slide' %}0.2rem{% else %}0rem{% endif %};
+--button-{{ style }}-hover-y: {% if hover_motion == 'lift' %}-0.125rem{% else %}0rem{% endif %};
+--button-{{ style }}-hover-scale: {% if hover_motion == 'grow' %}1.02{% else %}1{% endif %};
+--button-{{ style }}-hover-gap: {% if hover_motion == 'slide' %}0.5rem{% else %}0rem{% endif %};

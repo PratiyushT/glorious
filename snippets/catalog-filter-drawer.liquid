@@ -13,6 +13,7 @@
   data-overlay="{{ drawer_name }}"
   data-overlay-modal
   data-catalog-filter-drawer
+  data-color-scheme="{{ section.settings.drawer_color_scheme | default: section.settings.color_scheme }}"
   hidden
 >
   <div class="overlay__veil" data-overlay-close="{{ drawer_name }}"></div>

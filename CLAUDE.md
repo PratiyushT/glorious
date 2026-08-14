@@ -426,6 +426,14 @@ global Text/Rich text concern elsewhere.
   quantity steppers, sorting choices—keep their own classes because they are
   interface controls, not merchant Button instances. R16 prevents `.btn`
   markup from being written anywhere else.
+- **Button defaults are per style, and colors are per style per scheme.** Theme
+  settings → Buttons gives Filled, Outline, Link, Quiet, Arrow, and Arrow
+  outline independent shape, size, tracking, line weight, casing, and hover
+  motion. A section or block override still wins locally. Every color scheme
+  owns the resting and hover colors for those six styles, plus focus,
+  selection, loader, veil, scrollbar, success, warning, and error colors. An
+  overlay shell publishes `data-color-scheme` so its veil uses the panel's
+  selected scheme even though the veil is the panel's sibling.
 - **Product badges are one contextual block, not markup hidden inside Media.**
   `product_badges` owns automatic Sold out, Sale, New, and custom/metafield
   badges. The block chooses facts, order limit, and card position; Theme
@@ -511,14 +519,12 @@ global Text/Rich text concern elsewhere.
 - **Buy Now wears exactly what Add to cart wears.** The Buy buttons block
   publishes its `button_style` as `data-button-style` on `.product-buy-form`,
   because Shopify's injected payment button cannot take the theme's classes
-  and CSS cannot read a sibling's settings. `main-product.css` maps the value
-  onto `.shopify-payment-button__button--unbranded`: filled mirrors
-  `.btn--primary`'s exact fallback chains — the border following the fill,
-  hover falling through the resting override before the scheme — and every
-  other style maps to the outline frame, because a wallet button with no
-  boundary is not a presentation Shopify supports. The transition reads
-  `var(--duration) var(--ease-ui)` rather than restating 0.3s, so turning
-  motion down does not leave this one button animating.
+  and CSS cannot read a sibling's settings. `main-product.css` maps that value
+  to the same per-style geometry, scheme colors, local overrides, and hover
+  motion used by the Add to cart button. The wallet control keeps a boundary
+  for Shopify usability even when Link, Quiet, or Arrow is selected, but its
+  color and motion still come from that selected style. Reduced motion removes
+  the transform without suppressing the hover color state.
 - **Product breadcrumbs use Shopify's collection context, never browsing-page
   headings.** A contextual collection URL renders Home / Collection / Product;
   a direct product URL renders Home / the merchant-editable All products label
@@ -894,7 +900,7 @@ naming. A plain grep for those strings finds them and reads as a live
 reference. Grep for the **filename with its extension**, or scan `asset_url`
 call sites.
 
-**The newsletter popup's fallback photograph is gone too**, which is the other
+**The Splash screen's fallback photograph is gone too**, which is the other
 318 KB. The section already had an `image_picker`; the demo photograph was only
 what showed when a merchant had not chosen one. It is
 `{{ 'lifestyle-1' | placeholder_svg_tag }}` now, as craft and the lookbook
@@ -1315,12 +1321,33 @@ or an unavailable `span`. That keeps one appearance API without turning a form
 submit into a fake link. `mutable_label` wraps only the words, leaving the
 decorative arrow intact when JavaScript changes an action label.
 
-The newsletter offer popup submits to Shopify's real customer form and calls
-this same renderer for Subscribe and Continue; its editor exposes the complete
-Button appearance contract. The cookie banner also calls the renderer, using
-the shared global Button defaults for its filled Accept and outline Decline
-actions. Popup behavior and consent behavior remain section-owned; their UI is
-not a separate button system.
+The Splash screen submits to Shopify's real customer form when its offer is set
+to After email signup and calls this same renderer for Subscribe and Apply;
+its editor exposes the complete Button appearance contract. Immediate mode
+skips the form and presents the same offer directly. The cookie banner also
+calls the renderer, using the shared global Button defaults for its filled
+Accept and outline Decline actions. Popup behavior and consent behavior remain
+section-owned; their UI is not a separate button system.
+
+**A Splash discount is a real Shopify hand-off, not decorative code.** The
+merchant must create the matching active code in Shopify Admin. The shared
+`discount-offer` snippet renders a copy control plus
+`/discount/<code>?redirect=<destination>`; following Apply therefore records
+the discount in Shopify and carries it into checkout. Blank code remains a
+normal destination CTA. The saved section handle and overlay name stay
+`newsletter-popup` / `newsletter`, so existing `#newsletter` menu actions and
+the post-subscription return continue to work while the editor-facing section
+is named Splash screen.
+
+**The animated announcement bar is a block rotator, not duplicated copy.**
+Every nonblank Message block participates in one slot; the first remains
+visible without JavaScript. Fade or vertical-slide hand-offs pause on hover,
+focus, a hidden tab, reduced motion, or the visitor's Pause control. Previous
+and Next are real accessible controls, and selecting a block in the Theme
+Editor brings that message into view. Show every message at once remains the
+non-rotating option. Its section wrapper sticks above the fixed nav, and the
+nav offsets by the bar's fixed 2.5rem height through the existing `:has()`
+browser contract—no runtime measurement or body-padding script.
 
 The design states its own model: *"Four variants carry every action across the
 store. Pill geometry, uppercase Karla at .15em, and a single gold accent.
@@ -1962,9 +1989,10 @@ but its two behavior blocks are reusable outside that section.
 `hero`, `featured-products` (Most Loved), `collection-list` (Our Products),
 `lookbook` (Shop the look), four `group` instances (feature cards, Craft,
 About, Visit), and `testimonials` — plus `header`,
-`announcement-bar`, `header`, `cart-drawer`, composed `quick-view`,
-`newsletter-popup`, and `cookie-banner` in the header group; `footer` in the
-footer group; and general-purpose `rich-text` and `newsletter` sections.
+animated `announcement-bar`, `header`, `cart-drawer`, composed `quick-view`,
+the editor-facing Splash screen (`newsletter-popup`), and `cookie-banner` in
+the header group; `footer` in the footer group; and general-purpose `rich-text`
+and `newsletter` sections.
 `predictive-search` remains a schema-less Section Rendering endpoint. Quick
 view is a real header-group section with merchant-ordered Product blocks; its
 saved section id is fetched against a product URL so those blocks receive the

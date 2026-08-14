@@ -34,14 +34,6 @@
 {%- if s_hair == blank -%}{%- capture s_hair -%}{%- render 'scale-step', scale: 'hairline_opacity', step: 'md' -%}{%- endcapture -%}{%- endif -%}
 {%- capture s_shadow -%}{%- render 'scale-step', scale: 'shadow_opacity', step: settings.shadow_opacity -%}{%- endcapture -%}
 {%- if s_shadow == blank -%}{%- capture s_shadow -%}{%- render 'scale-step', scale: 'shadow_opacity', step: 'md' -%}{%- endcapture -%}{%- endif -%}
-{%- capture s_btnsize -%}{%- render 'scale-step', scale: 'button_size', step: settings.button_size -%}{%- endcapture -%}
-{%- if s_btnsize == blank -%}{%- capture s_btnsize -%}{%- render 'scale-step', scale: 'button_size', step: 'md' -%}{%- endcapture -%}{%- endif -%}
-{%- capture s_btntrack -%}{%- render 'scale-step', scale: 'button_tracking', step: settings.button_tracking -%}{%- endcapture -%}
-{%- if s_btntrack == blank -%}{%- capture s_btntrack -%}{%- render 'scale-step', scale: 'button_tracking', step: 'md' -%}{%- endcapture -%}{%- endif -%}
-{%- capture s_btnborder -%}{%- render 'scale-step', scale: 'button_border_width', step: settings.button_border_width -%}{%- endcapture -%}
-{%- if s_btnborder == blank -%}{%- capture s_btnborder -%}{%- render 'scale-step', scale: 'button_border_width', step: 'sm' -%}{%- endcapture -%}{%- endif -%}
-{%- capture s_btnradius -%}{%- render 'scale-step', scale: 'button_radius', step: settings.button_radius -%}{%- endcapture -%}
-{%- if s_btnradius == blank -%}{%- capture s_btnradius -%}{%- render 'scale-step', scale: 'button_radius', step: 'pill' -%}{%- endcapture -%}{%- endif -%}
 
 {%- liquid
   assign vw_min = 360.0
@@ -63,7 +55,6 @@
     assign gut_max = gut_min
   endif
 
-  assign btn = s_btnsize | split: ','
   assign sp_names = '3xs,2xs,xs,sm,md,lg,xl,2xl,3xl' | split: ','
   assign sp_mults = '0.25,0.5,0.75,1,1.5,2,3,4,6' | split: ','
 -%}
@@ -183,13 +174,24 @@
       than a literal pill value. At the maximum, emit a radius large enough to
       round any button fully — which is what the design specifies.
     {%- endcomment -%}
-    --button-radius: {{ s_btnradius }}px;
-    --button-padding-x: {{ btn[0] }}px;
-    --button-padding-y: {{ btn[1] }}px;
-    --button-size: {{ btn[2] }}px;
-    --button-tracking: {{ s_btntrack | times: 1.0 | divided_by: 1000.0 }}em;
-    --button-border-width: {{ s_btnborder }}px;
-    --button-transform: {% if settings.button_uppercase %}uppercase{% else %}none{% endif %};
+    {%- render 'button-theme-style', style: 'filled', default_motion: 'lift' %}
+    {%- render 'button-theme-style', style: 'outline', default_motion: 'fade' %}
+    {%- render 'button-theme-style', style: 'link', default_motion: 'fade' %}
+    {%- render 'button-theme-style', style: 'quiet', default_motion: 'fade' %}
+    {%- render 'button-theme-style', style: 'arrow', default_motion: 'slide' %}
+    {%- render 'button-theme-style', style: 'arrow_outline', default_motion: 'slide' %}
+
+    {%- comment -%}
+      Compatibility aliases for non-Button controls that consume the original
+      global tokens. Their visual register is the filled button by default.
+    {%- endcomment -%}
+    --button-radius: var(--button-filled-radius);
+    --button-padding-x: var(--button-filled-padding-x);
+    --button-padding-y: var(--button-filled-padding-y);
+    --button-size: var(--button-filled-size);
+    --button-tracking: var(--button-filled-tracking);
+    --button-border-width: var(--button-filled-border-width);
+    --button-transform: var(--button-filled-transform);
 
 
     /* ---- Cart ---------------------------------------------------------
@@ -236,25 +238,6 @@
     {%- endcomment -%}
     --c-noir-deep: color-mix(in srgb, var(--c-noir) 88%, #000);
 
-    /* ---- Status ------------------------------------------------------
-       One colour, not per-scheme: an error reads the same everywhere.   */
-    --c-error: {{ settings.color_error | default: '#A2422C' }};
-
-    /* ---- Scrollbars ---------------------------------------------------
-       Settings, but deliberately NOT per-scheme. The design serves its noir
-       home page and its porcelain inner pages from one file and paints the
-       identical thumb on both — a warm mid grey chosen to read against
-       either end. Splitting it per scheme would also split one design colour
-       in two on the panels that carry a scheme class and also scroll.      */
-    --scrollbar-thumb: {{ settings.scrollbar_thumb | default: '#8A8072' }};
-    --scrollbar-thumb-hover: {{ settings.scrollbar_thumb_hover | default: '#6E6558' }};
-    {%- if settings.loader_color != blank %}
-    --loader-ink: {{ settings.loader_color }};
-    {%- endif %}
-    {%- if settings.veil_color != blank %}
-    --veil-tint: {{ settings.veil_color }};
-    {%- endif %}
-
     /* ---- Motion ------------------------------------------------------
        The merchant picks a named step; motion-step.liquid resolves it to a
        bare number and the unit is appended here, because --duration is read
@@ -291,7 +274,8 @@
      One class per merchant-defined scheme. Sections adopt a scheme and
      everything inside inherits through the same variables.               */
   {%- for scheme in settings.color_schemes %}
-  .scheme-{{ scheme.id }} {
+  .scheme-{{ scheme.id }},
+  [data-color-scheme='{{ scheme.id }}'] {
     --c-bg: {{ scheme.settings.background }};
     --c-text: {{ scheme.settings.text }};
     --c-heading: {{ scheme.settings.heading | default: scheme.settings.text }};
@@ -299,13 +283,51 @@
     --c-accent: {{ scheme.settings.accent | default: scheme.settings.text }};
     --c-border: {{ scheme.settings.border | default: scheme.settings.text }};
     --c-surface: {{ scheme.settings.surface | default: scheme.settings.background }};
-    --c-button: {{ scheme.settings.button }};
-    --c-button-label: {{ scheme.settings.button_label }};
-    --c-button-hover: {{ scheme.settings.button_hover | default: scheme.settings.button }};
-    --c-button-secondary-label: {{ scheme.settings.secondary_button_label | default: scheme.settings.text }};
-    --c-link: {{ scheme.settings.link | default: scheme.settings.text }};
-    --badge-sale-bg: {{ scheme.settings.badge_sale_background | default: scheme.settings.button }};
-    --badge-sale-text: {{ scheme.settings.badge_sale_text | default: scheme.settings.button_label }};
+    --c-button: {{ scheme.settings.filled_background | default: scheme.settings.text }};
+    --c-button-label: {{ scheme.settings.filled_text | default: scheme.settings.background }};
+    --c-button-border: {{ scheme.settings.filled_background | default: scheme.settings.text }};
+    --c-button-hover: {{ scheme.settings.filled_hover_background | default: scheme.settings.accent }};
+    --c-button-label-hover: {{ scheme.settings.filled_hover_text | default: scheme.settings.background }};
+    --c-button-border-hover: {{ scheme.settings.filled_hover_background | default: scheme.settings.accent }};
+    --c-outline-bg: {{ scheme.settings.outline_background | default: 'transparent' }};
+    --c-outline-text: {{ scheme.settings.outline_text | default: scheme.settings.text }};
+    --c-outline-border: {{ scheme.settings.outline_border | default: scheme.settings.border | default: scheme.settings.accent }};
+    --c-outline-bg-hover: {{ scheme.settings.outline_hover_background | default: scheme.settings.text }};
+    --c-outline-text-hover: {{ scheme.settings.outline_hover_text | default: scheme.settings.background }};
+    --c-outline-border-hover: {{ scheme.settings.outline_hover_border | default: scheme.settings.text }};
+    --c-link-button-text: {{ scheme.settings.link_button_text | default: scheme.settings.link | default: scheme.settings.text }};
+    --c-link-button-rule: {{ scheme.settings.link_button_underline | default: scheme.settings.accent }};
+    --c-link-button-text-hover: {{ scheme.settings.link_button_hover_text | default: scheme.settings.accent }};
+    --c-link-button-rule-hover: {{ scheme.settings.link_button_hover_underline | default: scheme.settings.accent }};
+    --c-quiet-button-text: {{ scheme.settings.quiet_button_text | default: scheme.settings.muted | default: scheme.settings.text }};
+    --c-quiet-button-rule: {{ scheme.settings.quiet_button_underline | default: scheme.settings.border | default: scheme.settings.text }};
+    --c-quiet-button-text-hover: {{ scheme.settings.quiet_button_hover_text | default: scheme.settings.text }};
+    --c-quiet-button-rule-hover: {{ scheme.settings.quiet_button_hover_underline | default: scheme.settings.text }};
+    --c-arrow-button-text: {{ scheme.settings.arrow_button_text | default: scheme.settings.text }};
+    --c-arrow-button-arrow: {{ scheme.settings.arrow_button_arrow | default: scheme.settings.accent }};
+    --c-arrow-button-text-hover: {{ scheme.settings.arrow_button_hover_text | default: scheme.settings.accent }};
+    --c-arrow-button-arrow-hover: {{ scheme.settings.arrow_button_hover_arrow | default: scheme.settings.accent }};
+    --c-arrow-outline-bg: {{ scheme.settings.arrow_outline_background | default: 'transparent' }};
+    --c-arrow-outline-text: {{ scheme.settings.arrow_outline_text | default: scheme.settings.text }};
+    --c-arrow-outline-border: {{ scheme.settings.arrow_outline_border | default: scheme.settings.border | default: scheme.settings.accent }};
+    --c-arrow-outline-arrow: {{ scheme.settings.arrow_outline_text | default: scheme.settings.text }};
+    --c-arrow-outline-bg-hover: {{ scheme.settings.arrow_outline_hover_background | default: scheme.settings.text }};
+    --c-arrow-outline-text-hover: {{ scheme.settings.arrow_outline_hover_text | default: scheme.settings.background }};
+    --c-arrow-outline-border-hover: {{ scheme.settings.arrow_outline_hover_border | default: scheme.settings.text }};
+    --c-arrow-outline-arrow-hover: {{ scheme.settings.arrow_outline_hover_text | default: scheme.settings.background }};
+    --c-link: {{ scheme.settings.link_button_text | default: scheme.settings.text }};
+    --c-focus: {{ scheme.settings.focus | default: scheme.settings.accent | default: scheme.settings.text }};
+    --c-selection-bg: {{ scheme.settings.focus | default: scheme.settings.accent | default: scheme.settings.text }};
+    --c-selection-text: {{ scheme.settings.background }};
+    --c-success: {{ scheme.settings.success | default: '#34735B' }};
+    --c-warning: {{ scheme.settings.accent | default: '#9A6B1F' }};
+    --c-error: {{ scheme.settings.error | default: '#A2422C' }};
+    --loader-ink: {{ scheme.settings.loader | default: scheme.settings.accent }};
+    --veil-tint: {{ scheme.settings.veil | default: dark.settings.background | default: '#0D0C0A' }};
+    --scrollbar-thumb: {{ scheme.settings.scrollbar | default: scheme.settings.muted }};
+    --scrollbar-thumb-hover: {{ scheme.settings.scrollbar_hover | default: scheme.settings.text }};
+    --badge-sale-bg: {{ scheme.settings.badge_sale_background | default: scheme.settings.filled_background }};
+    --badge-sale-text: {{ scheme.settings.badge_sale_text | default: scheme.settings.filled_text }};
     --badge-sold-bg: {{ scheme.settings.badge_sold_background | default: scheme.settings.muted }};
     --badge-sold-text: {{ scheme.settings.badge_sold_text | default: scheme.settings.background }};
     --badge-new-bg: {{ scheme.settings.badge_new_background | default: scheme.settings.accent }};
@@ -322,6 +344,9 @@
     --c-shadow: color-mix(in srgb, {{ scheme.settings.text }} var(--shadow-strength), transparent);
     --c-veil: color-mix(in srgb, {{ scheme.settings.text }} 6%, transparent);
 
+  }
+
+  .scheme-{{ scheme.id }} {
     color: var(--c-text);
     background-color: var(--c-bg);
     {%- if scheme.settings.background_gradient != blank %}

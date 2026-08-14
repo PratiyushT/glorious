@@ -222,6 +222,19 @@
     "no_thanks": "No thanks",
     "continue": "Continue Shopping"
   },
+  "discount": {
+    "copy": "Copy code",
+    "copied": "Copied",
+    "apply": "Apply offer",
+    "copy_code": "Copy discount code {{ code }}"
+  },
+  "announcement": {
+    "controls": "Announcement controls",
+    "previous": "Previous announcement",
+    "next": "Next announcement",
+    "pause": "Pause announcements",
+    "play": "Play announcements"
+  },
   "password_page": {
     "email_label": "Email address",
     "password_label": "Storefront password",

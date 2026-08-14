@@ -198,7 +198,7 @@
     },
     "colors": {
       "name": "Colors",
-      "paragraph": "Porcelain is the default page scheme. Noir carries the hero, the craft section and the footer.",
+      "paragraph": "Each color scheme controls its own surfaces, button styles, hover states, overlays, feedback, and scrollbars.",
       "background": {
         "label": "Background"
       },
@@ -224,20 +224,45 @@
       "surface": {
         "label": "Card surface"
       },
-      "button": {
-        "label": "Primary button background"
+      "filled": {
+        "header": "Filled buttons"
       },
-      "button_label": {
-        "label": "Primary button text"
+      "outline": {
+        "header": "Outline buttons"
       },
-      "button_hover": {
-        "label": "Primary button hover"
+      "link_button": {
+        "header": "Link buttons"
       },
-      "secondary_button_label": {
-        "label": "Secondary button text"
+      "quiet_button": {
+        "header": "Quiet buttons"
       },
-      "link": {
-        "label": "Links"
+      "arrow_button": {
+        "header": "Arrow buttons"
+      },
+      "arrow_outline": {
+        "header": "Arrow outline buttons"
+      },
+      "button_colors": {
+        "background": "Background",
+        "text": "Text",
+        "border": "Border",
+        "underline": "Underline",
+        "arrow": "Arrow",
+        "hover_background": "Hover background",
+        "hover_text": "Hover text",
+        "hover_border": "Hover border",
+        "hover_underline": "Hover underline",
+        "hover_arrow": "Hover arrow"
+      },
+      "interface": {
+        "header": "Interface and feedback",
+        "focus": "Focus ring",
+        "scrollbar": "Scrollbar",
+        "scrollbar_hover": "Scrollbar on hover",
+        "loader": "Loader",
+        "veil": "Overlay veil",
+        "success": "Success",
+        "error": "Error"
       },
       "gallery": {
         "header": "Product gallery",
@@ -254,10 +279,6 @@
         "custom_background": "Custom badge background",
         "custom_text": "Custom badge text"
       },
-      "error": {
-        "label": "Error",
-        "info": "Used by form errors and the remove control in the cart."
-      },
       "page_scheme": {
         "label": "Page color scheme",
         "info": "The scheme the page itself uses, behind every section."
@@ -266,29 +287,14 @@
         "label": "Dark surface scheme",
         "info": "Used by the surfaces that stay dark whatever the page is — the menu and search overlays, the lookbook stage, image scrims."
       },
-      "scrollbar_thumb": {
-        "label": "Scrollbar",
-        "info": "One color for light and dark alike, as the reference design has it."
-      },
       "loading": {
-        "header": "Loading and overlays",
+        "header": "Loader",
         "style": {
           "label": "Loader mark",
           "diamond": "Diamond",
           "ring": "Ring",
           "orbit": "Orbit"
-        },
-        "color": {
-          "label": "Loader color",
-          "info": "Leave empty to use each surface's accent. The mark itself always sits on a transparent ground."
-        },
-        "veil": {
-          "label": "Overlay veil tint",
-          "info": "The translucent wash behind drawers, quick view, and popups. Leave empty for the theme's noir."
         }
-      },
-      "scrollbar_thumb_hover": {
-        "label": "Scrollbar on hover"
       }
     },
     "shape": {
@@ -355,7 +361,7 @@
       },
       "button_size": {
         "label": "Button size",
-        "info": "Sets padding and label size together.",
+        "info": "Sets label size and, for framed styles, padding.",
         "options__xs": "Extra small",
         "options__sm": "Small",
         "options__md": "Medium",
@@ -380,6 +386,28 @@
       },
       "button_uppercase": {
         "label": "Uppercase button text"
+      },
+      "underline_width": {
+        "label": "Underline width"
+      },
+      "arrow_width": {
+        "label": "Arrow stroke width"
+      },
+      "hover_motion": {
+        "label": "Hover animation",
+        "none": "None",
+        "fade": "Color fade",
+        "lift": "Lift",
+        "grow": "Gentle grow",
+        "slide": "Slide"
+      },
+      "styles": {
+        "filled": "Filled button",
+        "outline": "Outline button",
+        "link": "Link button",
+        "quiet": "Quiet button",
+        "arrow": "Arrow button",
+        "arrow_outline": "Arrow outline button"
       }
     },
     "badges": {
@@ -1526,10 +1554,24 @@
       }
     },
     "announcement_bar": {
-      "name": "Announcement bar",
+      "name": "Animated announcement bar",
       "show_all": {
         "label": "Show every message at once",
-        "info": "When off, only the first message is shown."
+        "info": "When off, messages share one animated slot."
+      },
+      "auto_rotate": {
+        "label": "Rotate messages automatically"
+      },
+      "animation_style": {
+        "label": "Transition",
+        "fade": "Elegant fade",
+        "slide": "Vertical slide"
+      },
+      "interval": {
+        "label": "Time per message"
+      },
+      "show_controls": {
+        "label": "Show previous, pause, and next controls"
       },
       "blocks": {
         "message": {
@@ -2347,20 +2389,47 @@
       }
     },
     "newsletter_popup": {
-      "name": "Newsletter popup",
+      "name": "Splash screen",
       "enabled": {
-        "label": "Enable the popup"
+        "label": "Enable the splash screen"
       },
       "delay": {
         "label": "Delay before it appears",
         "info": "Shown once per visitor until they subscribe or dismiss it. Footer links reopen it at any time."
       },
+      "layout_header": "Layout",
+      "layout": {
+        "label": "Presentation",
+        "split": "Editorial image and offer",
+        "content": "Offer only"
+      },
+      "media_position": {
+        "label": "Image position"
+      },
+      "panel_width": {
+        "label": "Maximum panel width"
+      },
+      "delivery_header": "Offer delivery",
+      "delivery_mode": {
+        "label": "Show the discount",
+        "after_signup": "After email signup",
+        "immediate": "Immediately"
+      },
       "fine_print": {
         "label": "Small print"
       },
       "success_header": "After subscribing",
+      "discount_header": "Discount",
       "offer_code": {
-        "label": "Offer code"
+        "label": "Discount code",
+        "info": "Must exactly match an active discount created in Shopify Admin. The apply button uses Shopify's native discount link."
+      },
+      "offer_destination": {
+        "label": "Page after applying the discount",
+        "info": "Defaults to All products. The discount remains applied for checkout."
+      },
+      "offer_button_label": {
+        "label": "Apply discount button"
       }
     },
     "cart_drawer": {

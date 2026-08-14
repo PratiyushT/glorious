@@ -1,31 +1,31 @@
 {%- comment -%}
-  Newsletter popup.
+  Splash screen.
 
-  Appears once after a delay, remembers dismissal, and reopens whenever a
-  #newsletter action is triggered anywhere on the page.
-
-  The form posts to Shopify's customer endpoint rather than being faked in
-  JavaScript, so a real subscriber lands in the customer list. Shopify redirects
-  back after posting, and the modal reopens on the success state so the offer
-  code is actually shown.
+  This keeps the established `newsletter` overlay name so existing footer
+  #newsletter actions continue to reopen it. The merchant chooses whether the
+  offer appears immediately or after Shopify accepts a real customer form.
+  A configured code links through Shopify's native discount route; the theme
+  never pretends to create or validate a discount itself.
 {%- endcomment -%}
 
-{%- comment -%}
-  The colour scheme belongs to the panel, not to the full-screen wrapper: a
-  scheme class paints a background, and on a fixed inset:0 element that fills
-  the screen with an opaque colour and the veil stops being a veil.
-{%- endcomment -%}
 {%- if section.settings.enabled -%}
   {%- liquid
+    assign delivery_mode = section.settings.delivery_mode | default: 'after_signup'
+    assign layout = section.settings.layout | default: 'split'
+    assign content_alignment = section.settings.content_alignment | default: 'left'
     assign continue_label = 'newsletter.continue' | t
     assign subscribe_label = 'newsletter.subscribe' | t
+    assign copy_label = 'discount.copy' | t
+    assign copied_label = 'discount.copied' | t
   -%}
+
   <div
-    class="overlay overlay--modal"
+    class="overlay overlay--modal overlay--splash"
     data-overlay="newsletter"
     data-overlay-modal
     data-delay="{{ section.settings.delay | times: 1000 }}"
     data-storage-key="veylin-newsletter"
+    data-color-scheme="{{ section.settings.color_scheme }}"
     hidden
   >
     <button class="overlay__veil" type="button" data-overlay-close="newsletter">
@@ -33,7 +33,8 @@
     </button>
 
     <div
-      class="modal scheme-{{ section.settings.color_scheme }}"
+      class="modal modal--splash modal--splash-{{ layout }} modal--align-{{ content_alignment }} scheme-{{ section.settings.color_scheme }}"
+      style="--splash-width: {{ section.settings.panel_width }}rem;"
       role="dialog"
       aria-modal="true"
       aria-label="{{ section.settings.heading | escape }}"
@@ -41,98 +42,119 @@
       {%- capture close_attributes -%}data-overlay-close="newsletter"{%- endcapture -%}
       {% render 'overlay-close', class: 'modal__close', attributes: close_attributes %}
 
-      <div class="modal__grid">
-        <div class="modal__media">
-          {%- if section.settings.image != blank -%}
-            <img
-              src="{{ section.settings.image | image_url: width: 900 }}"
-              data-image-lqip="{{ section.settings.image | image_url: width: 40 }}"
-              srcset="{{ section.settings.image | image_url: width: 400 }} 400w, {{ section.settings.image | image_url: width: 700 }} 700w, {{ section.settings.image | image_url: width: 900 }} 900w"
-              sizes="(min-width: 56rem) 50vw, 100vw"
-              alt="{{ section.settings.image.alt | escape }}"
-              width="{{ section.settings.image.width }}"
-              height="{{ section.settings.image.height }}"
-              style="object-position: {{ section.settings.image.presentation.focal_point }};"
-              loading="lazy"
-            >
-          {%- else -%}
-            {%- comment -%}
-              Shopify's placeholder, as craft and the lookbook already use when
-              no image is chosen. This was a 318KB photograph of the original
-              shop's photography shipped inside `assets/` — the single largest
-              file in the theme, downloaded by every visitor who saw the popup,
-              and not ours to redistribute. A theme ships a placeholder and lets
-              the merchant choose the picture.
-            {%- endcomment -%}
-            {{ 'lifestyle-1' | placeholder_svg_tag: 'placeholder-svg' }}
-          {%- endif -%}
-        </div>
+      <div class="modal__grid" data-media-position="{{ section.settings.media_position | default: 'left' }}">
+        {%- if layout == 'split' -%}
+          <div class="modal__media">
+            {%- if section.settings.image != blank -%}
+              <img
+                src="{{ section.settings.image | image_url: width: 900 }}"
+                data-image-lqip="{{ section.settings.image | image_url: width: 40 }}"
+                srcset="{{ section.settings.image | image_url: width: 400 }} 400w, {{ section.settings.image | image_url: width: 700 }} 700w, {{ section.settings.image | image_url: width: 900 }} 900w"
+                sizes="(min-width: 56rem) 50vw, 100vw"
+                alt="{{ section.settings.image.alt | escape }}"
+                width="{{ section.settings.image.width }}"
+                height="{{ section.settings.image.height }}"
+                style="object-position: {{ section.settings.image.presentation.focal_point }};"
+                loading="lazy"
+              >
+            {%- else -%}
+              {{ 'lifestyle-1' | placeholder_svg_tag: 'placeholder-svg' }}
+            {%- endif -%}
+          </div>
+        {%- endif -%}
 
         <div class="modal__body">
-          {%- form 'customer', class: 'modal__form' -%}
-            <input type="hidden" name="contact[tags]" value="newsletter">
-
-            {%- if form.posted_successfully? -%}
-              <span class="micro">{{ 'newsletter.welcome' | t }}</span>
-              <h2 class="modal__title">{{ section.settings.success_heading }}</h2>
-              <p class="modal__text">{{ section.settings.success_text }}</p>
-
-              {%- if section.settings.offer_code != blank -%}
-                <p class="modal__code">{{ section.settings.offer_code }}</p>
-              {%- endif -%}
-
-              {%- render 'button',
-                label: continue_label,
-                element: 'button',
-                appearance: section.settings,
-                class: 'modal__submit',
-                attributes: 'data-overlay-close="newsletter"'
-              -%}
-            {%- else -%}
+          {%- if delivery_mode == 'immediate' -%}
+            <div class="splash-screen">
               {%- if section.settings.eyebrow != blank -%}
-                <span class="micro">{{ section.settings.eyebrow }}</span>
+                <span class="micro splash-screen__eyebrow">{{ section.settings.eyebrow }}</span>
               {%- endif -%}
-
               <h2 class="modal__title">{{ section.settings.heading }}</h2>
-
               {%- if section.settings.text != blank -%}
                 <p class="modal__text">{{ section.settings.text }}</p>
               {%- endif -%}
 
-              <label class="visually-hidden" for="newsletter-popup-email">
-                {{ 'newsletter.email' | t }}
-              </label>
-              <input
-                class="modal__field"
-                id="newsletter-popup-email"
-                type="email"
-                name="contact[email]"
-                placeholder="{{ 'newsletter.email' | t }}"
-                autocomplete="email"
-                required
-              >
-
-              {%- if form.errors -%}
-                <p class="modal__error">{{ form.errors.messages['email'] }}</p>
-              {%- endif -%}
-
-              {%- render 'button',
-                label: subscribe_label,
-                element: 'button',
-                button_type: 'submit',
+              {% render 'discount-offer',
+                code: section.settings.offer_code,
+                destination: section.settings.offer_destination,
+                button_label: section.settings.offer_button_label,
                 appearance: section.settings,
-                class: 'modal__submit'
-              -%}
+                copy_label: copy_label,
+                copied_label: copied_label
+              %}
 
               <button class="modal__decline" type="button" data-overlay-close="newsletter">
-                {{ 'newsletter.no_thanks' | t }}
+                {{ continue_label }}
               </button>
+            </div>
+          {%- else -%}
+            {%- form 'customer', class: 'modal__form' -%}
+              <input type="hidden" name="contact[tags]" value="newsletter,splash-offer">
 
-              {%- if section.settings.fine_print != blank -%}
-                <p class="modal__fine">{{ section.settings.fine_print }}</p>
+              {%- if form.posted_successfully? -%}
+                <div class="splash-screen splash-screen--success">
+                  <span class="micro splash-screen__eyebrow">{{ 'newsletter.welcome' | t }}</span>
+                  <h2 class="modal__title">{{ section.settings.success_heading }}</h2>
+                  {%- if section.settings.success_text != blank -%}
+                    <p class="modal__text">{{ section.settings.success_text }}</p>
+                  {%- endif -%}
+
+                  {% render 'discount-offer',
+                    code: section.settings.offer_code,
+                    destination: section.settings.offer_destination,
+                    button_label: section.settings.offer_button_label,
+                    appearance: section.settings,
+                    copy_label: copy_label,
+                    copied_label: copied_label
+                  %}
+                </div>
+              {%- else -%}
+                <div class="splash-screen">
+                  {%- if section.settings.eyebrow != blank -%}
+                    <span class="micro splash-screen__eyebrow">{{ section.settings.eyebrow }}</span>
+                  {%- endif -%}
+                  <h2 class="modal__title">{{ section.settings.heading }}</h2>
+                  {%- if section.settings.text != blank -%}
+                    <p class="modal__text">{{ section.settings.text }}</p>
+                  {%- endif -%}
+
+                  <label class="visually-hidden" for="newsletter-popup-email">
+                    {{ 'newsletter.email' | t }}
+                  </label>
+                  <input
+                    class="modal__field"
+                    id="newsletter-popup-email"
+                    type="email"
+                    name="contact[email]"
+                    placeholder="{{ 'newsletter.email' | t }}"
+                    autocomplete="email"
+                    required
+                    data-overlay-autofocus
+                  >
+
+                  {%- if form.errors -%}
+                    <p class="modal__error">{{ form.errors.messages['email'] }}</p>
+                  {%- endif -%}
+
+                  {%- render 'button',
+                    label: subscribe_label,
+                    element: 'button',
+                    button_type: 'submit',
+                    appearance: section.settings,
+                    class: 'modal__submit'
+                  -%}
+
+                  <button class="modal__decline" type="button" data-overlay-close="newsletter">
+                    {{ 'newsletter.no_thanks' | t }}
+                  </button>
+
+                  {%- if section.settings.fine_print != blank -%}
+                    <p class="modal__fine">{{ section.settings.fine_print }}</p>
+                  {%- endif -%}
+                </div>
               {%- endif -%}
-            {%- endif -%}
-          {%- endform -%}
+            {%- endform -%}
+          {%- endif -%}
         </div>
       </div>
     </div>
@@ -168,55 +190,136 @@
       "default": 2
     },
     {
+      "type": "header",
+      "content": "t:sections.newsletter_popup.layout_header"
+    },
+    {
+      "type": "select",
+      "id": "layout",
+      "label": "t:sections.newsletter_popup.layout.label",
+      "options": [
+        { "value": "split", "label": "t:sections.newsletter_popup.layout.split" },
+        { "value": "content", "label": "t:sections.newsletter_popup.layout.content" }
+      ],
+      "default": "split"
+    },
+    {
+      "type": "select",
+      "id": "media_position",
+      "label": "t:sections.newsletter_popup.media_position.label",
+      "options": [
+        { "value": "left", "label": "t:settings_schema.options.left" },
+        { "value": "right", "label": "t:settings_schema.options.right" }
+      ],
+      "default": "left",
+      "visible_if": "{{ section.settings.layout == 'split' }}"
+    },
+    {
+      "type": "select",
+      "id": "content_alignment",
+      "label": "t:sections.all.content_alignment.label",
+      "options": [
+        { "value": "left", "label": "t:settings_schema.options.left" },
+        { "value": "center", "label": "t:settings_schema.options.center" }
+      ],
+      "default": "left"
+    },
+    {
+      "type": "range",
+      "id": "panel_width",
+      "label": "t:sections.newsletter_popup.panel_width.label",
+      "min": 36,
+      "max": 64,
+      "step": 2,
+      "unit": "rem",
+      "default": 54
+    },
+    {
       "type": "image_picker",
       "id": "image",
-      "label": "t:sections.all.image.label"
+      "label": "t:sections.all.image.label",
+      "visible_if": "{{ section.settings.layout == 'split' }}"
+    },
+    {
+      "type": "header",
+      "content": "t:sections.newsletter_popup.delivery_header"
+    },
+    {
+      "type": "select",
+      "id": "delivery_mode",
+      "label": "t:sections.newsletter_popup.delivery_mode.label",
+      "options": [
+        { "value": "after_signup", "label": "t:sections.newsletter_popup.delivery_mode.after_signup" },
+        { "value": "immediate", "label": "t:sections.newsletter_popup.delivery_mode.immediate" }
+      ],
+      "default": "after_signup"
     },
     {
       "type": "text",
       "id": "eyebrow",
       "label": "t:sections.all.subheading.label",
-      "default": "Join the list"
+      "default": "Private offer"
     },
     {
       "type": "text",
       "id": "heading",
       "label": "t:sections.all.heading.label",
-      "default": "Take 10% Off Your First Order"
+      "default": "A Welcome, Just for You"
     },
     {
-      "type": "text",
+      "type": "textarea",
       "id": "text",
       "label": "t:sections.all.text.label",
-      "default": "Sign up for early access to new collections, private previews, and your welcome offer."
+      "default": "Enjoy a private offer and discover pieces chosen to be worn for years."
     },
     {
       "type": "text",
       "id": "fine_print",
       "label": "t:sections.newsletter_popup.fine_print.label",
-      "default": "By subscribing you agree to receive email from this shop. Unsubscribe anytime."
+      "default": "By subscribing you agree to receive email from this shop. Unsubscribe anytime.",
+      "visible_if": "{{ section.settings.delivery_mode == 'after_signup' }}"
     },
     {
       "type": "header",
-      "content": "t:sections.newsletter_popup.success_header"
+      "content": "t:sections.newsletter_popup.success_header",
+      "visible_if": "{{ section.settings.delivery_mode == 'after_signup' }}"
     },
     {
       "type": "text",
       "id": "success_heading",
       "label": "t:sections.all.heading.label",
-      "default": "You're on the List"
+      "default": "Your Private Offer",
+      "visible_if": "{{ section.settings.delivery_mode == 'after_signup' }}"
     },
     {
-      "type": "text",
+      "type": "textarea",
       "id": "success_text",
       "label": "t:sections.all.text.label",
-      "default": "Enjoy 10% off your first order with the code below."
+      "default": "Your welcome code is ready. Copy it or apply it as you continue shopping.",
+      "visible_if": "{{ section.settings.delivery_mode == 'after_signup' }}"
+    },
+    {
+      "type": "header",
+      "content": "t:sections.newsletter_popup.discount_header"
     },
     {
       "type": "text",
       "id": "offer_code",
       "label": "t:sections.newsletter_popup.offer_code.label",
+      "info": "t:sections.newsletter_popup.offer_code.info",
       "default": "WELCOME10"
+    },
+    {
+      "type": "url",
+      "id": "offer_destination",
+      "label": "t:sections.newsletter_popup.offer_destination.label",
+      "info": "t:sections.newsletter_popup.offer_destination.info"
+    },
+    {
+      "type": "text",
+      "id": "offer_button_label",
+      "label": "t:sections.newsletter_popup.offer_button_label.label",
+      "default": "Apply Offer & Shop"
     },
     {
       "type": "header",

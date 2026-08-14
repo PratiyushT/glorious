@@ -102,37 +102,19 @@ a {
 }
 
 ::selection {
-  background: var(--c-accent);
-  color: var(--c-bg);
+  background: var(--c-selection-bg, var(--c-accent));
+  color: var(--c-selection-text, var(--c-bg));
 }
 
 :focus-visible {
-  outline: 2px solid var(--c-accent);
+  outline: 2px solid var(--c-focus, var(--c-accent));
   outline-offset: 3px;
 }
 
 /* ---- Scrollbars -----------------------------------------------------
-   A 1:1 port of the design's `gj-scrollbar.css`, which every one of its 24
-   pages links — it is a site-wide theme, not a component's.
-
-   **The colours are not per-scheme, and must not be made so.** The same file
-   serves the design's noir home page (`html{background:#0D0C0A}`) and its
-   porcelain inner pages (`html{background:#F4F0E8}`) and paints the identical
-   thumb on both: #8A8072 is a warm mid grey chosen to read against either end.
-   Splitting it per scheme would also split one design colour in two on the
-   panels that carry a scheme class *and* scroll — `.quick-view` and
-   `.drawer__panel` — so it would be wrong twice over.
-
-   They are literals at `:root` rather than merchant settings because
-   `snippets/theme-tokens.liquid` compiles only settings into `:root`, and a
-   scrollbar is not one. Same shape as the `--product-*` properties below.
-
-   **The two halves are not equals.** The design puts the standard
-   `scrollbar-width`/`scrollbar-color` on `*`; where an engine honours those it
-   may ignore the `::-webkit-scrollbar` rules and take the 11px width, the 3px
-   inset, the pill radius and the #6E6558 hover with them. #8A8072 paints
-   everywhere; the refinements paint only where the pseudo-elements are
-   honoured. That asymmetry is the design's own and is kept.
+   Scrollable scheme surfaces inherit their own thumb and hover colors. The
+   document scrollbar inherits the page scheme from body; drawers, quick view
+   and popups inherit the scheme on their own panel.
 
    999px is safe here — nothing animates this radius, so it does not hit the
    trap documented for the nav pill's border-radius.
@@ -144,7 +126,6 @@ a {
    every overlay open. `thin` alone is safe: the measurement is live.       */
 
 :root {
-  /* Emitted by theme-tokens.liquid from two settings — see "Scrollbars". */
   --scrollbar-size: 11px;
   --scrollbar-inset: 3px;
 }
@@ -1257,6 +1238,19 @@ a {
    the `--btn-*` property inline and wins — the same cascade as the section /
    block alignment above: the global is the default, not the law. */
 .btn {
+  --button-style-radius: var(--button-filled-radius, var(--button-radius));
+  --button-style-padding-x: var(--button-filled-padding-x, var(--button-padding-x));
+  --button-style-padding-y: var(--button-filled-padding-y, var(--button-padding-y));
+  --button-style-size: var(--button-filled-size, var(--button-size));
+  --button-style-tracking: var(--button-filled-tracking, var(--button-tracking));
+  --button-style-border-width: var(--button-filled-border-width, var(--button-border-width));
+  --button-style-transform: var(--button-filled-transform, var(--button-transform));
+  --button-style-hover-duration: var(--button-filled-hover-duration, var(--duration));
+  --button-style-hover-x: var(--button-filled-hover-x, 0rem);
+  --button-style-hover-y: var(--button-filled-hover-y, 0rem);
+  --button-style-hover-scale: var(--button-filled-hover-scale, 1);
+  --button-style-hover-gap: var(--button-filled-hover-gap, 0rem);
+
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -1266,44 +1260,79 @@ a {
      compact button still meets it without growing its type. */
   min-block-size: 44px;
   box-sizing: border-box;
-  padding: var(--btn-pad-y, var(--button-padding-y)) var(--btn-pad-x, var(--button-padding-x));
-  border: var(--btn-border-width, var(--button-border-width)) solid transparent;
-  border-radius: var(--btn-radius, var(--button-radius));
+  padding: var(--btn-pad-y, var(--button-style-padding-y)) var(--btn-pad-x, var(--button-style-padding-x));
+  border: var(--btn-border-width, var(--button-style-border-width)) solid transparent;
+  border-radius: var(--btn-radius, var(--button-style-radius));
   font-family: var(--font-body);
-  font-size: var(--btn-font, var(--button-size));
+  font-size: var(--btn-font, var(--button-style-size));
   line-height: 1.2;
-  text-transform: var(--button-transform);
-  letter-spacing: var(--button-tracking);
+  text-transform: var(--button-style-transform);
+  letter-spacing: var(--button-style-tracking);
   text-decoration: none;
   white-space: nowrap;
   cursor: pointer;
-  transition: background-color var(--duration) var(--ease-ui),
-              color var(--duration) var(--ease-ui),
-              border-color var(--duration) var(--ease-ui);
+  transition: background-color var(--button-style-hover-duration) var(--ease-ui),
+              color var(--button-style-hover-duration) var(--ease-ui),
+              border-color var(--button-style-hover-duration) var(--ease-ui),
+              transform var(--button-style-hover-duration) var(--ease-ui);
+}
+
+.btn:not([disabled]):not([aria-disabled='true']):hover {
+  transform: translate(var(--button-style-hover-x), var(--button-style-hover-y)) scale(var(--button-style-hover-scale));
+}
+
+.btn:is([disabled], [aria-disabled='true']) {
+  opacity: 0.45;
+  cursor: not-allowed;
+  pointer-events: none;
 }
 
 .btn--primary {
+  --button-style-radius: var(--button-filled-radius);
+  --button-style-padding-x: var(--button-filled-padding-x);
+  --button-style-padding-y: var(--button-filled-padding-y);
+  --button-style-size: var(--button-filled-size);
+  --button-style-tracking: var(--button-filled-tracking);
+  --button-style-border-width: var(--button-filled-border-width);
+  --button-style-transform: var(--button-filled-transform);
+  --button-style-hover-duration: var(--button-filled-hover-duration);
+  --button-style-hover-x: var(--button-filled-hover-x);
+  --button-style-hover-y: var(--button-filled-hover-y);
+  --button-style-hover-scale: var(--button-filled-hover-scale);
+
   background-color: var(--btn-bg, var(--c-button));
   color: var(--btn-text, var(--c-button-label));
-  border-color: var(--btn-bg, var(--c-button));
+  border-color: var(--btn-border, var(--c-button-border));
 }
 
 .btn--primary:hover {
   background-color: var(--btn-bg-hover, var(--btn-bg, var(--c-button-hover)));
-  color: var(--btn-text-hover, var(--btn-text, var(--c-button-label)));
-  border-color: var(--btn-border-hover, var(--btn-bg-hover, var(--btn-bg, var(--c-button-hover))));
+  color: var(--btn-text-hover, var(--btn-text, var(--c-button-label-hover)));
+  border-color: var(--btn-border-hover, var(--btn-bg-hover, var(--btn-border, var(--btn-bg, var(--c-button-border-hover)))));
 }
 
 .btn--outline {
-  background-color: transparent;
-  color: var(--btn-text, var(--c-button-secondary-label));
-  border-color: var(--btn-border, color-mix(in srgb, var(--c-accent) 55%, transparent));
+  --button-style-radius: var(--button-outline-radius);
+  --button-style-padding-x: var(--button-outline-padding-x);
+  --button-style-padding-y: var(--button-outline-padding-y);
+  --button-style-size: var(--button-outline-size);
+  --button-style-tracking: var(--button-outline-tracking);
+  --button-style-border-width: var(--button-outline-border-width);
+  --button-style-transform: var(--button-outline-transform);
+  --button-style-hover-duration: var(--button-outline-hover-duration);
+  --button-style-hover-x: var(--button-outline-hover-x);
+  --button-style-hover-y: var(--button-outline-hover-y);
+  --button-style-hover-scale: var(--button-outline-hover-scale);
+
+  background-color: var(--btn-bg, var(--c-outline-bg));
+  color: var(--btn-text, var(--c-outline-text));
+  border-color: var(--btn-border, var(--c-outline-border));
 }
 
 .btn--outline:hover {
-  background-color: var(--btn-bg-hover, var(--btn-border-hover, var(--btn-border, var(--c-button-secondary-label))));
-  color: var(--btn-text-hover, var(--c-bg));
-  border-color: var(--btn-border-hover, var(--btn-border, var(--c-button-secondary-label)));
+  background-color: var(--btn-bg-hover, var(--btn-border-hover, var(--btn-border, var(--c-outline-bg-hover))));
+  color: var(--btn-text-hover, var(--btn-text, var(--c-outline-text-hover)));
+  border-color: var(--btn-border-hover, var(--btn-border, var(--c-outline-border-hover)));
 }
 
 /* Square-cornered button used inside product cards. */
@@ -1332,40 +1361,60 @@ a {
 .btn--link,
 .btn--quiet,
 .btn--arrow:not(.btn--outline) {
-  font-size: var(--btn-font, calc(var(--button-size) - 1px));
-  letter-spacing: calc(var(--button-tracking) + 0.01em);
+  font-size: var(--btn-font, calc(var(--button-style-size) - 1px));
+  letter-spacing: calc(var(--button-style-tracking) + 0.01em);
 }
 
 .btn--link {
+  --button-style-radius: var(--button-link-radius);
+  --button-style-size: var(--button-link-size);
+  --button-style-tracking: var(--button-link-tracking);
+  --button-style-border-width: var(--button-link-border-width);
+  --button-style-transform: var(--button-link-transform);
+  --button-style-hover-duration: var(--button-link-hover-duration);
+  --button-style-hover-x: var(--button-link-hover-x);
+  --button-style-hover-y: var(--button-link-hover-y);
+  --button-style-hover-scale: var(--button-link-hover-scale);
+
   padding: 0;
   border: 0;
   background: none;
-  color: var(--btn-text, var(--c-text));
-  border-bottom: var(--border-width) solid var(--btn-underline, color-mix(in srgb, var(--c-accent) 85%, transparent));
-  border-radius: 0;
+  color: var(--btn-text, var(--c-link-button-text));
+  border-bottom: var(--btn-border-width, var(--button-style-border-width)) solid var(--btn-underline, var(--c-link-button-rule));
+  border-radius: var(--btn-radius, var(--button-style-radius));
   line-height: 2.6;
 }
 
 .btn--link:hover {
-  color: var(--btn-text-hover, var(--btn-text, var(--c-accent)));
-  border-color: var(--btn-underline-hover, var(--btn-underline, var(--c-accent)));
+  color: var(--btn-text-hover, var(--btn-text, var(--c-link-button-text-hover)));
+  border-color: var(--btn-underline-hover, var(--btn-underline, var(--c-link-button-rule-hover)));
 }
 
 /* The same shape, stepped back: for the link that has to be present without
    asking for attention. */
 .btn--quiet {
+  --button-style-radius: var(--button-quiet-radius);
+  --button-style-size: var(--button-quiet-size);
+  --button-style-tracking: var(--button-quiet-tracking);
+  --button-style-border-width: var(--button-quiet-border-width);
+  --button-style-transform: var(--button-quiet-transform);
+  --button-style-hover-duration: var(--button-quiet-hover-duration);
+  --button-style-hover-x: var(--button-quiet-hover-x);
+  --button-style-hover-y: var(--button-quiet-hover-y);
+  --button-style-hover-scale: var(--button-quiet-hover-scale);
+
   padding: 0;
   border: 0;
   background: none;
-  color: var(--btn-text, color-mix(in srgb, var(--c-text) 55%, transparent));
-  border-bottom: var(--border-width) solid var(--btn-underline, color-mix(in srgb, var(--c-text) 22%, transparent));
-  border-radius: 0;
+  color: var(--btn-text, var(--c-quiet-button-text));
+  border-bottom: var(--btn-border-width, var(--button-style-border-width)) solid var(--btn-underline, var(--c-quiet-button-rule));
+  border-radius: var(--btn-radius, var(--button-style-radius));
   line-height: 2.6;
 }
 
 .btn--quiet:hover {
-  color: var(--btn-text-hover, var(--btn-text, var(--c-text)));
-  border-color: var(--btn-underline-hover, var(--btn-underline, var(--c-text)));
+  color: var(--btn-text-hover, var(--btn-text, var(--c-quiet-button-text-hover)));
+  border-color: var(--btn-underline-hover, var(--btn-underline, var(--c-quiet-button-rule-hover)));
 }
 
 /* "Navigational. Moves you somewhere." The arrow travels on hover — 11px to
@@ -1373,59 +1422,93 @@ a {
    the design's second easing curve is doing visible work. Colour keeps the
    interaction register; only the gap gets the long ease-out. */
 .btn--arrow {
+  --button-style-radius: var(--button-arrow-radius);
+  --button-style-size: var(--button-arrow-size);
+  --button-style-tracking: var(--button-arrow-tracking);
+  --button-style-border-width: var(--button-arrow-border-width);
+  --button-style-transform: var(--button-arrow-transform);
+  --button-style-hover-duration: var(--button-arrow-hover-duration);
+  --button-style-hover-x: var(--button-arrow-hover-x);
+  --button-style-hover-y: var(--button-arrow-hover-y);
+  --button-style-hover-scale: var(--button-arrow-hover-scale);
+  --button-style-hover-gap: var(--button-arrow-hover-gap);
+
   padding: 0;
   border: 0;
   background: none;
-  border-radius: 0;
-  color: var(--btn-text, var(--c-text));
+  border-radius: var(--btn-radius, var(--button-style-radius));
+  color: var(--btn-text, var(--c-arrow-button-text));
   gap: 11px;
-  transition: gap 0.35s var(--ease-out),
-              color var(--duration) var(--ease-ui);
+  transition: gap var(--button-style-hover-duration) var(--ease-out),
+              background-color var(--button-style-hover-duration) var(--ease-ui),
+              color var(--button-style-hover-duration) var(--ease-ui),
+              border-color var(--button-style-hover-duration) var(--ease-ui),
+              transform var(--button-style-hover-duration) var(--ease-ui);
 }
 
 .btn--arrow:hover {
-  gap: 19px;
-  color: var(--btn-text-hover, var(--btn-text, var(--c-accent)));
+  gap: calc(11px + var(--button-style-hover-gap));
+  color: var(--btn-text-hover, var(--btn-text, var(--c-arrow-button-text-hover)));
 }
 
 .btn--arrow > .btn__arrow svg {
   display: block;
   width: 1em;
   height: 1em;
+  stroke-width: calc(1px + var(--button-style-border-width) * 0.4);
 }
 
 .btn--arrow:not(.btn--outline) > .btn__arrow {
-  color: var(--btn-arrow, currentColor);
+  color: var(--btn-arrow, var(--c-arrow-button-arrow));
 }
 
 .btn--arrow:not(.btn--outline):hover > .btn__arrow {
-  color: var(--btn-arrow-hover, var(--btn-arrow, currentColor));
+  color: var(--btn-arrow-hover, var(--btn-arrow, var(--c-arrow-button-arrow-hover)));
 }
 
 /* An arrow that also carries the outline's frame. The design gives it a
    slightly tighter resting gap than the bare arrow and the same travel. */
 .btn--arrow.btn--outline {
-  padding: var(--btn-pad-y, var(--button-padding-y)) var(--btn-pad-x, var(--button-padding-x));
-  border: var(--btn-border-width, var(--button-border-width)) solid var(--btn-border, color-mix(in srgb, var(--c-accent) 55%, transparent));
-  border-radius: var(--btn-radius, var(--button-radius));
+  --button-style-radius: var(--button-arrow_outline-radius);
+  --button-style-padding-x: var(--button-arrow_outline-padding-x);
+  --button-style-padding-y: var(--button-arrow_outline-padding-y);
+  --button-style-size: var(--button-arrow_outline-size);
+  --button-style-tracking: var(--button-arrow_outline-tracking);
+  --button-style-border-width: var(--button-arrow_outline-border-width);
+  --button-style-transform: var(--button-arrow_outline-transform);
+  --button-style-hover-duration: var(--button-arrow_outline-hover-duration);
+  --button-style-hover-x: var(--button-arrow_outline-hover-x);
+  --button-style-hover-y: var(--button-arrow_outline-hover-y);
+  --button-style-hover-scale: var(--button-arrow_outline-hover-scale);
+  --button-style-hover-gap: var(--button-arrow_outline-hover-gap);
+
+  padding: var(--btn-pad-y, var(--button-style-padding-y)) var(--btn-pad-x, var(--button-style-padding-x));
+  border: var(--btn-border-width, var(--button-style-border-width)) solid var(--btn-border, var(--c-arrow-outline-border));
+  border-radius: var(--btn-radius, var(--button-style-radius));
+  background-color: var(--btn-bg, var(--c-arrow-outline-bg));
+  color: var(--btn-text, var(--c-arrow-outline-text));
   gap: 12px;
 }
 
-.btn--arrow.btn--outline > span {
-  color: var(--btn-border, color-mix(in srgb, var(--c-accent) 55%, transparent));
+.btn--arrow.btn--outline > .btn__arrow {
+  color: var(--btn-arrow, var(--c-arrow-outline-arrow));
 }
 
 .btn--arrow.btn--outline:hover {
-  gap: 20px;
+  gap: calc(12px + var(--button-style-hover-gap));
+  background-color: var(--btn-bg-hover, var(--btn-border-hover, var(--btn-border, var(--c-arrow-outline-bg-hover))));
+  color: var(--btn-text-hover, var(--btn-text, var(--c-arrow-outline-text-hover)));
+  border-color: var(--btn-border-hover, var(--btn-border, var(--c-arrow-outline-border-hover)));
 }
 
-.btn--arrow.btn--outline:hover > span {
-  color: var(--btn-border, var(--c-button-secondary-label));
+.btn--arrow.btn--outline:hover > .btn__arrow {
+  color: var(--btn-arrow-hover, var(--btn-arrow, var(--c-arrow-outline-arrow-hover)));
 }
 
 /* Reduced motion keeps the colour change and drops the travel, rather than
    dropping the affordance altogether. */
 @media (prefers-reduced-motion: reduce) {
+  .btn { transform: none !important; }
   .btn--arrow { transition: color var(--duration) var(--ease-ui); }
   .btn--arrow:hover,
   .btn--arrow.btn--outline:hover { gap: 11px; }
@@ -7836,64 +7919,193 @@ input.quantity-control__value::-webkit-outer-spin-button {
   gap: 0.625rem; /* 10px */
 }
 
-/* The design's two buttons, stated to the pixel and to the colour, so they take
-   their own values rather than the global --button-* tokens (which land at
-   16px/28px padding, an ink Checkout and a gold-edged Salon).
-
-   Checkout is champagne on porcelain — the design's primary CTA colour, the
-   same one .quick-view__add carries as --qv-gold — with near-black ink on it,
-   and it turns ink on hover. Salon is an ink hairline at 35%, not the accent.
-   Both are literals for the reason the hero's are: the design fixes them, and
-   --c-accent is the light-background gold (#9A7836), a different colour. */
-.drawer__panel {
-  --drawer-gold: var(--c-champagne);
-}
-
 .drawer__checkout,
 .drawer__secondary {
-  padding: 0.9375rem 1.375rem; /* 15px 22px */
-  font-size: 0.75rem; /* 12px */
-  letter-spacing: 0.16em;
+  min-width: 0;
 }
 
 .drawer__checkout {
   flex: 1;
-  background-color: var(--drawer-gold);
-  border-color: var(--drawer-gold);
-  color: var(--c-noir-surface);
   white-space: nowrap;
-}
-
-.drawer__checkout:hover {
-  background-color: var(--c-text);
-  border-color: var(--c-text);
-  color: var(--c-bg);
 }
 
 .drawer__secondary {
   flex: 0 0 auto;
-  color: var(--c-text);
-  border-color: color-mix(in srgb, var(--c-text) 35%, transparent);
-}
-
-.drawer__secondary:hover {
-  background-color: var(--c-text);
-  border-color: var(--c-text);
-  color: var(--c-bg);
 }
 
 /* ---- Announcement bar -------------------------------------------- */
 
+/* The section wrapper is the sticky element. A sticky child would be trapped
+   by a wrapper exactly its own height and would scroll away immediately. */
+[id^='shopify-section-']:has(> .announcement) {
+  position: sticky;
+  top: 0;
+  z-index: 121;
+}
+
 .announcement {
-  padding-block: var(--space-3xs);
+  position: relative;
+  height: 2.5rem;
+  overflow: hidden;
   text-align: center;
   font-size: var(--micro-size);
   letter-spacing: calc(var(--micro-tracking) * 0.6);
   text-transform: uppercase;
 }
 
+.announcement__inner {
+  position: relative;
+  display: grid;
+  place-items: center;
+  height: 100%;
+}
+
+.announcement__viewport {
+  display: grid;
+  place-items: center;
+  width: min(100%, 52rem);
+  height: 100%;
+  min-width: 0;
+}
+
+.announcement__message {
+  grid-area: 1 / 1;
+  width: 100%;
+  min-width: 0;
+  padding-inline: 1rem;
+}
+
+.announcement:has(.announcement__controls) .announcement__message {
+  padding-inline: clamp(6rem, 18vw, 8rem);
+}
+
+.announcement__message[hidden] {
+  display: none;
+}
+
+.announcement__message > a,
+.announcement__message > span {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .announcement a {
   color: inherit;
+  text-decoration: none;
+}
+
+.announcement a:hover {
+  text-decoration: underline;
+  text-underline-offset: 0.25em;
+}
+
+.announcement__controls {
+  position: absolute;
+  inset-inline-end: clamp(0.5rem, 2vw, 1.25rem);
+  display: flex;
+  align-items: center;
+  gap: 0.125rem;
+}
+
+.announcement__control {
+  display: grid;
+  place-items: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  opacity: 0.68;
+  transition: opacity var(--duration) var(--ease-ui),
+              background-color var(--duration) var(--ease-ui);
+}
+
+.announcement__control:hover,
+.announcement__control:focus-visible {
+  background: color-mix(in srgb, currentColor 9%, transparent);
+  opacity: 1;
+}
+
+.announcement__control svg {
+  display: block;
+}
+
+.announcement__message.is-leaving,
+.announcement__message.is-entering {
+  display: block;
+}
+
+.announcement--fade .announcement__message.is-leaving {
+  animation: announcement-fade-out 0.32s ease both;
+}
+
+.announcement--fade .announcement__message.is-entering {
+  animation: announcement-fade-in 0.42s ease both;
+}
+
+.announcement--slide .announcement__message.is-leaving {
+  animation: announcement-slide-out 0.36s var(--ease) both;
+}
+
+.announcement--slide .announcement__message.is-entering {
+  animation: announcement-slide-in 0.46s var(--ease) both;
+}
+
+@keyframes announcement-fade-out {
+  to { opacity: 0; transform: translateY(-0.25rem); }
+}
+
+@keyframes announcement-fade-in {
+  from { opacity: 0; transform: translateY(0.25rem); }
+}
+
+@keyframes announcement-slide-out {
+  to { opacity: 0; transform: translateY(-70%); }
+}
+
+@keyframes announcement-slide-in {
+  from { opacity: 0; transform: translateY(70%); }
+}
+
+.announcement--all .announcement__viewport {
+  display: flex;
+  justify-content: center;
+  gap: clamp(1rem, 4vw, 3rem);
+  width: 100%;
+}
+
+.announcement--all .announcement__message {
+  position: relative;
+  width: auto;
+  padding-inline: 0;
+}
+
+.announcement--all .announcement__message + .announcement__message::before {
+  position: absolute;
+  top: 50%;
+  inset-inline-start: calc(clamp(1rem, 4vw, 3rem) / -2);
+  width: 0.28rem;
+  height: 0.28rem;
+  border: var(--border-width) solid currentColor;
+  content: '';
+  opacity: 0.55;
+  transform: translate(-50%, -50%) rotate(45deg);
+}
+
+/* The announcement occupies normal flow and remains pinned above the fixed
+   navigation. :has() is already part of the theme's card/grid contract, so
+   this stack needs no JavaScript measurement or magic body padding. */
+body:has(.announcement) .nav {
+  top: 2.5rem;
+}
+
+body:has(.announcement) .nav--pill {
+  top: calc(2.5rem + 0.875rem);
 }
 
 /* ---- Footer ------------------------------------------------------ */
@@ -8255,6 +8467,25 @@ input.quantity-control__value::-webkit-outer-spin-button {
   animation: gj-modal-in 0.45s var(--ease) both;
 }
 
+.modal--splash {
+  width: min(var(--splash-width, 54rem), 100%);
+  border: var(--border-width) solid color-mix(in srgb, var(--c-accent) 34%, transparent);
+  box-shadow: 0 2rem 6rem color-mix(in srgb, var(--c-noir) 28%, transparent);
+}
+
+.modal--splash::before {
+  position: absolute;
+  inset: 0.5rem;
+  z-index: 1;
+  border: var(--border-width) solid color-mix(in srgb, var(--c-accent) 18%, transparent);
+  content: '';
+  pointer-events: none;
+}
+
+.modal--splash-content {
+  width: min(var(--splash-width, 42rem), 100%);
+}
+
 .overlay.is-closing .modal {
   animation: gj-modal-out 0.32s cubic-bezier(0.4, 0, 0.2, 1) both;
 }
@@ -8282,6 +8513,14 @@ input.quantity-control__value::-webkit-outer-spin-button {
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 21.25rem), 1fr));
 }
 
+.modal__grid[data-media-position='right'] .modal__media {
+  order: 2;
+}
+
+.modal--splash-content .modal__grid {
+  grid-template-columns: minmax(0, 1fr);
+}
+
 .modal__media {
   position: relative;
   min-height: clamp(13.75rem, 55vw, 30rem);
@@ -8302,6 +8541,8 @@ input.quantity-control__value::-webkit-outer-spin-button {
 }
 
 .modal__body {
+  position: relative;
+  z-index: 2;
   padding: clamp(1.9rem, 5vw, 3.4rem) clamp(1.5rem, 4.5vw, 3.1rem);
 }
 
@@ -8310,6 +8551,53 @@ input.quantity-control__value::-webkit-outer-spin-button {
   flex-direction: column;
   justify-content: center;
   height: 100%;
+}
+
+.splash-screen {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 100%;
+}
+
+.modal--align-center .splash-screen {
+  align-items: center;
+  text-align: center;
+}
+
+.splash-screen__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: var(--c-accent);
+}
+
+.splash-screen__eyebrow::before {
+  width: 1.75rem;
+  height: var(--border-width);
+  background: currentColor;
+  content: '';
+}
+
+.modal--align-center .splash-screen__eyebrow::after {
+  width: 1.75rem;
+  height: var(--border-width);
+  background: currentColor;
+  content: '';
+}
+
+.overlay:not([hidden]) .splash-screen > * {
+  animation: splash-screen-rise 0.55s var(--ease) both;
+}
+
+.overlay:not([hidden]) .splash-screen > :nth-child(2) { animation-delay: 0.06s; }
+.overlay:not([hidden]) .splash-screen > :nth-child(3) { animation-delay: 0.12s; }
+.overlay:not([hidden]) .splash-screen > :nth-child(4) { animation-delay: 0.18s; }
+.overlay:not([hidden]) .splash-screen > :nth-child(5) { animation-delay: 0.24s; }
+.overlay:not([hidden]) .splash-screen > :nth-child(n+6) { animation-delay: 0.3s; }
+
+@keyframes splash-screen-rise {
+  from { opacity: 0; transform: translateY(0.7rem); }
 }
 
 .modal__title {
@@ -8354,7 +8642,6 @@ input.quantity-control__value::-webkit-outer-spin-button {
 .modal__submit {
   width: 100%;
   margin-top: 1.15rem;
-  border-radius: var(--radius);
 }
 
 .modal__decline {
@@ -8377,13 +8664,51 @@ input.quantity-control__value::-webkit-outer-spin-button {
   color: var(--c-text);
 }
 
-.modal__code {
+.splash-offer {
+  display: grid;
+  width: 100%;
   margin-top: 1.4rem;
-  padding: 0.9rem 1.15rem;
-  border: var(--border-width) solid color-mix(in srgb, var(--c-text) 30%, transparent);
-  text-align: center;
-  font-size: var(--fs-sm);
-  letter-spacing: 0.26em;
+  gap: 0.75rem;
+}
+
+.splash-offer__code {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  width: 100%;
+  min-height: 3.25rem;
+  padding: 0.75rem 1rem;
+  border: var(--border-width) solid color-mix(in srgb, var(--c-text) 28%, transparent);
+  border-radius: 0;
+  background: color-mix(in srgb, var(--c-accent) 5%, transparent);
+  color: inherit;
+  cursor: pointer;
+  transition: border-color var(--duration) var(--ease-ui),
+              background-color var(--duration) var(--ease-ui);
+}
+
+.splash-offer__code:hover,
+.splash-offer__code:focus-visible {
+  border-color: var(--c-accent);
+  background: color-mix(in srgb, var(--c-accent) 10%, transparent);
+}
+
+.splash-offer__value {
+  font-family: var(--font-heading);
+  font-size: clamp(1rem, 2vw, 1.25rem);
+  letter-spacing: 0.22em;
+}
+
+.splash-offer__copy {
+  color: var(--c-accent);
+  font-size: var(--micro-size);
+  letter-spacing: var(--micro-tracking);
+  text-transform: uppercase;
+}
+
+.splash-offer__apply {
+  width: 100%;
 }
 
 .modal__fine {
@@ -8717,7 +9042,6 @@ input.quantity-control__value::-webkit-outer-spin-button {
 
 .cookie-banner__btn {
   width: auto;
-  border-radius: var(--radius);
 }
 
 /* ---- Localization ------------------------------------------------ */
@@ -8800,6 +9124,14 @@ input.quantity-control__value::-webkit-outer-spin-button {
 
 .form-status--error {
   color: var(--c-error);
+}
+
+.form-status--success {
+  color: var(--c-success);
+}
+
+.form-status--warning {
+  color: var(--c-warning);
 }
 
 /* ---- Scroll reveal ----------------------------------------------- */

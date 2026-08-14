@@ -1,7 +1,8 @@
 {%- comment -%}
-  Emits only the shared Button custom properties. This lets form-owned controls
-  such as Shopify's accelerated checkout inherit the same merchant appearance
-  as a rendered Button without duplicating the settings contract.
+  Emits only a Button instance's local custom-property overrides. Theme-level
+  geometry, motion, and scheme colors are selected by the rendered style; this
+  lets form-owned controls such as Shopify's accelerated checkout inherit the
+  same merchant appearance without duplicating the settings contract.
 {%- endcomment -%}
 {%- liquid
   if appearance != blank

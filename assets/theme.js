@@ -292,6 +292,166 @@
     scope.querySelectorAll('[data-overlay]').forEach(registerOverlay);
   }
 
+  /* ---- Announcement header ------------------------------------------
+     One visible message remains real markup without scripting. The controller
+     only hands that slot to the next merchant block, and pauses whenever the
+     visitor hovers, focuses, hides the tab, or chooses Pause. */
+
+  function initAnnouncements(scope) {
+    scope.querySelectorAll('[data-announcement]').forEach(function (root) {
+      var viewport = root.querySelector('[data-announcement-viewport]');
+      var messages = Array.prototype.slice.call(root.querySelectorAll('[data-announcement-message]'));
+      if (!viewport || messages.length < 2 || root.classList.contains('announcement--all')) return;
+      if (!bindOnce(root, 'boundAnnouncement')) return;
+
+      var active = -1;
+      messages.forEach(function (message, index) {
+        if (active < 0 && message.classList.contains('is-active')) active = index;
+      });
+      if (active < 0) active = 0;
+      var interval = Math.max(parseInt(root.dataset.announcementInterval, 10) || 6000, 3000);
+      var paused = root.dataset.announcementAutoplay !== 'true' || reduceMotion.matches;
+      var suspended = false;
+      var busy = false;
+      var timer = null;
+      var toggle = root.querySelector('[data-announcement-toggle]');
+
+      function syncToggle() {
+        viewport.setAttribute('aria-live', paused || suspended ? 'polite' : 'off');
+        if (!toggle) return;
+        var pauseIcon = toggle.querySelector('[data-announcement-pause-icon]');
+        var playIcon = toggle.querySelector('[data-announcement-play-icon]');
+        if (pauseIcon) pauseIcon.hidden = paused;
+        if (playIcon) playIcon.hidden = !paused;
+        toggle.setAttribute('aria-label', paused ? toggle.dataset.playLabel : toggle.dataset.pauseLabel);
+      }
+
+      function stopTimer() {
+        if (timer) window.clearTimeout(timer);
+        timer = null;
+      }
+
+      function schedule() {
+        stopTimer();
+        if (paused || suspended || busy || !document.contains(root)) return;
+        timer = window.setTimeout(function () { show(active + 1); }, interval);
+      }
+
+      function show(index) {
+        if (busy || !messages.length) return;
+        var nextIndex = (index + messages.length) % messages.length;
+        if (nextIndex === active) { schedule(); return; }
+
+        stopTimer();
+        busy = true;
+        var current = messages[active];
+        var next = messages[nextIndex];
+        current.classList.add('is-leaving');
+        next.hidden = false;
+        next.classList.add('is-entering');
+
+        afterFade(viewport, 700, function () {
+          current.hidden = true;
+          current.classList.remove('is-active', 'is-leaving');
+          next.classList.remove('is-entering');
+          next.classList.add('is-active');
+          active = nextIndex;
+          busy = false;
+          schedule();
+        });
+      }
+
+      var previous = root.querySelector('[data-announcement-prev]');
+      var next = root.querySelector('[data-announcement-next]');
+      if (previous) previous.addEventListener('click', function () { show(active - 1); });
+      if (next) next.addEventListener('click', function () { show(active + 1); });
+      if (toggle) {
+        toggle.addEventListener('click', function () {
+          paused = !paused;
+          syncToggle();
+          schedule();
+        });
+      }
+
+      root.addEventListener('mouseenter', function () { suspended = true; stopTimer(); });
+      root.addEventListener('mouseleave', function () { suspended = false; schedule(); });
+      root.addEventListener('focusin', function () {
+        suspended = true;
+        stopTimer();
+        syncToggle();
+      });
+      root.addEventListener('focusout', function () {
+        window.setTimeout(function () {
+          suspended = root.contains(document.activeElement);
+          syncToggle();
+          schedule();
+        }, 0);
+      });
+
+      document.addEventListener('visibilitychange', function () {
+        suspended = document.hidden || root.matches(':hover') || root.contains(document.activeElement);
+        schedule();
+      });
+
+      root.addEventListener('shopify:block:select', function (event) {
+        var selected = event.target.closest && event.target.closest('[data-announcement-message]');
+        var selectedIndex = messages.indexOf(selected);
+        if (selectedIndex >= 0) {
+          paused = true;
+          syncToggle();
+          show(selectedIndex);
+        }
+      });
+
+      syncToggle();
+      schedule();
+    });
+  }
+
+  /* Copy is an enhancement beside the native /discount/ apply link. The
+     fallback keeps it working in browsers without the async Clipboard API. */
+  function initDiscountCodes(scope) {
+    scope.querySelectorAll('[data-discount-copy]').forEach(function (button) {
+      if (!bindOnce(button, 'boundDiscountCopy')) return;
+
+      function fallbackCopy(value) {
+        var field = document.createElement('textarea');
+        field.value = value;
+        field.setAttribute('readonly', '');
+        field.style.position = 'fixed';
+        field.style.opacity = '0';
+        document.body.appendChild(field);
+        field.select();
+        var copied = false;
+        try { copied = document.execCommand('copy'); } catch (error) { copied = false; }
+        field.remove();
+        return copied;
+      }
+
+      button.addEventListener('click', function () {
+        var value = button.dataset.discountCode || '';
+        var label = button.querySelector('[data-discount-copy-label]');
+        var status = button.parentElement && button.parentElement.querySelector('[data-discount-copy-status]');
+
+        function complete(copied) {
+          if (!copied) return;
+          if (label) label.textContent = button.dataset.copiedLabel || '';
+          if (status) status.textContent = button.dataset.copiedLabel || '';
+          window.setTimeout(function () {
+            if (label) label.textContent = button.dataset.copyLabel || '';
+            if (status) status.textContent = '';
+          }, 2200);
+        }
+
+        if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+          navigator.clipboard.writeText(value).then(function () { complete(true); }, function () { complete(fallbackCopy(value)); });
+        } else {
+          complete(fallbackCopy(value));
+        }
+      });
+    });
+  }
+
   /* A reopened menu starts at the root, or it would greet the visitor
      mid-branch with its entrance already spent — the overlay's levels
      re-root and the drawer's branches fold, whichever shell rendered. */
@@ -4507,6 +4667,8 @@
     initCardOptions(scope);
     initCatalog(scope);
     initOverlays(scope);
+    initAnnouncements(scope);
+    initDiscountCodes(scope);
     initCookieChoice(scope);
     initPolicyToc(scope);
   }

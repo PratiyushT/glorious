@@ -1,0 +1,60 @@
+{%- comment -%}
+  One real Shopify discount hand-off for promotional surfaces.
+
+  `code` must name an active discount created in Shopify Admin. The link uses
+  Shopify's native /discount/<code>?redirect=<destination> route, so choosing
+  the action applies the code to checkout and then lands on the merchant's
+  chosen page. Copy is progressive enhancement; the apply link works without
+  JavaScript.
+
+  Accepts:
+    code, destination, button_label, appearance, copy_label, copied_label
+{%- endcomment -%}
+
+{%- liquid
+  assign offer_destination = destination | default: routes.all_products_collection_url
+  assign resolved_copy_label = copy_label
+  if resolved_copy_label == blank
+    assign resolved_copy_label = 'discount.copy' | t
+  endif
+  assign resolved_copied_label = copied_label
+  if resolved_copied_label == blank
+    assign resolved_copied_label = 'discount.copied' | t
+  endif
+  assign resolved_button_label = button_label
+  if resolved_button_label == blank
+    assign resolved_button_label = 'discount.apply' | t
+  endif
+  assign offer_link = offer_destination
+
+  if code != blank
+    assign encoded_code = code | strip | url_encode
+    assign encoded_destination = offer_destination | url_encode
+    assign offer_link = routes.root_url | append: 'discount/' | append: encoded_code | append: '?redirect=' | append: encoded_destination
+  endif
+-%}
+
+<div class="splash-offer" data-discount-offer>
+  {%- if code != blank -%}
+    <button
+      class="splash-offer__code"
+      type="button"
+      data-discount-copy
+      data-discount-code="{{ code | strip | escape }}"
+      data-copy-label="{{ resolved_copy_label | escape }}"
+      data-copied-label="{{ resolved_copied_label | escape }}"
+      aria-label="{{ 'discount.copy_code' | t: code: code | escape }}"
+    >
+      <span class="splash-offer__value">{{ code | strip }}</span>
+      <span class="splash-offer__copy" data-discount-copy-label>{{ resolved_copy_label }}</span>
+    </button>
+    <span class="visually-hidden" aria-live="polite" data-discount-copy-status></span>
+  {%- endif -%}
+
+  {%- render 'button',
+    label: resolved_button_label,
+    link: offer_link,
+    appearance: appearance,
+    class: 'splash-offer__apply'
+  -%}
+</div>

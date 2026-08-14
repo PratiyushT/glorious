@@ -2,6 +2,45 @@
   "name": "t:sections.header.name",
   "type": "header",
   "sections": {
+    "announcement": {
+      "type": "announcement-bar",
+      "blocks": {
+        "shipping": {
+          "type": "message",
+          "settings": {
+            "text": "Complimentary insured shipping on every order",
+            "link": ""
+          }
+        },
+        "welcome": {
+          "type": "message",
+          "settings": {
+            "text": "A private welcome offer awaits",
+            "link": ""
+          }
+        },
+        "endure": {
+          "type": "message",
+          "settings": {
+            "text": "Designed with intention. Made to endure.",
+            "link": ""
+          }
+        }
+      },
+      "block_order": [
+        "shipping",
+        "welcome",
+        "endure"
+      ],
+      "settings": {
+        "color_scheme": "scheme_2",
+        "show_all": false,
+        "auto_rotate": true,
+        "animation_style": "slide",
+        "interval": 6,
+        "show_controls": true
+      }
+    },
     "header": {
       "type": "header",
       "settings": {
@@ -126,13 +165,34 @@
         "enabled": true,
         "color_scheme": "scheme_1",
         "delay": 2,
-        "eyebrow": "The Store List",
-        "heading": "Take 10% Off Your First Order",
-        "text": "Sign up for early access to new collections, private previews, and your welcome offer.",
+        "layout": "split",
+        "media_position": "left",
+        "content_alignment": "left",
+        "panel_width": 54,
+        "delivery_mode": "after_signup",
+        "eyebrow": "Private offer",
+        "heading": "A Welcome, Just for You",
+        "text": "Join the private list for early access to new collections and a welcome offer for your first order.",
         "fine_print": "By subscribing you agree to receive email from this shop. Unsubscribe anytime.",
-        "success_heading": "You're on the List",
-        "success_text": "Enjoy 10% off your first order with the code below.",
-        "offer_code": "WELCOME10"
+        "success_heading": "Your Private Offer",
+        "success_text": "Your welcome code is ready. Copy it or apply it as you continue shopping.",
+        "offer_code": "WELCOME10",
+        "offer_destination": "/collections/all",
+        "offer_button_label": "Apply Offer & Shop",
+        "button_style": "filled",
+        "button_size": "inherit",
+        "button_radius": "inherit",
+        "button_border_width": "inherit",
+        "background_color": "",
+        "text_color": "",
+        "border_color": "",
+        "underline_color": "",
+        "arrow_color": "",
+        "hover_background_color": "",
+        "hover_text_color": "",
+        "hover_border_color": "",
+        "hover_underline_color": "",
+        "hover_arrow_color": ""
       }
     },
     "cookie-banner": {
@@ -150,5 +210,5 @@
       }
     }
   },
-  "order": ["header", "cart-drawer", "quick-view", "newsletter-popup", "cookie-banner"]
+  "order": ["announcement", "header", "cart-drawer", "quick-view", "newsletter-popup", "cookie-banner"]
 }
