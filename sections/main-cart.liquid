@@ -180,7 +180,7 @@
             <div class="cart-page__actions">
               {%- assign checkout_label = 'cart.checkout' | t -%}
               {%- assign update_label = 'cart.update' | t -%}
-              {% render 'button', label: checkout_label, element: 'button', button_type: 'submit', button_name: 'checkout' %}
+              {% render 'button', label: checkout_label, element: 'button', button_type: 'submit', button_name: 'checkout', button_value: 'checkout' %}
               {%- if section.settings.show_update_button -%}
                 {% render 'button', label: update_label, element: 'button', button_type: 'submit', button_name: 'update', style: 'outline' %}
               {%- endif -%}

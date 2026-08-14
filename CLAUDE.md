@@ -3879,6 +3879,12 @@ in `snippets/cart-drawer-contents.liquid` and in `templates/cart.liquid`.
   are filters *on a form object*, so a hand-written `<form action="/cart">` —
   which is what the drawer had — cannot have them. Shopify emits the same
   action, method and hidden fields it was writing out by hand.
+- **Checkout is a named submit with a non-empty value on both surfaces.** The
+  shared Button used to emit `name="checkout"` without a `value`, which posts
+  `checkout=`. Shopify's local theme handoff treated that as an ordinary cart
+  update and returned to `/cart`; `button_value: 'checkout'` now makes the
+  intent explicit while keeping the native cart form, note, quantities,
+  payment terms and accelerated checkout intact.
 - **The last two render nothing where the shop has not enabled them**, which is
   Shopify's own behaviour: the setting decides whether to *offer* the feature,
   not whether it appears. Measured on this store, which has no wallet enabled:
@@ -3891,7 +3897,8 @@ in `snippets/cart-drawer-contents.liquid` and in `templates/cart.liquid`.
 
 Verified with a line in the bag: the note field renders on both surfaces with
 `name="note"` and a matching `label[for]`, the drawer's form posts to `/cart`,
-the checkout button is intact, and the subtotal carries the note.
+the checkout buttons post `checkout=checkout`, the handoff leaves `/cart` for
+Shopify checkout, and the subtotal carries the note.
 
 ### Content and utility templates
 

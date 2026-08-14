@@ -16,7 +16,7 @@
     label   - required; nothing renders without it
     link    - required for the default anchor, as above
     element - a | button | span; defaults to a
-    button_type, button_name, disabled - native control attributes
+    button_type, button_name, button_value, disabled - native control attributes
     mutable_label - wraps the words in `[data-button-label]` so JavaScript can
                     change them without removing a decorative arrow
     style   - filled | outline | link | quiet | arrow | arrow_outline
@@ -138,6 +138,7 @@
     class="btn {{ variant }}{% if class != blank %} {{ class }}{% endif %}"
     type="{{ button_type | default: 'button' }}"
     {%- if button_name != blank %} name="{{ button_name }}"{% endif %}
+    {%- if button_value != blank %} value="{{ button_value }}"{% endif %}
     {%- if style_attr != blank %} style="{{ style_attr }}"{% endif %}
     {%- if id != blank %} id="{{ id }}"{% endif %}
     {%- if aria_label != blank %} aria-label="{{ aria_label }}"{% endif %}

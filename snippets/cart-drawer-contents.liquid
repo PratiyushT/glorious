@@ -334,7 +334,7 @@
       {%- endif -%}
 
       {%- assign checkout_label = 'cart.checkout' | t -%}
-      {% render 'button', label: checkout_label, element: 'button', button_type: 'submit', button_name: 'checkout', class: 'drawer__checkout' %}
+      {% render 'button', label: checkout_label, element: 'button', button_type: 'submit', button_name: 'checkout', button_value: 'checkout', class: 'drawer__checkout' %}
 
       {%- comment -%}
         Shopify renders these two itself and renders nothing when the shop has
