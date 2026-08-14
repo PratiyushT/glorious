@@ -3,16 +3,20 @@
     "brand": {
       "name": "Brand",
       "paragraph": "Every default in this theme comes from its reference design. Change any value here without touching code.",
+      "store_display_name": {
+        "label": "Store display name",
+        "info": "Used where the storefront says your store's name in prose — the gift card page, the footer copyright. Leave empty to use your Shopify store name. The big wordmark's text is set on the Header, Hero, and Footer sections."
+      },
+      "logo": {
+        "label": "Logo",
+        "info": "Replaces the text wordmark in the header, the overlay heads, and the footer. The hero keeps its lettered wordmark — its entrance and the nav's morph are drawn from the letters."
+      },
+      "logo_inverted": {
+        "label": "Logo for dark backgrounds",
+        "info": "Used on the menu and search overlays and the footer when set; otherwise the main logo appears there too."
+      },
       "favicon": {
         "label": "Favicon"
-      },
-      "wordmark": {
-        "label": "Wordmark letters",
-        "info": "Set as individual letters spread edge to edge in the hero and footer."
-      },
-      "wordmark_mark": {
-        "label": "Wordmark center mark",
-        "info": "Optional emblem substituted for the first O."
       }
     },
     "shop": {
@@ -235,6 +239,21 @@
       "link": {
         "label": "Links"
       },
+      "gallery": {
+        "header": "Product gallery",
+        "background": "Gallery background"
+      },
+      "badges": {
+        "header": "Product badges",
+        "sale_background": "Sale badge background",
+        "sale_text": "Sale badge text",
+        "sold_background": "Sold-out badge background",
+        "sold_text": "Sold-out badge text",
+        "new_background": "New badge background",
+        "new_text": "New badge text",
+        "custom_background": "Custom badge background",
+        "custom_text": "Custom badge text"
+      },
       "error": {
         "label": "Error",
         "info": "Used by form errors and the remove control in the cart."
@@ -250,6 +269,23 @@
       "scrollbar_thumb": {
         "label": "Scrollbar",
         "info": "One color for light and dark alike, as the reference design has it."
+      },
+      "loading": {
+        "header": "Loading and overlays",
+        "style": {
+          "label": "Loader mark",
+          "diamond": "Diamond",
+          "ring": "Ring",
+          "orbit": "Orbit"
+        },
+        "color": {
+          "label": "Loader color",
+          "info": "Leave empty to use each surface's accent. The mark itself always sits on a transparent ground."
+        },
+        "veil": {
+          "label": "Overlay veil tint",
+          "info": "The translucent wash behind drawers, quick view, and popups. Leave empty for the theme's noir."
+        }
       },
       "scrollbar_thumb_hover": {
         "label": "Scrollbar on hover"
@@ -311,6 +347,12 @@
         "options__rounded": "Rounded",
         "options__pill": "Pill"
       },
+      "close_style": {
+        "label": "Close controls",
+        "info": "Every overlay's close — the cart drawer, menus, search, quick view, and popups — as the word Close or as an × in a disc. One choice for all of them.",
+        "options__text": "Text",
+        "options__icon": "Icon"
+      },
       "button_size": {
         "label": "Button size",
         "info": "Sets padding and label size together.",
@@ -340,9 +382,34 @@
         "label": "Uppercase button text"
       }
     },
+    "badges": {
+      "name": "Product badges",
+      "text_style": "Text preset",
+      "shape": "Shape",
+      "policy": "Global badge policy",
+      "ignore_collection": "Badge exclusions collection",
+      "ignore_collection_info": "Products in this collection never show badges on cards, product pages, featured products, recommendations, quick view, or cart upsells.",
+      "show_custom": "Show custom tag badges",
+      "show_custom_info": "Add product tags such as badge: Limited edition. Text after badge: becomes the badge label.",
+      "sale": "Sale badge",
+      "show_sale": "Show Sale badges",
+      "sale_label": {
+        "label": "Sale wording",
+        "label_only": "Sale",
+        "percentage": "Percentage off",
+        "amount": "Amount saved"
+      },
+      "sold_out": "Sold-out badge",
+      "show_sold_out": "Show Sold out badges",
+      "new": "New badge",
+      "show_new": "Show New badges",
+      "new_days": "Products are new for",
+      "custom": "Custom badge",
+      "background": "Background",
+      "text": "Text"
+    },
     "quick_view": {
       "name": "Quick view",
-      "paragraph": "Opens over the grid from the eye on a product card, and is rendered from the product itself.",
       "quick_view_enabled": {
         "label": "Enable quick view"
       },
@@ -352,22 +419,6 @@
         "panel": "The whole panel scrolls",
         "media": "Pin the media, scroll the panel",
         "details": "Scroll only the details"
-      },
-      "quick_view_reassurance": {
-        "label": "Reassurance line"
-      },
-      "quick_view_picker_type": {
-        "label": "Option controls",
-        "info": "Automatic uses Shopify swatches when provided, pills for short lists, and dropdowns for longer lists.",
-        "auto": "Automatic",
-        "swatch": "Swatches",
-        "pill": "Pills",
-        "select": "Dropdowns"
-      },
-      "quick_view_swatch_shape": {
-        "label": "Swatch shape",
-        "round": "Round",
-        "square": "Square"
       }
     },
     "tax": {
@@ -376,6 +427,15 @@
       "tax_note_text": {
         "label": "Tax-exclusive note",
         "info": "Shown when Shopify reports that taxes are not included. Leave empty to say nothing."
+      }
+    },
+    "prices": {
+      "name": "Prices",
+      "price_compare_position": {
+        "label": "Compare-at price position",
+        "info": "Where the crossed-out original price sits relative to the current price, everywhere both are shown.",
+        "before": "Before the price",
+        "after": "After the price"
       }
     },
     "cart": {
@@ -433,6 +493,31 @@
         "info": "How the piece sits in that frame. Filled by default, where a card fits the whole piece — a 64px thumbnail has little room to give away."
       }
     },
+    "search": {
+      "name": "Search",
+      "paragraph": "Choose how Search opens throughout the storefront. Predictive results and the search page remain available in every mode.",
+      "search_type": {
+        "label": "Opening Search",
+        "info": "Without JavaScript, Search always falls back to the search page.",
+        "menu": "Full-screen menu",
+        "drawer": "Slide out a drawer",
+        "page": "Go to the search page"
+      },
+      "drawer_color_scheme": {
+        "label": "Drawer color scheme"
+      }
+    },
+    "catalog": {
+      "name": "Catalog",
+      "filter_word": {
+        "label": "Filter word",
+        "info": "The word the storefront's filter button and drawer heading use — Filter, Refine, or your own. Sentences like “Clear filters” stay translatable in the language editor."
+      },
+      "hidden_collections": {
+        "label": "Hidden collections",
+        "info": "Excluded from the collections page, search suggestions, and quick links. For collections that group products for a display or feature rather than for browsing. Sections where you pick collections yourself still show them."
+      }
+    },
     "localization": {
       "name": "Localization",
       "paragraph": "Selectors appear only when more than one country or language is published in your markets.",
@@ -459,6 +544,10 @@
       },
       "motion_reveal": {
         "label": "Reveal sections on scroll"
+      },
+      "video_pause_offscreen": {
+        "label": "Pause autoplaying video off screen",
+        "info": "An ambient video pauses when less than a third of it is visible and resumes when it returns."
       },
       "motion_duration": {
         "label": "Motion speed",
@@ -704,6 +793,14 @@
     },
     "collection_card": {
       "name": "Collection card",
+      "column_gap": {
+        "label": "Horizontal card gap",
+        "info": "Space between collection cards in every grid or carousel using this card."
+      },
+      "row_gap": {
+        "label": "Vertical card gap",
+        "info": "Space between wrapped rows of collection cards."
+      },
       "hover_reveal": {
         "label": "Show hover reveal",
         "info": "Shows the collection action over the photograph when the card is hovered or focused."
@@ -737,6 +834,21 @@
       "name": "Product card",
       "text_align": {
         "label": "Text alignment"
+      },
+      "fixed_size": {
+        "label": "Keep cards a consistent size",
+        "info": "On, a short row keeps the same card width and image height as a full row instead of stretching to fill the section."
+      },
+      "column_gap": {
+        "label": "Horizontal card gap",
+        "info": "Space between product cards in every grid or carousel using this card."
+      },
+      "row_gap": {
+        "label": "Vertical card gap",
+        "info": "Space between wrapped rows of product cards."
+      },
+      "gap": {
+        "inherit": "Use list spacing"
       },
       "views_header": "Views",
       "show_carousel": {
@@ -777,6 +889,39 @@
         "label": "Show on tablet and mobile",
         "info": "The disc opens the piece in an overlay. With both off it is simply not shown — the card's own link still opens the product page."
       }
+    },
+    "cart_upsell": {
+      "name": "Cart upsell",
+      "heading": "Heading",
+      "collection": "Collection",
+      "collection_info": "Shown only while the cart is empty. Leave empty to use all products.",
+      "products_to_show": "Products to show",
+      "layout_header": "Product list",
+      "padding_inline": "Horizontal padding",
+      "padding_block": "Vertical padding"
+    },
+    "product_badges": {
+      "name": "Product badges",
+      "show_sold_out": "Show Sold out",
+      "show_sale": "Show Sale",
+      "sale_label": {
+        "label": "Sale wording",
+        "label_only": "Sale",
+        "percentage": "Percentage off",
+        "amount": "Amount saved"
+      },
+      "show_new": "Show New",
+      "new_days": "Products are new for",
+      "custom_text": "Custom badge",
+      "custom_text_info": "Type text or connect a product metafield. Leave empty for no custom badge.",
+      "position": {
+        "label": "Position",
+        "top_left": "Top left",
+        "top_right": "Top right",
+        "bottom_left": "Bottom left",
+        "bottom_right": "Bottom right"
+      },
+      "max_badges": "Maximum badges"
     },
     "product_card_image": {
       "name": "Media",
@@ -972,6 +1117,22 @@
       "caption_right": {
         "label": "Right caption"
       }
+    },
+    "huge_text": {
+      "name": "Huge Text",
+      "value": "Value"
+    },
+    "accordion": {
+      "name": "Accordion",
+      "expanded_by_default": "Expanded by default",
+      "desktop_behavior": {
+        "label": "Desktop behavior",
+        "info": "Expanded turns the accordion into open content on desktop while keeping it foldable on smaller screens.",
+        "expanded": "Always expanded on desktop",
+        "collapsible": "Keep collapsible on desktop"
+      },
+      "divider_color": "Divider color override",
+      "content_layout": "Content layout"
     },
     "group": {
       "name": "Layout group",
@@ -1256,6 +1417,10 @@
         "label": "Content alignment",
         "info": "Blocks follow the section unless they set their own."
       },
+      "card_column_gap": {
+        "label": "Horizontal card gap",
+        "info": "Space between cards across a row. Rows above and below keep the theme's grid gap."
+      },
       "full_height": {
         "label": "Fill the screen height",
         "info": "The section occupies the full viewport, as in the design."
@@ -1269,6 +1434,9 @@
       "image_first": "Image first",
       "layout": {
         "label": "Layout",
+        "desktop_label": "Desktop layout",
+        "tablet_label": "Tablet layout",
+        "mobile_label": "Mobile layout",
         "info": "The grid reflows on the width it is given. The carousel shows one page of that same grid at a time.",
         "grid": "Grid",
         "carousel": "Carousel"
@@ -1340,6 +1508,12 @@
     },
     "header": {
       "name": "Header",
+      "header_layout": {
+        "label": "Header style",
+        "info": "Both styles use the same native Shopify menu and the same account, search, and cart actions.",
+        "art_directed": "Art-directed menu overlay",
+        "classic": "Classic inline navigation"
+      },
       "nav_mode": {
         "paragraph": "The design gives the home page a floating pill and the inner pages a full bar, so the two are set separately.",
         "home_label": "On the home page",
@@ -1381,11 +1555,7 @@
         "label": "Show cart"
       },
       "search_header": "Search",
-      "search_paragraph": "The overlay searches as the visitor types. With it switched off the search action goes to the search page instead.",
-      "search_overlay": {
-        "label": "Open search as an overlay",
-        "info": "Opens over the page, and with ⌘K, Ctrl+K or /."
-      },
+      "search_paragraph": "Search behavior is selected globally in Theme settings → Search. Popular terms and featured pieces are used by the menu and drawer modes.",
       "search_popular": {
         "label": "Popular searches",
         "info": "Separate with commas. Shown before anything is typed."
@@ -1415,9 +1585,6 @@
     },
     "footer": {
       "name": "Footer",
-      "show_wordmark": {
-        "label": "Show the letterform wordmark"
-      },
       "show_follow_on_shop": {
         "label": "Show Follow on Shop",
         "info": "Lets customers follow the store in the Shop app. Shopify controls the branded button appearance."
@@ -1435,31 +1602,14 @@
           "heading": {
             "label": "Column heading"
           },
-          "actions_info": "Set a link's URL to #newsletter or #cookie-preferences to make it open that overlay instead of navigating.",
           "menu": {
             "label": "Menu",
-            "info": "Pick a navigation menu to use instead of the links below."
-          },
-          "label_n": {
-            "label_1": "Link 1",
-            "label_2": "Link 2",
-            "label_3": "Link 3",
-            "label_4": "Link 4",
-            "label_5": "Link 5",
-            "label_6": "Link 6",
-            "label_7": "Link 7",
-            "label_8": "Link 8"
-          },
-          "url_n": {
-            "url_1": "Link 1 URL",
-            "url_2": "Link 2 URL",
-            "url_3": "Link 3 URL",
-            "url_4": "Link 4 URL",
-            "url_5": "Link 5 URL",
-            "url_6": "Link 6 URL",
-            "url_7": "Link 7 URL",
-            "url_8": "Link 8 URL"
+            "info": "Choose a Shopify navigation menu. Add action links such as #newsletter or #cookie-preferences as custom menu URLs when needed."
           }
+        },
+        "policies": {
+          "name": "Policy links",
+          "show_cookie_preferences": "Show cookie preferences"
         },
         "text": {
           "name": "Text column",
@@ -1511,10 +1661,6 @@
     },
     "hero": {
       "name": "Hero",
-      "wordmark_header": "Wordmark",
-      "show_wordmark": {
-        "label": "Show the letterform wordmark"
-      },
       "show_sparkles": {
         "label": "Show sparkles"
       },
@@ -1534,6 +1680,11 @@
       "tab_label": {
         "label": "Switch heading"
       },
+      "card_action": {
+        "label": "Product card click",
+        "product_page": "Open product page",
+        "quick_view": "Open quick view"
+      },
       "blocks": {
         "hero_detail": {
           "name": "Product detail",
@@ -1542,9 +1693,21 @@
         },
         "collection_tab": {
           "name": "Collection tab",
+          "content_header": "Content",
           "collection": {
             "label": "Collection",
             "info": "The products shown while this tab is selected."
+          },
+          "image_header": "Image",
+          "image": {
+            "label": "Media",
+            "info": "Shown while this tab is selected. Leave empty to use the Hero's default portrait image."
+          },
+          "image_ratio": {
+            "label": "Media size"
+          },
+          "image_fit": {
+            "label": "Media fit"
           }
         },
         "hero_cta": {
@@ -1672,10 +1835,8 @@
       "start": "Start",
       "narrow_controls": "Narrow-screen controls",
       "single_row": "Single row",
-      "filter_button_label": "Filter button label",
       "filter_drawer": "Filter drawer",
       "drawer_color_scheme": "Drawer color scheme",
-      "drawer_heading": "Drawer heading",
       "drawer_position": "Drawer position",
       "drawer_width": "Drawer width",
       "narrow_filter": "Narrow-screen filter",
@@ -1752,7 +1913,8 @@
     },
     "main_policy": {
       "name": "Policy content",
-      "show_title": "Show policy heading"
+      "show_title": "Show policy heading",
+      "show_policy_navigation": "Show policy navigation"
     },
     "main_cart": {
       "name": "Cart",
@@ -1868,7 +2030,8 @@
         "custom_liquid": "Custom Liquid"
       },
       "products_label": { "label": "All products label" },
-      "show_shipping_policy": { "label": "Show shipping policy" },
+      "price_text": { "label": "Text" },
+      "option_gap": { "label": "Gap below option label" },
       "picker_type": {
         "label": "Picker style",
         "automatic": "Automatic",
@@ -1878,6 +2041,13 @@
       },
       "swatch_shape": { "label": "Swatch shape", "round": "Round", "square": "Square" },
       "show_sold_out": { "label": "Show sold-out option values" },
+      "selected_style": {
+        "header": "Selected choice",
+        "background": "Background",
+        "text": "Text",
+        "border": "Border"
+      },
+      "input_style": { "header": "Input appearance" },
       "show_dynamic_checkout": { "label": "Show accelerated checkout" },
       "show_installments": { "label": "Show Shop Pay installments" },
       "show_gift_card_recipient": { "label": "Show gift-card recipient form" },
@@ -1894,10 +2064,34 @@
         "balanced": "Equal",
         "details_large": "Larger details"
       },
+      "gallery_layout": {
+        "label": "Gallery layout",
+        "carousel": "Carousel",
+        "stacked": "Gallery grid"
+      },
+      "first_media_large": {
+        "label": "Make the first media larger",
+        "info": "In Gallery grid, the first media spans the full gallery width on desktop."
+      },
+      "video_first": {
+        "label": "Show video first",
+        "info": "Moves hosted and external product videos before images while keeping variant media synchronized."
+      },
+      "sticky_mode": {
+        "label": "Desktop sticky column",
+        "info": "Adaptive keeps the shorter column visible while the taller column scrolls.",
+        "adaptive": "Adaptive (recommended)",
+        "gallery": "Keep gallery visible",
+        "details": "Keep product information visible",
+        "none": "No sticky column"
+      },
       "media_fit": { "label": "Media fit", "contain": "Fit", "cover": "Fill" },
       "show_arrows": { "label": "Show gallery arrows" },
       "show_dots": { "label": "Show gallery navigation" },
-      "autoplay_video": { "label": "Autoplay hosted video" },
+      "video_label": { "label": "Product video label" },
+      "autoplay_video": { "label": "Autoplay hosted video", "info": "Autoplay is muted and loops. Off, the gallery shows a play action instead — the theme draws no native video controls." },
+      "first_value": { "label": "Show this choice first", "info": "A written option value — 18K, Yellow Gold. The match is listed first in its row and everything else keeps the catalog's order. Leave empty for the catalog's order." },
+      "home_label": { "label": "Home breadcrumb label" },
       "details_width": { "label": "Maximum details width" }
     },
     "featured_product": {
@@ -1905,6 +2099,7 @@
       "product": {
         "label": "Product"
       },
+      "link_title": { "label": "Link title to product" },
       "details_width": {
         "narrow": "Narrow",
         "standard": "Standard",

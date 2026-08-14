@@ -22,7 +22,20 @@
   assign pages = predictive_search.resources.pages
   assign articles = predictive_search.resources.articles
 
-  assign page_count = collections.size | plus: pages.size | plus: articles.size
+  comment
+    Hidden collections stay out of the suggestions, and out of the announced
+    count — filtering only the rows would announce results the list does not
+    show.
+  endcomment
+  assign hidden_handles = settings.hidden_collections | map: 'handle'
+  assign visible_collection_count = 0
+  for collection in collections
+    unless hidden_handles contains collection.handle
+      assign visible_collection_count = visible_collection_count | plus: 1
+    endunless
+  endfor
+
+  assign page_count = visible_collection_count | plus: pages.size | plus: articles.size
   assign total = products.size | plus: page_count
 -%}
 
@@ -46,6 +59,20 @@
             if product.price_varies
               assign price_from = product.price_min | money
               assign price_label = 'products.from_price' | t: price: price_from
+            elsif product.compare_at_price > product.price
+              capture price_label
+                if settings.price_compare_position == 'after'
+                  echo product.price | money
+                  echo ' <s>'
+                  echo product.compare_at_price | money
+                  echo '</s>'
+                else
+                  echo '<s>'
+                  echo product.compare_at_price | money
+                  echo '</s> '
+                  echo product.price | money
+                endif
+              endcapture
             else
               assign price_label = product.price | money
             endif
@@ -77,13 +104,15 @@
         -%}
 
         {%- for collection in collections -%}
-          {%- assign row_title = collection.title | highlight: terms -%}
-          {% render 'search-row',
-            url: collection.url,
-            title: row_title,
-            meta: label_collection,
-            image: collection.featured_image
-          %}
+          {%- unless hidden_handles contains collection.handle -%}
+            {%- assign row_title = collection.title | highlight: terms -%}
+            {% render 'search-row',
+              url: collection.url,
+              title: row_title,
+              meta: label_collection,
+              image: collection.featured_image
+            %}
+          {%- endunless -%}
         {%- endfor -%}
 
         {%- for page in pages -%}

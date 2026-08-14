@@ -90,8 +90,13 @@
     {% render 'theme-tokens' %}
 
     {{ 'base.css' | asset_url | stylesheet_tag }}
+    {{ 'main-product.css' | asset_url | stylesheet_tag }}
+    {%- if request.path contains '/policies/' -%}
+      {{ 'content-pages.css' | asset_url | stylesheet_tag }}
+    {%- endif -%}
 
     <script src="{{ 'theme.js' | asset_url }}" defer="defer"></script>
+    <script src="{{ 'main-product.js' | asset_url }}" defer="defer"></script>
 
     {{ content_for_header }}
   </head>
@@ -102,13 +107,33 @@
     itself used — every section could be restyled and the ground under them
     could not.
   {%- endcomment -%}
-  <body class="scheme-{{ settings.page_scheme.id | default: 'scheme_1' }} template-{{ template.name | handle }}">
+  <body class="scheme-{{ settings.page_scheme.id | default: 'scheme_1' }} template-{{ template.name | handle }}"{% if settings.video_pause_offscreen %} data-video-offscreen-pause{% endif %}{% if settings.price_compare_position == 'after' %} data-price-compare="after"{% endif %}>
     <a class="skip-link" href="#main">{{ 'accessibility.skip_to_content' | t }}</a>
 
     {% sections 'header-group' %}
 
     <main id="main">
-      {{ content_for_layout }}
+      {%- if request.path contains '/policies/' -%}
+        <section class="section content-surface">
+          <div class="page-width policy-layout">
+            {%- if shop.policies.size > 0 -%}
+              <nav class="policy-nav" aria-label="{{ 'sections.main_policy.navigation' | t | escape }}">
+                <p class="policy-nav__eyebrow">{{ 'sections.main_policy.navigation' | t }}</p>
+                <ul class="policy-nav__list" role="list">
+                  {%- for shop_policy in shop.policies -%}
+                    {%- if shop_policy != blank -%}
+                      <li><a href="{{ shop_policy.url }}"{% if request.path == shop_policy.url %} aria-current="page"{% endif %}>{{ shop_policy.title }}</a></li>
+                    {%- endif -%}
+                  {%- endfor -%}
+                </ul>
+              </nav>
+            {%- endif -%}
+            <div class="policy-native-content">{{ content_for_layout }}</div>
+          </div>
+        </section>
+      {%- else -%}
+        {{ content_for_layout }}
+      {%- endif -%}
     </main>
 
     {% sections 'footer-group' %}

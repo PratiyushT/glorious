@@ -1,5 +1,13 @@
 {%- comment -%}
-  Full-screen search overlay.
+  Search, in the shop's chosen presentation — Theme settings → Search.
+
+  `menu` is the full-screen noir room. `drawer` is the cart drawer's shell to
+  the letter: the same `drawer` root, veil, sliding `drawer__panel` with a
+  merchant scheme, and `drawer__head` with the title and the close pill — a
+  visitor should read it as the same furniture as the bag. The search markup
+  inside is one capture shared by both modes, so the field, the popular terms,
+  the resting state, and every `data-search-*` hook cannot drift between them,
+  and `theme.js` needs no mode awareness at all.
 
   A real GET form to the search route, so it works with JavaScript switched off
   and submitting always lands on the search page. With JavaScript on, typing
@@ -7,11 +15,13 @@
   the form is never the thing that renders results.
 
   The resting state — the design's "Browse" and "Featured pieces" — is rendered
-  server-side, so opening the overlay shows something immediately rather than
-  waiting on a request.
+  server-side, so opening shows something immediately rather than waiting on a
+  request.
 
   Accepts:
-    section - the header section, for its blocks and settings.
+    section            - the header section, for its blocks and settings.
+    overlay_huge_text  - Header's Huge Text block markup.
+    mode               - 'menu' or 'drawer'.
 {%- endcomment -%}
 
 {%- liquid
@@ -20,19 +30,7 @@
   assign popular = section.settings.search_popular | split: ','
 -%}
 
-<div
-  class="search-overlay"
-  data-overlay="search"
-  data-overlay-modal
-  role="dialog"
-  aria-modal="true"
-  aria-label="{{ 'general.search.search' | t }}"
-  hidden
->
-  {% render 'overlay-head', close_action: 'search', row: 0 %}
-
-  <div class="search-overlay__body">
-    <div class="search-overlay__inner">
+{%- capture search_body -%}
       <div class="search-overlay__top" style="--row: 1;">
         <form
           class="search-overlay__form"
@@ -135,6 +133,20 @@
                   if product.price_varies
                     assign price_from = product.price_min | money
                     assign price_label = 'products.from_price' | t: price: price_from
+                  elsif product.compare_at_price > product.price
+                    capture price_label
+                      if settings.price_compare_position == 'after'
+                        echo product.price | money
+                        echo ' <s>'
+                        echo product.compare_at_price | money
+                        echo '</s>'
+                      else
+                        echo '<s>'
+                        echo product.compare_at_price | money
+                        echo '</s> '
+                        echo product.price | money
+                      endif
+                    endcapture
                   else
                     assign price_label = product.price | money
                   endif
@@ -149,7 +161,7 @@
                   url: product.url,
                   title: row_title,
                   meta: row_meta,
-                        image: product.featured_media
+                  image: product.featured_media
                 %}
               {%- endfor -%}
             </div>
@@ -159,6 +171,51 @@
         {%- comment -%} Live predictive results land here. {%- endcomment -%}
         <div data-search-live hidden></div>
       </div>
+{%- endcapture -%}
+
+{%- if mode == 'drawer' -%}
+  <div
+    class="drawer search-drawer"
+    data-overlay="search"
+    data-overlay-modal
+    hidden
+  >
+    <div class="overlay__veil" data-overlay-close="search"></div>
+
+    <aside
+      class="drawer__panel scheme-{{ settings.search_drawer_color_scheme | default: 'scheme_1' }}"
+      role="dialog"
+      aria-modal="true"
+      aria-label="{{ 'general.search.search' | t }}"
+    >
+      <div class="drawer__inner">
+        <header class="drawer__head">
+          <span class="drawer__title">{{ 'general.search.search' | t }}</span>
+          {%- capture close_attributes -%}data-overlay-close="search"{%- endcapture -%}
+          {% render 'overlay-close', class: 'drawer__close', attributes: close_attributes %}
+        </header>
+        {{ search_body }}
+      </div>
+    </aside>
+  </div>
+{%- else -%}
+  <div
+    class="search-overlay search-overlay--menu"
+    data-overlay="search"
+    data-overlay-modal
+    role="dialog"
+    aria-modal="true"
+    aria-label="{{ 'general.search.search' | t }}"
+    hidden
+  >
+    <div class="search-overlay__panel">
+      {% render 'overlay-head', close_action: 'search', row: 0, huge_text: overlay_huge_text %}
+
+      <div class="search-overlay__body">
+        <div class="search-overlay__inner">
+          {{ search_body }}
+        </div>
+      </div>
     </div>
   </div>
-</div>
+{%- endif -%}

@@ -1,0 +1,33 @@
+{%- comment -%}
+  One variant-aware card price for Product card and Hotspot card. Both use the
+  same card-option resolver, compare-price markup, editor attributes, and live
+  update hook; Product card alone asks for the optional unit price.
+{%- endcomment -%}
+
+{%- liquid
+  assign chosen = blank
+  if product != blank
+    capture card_option_raw
+      render 'card-option', product: product
+    endcapture
+    assign card_option = card_option_raw | strip | split: '||'
+    assign chosen_id = card_option | last | plus: 0
+    for variant in product.variants
+      if variant.id == chosen_id
+        assign chosen = variant
+        break
+      endif
+    endfor
+  endif
+-%}
+
+<span class="card__price{% if class != blank %} {{ class }}{% endif %}" data-card-price {% if attributes != blank %}{{ attributes }}{% endif %}>
+  {%- if product == blank -%}
+    {{- 1999 | money -}}
+  {%- else -%}
+    {%- if chosen.compare_at_price > chosen.price and settings.price_compare_position != 'after' -%}<s>{{ chosen.compare_at_price | money }}</s>{%- endif -%}
+    {{- chosen.price | money -}}
+    {%- if chosen.compare_at_price > chosen.price and settings.price_compare_position == 'after' -%}<s>{{ chosen.compare_at_price | money }}</s>{%- endif -%}
+    {%- if show_unit_price -%}{% render 'unit-price', price: chosen.unit_price, measurement: chosen.unit_price_measurement, class: 'card__unit-price' %}{%- endif -%}
+  {%- endif -%}
+</span>

@@ -17,6 +17,8 @@
 {%- endcomment -%}
 {%- liquid
   assign cart_name = settings.cart_name | default: 'Cart'
+  assign empty_cart_link = settings.cart_empty_link | default: routes.all_products_collection_url
+  assign drawer_secondary_link = section.settings.secondary_link | default: routes.root_url
   comment
     A line's photograph is framed the way a product card's is, from the same
     kind of pair of settings — Theme settings → Cart. The design's thumbnail is
@@ -54,9 +56,8 @@
     {%- endif -%}
   </span>
 
-  <button class="overlay-head__close drawer__close" type="button" data-overlay-close="cart">
-    {{ 'navigation.close' | t }}
-  </button>
+  {%- capture close_attributes -%}data-overlay-close="cart"{%- endcapture -%}
+  {% render 'overlay-close', class: 'drawer__close', attributes: close_attributes %}
 </div>
 
 <div class="drawer__body" data-drawer-scroller>
@@ -69,9 +70,8 @@
         to all products rather than to a fragment — this theme does not ship a
         control that looks live and goes nowhere.
       {%- endcomment -%}
-      <a class="btn btn--primary" href="{{ settings.cart_empty_link | default: routes.all_products_collection_url }}">
-        {{ 'cart.browse' | t }}
-      </a>
+      {%- assign browse_label = 'cart.browse' | t -%}
+      {% render 'button', label: browse_label, link: empty_cart_link %}
     </div>
   {%- else -%}
     <ul class="drawer-lines">
@@ -90,12 +90,22 @@
                   else
                     comment
                       Adapt: the frame is this photograph's own shape, so there
-                      is nothing to crop to and nothing fixed to declare.
+                      is nothing to crop to and nothing fixed to declare. A
+                      line with no photograph has no shape to adapt to and
+                      falls back to the pair's own 3/4 default — without the
+                      guard it emitted the invalid "--drawer-thumb-ratio: /",
+                      which took the whole declaration with it and collapsed
+                      the empty bordered thumb to nothing.
                     endcomment
                     assign thumb_crop_h = 0
                     assign thumb_lqip_h = 0
-                    assign thumb_h = 64 | times: item.image.height | divided_by: item.image.width
-                    assign thumb_ar = item.image.width | append: ' / ' | append: item.image.height
+                    if item.image
+                      assign thumb_h = 64 | times: item.image.height | divided_by: item.image.width
+                      assign thumb_ar = item.image.width | append: ' / ' | append: item.image.height
+                    else
+                      assign thumb_h = 85
+                      assign thumb_ar = '3 / 4'
+                    endif
                   endif
                 -%}
                 <a
@@ -177,12 +187,29 @@
                     the card said. `settings.cart_unit_price` turns it back
                     into the line total, here and on the cart page alike.
                   {%- endcomment -%}
+                  {%- liquid
+                    comment
+                      The struck figure is what a discount changed — original
+                      against final — never the variant's compare-at price:
+                      checkout will not echo a compare-at saving, and a figure
+                      the bag claims that checkout withdraws is the trap the
+                      card's dearest-variant price already refused. Both
+                      figures follow the unit-versus-line choice together, so
+                      a per-piece price is never struck through by a line
+                      total.
+                    endcomment
+                    if settings.cart_unit_price
+                      assign line_price = item.final_price
+                      assign line_was = item.original_price
+                    else
+                      assign line_price = item.final_line_price
+                      assign line_was = item.original_line_price
+                    endif
+                  -%}
                   <span class="drawer-row__price">
-                    {%- if settings.cart_unit_price -%}
-                      {{- item.final_price | money -}}
-                    {%- else -%}
-                      {{- item.final_line_price | money -}}
-                    {%- endif -%}
+                    {%- if line_was > line_price and settings.price_compare_position != 'after' -%}<s class="drawer-row__compare">{{ line_was | money }}</s>{%- endif -%}
+                    {{- line_price | money -}}
+                    {%- if line_was > line_price and settings.price_compare_position == 'after' -%}<s class="drawer-row__compare">{{ line_was | money }}</s>{%- endif -%}
                     {% render 'unit-price', price: item.unit_price, measurement: item.unit_price_measurement, class: 'drawer-row__unit-price' %}
                   </span>
                   <button
@@ -202,6 +229,10 @@
     </ul>
   {%- endif -%}
 </div>
+
+{%- if drawer_blocks != blank -%}
+  <div class="drawer__upsells">{{ drawer_blocks }}</div>
+{%- endif -%}
 
 {%- if cart.item_count > 0 -%}
   <div class="drawer__foot">
@@ -283,9 +314,8 @@
         >{{ cart.note }}</textarea>
       {%- endif -%}
 
-      <button class="btn btn--primary drawer__checkout" type="submit" name="checkout">
-        {{ 'cart.checkout' | t }}
-      </button>
+      {%- assign checkout_label = 'cart.checkout' | t -%}
+      {% render 'button', label: checkout_label, element: 'button', button_type: 'submit', button_name: 'checkout', class: 'drawer__checkout' %}
 
       {%- comment -%}
         Shopify renders these two itself and renders nothing when the shop has
@@ -301,9 +331,7 @@
       {%- endif -%}
 
       {%- if section.settings.secondary_label != blank -%}
-        <a class="btn btn--outline drawer__secondary" href="{{ section.settings.secondary_link | default: routes.root_url }}">
-          {{ section.settings.secondary_label }}
-        </a>
+        {% render 'button', label: section.settings.secondary_label, link: drawer_secondary_link, style: 'outline', class: 'drawer__secondary' %}
       {%- endif -%}
     {%- endform -%}
   </div>

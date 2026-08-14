@@ -111,12 +111,17 @@
   endif
 
   capture chosen_price_html
-    if chosen.compare_at_price > chosen.price
+    if chosen.compare_at_price > chosen.price and settings.price_compare_position != 'after'
       echo '<s>'
       echo chosen.compare_at_price | money
       echo '</s>'
     endif
     echo chosen.price | money
+    if chosen.compare_at_price > chosen.price and settings.price_compare_position == 'after'
+      echo '<s>'
+      echo chosen.compare_at_price | money
+      echo '</s>'
+    endif
     render 'unit-price', price: chosen.unit_price, measurement: chosen.unit_price_measurement, class: 'card__unit-price'
   endcapture
 -%}

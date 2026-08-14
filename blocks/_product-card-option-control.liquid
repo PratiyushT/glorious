@@ -146,10 +146,13 @@
       -%}
 
       {%- capture value_price_html -%}
-        {%- if chosen.compare_at_price > chosen.price -%}
+        {%- if chosen.compare_at_price > chosen.price and settings.price_compare_position != 'after' -%}
           <s>{{ chosen.compare_at_price | money }}</s>
         {%- endif -%}
         {{- chosen.price | money -}}
+        {%- if chosen.compare_at_price > chosen.price and settings.price_compare_position == 'after' -%}
+          <s>{{ chosen.compare_at_price | money }}</s>
+        {%- endif -%}
         {% render 'unit-price', price: chosen.unit_price, measurement: chosen.unit_price_measurement, class: 'card__unit-price' %}
       {%- endcapture -%}
 

@@ -7,7 +7,21 @@
   if cart_title == blank
     assign cart_title = 'cart.title' | t: cart_name: cart_name
   endif
-  assign cart_ratio = section.settings.image_ratio | replace: '/', ' / '
+  comment
+    The frame is Theme settings → Cart's pair, the same one the drawer reads —
+    the drawer and the page are two presentations of one cart contract, and
+    this section carried a duplicate pair that meant "what shape is a line's
+    photograph?" had two answers, only one of which the theme-settings control
+    could reach. `adapt` has no single value to put on the section root, so
+    each line emits its own photograph's shape instead.
+  endcomment
+  assign cart_ratio_setting = settings.cart_image_ratio | default: '3/4'
+  assign cart_ratio = ''
+  unless cart_ratio_setting == 'adapt'
+    assign cart_ratio = cart_ratio_setting | replace: '/', ' / '
+  endunless
+  assign cart_fit = settings.cart_image_fit | default: 'cover'
+  assign empty_cart_link = settings.cart_empty_link | default: routes.all_products_collection_url
   assign summary_width = 24
   if section.settings.summary_width == 'narrow'
     assign summary_width = 20
@@ -19,7 +33,7 @@
 <main-cart>
   <section
     class="section cart-page scheme-{{ section.settings.color_scheme }}"
-    style="{% render 'section-style', padding_top: section.settings.padding_top, padding_bottom: section.settings.padding_bottom %} --cart-summary-width: {{ summary_width }}rem; --cart-image-ratio: {{ cart_ratio }}; --cart-image-fit: {{ section.settings.image_fit }};"
+    style="{% render 'section-style', padding_top: section.settings.padding_top, padding_bottom: section.settings.padding_bottom %} --cart-summary-width: {{ summary_width }}rem;{% if cart_ratio != '' %} --cart-image-ratio: {{ cart_ratio }};{% endif %} --cart-image-fit: {{ cart_fit }};"
   >
     <div class="page-width cart-page__inner">
       <h1 class="cart-page__heading" style="{% render 'text-style', preset: section.settings.title_style %}">
@@ -29,21 +43,30 @@
         {%- endif -%}
       </h1>
 
-      {% content_for 'blocks' %}
+      {%- capture cart_blocks -%}{% content_for 'blocks' %}{%- endcapture -%}
 
       {%- if cart.item_count == 0 -%}
         <div class="cart-page__empty">
           <p>{{ section.settings.empty_message }}</p>
           <div>
-            <a class="btn btn--primary" href="{{ settings.cart_empty_link | default: routes.all_products_collection_url }}">{{ section.settings.empty_button_label }}</a>
+            {% render 'button', label: section.settings.empty_button_label, link: empty_cart_link %}
           </div>
+          {%- if cart_blocks != blank -%}
+            <div class="cart-page__upsells">{{ cart_blocks }}</div>
+          {%- endif -%}
         </div>
       {%- else -%}
         {%- form 'cart', cart, class: 'cart-page__layout' -%}
           <div class="cart-page__items">
             {%- for item in cart.items -%}
               <article class="cart-line" data-cart-line="{{ item.key }}">
-                <a class="cart-line__media" href="{{ item.url }}" tabindex="-1" aria-hidden="true">
+                <a
+                  class="cart-line__media"
+                  href="{{ item.url }}"
+                  {%- if cart_ratio_setting == 'adapt' and item.image %} style="--cart-image-ratio: {{ item.image.width }} / {{ item.image.height }};"{% endif %}
+                  tabindex="-1"
+                  aria-hidden="true"
+                >
                   {%- if item.image -%}
                     {%- assign item_lqip = item.image | image_url: width: 40 -%}
                     {{ item.image | image_url: width: 480 | image_tag: widths: '160,240,320,480', sizes: '(max-width: 47rem) 6.5rem, 9rem', loading: 'lazy', alt: item.image.alt, data-image-lqip: item_lqip }}
@@ -77,9 +100,25 @@
                 </div>
 
                 <div class="cart-line__aside">
+                  {%- liquid
+                    comment
+                      Original-versus-final, in the same unit-or-line mode as
+                      the visible figure — a per-piece price struck through by
+                      a line total pairs two different quantities in one
+                      sentence. The drawer renders this same pair.
+                    endcomment
+                    if settings.cart_unit_price
+                      assign line_price = item.final_price
+                      assign line_was = item.original_price
+                    else
+                      assign line_price = item.final_line_price
+                      assign line_was = item.original_line_price
+                    endif
+                  -%}
                   <div class="cart-line__price">
-                    {%- if item.original_line_price > item.final_line_price -%}<s class="cart-line__compare">{{ item.original_line_price | money }}</s>{%- endif -%}
-                    {%- if settings.cart_unit_price -%}{{ item.final_price | money }}{%- else -%}{{ item.final_line_price | money }}{%- endif -%}
+                    {%- if line_was > line_price and settings.price_compare_position != 'after' -%}<s class="cart-line__compare">{{ line_was | money }}</s>{%- endif -%}
+                    {{- line_price | money -}}
+                    {%- if line_was > line_price and settings.price_compare_position == 'after' -%}<s class="cart-line__compare">{{ line_was | money }}</s>{%- endif -%}
                     {% render 'unit-price', price: item.unit_price, measurement: item.unit_price_measurement, class: 'cart-line__unit-price' %}
                   </div>
                   <div class="cart-line__controls">
@@ -95,6 +134,11 @@
               </article>
             {%- endfor -%}
           </div>
+
+          <div class="cart-page__sidebar">
+            {%- if cart_blocks != blank -%}
+              <div class="cart-page__upsells">{{ cart_blocks }}</div>
+            {%- endif -%}
 
           <aside class="cart-page__summary" aria-label="{{ 'cart.summary' | t }}">
             {%- if settings.cart_note -%}
@@ -117,13 +161,18 @@
             <div>{% render 'tax-note' %}</div>
 
             <div class="cart-page__actions">
-              <button type="submit" name="checkout" class="btn btn--primary">{{ 'cart.checkout' | t }}</button>
-              {%- if section.settings.show_update_button -%}<button type="submit" name="update" class="btn btn--secondary">{{ 'cart.update' | t }}</button>{%- endif -%}
+              {%- assign checkout_label = 'cart.checkout' | t -%}
+              {%- assign update_label = 'cart.update' | t -%}
+              {% render 'button', label: checkout_label, element: 'button', button_type: 'submit', button_name: 'checkout' %}
+              {%- if section.settings.show_update_button -%}
+                {% render 'button', label: update_label, element: 'button', button_type: 'submit', button_name: 'update', style: 'outline' %}
+              {%- endif -%}
             </div>
 
             {%- if settings.cart_accelerated_checkout -%}{{ form | payment_button }}{%- endif -%}
             {%- if settings.cart_installments -%}{{ form | payment_terms }}{%- endif -%}
           </aside>
+          </div>
         {%- endform -%}
       {%- endif -%}
     </div>
@@ -134,7 +183,7 @@
 {
   "name": "t:sections.main_cart.name",
   "enabled_on": { "templates": ["cart"] },
-  "blocks": [{ "type": "@theme" }, { "type": "@app" }],
+  "blocks": [{ "type": "cart_upsell" }, { "type": "@app" }],
   "settings": [
     { "type": "color_scheme", "id": "color_scheme", "label": "t:sections.all.color_scheme.label", "default": "scheme_1" },
     { "type": "text", "id": "title", "label": "t:sections.main_cart.title", "info": "t:sections.main_cart.title_info" },
@@ -155,17 +204,6 @@
         { "value": "medium", "label": "t:sections.main_cart.summary_medium" },
         { "value": "wide", "label": "t:sections.main_cart.summary_wide" }
       ], "default": "medium"
-    },
-    {
-      "type": "select", "id": "image_ratio", "label": "t:blocks.article_card.image_ratio",
-      "options": [
-        { "value": "1/1", "label": "t:blocks.article_card.square" }, { "value": "4/3", "label": "t:blocks.article_card.landscape" },
-        { "value": "3/4", "label": "t:blocks.article_card.portrait" }
-      ], "default": "1/1"
-    },
-    {
-      "type": "select", "id": "image_fit", "label": "t:blocks.article_card.image_fit",
-      "options": [ { "value": "contain", "label": "t:blocks.article_card.fit" }, { "value": "cover", "label": "t:blocks.article_card.fill" } ], "default": "contain"
     },
     { "type": "text", "id": "empty_message", "label": "t:sections.main_cart.empty_message", "default": "Your cart is waiting for something good." },
     { "type": "text", "id": "empty_button_label", "label": "t:sections.main_cart.empty_button_label", "default": "Continue shopping" },

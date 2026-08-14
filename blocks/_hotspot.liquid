@@ -25,6 +25,20 @@
   if product.price_varies
     assign price_value = product.price_min | money
     assign price_label = 'products.from_price' | t: price: price_value
+  elsif product.compare_at_price > product.price
+    capture price_label
+      if settings.price_compare_position == 'after'
+        echo product.price | money
+        echo ' <s>'
+        echo product.compare_at_price | money
+        echo '</s>'
+      else
+        echo '<s>'
+        echo product.compare_at_price | money
+        echo '</s> '
+        echo product.price | money
+      endif
+    endcapture
   else
     assign price_label = product.price | money
   endif
@@ -70,10 +84,8 @@
       aria-label="{{ title | escape }}"
       hidden
     >
-      <button class="lookbook-card__close" type="button" data-look-card-close>
-        <span class="visually-hidden">{{ 'navigation.close' | t }}</span>
-        <span aria-hidden="true">{% render 'icon', icon: 'close' %}</span>
-      </button>
+      {%- capture close_attributes -%}data-look-card-close{%- endcapture -%}
+      {% render 'overlay-close', class: 'lookbook-card__close', attributes: close_attributes %}
       <div class="lookbook-card__content">
         {% content_for 'blocks', closest.product: product %}
       </div>

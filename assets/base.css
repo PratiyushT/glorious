@@ -284,6 +284,13 @@ a {
   gap: var(--stack-gap, var(--space-sm));
 }
 
+/* The stack owns its rhythm the way every other gap container here does — a
+   gap and a child's own margin add, which is how the rich-text and newsletter
+   sections grew spacing nothing in their settings accounted for. */
+.stack > * {
+  margin-block: 0;
+}
+
 .stack--tight { --stack-gap: var(--space-2xs); }
 .stack--loose { --stack-gap: var(--space-lg); }
 
@@ -300,13 +307,14 @@ a {
   --min: var(--grid-min);
   --min-pct: 100%;
   display: grid;
-  gap: var(--gap);
+  column-gap: var(--column-gap, var(--gap));
+  row-gap: var(--row-gap, var(--gap));
   grid-template-columns: repeat(
     auto-fit,
     minmax(
       max(
         min(var(--min), var(--min-pct)),
-        calc((100% - (var(--cols) - 1) * var(--gap)) / var(--cols))
+        calc((100% - (var(--cols) - 1) * var(--column-gap, var(--gap))) / var(--cols))
       ),
       1fr
     )
@@ -334,6 +342,97 @@ a {
   --min-pct: 46%;
 }
 
+/* Repeated Product and Collection card blocks own their list spacing. The
+   list reads the child contract so grid and carousel cannot drift apart. */
+/* `0px`, never bare `0`: these feed the column-width calc, where a unitless
+   zero is a <number> and `100% - <number>` is invalid at computed-value time —
+   the whole template dropped and every card sat alone on a full-width row. */
+.grid-auto:has([data-card-column-gap='none']) { --column-gap: 0px; }
+.grid-auto:has([data-card-column-gap='minimal']) { --column-gap: var(--step-minimal); }
+.grid-auto:has([data-card-column-gap='tiny']) { --column-gap: var(--step-tiny); }
+.grid-auto:has([data-card-column-gap='small']) { --column-gap: var(--step-small); }
+.grid-auto:has([data-card-column-gap='medium']) { --column-gap: var(--step-medium); }
+.grid-auto:has([data-card-column-gap='large']) { --column-gap: var(--step-large); }
+.grid-auto:has([data-card-column-gap='xlarge']) { --column-gap: var(--step-xlarge); }
+.grid-auto:has([data-card-row-gap='none']) { --row-gap: 0px; }
+.grid-auto:has([data-card-row-gap='minimal']) { --row-gap: var(--step-minimal); }
+.grid-auto:has([data-card-row-gap='tiny']) { --row-gap: var(--step-tiny); }
+.grid-auto:has([data-card-row-gap='small']) { --row-gap: var(--step-small); }
+.grid-auto:has([data-card-row-gap='medium']) { --row-gap: var(--step-medium); }
+.grid-auto:has([data-card-row-gap='large']) { --row-gap: var(--step-large); }
+.grid-auto:has([data-card-row-gap='xlarge']) { --row-gap: var(--step-xlarge); }
+
+/* A sparse product row should not turn two cards into two enormous feature
+   panels. Product cards opt into a capped track by default; merchants can turn
+   it off on the shared card block when a deliberately fluid row is wanted.
+
+   **`data-row-live` lives on the carousel shell, not on this track**, so the
+   guard asks whether the track is *inside* a live shell rather than whether it
+   carries the attribute itself — which it never does, so the old
+   `:not([data-row-live])` was always true and this explicit template kept
+   painting under the live carousel's `grid-template-columns: none`. It also
+   outweighs that rule (`:has()` carries its argument's specificity), so the
+   first auto-fill columns stayed capped while the overflow cards took the
+   implicit 100% column: some cards thin, some full-width, and below 660px the
+   explicit `1fr` starved to 0px and collapsed the active cell entirely. A
+   standalone catalog grid is inside no shell and keeps the cap; a shell in
+   grid mode has no `data-row-live` and keeps it too. */
+.grid-auto--products:not([data-row-live] *):has(.card[data-card-fixed-size]) {
+  /* Fluid, not frozen. `minmax(col, col)` held every card at the design
+     column and left a sparse row hugging the left of a field of dead space —
+     three cards on a four-column row read as a mistake, and even a full row
+     kept a strip of dead space its cards could have shared. `1fr` is what
+     lets the row fill; it is also load-bearing for the column count, because
+     `auto-fit` counts its repetitions by the MAX track size when that is
+     definite — a 1.4× ceiling here collapsed a seven-card row to two fat
+     columns. Indefinite, the count follows the column floor, so the row
+     breaks exactly where it always did and the carousel's ruler measurement
+     is untouched. */
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(
+      min(
+        100%,
+        max(
+          min(var(--min), var(--min-pct)),
+          calc((100% - (var(--cols) - 1) * var(--column-gap, var(--gap))) / var(--cols))
+        )
+      ),
+      1fr
+    )
+  );
+}
+
+/* The panel guard: one or two cards must not grow into the enormous feature
+   panels the fixed-size rule exists to prevent, so a shell row that holds at
+   most two cells caps its tracks at 1.4 columns instead. The count works
+   here because counting by the max is exactly what a two-item row wants.
+   The ruler is the track's first child, so "at most two cells" is a cell
+   that is still among the first three children while being the last. */
+.grid-auto--products:not([data-row-live] *):has(.card[data-card-fixed-size]):has(> [data-row-cell]:nth-child(-n+3):last-child) {
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(
+      min(
+        100%,
+        max(
+          min(var(--min), var(--min-pct)),
+          calc((100% - (var(--cols) - 1) * var(--column-gap, var(--gap))) / var(--cols))
+        )
+      ),
+      min(
+        100%,
+        calc(
+          max(
+            min(var(--min), var(--min-pct)),
+            calc((100% - (var(--cols) - 1) * var(--column-gap, var(--gap))) / var(--cols))
+          ) * 1.4
+        )
+      )
+    )
+  );
+}
+
 /* A product grid drops to one column below 660px, whatever the floor above
    says. The design states this as a hard override —
    `@media (max-width:440px){[data-grid]{grid-template-columns:1fr !important}}`
@@ -358,7 +457,9 @@ a {
    No `!important` needed: same specificity as `.grid-auto`, and it comes
    later in the file. */
 @media (max-width: 41.25rem) {
-  .grid-auto--products {
+  .grid-auto--products,
+  .grid-auto--products:not([data-row-live] *):has(.card[data-card-fixed-size]),
+  .grid-auto--products:not([data-row-live] *):has(.card[data-card-fixed-size]):has(> [data-row-cell]:nth-child(-n+3):last-child) {
     grid-template-columns: 1fr;
   }
 }
@@ -393,6 +494,10 @@ a {
 
 .section-eyebrow .text-block {
   padding: 0;
+  /* The wrapper owns the eyebrow's spacing; its inner label must not pick up
+     the composed card's meta-line margin, which no ancestor-child reset can
+     reach — the label is the wrapper's child, not the container's. */
+  margin-block: 0;
 }
 
 /* The oversized edge-to-edge section titles. */
@@ -432,10 +537,23 @@ a {
   color: var(--c-heading);
 }
 
-.wordmark img {
-  height: 0.75em;
+/* The image logo, wherever the shared huge-text renderer places one. Height-
+   capped so a merchant upload of any proportion sits in the wordmark's own
+   slot; the hero never takes one — its letters are the art direction. */
+.huge-text__logo {
+  display: block;
   width: auto;
-  align-self: center;
+  max-width: 100%;
+  max-height: 2rem;
+}
+
+.huge-text__logo--lg {
+  max-height: 3rem;
+}
+
+.huge-text__logo--footer {
+  max-height: clamp(3rem, 12vw, 7rem);
+  margin-inline: auto;
 }
 
 .h1 { font-size: var(--fs-display); font-family: var(--font-display); }
@@ -609,6 +727,117 @@ a {
   border-style: solid;
   border-color: var(--group-border-color, var(--c-hairline));
   border-width: var(--group-border-top, 0) var(--group-border-right, 0) var(--group-border-bottom, 0) var(--group-border-left, 0);
+}
+
+/* ---- Accordion ---------------------------------------------------
+   A global foldable Group, promoted from the footer column interaction. The
+   panel uses the same three layers: an animated 0fr/1fr grid, a clip carrying
+   no padding, then the real content. Without JavaScript the panel stays open. */
+.accordion {
+  border-bottom: var(--border-width) solid var(--accordion-divider, color-mix(in srgb, var(--c-text) 18%, transparent));
+}
+
+.accordion__toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2xs);
+  width: 100%;
+  min-height: 3.5rem;
+  padding: var(--space-2xs) 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+
+.accordion__heading {
+  min-width: 0;
+}
+
+.disclosure__mark {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  width: 1.25rem;
+  height: 1.25rem;
+  color: color-mix(in srgb, var(--c-text) 55%, transparent);
+}
+
+.disclosure__mark > span {
+  grid-area: 1 / 1;
+  transition: opacity 0.2s var(--ease-ui), transform 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.disclosure__mark svg {
+  display: block;
+  width: 1rem;
+  height: 1rem;
+}
+
+.disclosure__minus,
+[data-open] > .disclosure__toggle .disclosure__plus {
+  opacity: 0;
+  transform: rotate(90deg);
+}
+
+[data-open] > .disclosure__toggle .disclosure__minus {
+  opacity: 1;
+  transform: rotate(0);
+}
+
+.disclosure__panel {
+  display: grid;
+  grid-template-rows: 1fr;
+}
+
+.js .disclosure__panel {
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.js [data-open] > .disclosure__panel {
+  grid-template-rows: 1fr;
+}
+
+.disclosure__clip {
+  overflow: hidden;
+  min-height: 0;
+}
+
+.accordion__group {
+  padding-block-end: var(--space-xs);
+}
+
+.no-js .disclosure__toggle {
+  cursor: default;
+  pointer-events: none;
+}
+
+.no-js .disclosure__mark {
+  display: none;
+}
+
+@media (min-width: 47rem) {
+  .js .accordion[data-desktop-behavior="expanded"] > .disclosure__panel {
+    grid-template-rows: 1fr;
+  }
+
+  .accordion[data-desktop-behavior="expanded"] .accordion__toggle {
+    cursor: default;
+  }
+
+  .accordion[data-desktop-behavior="expanded"] .disclosure__mark {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .js .disclosure__panel,
+  .disclosure__mark > span {
+    transition: none;
+  }
 }
 
 /* A public icon is only a drawing and its optional frame. Layout belongs to
@@ -851,6 +1080,77 @@ a {
   margin-block: 0;
 }
 
+/* Cart upsells reuse the Product card shell, projected sideways: the
+   photograph a fixed square on the left, the merchant's composed text beside
+   it, the quick-view disc keeping the photograph. One piece per page — the
+   track's floor resolves to the full width, so the shared measurement finds
+   exactly one column whatever container the band is in — and the shared
+   carousel's `header` placement owns the heading and the arrows. */
+.cart-upsell {
+  min-width: 0;
+  padding-block: var(--cart-upsell-padding-block, 0);
+  padding-inline: var(--cart-upsell-padding-inline, 0);
+}
+
+.cart-upsell__track {
+  --cols: 1;
+  --min: 0px;
+  --min-pct: 100%;
+  --gap: var(--space-sm);
+}
+
+/* The composed card turned into a row. Flex rather than the named `media`
+   grid: nothing here stacks under the photograph, it stands beside it. The
+   caption padding the composed card gives its children is the vertical
+   card's; the row's spacing is its own gap. */
+.cart-upsell .card--composed {
+  display: flex;
+  /* `.card`'s own axis is a column; the row must say so. */
+  flex-direction: row;
+  align-items: center;
+  gap: var(--space-xs);
+  /* A flat row in the band, not a bordered box on the panel — and none of the
+     vertical card's bottom padding, which read as the row sitting high. */
+  padding: 0;
+  background: transparent;
+  border: 0;
+}
+
+/* The vertical card's rhythm — the photograph's 16px gap to the title, the
+   price row's 7px shoulder — is stacking spacing, and in a row it re-appears
+   as the media riding high of centre. The row's own gap is the spacing. */
+.cart-upsell .card--composed > * {
+  padding-inline: 0;
+  margin-block: 0;
+}
+
+.cart-upsell .card--composed > .card__media {
+  flex: 0 0 var(--cart-upsell-thumb, 6rem);
+  width: var(--cart-upsell-thumb, 6rem);
+  /* The vertical card's 16px media→title gap, re-stated at this specificity
+     because the card's own rule outweighs the generic reset above. */
+  margin-block: 0;
+}
+
+.cart-upsell .card--composed > .layout-group {
+  flex: 1 1 auto;
+  min-width: 0;
+  /* Room for the disc at the row's end, so a long title never runs under it. */
+  padding-inline-end: 3rem;
+  /* The price row's 7px shoulder, off for the same reason as the media's. */
+  margin-block: 0;
+}
+
+/* The quick-view disc keeps the card's own corner — top right of the row.
+   `.card__quick`'s base offsets already put it there; the row restates
+   nothing. */
+
+/* No hairline of its own: the upsell's header band draws its own rules, and
+   a second one here doubled the top edge. */
+.drawer__upsells {
+  flex: 0 0 auto;
+}
+
 /* ---- Section header ---------------------------------------------- */
 
 .section-header {
@@ -898,8 +1198,19 @@ a {
   --block-margin: var(--step-medium);
 
   display: flex;
-  margin-block: calc(var(--block-margin) / 4) var(--block-margin);
   padding: var(--block-padding, 0);
+}
+
+/* The margin lives at zero specificity, deliberately. A component contract
+   margin and a container's `> * { margin-block: 0 }` reset used to tie at one
+   class each, so whichever sat later in this file won — and the contracts sit
+   late, so a gap and a margin added inside every gap-owning container. In
+   `:where()` the contract loses to any reset by construction, wherever either
+   rule lives; standing alone the component keeps its spacing exactly as
+   before. Every contract block margin follows this shape — see `.section-lede`
+   and the composed card's meta-line. */
+:where(.section-eyebrow) {
+  margin-block: calc(var(--block-margin) / 4) var(--block-margin);
 }
 
 /* A display heading sets line-height below 1, so its box ends level with the
@@ -1622,18 +1933,27 @@ a {
 
 .hero__portrait-frame {
   position: relative;
-  aspect-ratio: 3 / 4;
+  aspect-ratio: var(--hero-portrait-ratio, 3 / 4);
   overflow: hidden;
   background: radial-gradient(70% 55% at 50% 42%, color-mix(in srgb, var(--c-noir) 70%, var(--c-ink)) 0%, var(--c-noir) 100%);
 }
 
-.hero__portrait-frame > img,
-.hero__portrait-frame > svg {
+.hero__portrait-image {
+  position: absolute;
+  inset: 0;
+}
+
+.hero__portrait-image[hidden] {
+  display: none;
+}
+
+.hero__portrait-image > img,
+.hero__portrait-image > svg {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: var(--hero-media-fit, cover);
 }
 
 .hero__portrait-fade {
@@ -2187,6 +2507,39 @@ a {
   border: var(--border-width) solid var(--card-edge);
   color: var(--c-text);
   text-align: var(--card-align);
+  overflow: clip;
+  isolation: isolate;
+  transition: border-color var(--duration) var(--ease-ui);
+}
+
+/* `:has(:focus-visible)`, not `:focus-within`: a mouse click on Choose
+   options or a swatch leaves its control focused, and the card sat there
+   wearing its focused border until focus moved somewhere else entirely. The
+   affordance is for a keyboard visitor arriving in the card, and
+   `:focus-visible` is exactly the browser's answer to which of the two is
+   happening. */
+.card:hover,
+.card:has(:focus-visible) {
+  border-color: color-mix(in srgb, var(--c-text) 22%, transparent);
+}
+
+/* The cover link is card-sized, so the global accent outline would frame the
+   whole card in a gold ring three pixels outside its edge — which is what a
+   restored focus after Quick view closes was painting. The card's border
+   darkening above is its focus indication; the structural link draws no ring
+   of its own. */
+.card__link:focus-visible {
+  outline: none;
+}
+
+/* The card's keyboard frame — `:has(:focus-visible)`, never `:focus-within`:
+   a mouse click on Choose options, a swatch, or an arrow focuses the control
+   it lands on, and `:focus-within` framed the whole card in the accent ring
+   for it. The frame is for a keyboard visitor arriving in the card — the
+   cover link deliberately draws no ring of its own, this is it. */
+.card:has(:focus-visible) {
+  outline: 2px solid var(--c-accent);
+  outline-offset: 2px;
 }
 
 .card__media {
@@ -2221,20 +2574,11 @@ a {
   transform: scale(var(--card-zoom));
 }
 
-/* Without the script the first slide is simply the one on show. The design's
-   hover swap still works for the common two-photograph card; once the script
-   takes over it marks the card and drives every slide itself. Guarded to a
-   second slide that is actually a photograph — a spin has nothing to show
-   until its source is fetched. */
-.card[data-card-multi]:not([data-card-live]):not([data-card-hover="off"]):hover
-  .card__slide[data-card-slide="0"] {
-  opacity: 0;
-}
-
-.card[data-card-multi]:not([data-card-live]):not([data-card-hover="off"]):hover
-  .card__slide[data-card-slide="1"]:not([data-card-spin]) {
-  opacity: 1;
-}
+/* Without the script the first photograph remains the complete card. Later
+   views deliberately have no source at first paint, so a CSS-only hover swap
+   would replace a real image with an empty deferred slide. JavaScript promotes
+   the requested source before it changes opacity; no-script keeps the useful
+   opening image and the product link. */
 
 /* ---- The card's Views ------------------------------------------------
    Settings on `blocks/_product-card.liquid`. They are the *card's* decisions
@@ -2417,6 +2761,7 @@ a {
 }
 
 .card--composed > * {
+  min-width: 0;
   padding-inline: var(--card-pad);
 }
 
@@ -2717,13 +3062,34 @@ a {
 .card__text,
 .card--composed .text-block {
   display: block;
-  margin: var(--card-meta-gap, 0) 0 var(--card-price-gap, 0);
   min-height: 1.5em;
   font-size: var(--micro-size);
   letter-spacing: var(--product-meta-tracking);
   text-transform: uppercase;
   line-height: var(--product-line);
   color: color-mix(in srgb, var(--c-text) 72%, transparent);
+}
+
+/* The meta-line's margins at zero specificity — see `.section-eyebrow` for
+   the shape and the reason. A caption standing in a card keeps its 6px
+   shoulder; the same caption inside a Group hands its spacing to the group's
+   gap instead of adding to it. Only the margin is demoted: the typography
+   above keeps its weight, or unrelated rules start winning font sizes. */
+:where(.card__meta, .card__text),
+:where(.card--composed) :where(.text-block) {
+  margin: var(--card-meta-gap, 0) 0 var(--card-price-gap, 0);
+}
+
+/* A composed card can use the global Text block for its product name. The
+   shared two-line box makes every card caption start and finish on the same
+   rows without taking typography control away from that block. */
+.card--composed > .text-block {
+  display: -webkit-box;
+  min-height: 3em;
+  max-height: 3em;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
 }
 
 .card__price {
@@ -2744,6 +3110,16 @@ a {
 .card__price s {
   color: var(--c-muted);
   margin-inline-end: 0.5em;
+}
+
+/* Which side the compare-at figure sits on is one shop-wide choice (Theme
+   settings → Prices), and Liquid renders the two figures in that order —
+   CSS only moves the gap to the side now facing the price. The attribute is
+   emitted by theme.liquid on the body, so one selector serves every card
+   price on the page, the option rows' injected fragments included. */
+[data-price-compare="after"] .card__price s {
+  margin-inline-end: 0;
+  margin-inline-start: 0.5em;
 }
 
 /* The "inc. tax" note. Deliberately not sized off --micro-size: it sits inline
@@ -3217,14 +3593,41 @@ a {
 .catalog-grid {
   display: grid;
   gap: var(--catalog-gap, var(--grid-gap));
+  /* The horizontal half alone, when the section says so. The column-width
+     calcs below read the same chain, so the grid and its column count keep
+     agreeing whatever the merchant picks — the row-carousel's pair, applied
+     to the catalog's own gap chain. */
+  column-gap: var(--catalog-column-gap, var(--catalog-gap, var(--grid-gap)));
   grid-template-columns: repeat(
     auto-fit,
     minmax(
       max(
         min(19.0625rem, 46%),
-        calc((100% - (var(--catalog-columns) - 1) * var(--catalog-gap, var(--grid-gap))) / var(--catalog-columns))
+        calc((100% - (var(--catalog-columns) - 1) * var(--catalog-column-gap, var(--catalog-gap, var(--grid-gap)))) / var(--catalog-columns))
       ),
       1fr
+    )
+  );
+}
+
+.catalog-grid:has(.card[data-card-fixed-size]) {
+  grid-template-columns: repeat(
+    auto-fill,
+    minmax(
+      min(
+        100%,
+        max(
+          min(19.0625rem, 46%),
+          calc((100% - (var(--catalog-columns) - 1) * var(--catalog-column-gap, var(--catalog-gap, var(--grid-gap)))) / var(--catalog-columns))
+        )
+      ),
+      min(
+        100%,
+        max(
+          min(19.0625rem, 46%),
+          calc((100% - (var(--catalog-columns) - 1) * var(--catalog-column-gap, var(--catalog-gap, var(--grid-gap)))) / var(--catalog-columns))
+        )
+      )
     )
   );
 }
@@ -3412,19 +3815,52 @@ a {
 }
 
 .catalog-filter-option {
-  display: grid;
-  grid-template-columns: auto auto minmax(0, 1fr) auto;
+  display: flex;
   align-items: center;
   gap: var(--space-2xs);
-  min-height: 2.25rem;
+  min-height: 2.75rem;
   cursor: pointer;
 }
 
 .catalog-filter-option input {
-  width: 1rem;
-  height: 1rem;
-  accent-color: var(--c-accent);
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
 }
+
+.catalog-filter-option__check {
+  display: grid;
+  flex: 0 0 1.125rem;
+  width: 1.125rem;
+  height: 1.125rem;
+  place-items: center;
+  border: var(--border-width) solid color-mix(in srgb, var(--c-text) 38%, transparent);
+  background: transparent;
+  color: var(--c-bg);
+  transition: border-color var(--duration) var(--ease-ui),
+              background var(--duration) var(--ease-ui);
+}
+
+.catalog-filter-option__check svg {
+  width: 0.75rem;
+  height: 0.75rem;
+  opacity: 0;
+}
+
+.catalog-filter-option input:checked + .catalog-filter-option__check {
+  border-color: var(--c-text);
+  background: var(--c-text);
+}
+
+.catalog-filter-option input:checked + .catalog-filter-option__check svg { opacity: 1; }
+.catalog-filter-option input:focus-visible + .catalog-filter-option__check {
+  outline: 2px solid var(--c-accent);
+  outline-offset: 2px;
+}
+.catalog-filter-option:has(input:disabled) { opacity: 0.42; cursor: not-allowed; }
+.catalog-filter-option__label { flex: 1 1 auto; min-width: 0; }
 
 .catalog-filter-option__swatch,
 .catalog-filter-option__image {
@@ -3447,26 +3883,176 @@ a {
   font-variant-numeric: tabular-nums;
 }
 
-.catalog-price-range {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--space-xs);
+.catalog-filter-more {
+  border-block-start: var(--border-width) solid color-mix(in srgb, var(--c-text) 8%, transparent);
 }
 
-.catalog-price-range label {
+.catalog-filter-more > summary {
+  min-height: 2.75rem;
+  display: flex;
+  align-items: center;
+  color: var(--c-accent);
+  cursor: pointer;
+  font-size: var(--micro-size);
+  letter-spacing: var(--micro-tracking);
+  text-transform: uppercase;
+}
+
+.catalog-filter-more[open] > summary {
+  margin-block-end: var(--space-2xs);
+}
+
+.catalog-price-range {
+  display: grid;
+  gap: var(--space-sm);
+}
+
+.catalog-price-range__values {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-xs);
+  color: var(--c-muted);
+  font-size: var(--micro-size);
+  letter-spacing: var(--micro-tracking);
+  text-transform: uppercase;
+}
+
+.catalog-price-range__track {
+  position: relative;
+  width: 100%;
+  height: 1.5rem;
+  background: linear-gradient(
+    to right,
+    var(--c-hairline) 0 var(--price-min, 0%),
+    var(--c-accent) var(--price-min, 0%) var(--price-max, 100%),
+    var(--c-hairline) var(--price-max, 100%) 100%
+  ) center / 100% var(--border-width) no-repeat;
+}
+
+.catalog-price-range__track input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  appearance: none;
+  background: transparent;
+  pointer-events: none;
+}
+
+.catalog-price-range__track input::-webkit-slider-thumb {
+  width: 1rem;
+  height: 1rem;
+  appearance: none;
+  border: var(--border-width) solid var(--c-text);
+  border-radius: 50%;
+  background: var(--c-bg);
+  cursor: grab;
+  pointer-events: auto;
+}
+
+.catalog-price-range__track input::-moz-range-thumb {
+  width: 1rem;
+  height: 1rem;
+  border: var(--border-width) solid var(--c-text);
+  border-radius: 50%;
+  background: var(--c-bg);
+  cursor: grab;
+  pointer-events: auto;
+}
+
+.catalog-price-range__fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-2xs);
+}
+
+.catalog-price-range__fields label {
   display: grid;
   gap: var(--space-3xs);
   color: var(--c-muted);
-  font-size: var(--fs-xs);
+  font-size: var(--micro-size);
+  letter-spacing: var(--micro-tracking);
+  text-transform: uppercase;
 }
 
-.catalog-price-range input {
+.catalog-price-range__fields input {
   width: 100%;
   min-height: 2.75rem;
-  padding: var(--space-2xs);
-  border: var(--border-width) solid color-mix(in srgb, var(--c-text) 25%, transparent);
-  background: transparent;
+  padding-inline: 0.75rem;
+  border: var(--border-width) solid var(--c-hairline);
+  border-radius: 0;
+  background: var(--c-bg);
+  color: var(--c-text);
+  font: inherit;
 }
+
+.catalog-price-range__fields input:focus-visible {
+  outline: 2px solid var(--c-accent);
+  outline-offset: 2px;
+}
+
+.catalog-active-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2xs);
+  padding-block: var(--space-xs);
+}
+
+.catalog-active-filter {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.625rem;
+  min-height: 2.25rem;
+  padding-inline: 0.75rem;
+  border: var(--border-width) solid var(--c-hairline);
+  color: var(--c-text);
+  font-size: var(--micro-size);
+  letter-spacing: 0.08em;
+  text-decoration: none;
+  text-transform: uppercase;
+  transition: border-color var(--duration) var(--ease-ui), color var(--duration) var(--ease-ui);
+}
+
+.catalog-active-filter:hover {
+  border-color: var(--c-accent);
+  color: var(--c-accent);
+}
+
+.catalog-active-filters__clear {
+  color: var(--c-muted);
+  font-size: var(--micro-size);
+  letter-spacing: var(--micro-tracking);
+  text-transform: uppercase;
+  text-underline-offset: 0.2em;
+}
+
+.catalog-filter-navigation {
+  display: none;
+  padding-block: 0.875rem 1rem;
+  border-bottom: var(--border-width) solid color-mix(in srgb, var(--c-text) 8%, transparent);
+}
+
+.catalog-filter-navigation h3 {
+  margin: 0 0 0.625rem;
+  font-size: var(--micro-size);
+  letter-spacing: var(--micro-tracking);
+  text-transform: uppercase;
+}
+
+.catalog-filter-navigation__links { display: grid; }
+.catalog-filter-navigation__link {
+  display: flex;
+  min-height: 2.75rem;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: var(--border-width) solid color-mix(in srgb, var(--c-text) 7%, transparent);
+  color: inherit;
+  text-decoration: none;
+}
+.catalog-filter-navigation__link.is-active { color: var(--c-accent); }
+.catalog-filter-navigation__link.is-disabled { opacity: 0.42; pointer-events: none; }
 
 .no-js .catalog-filter-dialog {
   position: static;
@@ -3568,6 +4154,9 @@ a {
 .catalog-filter-group[open] > summary > :last-child {
   transform: rotate(45deg);
 }
+
+.catalog-filter-group--expanded > summary { cursor: default; pointer-events: none; }
+.catalog-filter-group--expanded > summary > :last-child { display: none; }
 
 .catalog-filter-group__content {
   padding-bottom: 1rem;
@@ -3848,7 +4437,9 @@ a {
 }
 
 @media (max-width: 41.25rem) {
-  .catalog-grid {
+  .catalog-filter-navigation { display: block; }
+  .catalog-grid,
+  .catalog-grid:has(.card[data-card-fixed-size]) {
     grid-template-columns: 1fr;
   }
 
@@ -3893,7 +4484,12 @@ a {
   }
 
   .catalog-inline-search {
+    flex: 0 0 auto;
+    width: 100%;
     max-width: none;
+    min-height: 2.75rem;
+    padding-block: 0.625rem;
+    border-radius: var(--button-radius);
   }
 
   .catalog-result-count {
@@ -3943,6 +4539,16 @@ a {
 
 }
 
+/* The reference keeps Sort in the right filter panel below desktop. Mobile
+   therefore has one full-width Filter action rather than two competing pills. */
+@media (max-width: 68.6875rem) {
+  .catalog-sort--bar { display: none; }
+}
+
+@media (min-width: 68.75rem) {
+  .catalog-filter-sort--bar { display: none; }
+}
+
 .no-js .card__add-form--requires-js {
   display: none;
 }
@@ -3951,18 +4557,40 @@ a {
   display: inline-flex;
 }
 
-.badge {
-  position: absolute;
-  top: var(--space-3xs);
-  inset-inline-start: var(--space-3xs);
-  z-index: 2;
-  padding: 0.3em 0.8em;
-  background: var(--c-text);
-  color: var(--c-bg);
-  font-size: var(--micro-size);
-  letter-spacing: calc(var(--micro-tracking) * 0.5);
-  text-transform: uppercase;
+.product-badges {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--space-3xs);
 }
+
+.product-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.75rem;
+  padding: 0.3em 0.8em;
+  border-radius: var(--badge-radius, 0);
+}
+
+.product-badge--sale { background: var(--badge-sale-bg); color: var(--badge-sale-text); }
+.product-badge--sold-out { background: var(--badge-sold-bg); color: var(--badge-sold-text); }
+.product-badge--new { background: var(--badge-new-bg); color: var(--badge-new-text); }
+.product-badge--custom { background: var(--badge-custom-bg); color: var(--badge-custom-text); }
+
+.card--composed > .product-badges {
+  grid-area: media;
+  z-index: 3;
+  align-self: start;
+  justify-self: start;
+  margin: var(--space-3xs);
+  padding: 0;
+  pointer-events: none;
+}
+
+.card--composed > .product-badges--top-right,
+.card--composed > .product-badges--bottom-right { justify-self: end; }
+.card--composed > .product-badges--bottom-left,
+.card--composed > .product-badges--bottom-right { align-self: end; }
 
 /* ---- Row carousel ----------------------------------------------------
    The optional carousel layout of a section's row — Most Loved and Our
@@ -4023,7 +4651,7 @@ a {
   pointer-events: none;
   width: max(
     min(var(--min), var(--min-pct)),
-    calc((100% - (var(--cols) - 1) * var(--gap)) / var(--cols))
+    calc((100% - (var(--cols) - 1) * var(--column-gap, var(--gap))) / var(--cols))
   );
 }
 
@@ -4103,13 +4731,13 @@ a {
 .row-carousel[data-row-live] .row-carousel__track {
   grid-template-columns: none;
   grid-auto-flow: column;
-  grid-auto-columns: calc((100% - (var(--row-per, 1) - 1) * var(--gap)) / var(--row-per, 1));
+  grid-auto-columns: calc((100% - (var(--row-per, 1) - 1) * var(--column-gap, var(--gap))) / var(--row-per, 1));
 }
 
 /* A page is the track's own width plus one gap: --row-per columns and the
    --row-per gaps that follow them. */
 .row-carousel[data-row-live][data-row-motion='slide'] .row-carousel__track {
-  transform: translateX(calc(var(--row-page, 0) * (-100% - var(--gap))));
+  transform: translateX(calc(var(--row-page, 0) * (-100% - var(--column-gap, var(--gap)))));
   transition: transform 0.6s var(--ease);
 }
 
@@ -4162,6 +4790,18 @@ a {
   transition: none;
 }
 
+/* The cells carry the grid layout's per-card reveal — 60ms apart on a product
+   row, 80ms on the collection row, the stagger the plain grids always had —
+   because grid is now a mode of the same shell rather than separate markup.
+   Live, the cell's reveal steps aside the same way the root's does: `gj-card`
+   on the card is the carousel's entrance, and a cell fading on its own curve
+   under a card rising on another is two entrances on one element's account. */
+.js .row-carousel[data-row-live] .row-carousel__cell.reveal {
+  opacity: 1;
+  transform: none;
+  transition: none;
+}
+
 /* The control row, under the track by default and over it on request. The
    arrows may instead be placed either side of the track, in which case there
    is no row at all — see the grid further down. */
@@ -4173,6 +4813,44 @@ a {
   margin-top: var(--row-controls-gap);
 }
 
+/* The `header` placement: a hairline band above the track, the heading on the
+   left and the two arrows together on the right. No marks — the band is the
+   whole control, and an end says so by its arrow disabling. The heading sits
+   outside `data-row-controls`, so a row with nothing to cycle through keeps
+   its title while the arrows go. */
+.row-carousel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  border-block: var(--border-width) solid var(--c-hairline);
+  padding-block: 0.5rem;
+  margin-bottom: var(--row-controls-gap);
+}
+
+.row-carousel__heading {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: var(--micro-size);
+  font-weight: inherit;
+  letter-spacing: var(--micro-tracking);
+  text-transform: uppercase;
+  color: var(--c-heading);
+}
+
+.row-carousel__header-arrows {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+/* The band's arrows are the bare glyph at band scale rather than the 46px
+   track control — the band is a caption-height rule, not a stage. */
+.row-carousel__header .row-carousel__arrow {
+  --row-arrow-size: 2.125rem;
+  --row-arrow-glyph: 1.25rem;
+}
+
 .row-carousel[data-row-arrows='top'] .row-carousel__controls {
   margin-top: 0;
   margin-bottom: var(--row-controls-gap);
@@ -4182,6 +4860,7 @@ a {
    states them separately, because beside the track they are three elements
    with nothing wrapping them. */
 .row-carousel__controls[hidden],
+.row-carousel__header-arrows[hidden],
 .row-carousel__arrow[hidden],
 .row-carousel__dots[hidden] {
   display: none;
@@ -4436,18 +5115,36 @@ a {
 
 .cat-card {
   --cat-pad-x: clamp(1.125rem, 3vw, 2.125rem);
+  --card-edge: color-mix(in srgb, var(--c-text) 8%, transparent);
 
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  grid-template-rows: auto 1fr;
+  grid-template-rows: auto auto;
   grid-template-areas:
     "header"
     "media";
   text-decoration: none;
   color: var(--c-text);
   background: var(--c-surface);
-  border: var(--border-width) solid color-mix(in srgb, var(--c-text) 8%, transparent);
+  border: var(--border-width) solid var(--card-edge);
   line-height: normal;
+  min-width: 0;
+  width: 100%;
+  height: 100%;
+  align-content: start;
+  overflow: clip;
+  isolation: isolate;
+  transition: border-color var(--duration) var(--ease-ui);
+}
+
+.cat-card:hover,
+.cat-card:focus-visible {
+  border-color: color-mix(in srgb, var(--c-text) 22%, transparent);
+}
+
+.cat-card:focus-visible {
+  outline: 2px solid var(--c-accent);
+  outline-offset: 2px;
 }
 
 .cat-card > .layout-group {
@@ -4486,26 +5183,21 @@ a {
   margin-top: 16px;
   display: flex;
   align-items: flex-end;
-  /* The design's noir, not black: rgba(13,12,10,0) → rgba(13,12,10,.62). */
+  overflow: hidden;
+  pointer-events: none;
+  /* Noir keeps the overlay tied to the theme rather than hardcoded black. */
   background: linear-gradient(
     180deg,
     color-mix(in srgb, var(--c-noir) 0%, transparent) 35%,
     color-mix(in srgb, var(--c-noir) 62%, transparent) 100%
   );
-  opacity: 1;
-  transform: translateY(0);
-  transition: opacity 0.55s ease, transform 0.65s var(--ease);
-}
-
-.cat-card__reveal {
   opacity: 0;
-  transform: translateY(10px);
+  transition: opacity 0.35s ease;
 }
 
 .cat-card:hover .cat-card__reveal,
 .cat-card:focus-visible .cat-card__reveal {
   opacity: 1;
-  transform: translateY(0);
 }
 
 /* The rule that carries the label, and the label and arrow on it. Three
@@ -4524,6 +5216,15 @@ a {
   margin-inline: var(--cat-pad-x);
   padding: 14px 0 16px;
   border-top: var(--border-width) solid color-mix(in srgb, color-mix(in srgb, var(--c-porcelain) 45%, #fff) 55%, transparent);
+  opacity: 0;
+  transform: translateY(0.875rem);
+  transition: opacity 0.35s ease 0.06s, transform 0.55s var(--ease) 0.06s;
+}
+
+.cat-card:hover .cat-card__reveal-row,
+.cat-card:focus-visible .cat-card__reveal-row {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .cat-card__reveal-label {
@@ -4536,12 +5237,35 @@ a {
 .cat-card__reveal-arrow {
   font-size: 1rem;
   color: color-mix(in srgb, var(--c-porcelain) 80%, #fff);
+  transition: transform 0.45s var(--ease);
 }
+
+.cat-card:hover .cat-card__reveal-arrow,
+.cat-card:focus-visible .cat-card__reveal-arrow { transform: translateX(0.25rem); }
 
 .cat-card__reveal-arrow svg {
   display: block;
   width: 1em;
   height: 1em;
+}
+
+@media (hover: none) {
+  .cat-card__reveal,
+  .cat-card__reveal-row {
+    opacity: 1;
+    transform: none;
+  }
+  .cat-card__reveal {
+    background: linear-gradient(180deg, transparent 52%, color-mix(in srgb, var(--c-noir) 64%, transparent));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cat-card__media img,
+  .cat-card__reveal,
+  .cat-card__reveal-row,
+  .cat-card__reveal-arrow { transition: none; }
+  .cat-card:hover .cat-card__media img { transform: none; }
 }
 
 /* ---- Lookbook -------------------------------------------------------
@@ -4574,17 +5298,25 @@ a {
    block is the second, so it is named for what it is — the same correction
    `fp-` → `row-` made for the carousel. Values unchanged. */
 .section-lede {
-  /* The 14px above is the design's own and is not on the merchant's scale; the
-     gap *below* is what a Spacing setting is for, and it defaults to nothing so
-     the class behaves exactly as it did before the control existed. */
-  margin-top: 14px;
-  margin-bottom: var(--block-margin, 0);
   padding: var(--block-padding, 0);
   max-width: 520px;
   font-size: 0.97rem;
   line-height: 1.8;
   color: color-mix(in srgb, var(--c-text) 62%, transparent);
   text-wrap: pretty;
+}
+
+/* The lede's margins at zero specificity — see `.section-eyebrow` for the
+   shape and the reason. The 14px above is the design's own and is not on the
+   merchant's scale; the gap *below* is what a Spacing setting is for, and it
+   defaults to nothing so the class behaves exactly as it did before the
+   control existed. Standing alone both apply; inside any gap-owning container
+   the container's reset wins by construction — which is what the
+   `.collection-list__content > *` comment always claimed and, at equal
+   specificity, was not actually true. */
+:where(.section-lede) {
+  margin-top: 14px;
+  margin-bottom: var(--block-margin, 0);
 }
 
 /* The rail scrolls rather than wrapping, and hides its scrollbar — the
@@ -4933,25 +5665,13 @@ a {
   height: 1rem;
 }
 
+/* Placement only — the control's appearance is the shared close renderer's,
+   pill or disc by the one theme setting. */
 .lookbook-card__close {
   position: absolute;
   top: 10px;
   right: 10px;
   z-index: 2;
-  width: 30px;
-  height: 30px;
-  padding: 0;
-  border: 0;
-  background: none;
-  color: color-mix(in srgb, var(--c-ink) 55%, transparent);
-  cursor: pointer;
-  font-size: 0.88rem;
-  line-height: 1;
-  transition: color var(--duration) var(--ease-ui);
-}
-
-.lookbook-card__close:hover {
-  color: var(--c-ink);
 }
 
 @media (min-width: 61.25rem) {
@@ -5452,6 +6172,77 @@ a {
   justify-content: flex-end;
 }
 
+.nav__inline-menu {
+  display: none;
+  flex: 1 1 auto;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(1rem, 2.4vw, 2.5rem);
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.nav__inline-item {
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.nav__inline-item > a,
+.nav__inline-submenu a {
+  color: inherit;
+  text-decoration: none;
+  font-size: var(--micro-size);
+  letter-spacing: calc(var(--micro-tracking) * 0.72);
+  text-transform: uppercase;
+}
+
+.nav__inline-item > a { display: block; padding: 1.5rem 0; }
+.nav__inline-item > a:hover,
+.nav__inline-item > a[aria-current="page"] { color: var(--c-accent); }
+
+.nav__inline-submenu {
+  position: absolute;
+  top: calc(100% - 0.25rem);
+  inset-inline-start: 50%;
+  z-index: 3;
+  display: grid;
+  gap: 0.75rem;
+  min-width: 14rem;
+  padding: 1.125rem;
+  border: var(--border-width) solid var(--c-hairline);
+  background: var(--c-bg);
+  box-shadow: 0 1.25rem 2.5rem color-mix(in srgb, var(--c-noir) 12%, transparent);
+  opacity: 0;
+  visibility: hidden;
+  transform: translate(-50%, 0.5rem);
+  transition: opacity 0.2s ease, transform 0.3s var(--ease), visibility 0s linear 0.3s;
+}
+
+.nav__inline-item:hover .nav__inline-submenu,
+.nav__inline-item:focus-within .nav__inline-submenu {
+  opacity: 1;
+  visibility: visible;
+  transform: translate(-50%, 0);
+  transition-delay: 0s;
+}
+
+.nav__inline-submenu a:hover { color: var(--c-accent); }
+.nav__inline-grandchild { padding-inline-start: 0.75rem; opacity: 0.68; }
+
+@media (min-width: 62.5rem) {
+  .nav.nav--classic { justify-content: flex-start; gap: clamp(1.5rem, 3vw, 3.5rem); }
+  .nav.nav--classic .nav__menu-button { display: none; }
+  .nav.nav--classic .nav__inline-menu { display: flex; }
+  .nav.nav--classic .nav__logo {
+    position: static;
+    flex: 0 0 auto;
+    transform: none;
+  }
+  .nav.nav--classic .nav__actions { margin-inline-start: auto; }
+}
+
 .nav__action {
   display: flex;
   align-items: center;
@@ -5617,12 +6408,20 @@ a {
   color: var(--c-ivory);
 }
 
+/* The close pill — one of the two forms every overlay close takes, chosen by
+   Theme settings → Buttons → Close controls and rendered only by
+   snippets/overlay-close.liquid. It paints from currentColor rather than
+   ivory, so the same rule serves the noir overlay heads (where the context is
+   ivory), the light drawers, and the quick view's panel corner; contexts that
+   want a stronger treatment override on their placement class, as
+   `.drawer__close` does. The radius follows the global button shape, so
+   Rounded means rounded here too. */
 .overlay-head__close {
   flex: none;
-  border: var(--border-width) solid color-mix(in srgb, var(--c-ivory) 28%, transparent);
-  border-radius: 999px;
+  border: var(--border-width) solid color-mix(in srgb, currentColor 28%, transparent);
+  border-radius: var(--button-radius, 999px);
   background: none;
-  color: var(--c-ivory);
+  color: inherit;
   cursor: pointer;
   padding: 0.56rem 1.13rem;
   font-family: var(--font-body);
@@ -5633,7 +6432,30 @@ a {
 }
 
 .overlay-head__close:hover {
-  background: color-mix(in srgb, var(--c-ivory) 10%, transparent);
+  background: color-mix(in srgb, currentColor 10%, transparent);
+}
+
+/* The icon form: the same bordered disc everywhere, holding the theme's one
+   close glyph. Placement classes position it; nothing else styles it. */
+.overlay-close--icon {
+  flex: none;
+  width: 2.375rem;
+  height: 2.375rem;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: var(--border-width) solid color-mix(in srgb, currentColor 22%, transparent);
+  border-radius: var(--button-radius, 999px);
+  background: none;
+  color: inherit;
+  cursor: pointer;
+  transition: background var(--duration) var(--ease-ui),
+              border-color var(--duration) var(--ease-ui);
+}
+
+.overlay-close--icon:hover {
+  background: color-mix(in srgb, currentColor 10%, transparent);
+  border-color: color-mix(in srgb, currentColor 45%, transparent);
 }
 
 /* These two are noir whatever scheme the page is in, so they carry their own
@@ -5642,6 +6464,45 @@ a {
 .nav-menu,
 .search-overlay {
   --c-accent: var(--c-champagne);
+}
+
+.search-overlay__panel { display: contents; }
+
+/* Drawer-mode search is the CART DRAWER'S shell to the letter — the snippet
+   emits `.drawer`, `.overlay__veil`, `.drawer__panel scheme-…`, and
+   `.drawer__head`, so the slide, the veil, the panel colour, and the close
+   pill are the bag's own rules with nothing restated. What this block owns is
+   the one palette hand-over and the drawer's interior layout.
+
+   **The hand-over is a single property.** Every shared search rule below —
+   the field, the terms, the group labels, the rows — paints from `--c-ivory`
+   mixes, because the full-screen mode is noir whatever the page says. On the
+   drawer's scheme-classed panel, ivory IS the scheme's text: one redefinition
+   and the whole result list follows the merchant's chosen scheme, light or
+   dark, with the accent likewise the scheme's own rather than the overlay's
+   champagne. */
+.search-drawer .drawer__panel {
+  --c-ivory: var(--c-text);
+}
+
+.search-drawer .search-overlay__top {
+  padding: var(--space-sm) clamp(1.25rem, 5vw, 1.88rem) 0;
+}
+
+/* The results are the drawer's scrolling middle, exactly as the bag's lines
+   are: the head and the field hold still, the rows move. */
+.search-drawer .search-overlay__results {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-inline: clamp(1.25rem, 5vw, 1.88rem);
+}
+
+/* The full-screen field is display-scale; in a 430px panel it is a line of
+   the panel's own proportions. */
+.search-drawer .search-overlay__field {
+  font-size: clamp(1.3rem, 5vw, 1.7rem);
 }
 
 @keyframes gj-row-in {
@@ -5756,20 +6617,31 @@ a {
   display: none;
 }
 
+/* The branch mark is the row's own affordance — champagne so it reads as a
+   control against the ivory title, and half a step larger than the tiny 0.4em
+   it wore, which at display-title scale was nearly invisible. The rotate is
+   what turns the + into an × while the branch is open. */
 .nav-menu__branch-mark {
   margin-inline-start: 0.15em;
   font-family: var(--font-body);
-  font-size: 0.4em;
+  font-size: 0.5em;
+  color: var(--c-accent);
   transition: transform var(--duration) var(--ease-ui);
 }
 
 .nav-menu__details[open] .nav-menu__branch-mark { transform: rotate(45deg); }
 
+/* The open branch is a column of its own: indented to the title's own text
+   start, held by a champagne hairline, and breathing at both ends. It was a
+   bare grid of uppercase links floating in the noir room, which read as a
+   broken state rather than a menu. */
 .nav-menu__submenu {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
   gap: 0 var(--step-medium);
   margin: var(--step-tiny) 0 var(--step-small) clamp(1.6rem, 3vw, 2.5rem);
+  padding-inline-start: var(--step-small);
+  border-inline-start: var(--border-width) solid color-mix(in srgb, var(--c-accent) 45%, transparent);
 }
 
 .nav-menu__submenu a,
@@ -5777,14 +6649,33 @@ a {
   display: flex;
   min-height: 2.75rem;
   align-items: center;
-  color: inherit;
+  color: color-mix(in srgb, currentColor 72%, transparent);
   cursor: pointer;
   font-family: var(--font-body);
   font-size: var(--text-small-size);
   letter-spacing: var(--track-wide);
   text-decoration: none;
   text-transform: uppercase;
+  transition: color var(--duration) var(--ease-ui);
 }
+
+/* Opening a branch replays the overlay's own row entrance on its links —
+   `details` goes display:none → grid, which restarts descendant animations,
+   the same mechanism the drawer's empty state rides. Eight explicit delays
+   rather than a --row variable, because a merchant menu is short and Liquid
+   does not number these children. */
+.nav-menu__details[open] .nav-menu__submenu > * {
+  animation: gj-row-in 0.4s var(--ease) both;
+}
+
+.nav-menu__details[open] .nav-menu__submenu > :nth-child(1) { animation-delay: 0.03s; }
+.nav-menu__details[open] .nav-menu__submenu > :nth-child(2) { animation-delay: 0.08s; }
+.nav-menu__details[open] .nav-menu__submenu > :nth-child(3) { animation-delay: 0.13s; }
+.nav-menu__details[open] .nav-menu__submenu > :nth-child(4) { animation-delay: 0.18s; }
+.nav-menu__details[open] .nav-menu__submenu > :nth-child(5) { animation-delay: 0.23s; }
+.nav-menu__details[open] .nav-menu__submenu > :nth-child(6) { animation-delay: 0.28s; }
+.nav-menu__details[open] .nav-menu__submenu > :nth-child(7) { animation-delay: 0.33s; }
+.nav-menu__details[open] .nav-menu__submenu > :nth-child(n+8) { animation-delay: 0.38s; }
 
 .nav-menu__submenu a:hover,
 .nav-menu__submenu a:focus-visible,
@@ -6200,7 +7091,7 @@ a.nav-menu__address:hover {
 }
 
 .drawer .overlay__veil {
-  background: color-mix(in srgb, var(--c-noir-deep) 45%, transparent);
+  background: color-mix(in srgb, var(--veil-tint, var(--c-noir-deep)) 45%, transparent);
   animation: gj-fade-in 0.45s ease both;
 }
 
@@ -6482,6 +7373,18 @@ a.nav-menu__address:hover {
   color: var(--c-text);
 }
 
+/* The discount-struck original, the cart page's `.cart-line__compare` in the
+   drawer's markup — same muting, same gap, same side rule. */
+.drawer-row__compare {
+  color: var(--c-muted);
+  margin-inline-end: 0.5em;
+}
+
+[data-price-compare="after"] .drawer-row__compare {
+  margin-inline-end: 0;
+  margin-inline-start: 0.5em;
+}
+
 .drawer-row__remove {
   padding: 0.44rem 0.88rem;
   border: var(--border-width) solid color-mix(in srgb, var(--c-error) 40%, transparent);
@@ -6556,6 +7459,19 @@ a.nav-menu__address:hover {
 .drawer-empty > :nth-child(2) { animation-delay: 0.18s; }
 .drawer-empty > :nth-child(3) { animation-delay: 0.24s; }
 
+/* The upsell band is the empty state's next two rows: the upsell exists only
+   while the cart is empty, so it joins the same entrance on the same curve —
+   the header band first, the piece under it one step later. Same restart
+   mechanism: the drawer's display reset on open, and fresh elements on the
+   swap that empties the bag. */
+.drawer__upsells .row-carousel__header,
+.drawer__upsells .row-carousel__viewport {
+  animation: gj-row-in 0.55s var(--ease) both;
+}
+
+.drawer__upsells .row-carousel__header { animation-delay: 0.3s; }
+.drawer__upsells .row-carousel__viewport { animation-delay: 0.36s; }
+
 .drawer-empty__title {
   font-family: var(--font-display);
   font-size: var(--fs-2xl);
@@ -6601,11 +7517,20 @@ a.nav-menu__address:hover {
    which would drop it to 9px — untracked next to the label's 0.18em, lighter,
    and not uppercased, so it reads as a qualifier rather than a second label.
    The design separates it with a single space and nothing more, so the base
-   rule's 0.15em margin comes off; tax-note.liquid emits that space itself. */
+   rule's 0.15em margin comes off; tax-note.liquid emits that space itself.
+
+   **The base rule's `nowrap` comes off too, and that is load-bearing.** Beside
+   a price the note is a short phrase and nowrap keeps it whole; here it is a
+   whole sentence, and one unbreakable box the width of the panel becomes the
+   label's min-content — the flex row cannot shrink the label past it, so the
+   money on the other side was pushed out of the row and the panel's edge
+   clipped its last digit. Wrapping, the label's floor is one word and the
+   figure never moves. */
 .drawer__subtotal-label .price-tax {
   margin-inline-start: 0;
   font-size: 1em;
   letter-spacing: 0.13em;
+  white-space: normal;
   color: color-mix(in srgb, var(--c-text) 45%, transparent);
 }
 
@@ -6826,28 +7751,6 @@ a.nav-menu__address:hover {
   height: 1rem;
 }
 
-.footer__col-minus { display: none; }
-.footer__col[data-open] .footer__col-plus { display: none; }
-.footer__col[data-open] .footer__col-minus { display: block; }
-
-.footer__col-panel {
-  display: grid;
-  grid-template-rows: 0fr;
-  transition: grid-template-rows 0.45s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* The clip is its own element and carries nothing else. Padding on the
-   clipping box cannot be clipped, so a collapsed panel would keep showing
-   its padding — and with it a sliver of the first row. */
-.footer__col-clip {
-  overflow: hidden;
-  min-height: 0;
-}
-
-.footer__col[data-open] .footer__col-panel {
-  grid-template-rows: 1fr;
-}
-
 .footer__col-links {
   display: flex;
   flex-direction: column;
@@ -6979,6 +7882,82 @@ a.nav-menu__address:hover {
   align-items: center;
 }
 
+.footer__payments {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+  margin: 0;
+  padding: 0;
+}
+
+.footer__payments li {
+  display: inline-flex;
+  line-height: 0;
+}
+
+.footer__payments svg {
+  width: 2.25rem;
+  height: auto;
+}
+
+.spacer-block { height: var(--spacer-desktop); }
+
+.menu-block,
+.payment-icons-block,
+.policy-links-block,
+.email-signup-block {
+  display: grid;
+  gap: var(--step-small);
+  min-width: 0;
+}
+
+.menu-block__heading,
+.payment-icons-block > p,
+.policy-links-block > p,
+.email-signup-block > p { margin: 0; }
+
+.menu-block__list,
+.menu-block__children,
+.payment-icons-block ul,
+.policy-links-block ul {
+  margin: 0;
+  padding: 0;
+}
+
+.menu-block__list { display: grid; gap: var(--step-tiny); }
+.menu-block__list--horizontal { display: flex; flex-wrap: wrap; gap: var(--step-small) var(--step-medium); }
+.menu-block__children { display: grid; gap: var(--step-minimal); padding-block-start: var(--step-tiny); padding-inline-start: 1em; }
+.menu-block a,
+.policy-links-block a { color: inherit; text-decoration: none; }
+.menu-block a:hover,
+.policy-links-block a:hover { text-decoration: underline; text-underline-offset: .2em; }
+
+.payment-icons-block ul,
+.policy-links-block ul { display: flex; flex-wrap: wrap; align-items: center; gap: var(--step-tiny) var(--step-small); }
+.payment-icons-block svg { display: block; width: 2.4rem; height: auto; }
+.policy-links-block button { padding: 0; border: 0; color: inherit; background: transparent; font: inherit; text-decoration: underline; text-underline-offset: .2em; cursor: pointer; }
+
+.email-signup-block__form { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--step-tiny); }
+.email-signup-block__form .form-status { grid-column: 1 / -1; margin: 0; }
+.email-signup-block__form .field { min-width: 0; }
+
+.payment-icons-block.align-center,
+.policy-links-block.align-center,
+.email-signup-block.align-center { justify-items: center; text-align: center; }
+.payment-icons-block.align-center ul,
+.policy-links-block.align-center ul { justify-content: center; }
+.payment-icons-block.align-right,
+.policy-links-block.align-right,
+.email-signup-block.align-right { justify-items: end; text-align: right; }
+.payment-icons-block.align-right ul,
+.policy-links-block.align-right ul { justify-content: flex-end; }
+
+@media (max-width: 46.9375rem) {
+  .spacer-block { height: var(--spacer-mobile); }
+  .email-signup-block__form { grid-template-columns: 1fr; }
+}
+
 @container (max-width: 36.85rem) {
   .footer__bottom {
     padding-top: 20px;
@@ -7011,7 +7990,7 @@ a.nav-menu__address:hover {
   inset: 0;
   border: 0;
   padding: 0;
-  background: color-mix(in srgb, var(--c-noir) 55%, transparent);
+  background: color-mix(in srgb, var(--veil-tint, var(--c-noir)) 55%, transparent);
   backdrop-filter: blur(6px);
   cursor: pointer;
   animation: gj-fade-in 0.3s ease both;
@@ -7049,25 +8028,12 @@ a.nav-menu__address:hover {
   to   { opacity: 0; transform: translateY(18px) scale(0.985); }
 }
 
+/* Placement only — appearance belongs to the shared close renderer. */
 .modal__close {
   position: absolute;
   top: 0.75rem;
   inset-inline-end: 0.75rem;
   z-index: 5;
-  width: 2.375rem;
-  height: 2.375rem;
-  display: grid;
-  place-items: center;
-  border: 0;
-  background: none;
-  color: var(--c-text);
-  cursor: pointer;
-  font-size: 1rem;
-  transition: opacity var(--duration) var(--ease);
-}
-
-.modal__close:hover {
-  opacity: 0.55;
 }
 
 .modal__grid {
@@ -7203,33 +8169,27 @@ a.nav-menu__address:hover {
 }
 
 .overlay--quick .overlay__veil {
-  background: color-mix(in srgb, var(--c-noir) 62%, transparent);
+  background: color-mix(in srgb, var(--veil-tint, var(--c-noir)) 62%, transparent);
   backdrop-filter: blur(8px);
 }
 
 .quick-view {
-  --qv-gold: var(--c-champagne);
   --qv-well: color-mix(in srgb, var(--c-text) 4%, var(--c-bg));
   --qv-rule: color-mix(in srgb, var(--c-text) 12%, transparent);
-  /* The design's rgba(25,21,16,.22) — the edge of a control, a shade stronger
-     than the rules between rows. */
-  --qv-edge: color-mix(in srgb, var(--c-text) 22%, transparent);
-  --qv-label-size: 0.719rem;   /* 11.5px */
-  --qv-value-size: 0.938rem;   /* 15px */
-  --qv-price-size: 1.063rem;   /* 17px */
   --qv-pad: clamp(1.375rem, 4vw, 3rem);
-  --qv-zoom-base: 1;
   /* The panel must fit inside the overlay's actual visible content box, not
      merely inside 94% of a viewport whose outer padding still has to fit. */
   --qv-visible-height: min(94vh, calc(100vh - var(--overlay-pad) - var(--overlay-pad)));
 
   position: relative;
-  width: min(81.25rem, 100%);
+  width: min(78rem, 100%);
   max-height: 94vh;
   max-height: var(--qv-visible-height);
   overflow: auto;
   overscroll-behavior: contain;
   background: var(--c-bg);
+  border: var(--border-width) solid color-mix(in srgb, var(--c-text) 16%, transparent);
+  box-shadow: 0 1.5rem 5rem color-mix(in srgb, var(--c-noir) 24%, transparent);
   color: var(--c-text);
   animation: gj-modal-in 0.45s var(--ease) both;
 }
@@ -7244,38 +8204,22 @@ a.nav-menu__address:hover {
   animation: gj-modal-out 0.32s cubic-bezier(0.4, 0, 0.2, 1) both;
 }
 
+/* Placement only — appearance belongs to the shared close renderer. The
+   surface wash keeps the control legible over the photograph it can land on,
+   whichever form it takes. */
 .quick-view__close {
   position: absolute;
   top: 0.75rem;
   inset-inline-end: 0.75rem;
   z-index: 5;
-  width: 2.375rem;
-  height: 2.375rem;
-  display: grid;
-  place-items: center;
-  border: var(--border-width) solid color-mix(in srgb, var(--c-text) 18%, transparent);
-  border-radius: 999px;
   background: color-mix(in srgb, var(--c-surface) 92%, transparent);
-  color: var(--c-text);
-  cursor: pointer;
-  font-size: 0.938rem;
-  line-height: 1;
-  transition: background var(--duration) var(--ease-ui),
-              border-color var(--duration) var(--ease-ui),
-              color var(--duration) var(--ease-ui);
-}
-
-.quick-view__close:hover {
-  background: var(--c-text);
-  border-color: var(--c-text);
-  color: var(--c-bg);
 }
 
 /* Two columns while each half can hold 420px, one below. Intrinsic, so it
    folds on a narrow section in the editor as readily as on a phone. */
 .quick-view__grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 26.25rem), 1fr));
+  grid-template-columns: minmax(0, 1fr);
 }
 
 .quick-view__contents {
@@ -7283,165 +8227,19 @@ a.nav-menu__address:hover {
   container-type: inline-size;
 }
 
-.quick-view__gallery {
-  position: relative;
-  min-height: clamp(21.25rem, 95vw, 30rem);
-  overflow: hidden;
-  background: var(--qv-well);
-}
-
-/* The design gives the gallery more height once there is room for the two
-   columns to sit side by side; below that it is stacked above the copy and a
-   shorter well keeps the price above the fold. */
-@media (min-width: 64.0625rem) {
-  .quick-view__gallery {
-    min-height: clamp(21.25rem, 95vw, 40rem);
-  }
-}
-
-/* ---- Quick view: what scrolls in two columns ----
-   `settings.quick_view_scroll`, one choice of three. The auto-fit grid becomes
-   two columns when both 26.25rem tracks fit, and only then does either of the
-   two departures below apply — below that width the panel scrolls as a whole
-   whichever is chosen, which is the design's own behaviour.
-
-   `panel` is that design behaviour and carries no class at all: the modal is
-   `max-height:94vh;overflow:auto` and everything in it moves together.        */
-
-/* `media` — the media is capped to the panel's visible height and held there
-   while the taller details column scrolls the panel past it. Its block size
-   fills, but never exceeds, that height instead of inheriting the details
-   column's full height; its inline size is untouched. */
+/* Scroll-mode choices affect only the quick-view shell. Product media and
+   controls remain the shared Product components used by the full and featured
+   product surfaces. */
 @container quick-view (min-width: 52.5rem) {
-  .quick-view--contained-media .quick-view__gallery {
+  .quick-view__grid {
+    grid-template-columns: minmax(0, 3fr) minmax(23rem, 2fr);
+  }
+
+  .quick-view--contained-media .product-gallery {
     align-self: start;
-    block-size: var(--qv-visible-height);
-    min-block-size: 0;
     position: sticky;
     top: 0;
   }
-}
-
-/* `details` — the panel itself stops scrolling. Its contents become a column of
-   exactly the visible height, the gallery and the details row fill whatever is
-   left above the View full details bar, and the only thing that moves is the
-   middle of the details column: the axes and the specification. The piece's
-   name and price, Add to Bag, the reassurance line and View full details all
-   stay where they are.
-
-   The media is therefore capped by construction here, and nothing is sticky:
-   `position: sticky` needs a scrollport that moves, and this one does not.
-   That is precisely why this and `--contained-media` are one setting rather
-   than two checkboxes — see snippets/quick-view.liquid.
-
-   **It needs vertical room, and asks for it with a height query.** The pinned
-   rows and the bar are a fixed cost — measured, 290px of rows at 1280 wide
-   (312 at the narrowest two-column width, plus about 46 more for a title that
-   wraps) and a 74px bar — and whatever is left over is the scroller. Where that
-   remainder reaches zero the scroller collapses, and a zero-height scrollport
-   shows nothing however much it has to scroll: **every axis and the whole
-   specification would be invisible, with the panel no longer scrolling to
-   compensate.** That is not a hypothetical short window. Measured at 932×430,
-   an iPhone Pro Max held in landscape, the container is 876px so two columns
-   fire, and `.quick-view__details` came out **0px tall holding 823px** — no
-   swatch, no select, no specification, and nothing to scroll them into view.
-
-   So the mode is gated on `min-height: 40rem` as well, and below it the panel
-   scrolls as a whole, which is the design's own behaviour and known good. At
-   640px the frame is 560–584, the bar takes 74 and the rows 290–312, leaving
-   150–200px of scroller even with a two-line title; the cliff measures at about
-   500px. It is a *media* query because the arrangement depends on block size,
-   and a container query cannot ask that — `container-type: size` needs a height
-   that does not depend on contents, which the panel's does.
-
-   Seven things are load-bearing.
-
-   - **The column is `.quick-view__frame`, not `.quick-view__contents`.** The
-     contents element carries `container-type`, and a container cannot be styled
-     by a query against its own size — exactly as `.row-carousel` is measured
-     and `.row-carousel__frame` is laid out. On the contents this rule parses,
-     uploads and never fires; measured, every rule below it applied and it did
-     not. The frame's absence while the panel is loading is also what makes a
-     fixed height safe there: theme.js empties the contents before it shows the
-     diamond, so there is no box to give a screen's worth of height to.
-
-   - **`grid-template-rows: minmax(0, 1fr)`.** An implicit `auto` row is sized
-     to its content *first* and only stretched afterwards, so a long details
-     column would grow the row past the panel and carry the View full details
-     bar off the bottom of the screen. Naming the row caps it at the space the
-     flex gives it. It is inside the query, where the grid has exactly one row;
-     below it there are two and they must keep sizing to their content.
-
-   - **The scroller shrinks but never grows** (`flex: 0 1 auto`). The column
-     keeps `justify-content: center`, so a piece with two axes reads exactly as
-     it does today — centred, no scrollbar, nothing to notice. `1 1 auto` would
-     instead pin the name to the top and the button to the bottom of every
-     panel and open a hole between them: a change to every short piece to solve
-     a problem only long ones have.
-
-   - **Everything else in the column is `flex: none`**, or the pinned rows give
-     way alongside the scroller and it is the title that shrinks. The scroller
-     wins over that rule on specificity — (0,3,0) against (0,2,0) — rather than
-     on source order, so neither rule can be moved and quietly lose.
-
-   - **The column keeps an `auto` overflow of its own, as the last resort**, for
-     the band the height query cannot reach: a title that wraps to three lines,
-     say, on a viewport only just past 40rem. It cannot fire while the scroller
-     still has room to give, so no second scrollbar appears in the ordinary
-     case. **`justify-content: safe center` is what makes it work.** A centred
-     flex column splits its overflow across *both* ends, and `scrollTop` clamps
-     at 0 — so the start-side half is clipped and unreachable by any input,
-     which is the classic centred-overflow trap. `safe` falls back to `start`
-     exactly when the column overflows and behaves as plain `center` when it
-     does not, so the short-piece geometry is untouched.
-
-   - **The panel keeps `overflow: auto`.** The frame is exactly the panel's own
-     `max-height`, so nothing scrolls there in practice; leaving it `auto`
-     rather than `hidden` means a panel that somehow does overflow stays
-     reachable instead of having its contents clipped away.
-
-   - **The scroller grows sideways past the column and is pulled back by the
-     same amount, so the rows keep the exact width and x they have in every
-     other mode.** Two things need that room and neither may be paid for out of
-     the rows.
-
-     The **focus ring**: `overflow-y: auto` computes `overflow-x` to `auto` too,
-     so the region clips on the inline axis as well, and a control sits only 2px
-     inside it (`.quick-view__opt`'s 0.125rem) while `:focus-visible` is a 2px
-     stroke at a 3px offset and so reaches 5px out. Without the inset a focused
-     swatch loses its inline-start stroke and a full-width select loses both.
-     `scroll-padding-block` is that same 5px for the block axis, where it is
-     scrolling a control flush to the edge that clips the ring.
-
-     The **bar**: a classic scrollbar is taken out of the content box, so left
-     alone it would narrow every row by 11px and crowd the values against it.
-     The end margin therefore returns the ring's reach, the air *and*
-     `--scrollbar-size`, which is why it is derived from that token rather than
-     from a number typed here. 22px in total, against a column padding of at
-     least 33.6px at any width where two columns fit, so the bar always lands
-     inside the column's own margin with room to spare.
-
-     **`scrollbar-gutter: stable` is what makes that honest**, and it is the one
-     place in this theme where the property belongs. The margin is unconditional
-     but a scrollbar is not, so without it a piece whose details do not overflow
-     would have its rows 11px *wider* than the column and hanging into the
-     padding. Reserving the gutter keeps the content box identical in both
-     states — measured, a row is 499.01px wide and 1.71px inside the column
-     whether the region scrolls or not. The global note under "Scrollbars" rules
-     the property out on `html`, where it would break theme.js's live
-     measurement of the document scrollbar; nothing measures this one.
-
-     The give-back is the *declared* `--scrollbar-size`, and an engine is free
-     to reserve something else — Chrome reserves 10px here, since specifying
-     `scrollbar-width` makes it ignore the `::-webkit-scrollbar` width. The
-     difference is that one pixel, and it lands in the column's 48px of padding
-     rather than anywhere it can be seen.
-
-   .quick-view__details is `display: contents` everywhere else, so under the
-   other two modes it changes no geometry whatever: its rows stay flex items of
-   .quick-view__info exactly as they were before it existed.                  */
-.quick-view__details {
-  display: contents;
 }
 
 @media (min-height: 40rem) {
@@ -7458,8 +8256,9 @@ a.nav-menu__address:hover {
       min-block-size: 0;
     }
 
-    .quick-view--scroll-details .quick-view__gallery {
+    .quick-view--scroll-details .product-gallery {
       min-block-size: 0;
+      overflow: hidden;
     }
 
     .quick-view--scroll-details .quick-view__info {
@@ -7469,505 +8268,26 @@ a.nav-menu__address:hover {
       overscroll-behavior: contain;
     }
 
-    .quick-view--scroll-details .quick-view__info > * {
-      flex: none;
-    }
-
-    .quick-view--scroll-details .quick-view__info > .quick-view__details {
-      /* The focus ring's own reach — a 2px stroke at a 3px offset. */
-      --qv-details-ring: 0.3125rem;
-      /* Air between the rows and the bar. */
-      --qv-details-air: 0.375rem;
-
-      display: block;
-      flex: 0 1 auto;
-      min-block-size: 0;
-      padding-inline-start: var(--qv-details-ring);
-      padding-inline-end: calc(var(--qv-details-ring) + var(--qv-details-air));
-      margin-inline-start: calc(var(--qv-details-ring) * -1);
-      margin-inline-end: calc((var(--qv-details-ring) + var(--qv-details-air) + var(--scrollbar-size)) * -1);
-      overflow-y: auto;
-      overscroll-behavior: contain;
-      scrollbar-gutter: stable;
-      scroll-padding-block: var(--qv-details-ring);
-    }
-
     .quick-view--scroll-details .quick-view__full {
       flex: none;
     }
   }
 }
 
-.quick-view__track {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  width: calc(var(--qv-slides, 1) * 100%);
-  transform: translateX(calc(var(--qv-index, 0) * -100% / var(--qv-slides, 1)));
-  transition: transform 0.6s var(--ease);
-}
-
-.quick-view__slot {
-  position: relative;
-  flex: 0 0 calc(100% / var(--qv-slides, 1));
-  height: 100%;
-  overflow: hidden;
-}
-
-.quick-view__img {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  background: var(--c-surface);
-  transform: translate(var(--qv-tx, 0px), var(--qv-ty, 0px))
-             scale(calc(var(--qv-zoom, 1) * var(--qv-zoom-base, 1)));
-  transform-origin: 50% 50%;
-  transition: transform 0.55s var(--ease);
-}
-
-.quick-view__rich-media,
-.quick-view__slot iframe,
-.quick-view__slot model-viewer {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  border: 0;
-  background: var(--c-surface);
-  object-fit: contain;
-}
-
-/* While a pointer is driving the zoom, the transform must follow it frame for
-   frame — an easing curve here would lag behind the finger. */
-.quick-view__img[data-quick-dragging] {
-  transition: none;
-}
-
-[data-quick-zoomable] {
-  cursor: zoom-in;
-  touch-action: pan-y;
-}
-
-[data-quick-zoomable][data-quick-zoomed] {
-  cursor: grab;
-  touch-action: none;
-}
-
-[data-quick-zoomable][data-quick-dragging] {
-  cursor: grabbing;
-}
-
-.quick-view__arrow {
-  position: absolute;
-  top: 50%;
-  z-index: 3;
-  transform: translateY(-50%);
-  padding: 0.75rem;
-  border: 0;
-  background: none;
-  color: var(--c-text);
-  cursor: pointer;
-  filter: drop-shadow(0 1px 2px var(--c-surface))
-          drop-shadow(0 0 9px color-mix(in srgb, var(--c-surface) 85%, transparent));
-  transition: transform var(--duration) var(--ease), color var(--duration) var(--ease-ui);
-}
-
-.quick-view__arrow--prev { inset-inline-start: 0.5rem; }
-.quick-view__arrow--next { inset-inline-end: 0.5rem; }
-
-.quick-view__arrow:hover {
-  color: var(--c-heading);
-}
-
-.quick-view__arrow--prev:hover { transform: translate(-2px, -50%); }
-.quick-view__arrow--next:hover { transform: translate(2px, -50%); }
-
-.quick-view__dots {
-  position: absolute;
-  inset-inline: 0;
-  bottom: 0.875rem;
-  z-index: 3;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  align-items: center;
-  gap: 0.563rem;
-}
-
-.quick-view__dot {
-  display: grid;
-  place-items: center;
-  width: 2.75rem;
-  height: 2.75rem;
-  padding: 0;
-  border: 0;
-  background: none;
-  cursor: pointer;
-}
-
-.quick-view__dot::before {
-  width: 0.5rem;
-  height: 0.5rem;
-  border-radius: 50%;
-  background: color-mix(in srgb, var(--c-surface) 90%, transparent);
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--c-text) 18%, transparent);
-  content: '';
-  transition: background var(--duration) var(--ease-ui);
-}
-
-.quick-view__dot.is-on::before {
-  background: var(--c-text);
-}
-
-/* The spin gets its label rather than a dot — it is a different kind of view,
-   not another photograph. */
-.quick-view__dot--media {
-  width: auto;
-  min-width: 2.75rem;
-  height: 2.75rem;
-  padding-inline: 0.35rem;
-  display: grid;
-  place-items: center;
-  border-radius: 0;
-  background: none;
-  box-shadow: none;
-  font-family: var(--font-body);
-  font-size: 0.688rem;
-  letter-spacing: 0.14em;
-  line-height: 1;
-  color: color-mix(in srgb, var(--c-text) 45%, transparent);
-  filter: drop-shadow(0 1px 2px color-mix(in srgb, var(--c-surface) 90%, transparent));
-  transition: color var(--duration) var(--ease-ui);
-}
-
-.quick-view__dot--media::before { display: none; }
-
-.quick-view__dot--media.is-on {
-  background: none;
-  color: var(--c-text);
-}
-
-/* The whole photograph, with the part actually on screen framed in gold. Its
-   height and image come from the script, which is the only thing that knows
-   the gallery's proportion and how far the image has been dragged. */
-.quick-view__minimap {
-  position: absolute;
-  inset-inline-start: 0.875rem;
-  bottom: 0.875rem;
-  z-index: 4;
-  display: block;
-  overflow: hidden;
-  width: 6rem;
-  background: var(--c-surface) center / contain no-repeat;
-  border: var(--border-width) solid color-mix(in srgb, var(--c-text) 30%, transparent);
-  box-shadow: 0 6px 18px color-mix(in srgb, var(--c-noir) 22%, transparent);
-  pointer-events: none;
-}
-
-.quick-view__minimap[hidden] {
-  display: none;
-}
-
-.quick-view__minimap-view {
-  position: absolute;
-  box-sizing: border-box;
-  border: 1.4px solid var(--qv-gold);
-  background: color-mix(in srgb, var(--qv-gold) 16%, transparent);
-  /* Darkens everything outside the frame without a second element. */
-  box-shadow: 0 0 0 200px color-mix(in srgb, var(--c-noir) 16%, transparent);
-}
-
 .quick-view__info {
   display: flex;
   flex-direction: column;
   justify-content: center;
+  gap: var(--space-sm);
+  min-width: 0;
   padding: clamp(1.5rem, 4vw, 3rem) var(--qv-pad) clamp(1.75rem, 4vw, 3rem);
+  background: radial-gradient(60% 40% at 88% 6%, color-mix(in srgb, var(--c-accent) 10%, transparent), transparent 62%);
 }
 
-.quick-view__cat {
-  font-size: var(--micro-size);
-  letter-spacing: calc(var(--micro-tracking) * 0.91);
-  text-transform: uppercase;
-  color: var(--c-accent);
-}
-
-.quick-view__title {
-  margin: 0.75rem 0 0.5rem;
-  font-family: var(--font-display);
-  font-weight: var(--display-weight);
-  font-size: clamp(1.8rem, 3.2vw, 2.6rem);
-  line-height: 1.12;
-  color: var(--c-heading);
-  text-wrap: pretty;
-}
-
-.quick-view__price {
-  margin-bottom: 1.25rem;
-  font-size: var(--qv-price-size);
-  letter-spacing: 0.08em;
-  color: var(--c-text);
-}
-
-.quick-view__price s {
-  color: var(--c-muted);
-  margin-inline-end: 0.5em;
-}
-
-.quick-view__price s[hidden] {
-  display: none;
-}
-
-/* ---- Quick view: the axes ----
-   One row per option, the design's own: a rule above it, the option's name at
-   the left and the chosen value at the right, and the control beneath. The
-   control is a swatch row, a row of pills or a select — see the note in
-   snippets/quick-view-contents.liquid for which axis gets which.
-
-   The numbers here are the design's literals, like the rest of this panel. */
-
-.quick-view__opt {
-  padding: 0.875rem 0.125rem 1rem;
-  border-top: var(--border-width) solid var(--qv-rule);
-}
-
-.quick-view__opt-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 0.875rem;
-}
-
-.quick-view__opt-label {
-  flex: none;
-  font-size: var(--qv-label-size);
-  letter-spacing: 0.17em;
-  text-transform: uppercase;
-  color: color-mix(in srgb, var(--c-text) 45%, transparent);
-}
-
-.quick-view__opt-value {
-  min-width: 0;
-  font-size: var(--qv-value-size);
-  text-align: end;
-  color: var(--c-text);
-}
-
-.quick-view__opt-note {
-  margin: 0.563rem 0 0;
-  font-size: 0.781rem;
-  line-height: 1.6;
-  color: color-mix(in srgb, var(--c-text) 55%, transparent);
-}
-
-.quick-view__swatches {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.688rem;
-  margin-top: 0.75rem;
-}
-
-/* The button is only the target; .swatch-dot fills it and carries the paint,
-   the hairline and the ring, exactly as it does on a card. */
-.quick-view__swatch {
-  flex: none;
-  width: 2.75rem;
-  height: 2.75rem;
-  padding: 0;
-  border: 0;
-  border-radius: var(--swatch-radius, 50%);
-  background: none;
-  cursor: pointer;
-}
-
-/* The design's ring is a 3px gap in the panel's own colour and then a 1px ink
-   round. It must be --c-bg here and --c-surface on a card: the card sits on its
-   own surface, the panel is the background. */
-.quick-view__swatch.is-selected .swatch-dot {
-  border-color: transparent;
-  box-shadow: 0 0 0 3px var(--c-bg), 0 0 0 4px var(--c-text);
-}
-
-.quick-view__pills {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-top: 0.75rem;
-}
-
-.quick-view__pill {
-  flex: 1 1 0;
-  box-sizing: border-box;
-  min-width: 0;
-  max-width: 10.625rem;
-  min-height: 2.75rem;
-  padding: 0.688rem 0.813rem;
-  border: var(--border-width) solid var(--qv-edge);
-  border-radius: 0;
-  background: none;
-  color: var(--c-text);
-  font-family: var(--font-body);
-  font-size: 0.813rem;
-  letter-spacing: 0.1em;
-  /* The design keeps a pill on one line; a long value is clipped rather than
-     allowed to make one pill taller than the rest of the row. */
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  cursor: pointer;
-  transition: background var(--duration) var(--ease-ui),
-              border-color var(--duration) var(--ease-ui),
-              color var(--duration) var(--ease-ui);
-}
-
-.quick-view__pill.is-selected {
-  border-color: var(--c-text);
-  background: var(--c-text);
-  color: var(--c-bg);
-}
-
-.quick-view__field {
-  position: relative;
-  display: block;
-  margin-top: 0.75rem;
-}
-
-.quick-view__field select,
-.quick-view__engrave-field {
-  box-sizing: border-box;
-  width: 100%;
-  border: var(--border-width) solid var(--qv-edge);
-  border-radius: 0;
-  background: var(--c-surface);
-  color: var(--c-text);
-  font-family: var(--font-body);
-  font-size: 0.844rem;
-}
-
-.quick-view__field select {
-  appearance: none;
-  min-height: 2.875rem;
-  /* Room for the chevron on the trailing side. */
-  padding: 0.813rem 2.875rem 0.813rem 0.875rem;
-  letter-spacing: 0.08em;
-  cursor: pointer;
-}
-
-.quick-view__field-arrow {
-  position: absolute;
-  inset-inline-end: 1rem;
-  top: 50%;
-  transform: translateY(-50%);
-  display: flex;
-  pointer-events: none;
-  color: color-mix(in srgb, var(--c-text) 55%, transparent);
-}
-
-.quick-view__engrave-field {
-  margin-top: 0.625rem;
-  padding: 0.813rem;
-  letter-spacing: 0.06em;
-}
-
-.quick-view__engrave-field[hidden] {
-  display: none;
-}
-
-.quick-view__specs {
-  margin: 0;
-}
-
-.quick-view__spec {
-  display: flex;
-  justify-content: space-between;
-  gap: 0.875rem;
-  padding: 0.75rem 0.125rem;
-  border-top: var(--border-width) solid var(--qv-rule);
-}
-
-.quick-view__spec:last-child {
-  border-bottom: var(--border-width) solid var(--qv-rule);
-}
-
-.quick-view__spec dt {
-  font-size: var(--qv-label-size);
-  letter-spacing: 0.17em;
-  text-transform: uppercase;
-  color: color-mix(in srgb, var(--c-text) 45%, transparent);
-}
-
-.quick-view__spec dd {
-  margin: 0;
-  font-size: var(--qv-value-size);
-  text-align: end;
-  color: var(--c-text);
-}
-
-.quick-view__form {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: stretch;
-  gap: 0.625rem;
-  margin-top: 1.75rem;
-}
-
-.quick-view__add {
-  flex: 1 1 10.625rem;
-  box-sizing: border-box;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 1.125rem;
-  border: var(--border-width) solid var(--qv-gold);
-  border-radius: 999px;
-  background: var(--qv-gold);
-  color: var(--c-noir-surface);
-  font-family: var(--font-body);
-  font-size: 0.781rem;
-  letter-spacing: 0.17em;
-  text-transform: uppercase;
-  text-align: center;
-  cursor: pointer;
-  transition: background var(--duration) var(--ease-ui),
-              border-color var(--duration) var(--ease-ui),
-              color var(--duration) var(--ease-ui);
-}
-
-.quick-view__add:hover {
-  background: var(--c-text);
-  border-color: var(--c-text);
-  color: var(--c-bg);
-}
-
-/* Sold out, or a combination the shop does not make. The design has neither
-   state — it prices every combination — so this is the theme's own, and it is
-   the button that says so rather than the values, which stay listed whatever
-   the stock (the card's note works the same way). */
-.quick-view__add:disabled,
-.quick-view__add:disabled:hover {
-  background: none;
-  border-color: var(--qv-rule);
-  color: color-mix(in srgb, var(--c-text) 55%, transparent);
-  cursor: default;
-}
-
-.quick-view__reassurance {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.563rem;
-  margin: 0.813rem 0 0;
-  font-size: var(--micro-size);
-  letter-spacing: calc(var(--micro-tracking) * 0.68);
-  text-transform: uppercase;
-  color: color-mix(in srgb, var(--c-text) 72%, transparent);
-}
-
-.quick-view__reassurance svg {
-  flex: none;
-  display: block;
-  color: color-mix(in srgb, var(--c-accent) 90%, transparent);
+@container quick-view (max-width: 52.4375rem) {
+  .quick-view__info {
+    justify-content: flex-start;
+  }
 }
 
 .quick-view__full {
@@ -8202,41 +8522,22 @@ a.nav-menu__address:hover {
   margin-bottom: var(--space-3xs);
 }
 
-.product-option__swatches {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-3xs);
+/* The selection ring is drawn on the dot, exactly as the card draws its own —
+   hairline off, a 2px spacer, then a light 1px stroke hugging at 3px. Two
+   things died here and must stay dead: a legacy `::after` ring floating
+   4.8px outside the button, which is the detached halo the control used to
+   wear, and a `--c-surface` spacer, which on the product page is a visible
+   white ring because the swatches sit on the page background, not on a card's
+   surface — the exact trap the card swatch's comment records, mirrored. */
+.product-option__choice:hover .swatch-dot {
+  border-color: color-mix(in srgb, currentColor 45%, transparent);
 }
 
-/* The button is the hit target and the selection ring; the paint is on the
-   .swatch-dot inside it, which is where the option value's own swatch lands.
-   No border of its own — the dot draws the hairline, and two would double it. */
-.product-option__swatch {
-  position: relative;
-  width: 3.5rem;
-  height: 3.5rem;
-  padding: 0;
-  border: none;
-  border-radius: 50%;
-  background: none;
-  cursor: pointer;
-}
-
-.product-option__swatch::after {
-  position: absolute;
-  inset: -0.3rem;
-  border: var(--border-width) solid transparent;
-  border-radius: inherit;
-  content: '';
-}
-
-.product-option__swatch:is(:hover, :focus-visible)::after,
-.product-option__swatch.is-selected::after {
-  border-color: var(--c-text);
-}
-
-.product-option__swatch:focus-visible {
-  outline: 0;
+.product-option__choice input:checked + .product-option__swatch .swatch-dot {
+  border-color: transparent;
+  box-shadow:
+    0 0 0 2px var(--c-bg),
+    0 0 0 3px color-mix(in srgb, var(--c-heading) 55%, transparent);
 }
 
 .form-status {
@@ -8389,7 +8690,9 @@ a.nav-menu__address:hover {
 
   display: grid;
   place-items: center;
-  color: var(--c-accent);
+  /* The merchant's loader colour first — Theme settings → Colors → Loading —
+     then each surface's own accent, and never a background of its own. */
+  color: var(--loader-ink, var(--c-accent));
 }
 
 /* 3 units at a scale of 0.33 and 1.85 at 0.81: both land on the same hairline
@@ -8533,3 +8836,4 @@ a.nav-menu__address:hover {
 .simple-template {
   padding-block: var(--space-2xl);
 }
+

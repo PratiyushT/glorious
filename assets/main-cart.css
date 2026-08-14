@@ -46,17 +46,21 @@
   border-block-end: 1px solid var(--c-hairline);
 }
 
+/* The frame is Theme settings → Cart's shape and fit — the same pair the
+   drawer's thumbnail reads, because the two surfaces are one cart contract.
+   The 3/4 fallback is that pair's own default, and it is what an `adapt` line
+   with no photograph falls back to rather than collapsing. */
 .cart-line__media {
   display: block;
   overflow: hidden;
-  aspect-ratio: var(--cart-image-ratio, 1 / 1);
+  aspect-ratio: var(--cart-image-ratio, 3 / 4);
   background: color-mix(in srgb, currentColor 4%, transparent);
 }
 
 .cart-line__media img {
   width: 100%;
   height: 100%;
-  object-fit: var(--cart-image-fit, contain);
+  object-fit: var(--cart-image-fit, cover);
 }
 
 .cart-line__info,
@@ -92,6 +96,11 @@
 .cart-line__compare {
   margin-inline-end: .5em;
   color: var(--c-muted);
+}
+
+[data-price-compare="after"] .cart-line__compare {
+  margin-inline-end: 0;
+  margin-inline-start: .5em;
 }
 
 .cart-line__discounts,
@@ -161,6 +170,17 @@
   border: 1px solid var(--c-hairline);
 }
 
+.cart-page__sidebar {
+  display: grid;
+  min-width: 0;
+  gap: var(--step-medium);
+  align-self: start;
+}
+
+.cart-page__sidebar .cart-page__summary {
+  position: static;
+}
+
 .cart-page__summary-row {
   display: flex;
   justify-content: space-between;
@@ -172,6 +192,13 @@
   border-block-start: 1px solid var(--c-hairline);
   font-family: var(--font-heading);
   font-size: var(--text-heading_5-size);
+}
+
+/* The tax note is a whole sentence here, as in the drawer's subtotal label —
+   the base `.price-tax` nowrap would make it one unbreakable box wider than a
+   narrow summary and push the layout out of its border. It wraps. */
+.cart-page__summary .price-tax {
+  white-space: normal;
 }
 
 .cart-page__note {
@@ -203,9 +230,7 @@
     grid-template-columns: 1fr;
   }
 
-  .cart-page__summary {
-    position: static;
-  }
+  .cart-page__sidebar { width: 100%; }
 }
 
 @media (max-width: 46.9375rem) {
