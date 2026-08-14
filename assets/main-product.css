@@ -5,6 +5,16 @@
   line-height: normal;
 }
 
+/* Transparent nav mode: the bar reserves nothing, so the product layout must
+   stop assuming it does. Zeroing the one token does the whole job — the
+   gallery grows to a full 100dvh (the design's own product page), the
+   showcase and details minimums follow, and the sticky column pins at the
+   very top, flush under the bar that floats over it. The details column
+   needs no compensation: its own top padding already clears the fixed bar. */
+body:has([data-nav-transparent]) .main-product {
+  --product-nav-offset: 0rem;
+}
+
 .product-showcase {
   display: grid;
   align-items: start;
