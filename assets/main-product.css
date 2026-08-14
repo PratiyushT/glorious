@@ -562,10 +562,12 @@ body:has([data-nav-transparent]) .main-product {
   transform: translateY(-50%);
 }
 
+/* The label and the control are one phrase, so they sit together on the row's
+   gap — space-between made the whole column width the gap whenever the label
+   was on, and had the control jump between edges as the label toggled. */
 .product-quantity {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: var(--space-xs);
 }
 
