@@ -1659,9 +1659,14 @@ see the search overlay below.
   gained `store_display_name` (used where the storefront says the shop's name
   in prose — the gift card page, the footer copyright fallback, the password
   logo's accessible name; empty falls back to `shop.name`), `logo`, and
-  `logo_inverted`. An image logo replaces the lettered wordmark through the
-  shared `huge-text` renderer — header, overlay heads, footer — with the
-  inverted one preferred on dark grounds; R15 keeps that branch in the one
+  `logo_inverted`. The brand mark is the surface's choice through the shared
+  `huge-text` renderer — header, overlay heads, footer — via each section's
+  `brand_display`: Automatic (the old behaviour and the default — the logo
+  when one is uploaded, letters otherwise), Wordmark, Logo, or both side by
+  side with `brand_logo_side` choosing the logo's side. A logo choice with
+  no logo uploaded falls back to the letters, because a brand mark that
+  renders nothing is a broken header, not a choice. The inverted logo is
+  still preferred on dark grounds; R15 keeps every branch in the one
   renderer. **The hero deliberately stays text**: its letter-by-letter
   entrance, the nav's morph anchor, and `fitHero`'s geometry are all drawn
   from the letters. The wordmark's *text* remains the Header, Hero, and
@@ -3569,6 +3574,25 @@ two answers and is gone.
   `[data-drawer-contents]` in, so line prices, the subtotal and the item count
   are always Liquid's numbers. The count rides along on a
   `[data-cart-count-value]` element rather than a second request.
+- **Both cart surfaces state each line's own quantity rule**, the product
+  form's contract carried into the bag. The drawer renders
+  `item.variant.quantity_rule` as `data-cart-rule-min/step/max` on the
+  `.drawer-qty` control and `theme.js` learns the rule from nowhere else; the
+  cart page's `updates[]` inputs carry the same rule as native
+  `min`/`max`/`step`. Both arrow handlers re-snap onto the min-anchored
+  increment grid before clamping — the product stepper's rule, and on the
+  page the safe one, since native validation's step base is the `min`
+  attribute and an off-grid value the theme itself wrote would block the
+  whole cart form, the checkout submit included. The two surfaces part ways
+  only at the bottom, each toward its own removal path: the drawer's minus
+  below the minimum *is* the removal (the same press that meant "below one"
+  while the rule was the default), while the page's discs clamp at the
+  minimum because its removal is the `url_to_remove` link — typing 0 to
+  remove went with the old `min="0"`, a zero being below the minimum the
+  shop sells and a blocked form being worse than a second click. On a shop
+  without quantity rules every rendered attribute is the old integer grid
+  exactly. The arrows only choose the requested quantity; the money and the
+  count still come back from Liquid.
 - **A press while a change is in flight is held, not dropped.** `cartBusy` used
   to `return` outright, so pressing + three times quickly moved the bag by one.
   Presses inside 220ms now coalesce into one request and anything arriving

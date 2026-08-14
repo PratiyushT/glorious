@@ -6070,6 +6070,21 @@ a {
 
    Holding left, right and transform constant means the expansion is the
    width transition alone, growing symmetrically from the centre. */
+/* Logo and wordmark side by side — the Brand mark setting's "both". The
+   markup order is Liquid's (the Logo side setting), so this only lays the
+   pair on one line and spaces it; the logo caps to the wordmark's own
+   height so the pair reads as one lockup at every placement scale. */
+.huge-text--pair {
+  display: inline-flex;
+  align-items: center;
+  gap: clamp(0.5rem, 1.4vw, 1rem);
+}
+
+.huge-text--pair .huge-text__logo {
+  max-height: 2.4em;
+  width: auto;
+}
+
 .nav {
   /* The pill's height, named because the corner radius has to be derived from
      it — see .nav--pill. */

@@ -55,7 +55,7 @@
       <div class="hairline"></div>
     {%- endif -%}
 
-    {% render 'huge-text', source: section.settings.huge_text_value, placement: 'footer', on_dark: true %}
+    {% render 'huge-text', source: section.settings.huge_text_value, placement: 'footer', on_dark: true, display: section.settings.brand_display, logo_side: section.settings.brand_logo_side %}
 
     {%- if column_blocks.size > 0 or policy_blocks.size > 0 or contact_blocks.size > 0 -%}
       {%- comment -%}
@@ -238,6 +238,30 @@
       "id": "huge_text_value",
       "label": "t:blocks.huge_text.value",
       "default": "STORE NAME"
+    },
+    {
+      "type": "select",
+      "id": "brand_display",
+      "label": "t:sections.all.brand_display.label",
+      "info": "t:sections.all.brand_display.info",
+      "options": [
+        { "value": "auto", "label": "t:sections.all.brand_display.auto" },
+        { "value": "wordmark", "label": "t:sections.all.brand_display.wordmark" },
+        { "value": "logo", "label": "t:sections.all.brand_display.logo" },
+        { "value": "both", "label": "t:sections.all.brand_display.both" }
+      ],
+      "default": "auto"
+    },
+    {
+      "type": "select",
+      "id": "brand_logo_side",
+      "label": "t:sections.all.brand_logo_side.label",
+      "options": [
+        { "value": "start", "label": "t:sections.all.brand_logo_side.start" },
+        { "value": "end", "label": "t:sections.all.brand_logo_side.end" }
+      ],
+      "default": "start",
+      "visible_if": "{{ section.settings.brand_display == 'both' }}"
     },
     {
       "type": "checkbox",

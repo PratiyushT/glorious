@@ -1447,6 +1447,19 @@
         "label": "Content alignment",
         "info": "Blocks follow the section unless they set their own."
       },
+      "brand_display": {
+        "label": "Brand mark",
+        "info": "Automatic shows the Brand logo when one is uploaded and the wordmark otherwise. A logo choice with no logo uploaded falls back to the wordmark.",
+        "auto": "Automatic",
+        "wordmark": "Wordmark",
+        "logo": "Logo",
+        "both": "Logo and wordmark"
+      },
+      "brand_logo_side": {
+        "label": "Logo side",
+        "start": "Before the wordmark",
+        "end": "After the wordmark"
+      },
       "card_column_gap": {
         "label": "Horizontal card gap",
         "info": "Space between cards across a row. Rows above and below keep the theme's grid gap."
