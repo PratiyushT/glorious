@@ -28,11 +28,6 @@
 {%- endcomment -%}
 
 {%- liquid
-  assign is_carousel = false
-  if section.settings.layout == 'carousel'
-    assign is_carousel = true
-  endif
-
   assign collection_list = section.settings.collections
 
   comment
@@ -87,62 +82,39 @@
     {%- endcomment -%}
     {%- capture grid_vars -%}
       --cols: {{ section.settings.columns }}; --gap: var(--grid-gap); --min: 22.5rem;
+      {%- comment -%} Columns only; the ruler reads the same pair, so the carousel follows. {%- endcomment -%}
+      {%- unless section.settings.column_gap == blank or section.settings.column_gap == 'theme' -%}
+        {%- if section.settings.column_gap == 'none' %} --column-gap: 0;
+        {%- else %} --column-gap: var(--step-{{ section.settings.column_gap }});{% endif -%}
+      {%- endunless -%}
     {%- endcapture -%}
 
-    {%- if is_carousel -%}
-      {%- comment -%}
-        The carousel takes its cells as markup, so this one path has to capture
-        them. The grid below deliberately does not: it is the default, and the
-        default should not depend on `{% content_for %}` surviving a capture.
-        The loop is stated twice for that reason and no other — keep them the
-        same.
-      {%- endcomment -%}
-      {%- capture cells -%}
-        {%- for i in (1..card_count) -%}
-          {%- liquid
-            assign card_collection = blank
-            assign card_index = forloop.index0
-            for collection_item in collection_list offset: card_index limit: 1
-              assign card_collection = collection_item
-            endfor
-          -%}
-          <div class="row-carousel__cell" data-row-cell>
-            {% content_for 'block', type: '_collection-card', id: 'collection-card', closest.collection: card_collection %}
-          </div>
-        {%- endfor -%}
-      {%- endcapture -%}
+    {%- capture cells -%}
+      {%- for i in (1..card_count) -%}
+        {%- liquid
+          assign card_collection = blank
+          assign card_index = forloop.index0
+          for collection_item in collection_list offset: card_index limit: 1
+            assign card_collection = collection_item
+          endfor
+        -%}
+        <div class="row-carousel__cell reveal" data-row-cell style="--reveal-delay: {{ forloop.index0 | times: 80 }}ms;">
+          {% content_for 'block', type: '_collection-card', id: 'collection-card', closest.collection: card_collection %}
+        </div>
+      {%- endfor -%}
+    {%- endcapture -%}
 
-      {%- render 'row-carousel',
-        cells: cells,
-        count: card_count,
-        motion: section.settings.carousel_motion,
-        arrows: section.settings.carousel_arrows,
-        label: carousel_label,
-        track_style: grid_vars
-      -%}
-    {%- else -%}
-      <div class="grid-auto" style="{{ grid_vars | strip }}">
-        {%- comment -%}
-          The cell carries the reveal and the design's 80ms stagger, because a
-          block cannot know its place among its siblings — `forloop` lives out
-          here. It is `display: grid` for the same reason the carousel's cell
-          is: the card then fills it rather than sizing to its own content, so
-          a row of cards whose titles wrap differently still ends level.
-        {%- endcomment -%}
-        {%- for i in (1..card_count) -%}
-          {%- liquid
-            assign card_collection = blank
-            assign card_index = forloop.index0
-            for collection_item in collection_list offset: card_index limit: 1
-              assign card_collection = collection_item
-            endfor
-          -%}
-          <div class="collection-list__cell reveal" style="--reveal-delay: {{ forloop.index0 | times: 80 }}ms;">
-            {% content_for 'block', type: '_collection-card', id: 'collection-card', closest.collection: card_collection %}
-          </div>
-        {%- endfor -%}
-      </div>
-    {%- endif -%}
+    {%- render 'row-carousel',
+      cells: cells,
+      count: card_count,
+      motion: section.settings.carousel_motion,
+      arrows: section.settings.carousel_arrows,
+      label: carousel_label,
+      track_style: grid_vars,
+      layout_desktop: section.settings.layout,
+      layout_tablet: section.settings.layout_tablet,
+      layout_mobile: section.settings.layout_mobile
+    -%}
   </div>
 </section>
 
@@ -150,10 +122,7 @@
 {
   "name": "t:sections.collection_list.name",
   "tag": "div",
-  "blocks": [
-    { "type": "text" },
-    { "type": "rich-text" }
-  ],
+  "blocks": [{ "type": "@theme" }, { "type": "@app" }],
   "settings": [
     {
       "type": "select",
@@ -206,8 +175,25 @@
     },
     {
       "type": "select",
+      "id": "column_gap",
+      "label": "t:sections.all.card_column_gap.label",
+      "info": "t:sections.all.card_column_gap.info",
+      "options": [
+        { "value": "theme", "label": "t:sections.catalog.theme_product_gap" },
+        { "value": "none", "label": "t:blocks.all.step.none" },
+        { "value": "minimal", "label": "t:blocks.all.step.minimal" },
+        { "value": "tiny", "label": "t:blocks.all.step.tiny" },
+        { "value": "small", "label": "t:blocks.all.step.small" },
+        { "value": "medium", "label": "t:blocks.all.step.medium" },
+        { "value": "large", "label": "t:blocks.all.step.large" },
+        { "value": "xlarge", "label": "t:blocks.all.step.xlarge" }
+      ],
+      "default": "theme"
+    },
+    {
+      "type": "select",
       "id": "layout",
-      "label": "t:sections.all.layout.label",
+      "label": "t:sections.all.layout.desktop_label",
       "info": "t:sections.all.layout.info",
       "options": [
         {
@@ -220,6 +206,20 @@
         }
       ],
       "default": "grid"
+    },
+    {
+      "type": "select", "id": "layout_tablet", "label": "t:sections.all.layout.tablet_label",
+      "options": [
+        { "value": "grid", "label": "t:sections.all.layout.grid" },
+        { "value": "carousel", "label": "t:sections.all.layout.carousel" }
+      ], "default": "carousel"
+    },
+    {
+      "type": "select", "id": "layout_mobile", "label": "t:sections.all.layout.mobile_label",
+      "options": [
+        { "value": "grid", "label": "t:sections.all.layout.grid" },
+        { "value": "carousel", "label": "t:sections.all.layout.carousel" }
+      ], "default": "carousel"
     },
     {
       "type": "select",
@@ -237,7 +237,7 @@
         }
       ],
       "default": "slide",
-      "visible_if": "{{ section.settings.layout == 'carousel' }}"
+      "visible_if": "{{ section.settings.layout == 'carousel' or section.settings.layout_tablet == 'carousel' or section.settings.layout_mobile == 'carousel' }}"
     },
     {
       "type": "select",
@@ -259,7 +259,7 @@
         }
       ],
       "default": "bottom",
-      "visible_if": "{{ section.settings.layout == 'carousel' }}"
+      "visible_if": "{{ section.settings.layout == 'carousel' or section.settings.layout_tablet == 'carousel' or section.settings.layout_mobile == 'carousel' }}"
     },
     {
       "type": "header",

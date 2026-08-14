@@ -4,10 +4,6 @@
 {%- liquid
   assign recommendation_limit = section.settings.products_to_show
   assign recommendation_count = recommendations.products_count
-  assign is_carousel = false
-  if section.settings.layout == 'carousel'
-    assign is_carousel = true
-  endif
 
   capture recommendations_url
     echo routes.product_recommendations_url
@@ -39,35 +35,35 @@
       >
         {% content_for 'blocks' %}
 
-        {%- capture grid_vars -%}--gap: var(--grid-gap);{%- endcapture -%}
+        {%- comment -%} Columns only; the ruler reads the same pair, so the carousel follows. {%- endcomment -%}
+        {%- capture grid_vars -%}
+          --gap: var(--grid-gap);
+          {%- unless section.settings.column_gap == blank or section.settings.column_gap == 'theme' -%}
+            {%- if section.settings.column_gap == 'none' %} --column-gap: 0;
+            {%- else %} --column-gap: var(--step-{{ section.settings.column_gap }});{% endif -%}
+          {%- endunless -%}
+        {%- endcapture -%}
 
-        {%- if is_carousel -%}
-          {%- capture cards -%}
-            {%- for recommended_product in recommendations.products -%}
-              <div class="row-carousel__cell" data-row-cell>
-                {% content_for 'block', type: '_product-card', id: 'product-card', closest.product: recommended_product %}
-              </div>
-            {%- endfor -%}
-          {%- endcapture -%}
+        {%- capture cards -%}
+          {%- for recommended_product in recommendations.products -%}
+            <div class="row-carousel__cell reveal" data-row-cell style="--reveal-delay: {{ forloop.index0 | times: 60 }}ms;">
+              {% content_for 'block', type: '_product-card', id: 'product-card', closest.product: recommended_product %}
+            </div>
+          {%- endfor -%}
+        {%- endcapture -%}
 
-          {%- render 'row-carousel',
-            cells: cards,
-            count: recommendation_count,
-            motion: section.settings.carousel_motion,
-            arrows: section.settings.carousel_arrows,
-            label: section.settings.accessibility_label,
-            track_class: 'grid-auto--products',
-            track_style: grid_vars
-          -%}
-        {%- else -%}
-          <div class="grid-auto grid-auto--products" style="{{ grid_vars | strip }}">
-            {%- for recommended_product in recommendations.products -%}
-              <div class="reveal" style="--reveal-delay: {{ forloop.index0 | times: 60 }}ms;">
-                {% content_for 'block', type: '_product-card', id: 'product-card', closest.product: recommended_product %}
-              </div>
-            {%- endfor -%}
-          </div>
-        {%- endif -%}
+        {%- render 'row-carousel',
+          cells: cards,
+          count: recommendation_count,
+          motion: section.settings.carousel_motion,
+          arrows: section.settings.carousel_arrows,
+          label: section.settings.accessibility_label,
+          track_class: 'grid-auto--products',
+          track_style: grid_vars,
+          layout_desktop: section.settings.layout,
+          layout_tablet: section.settings.layout_tablet,
+          layout_mobile: section.settings.layout_mobile
+        -%}
       </div>
     </section>
   {%- endif -%}
@@ -85,6 +81,7 @@
     { "type": "text" },
     { "type": "rich-text" },
     { "type": "group" },
+    { "type": "accordion" },
     { "type": "button" },
     { "type": "custom-liquid" }
   ],
@@ -127,13 +124,27 @@
     {
       "type": "select",
       "id": "layout",
-      "label": "t:sections.all.layout.label",
+      "label": "t:sections.all.layout.desktop_label",
       "info": "t:sections.all.layout.info",
       "options": [
         { "value": "grid", "label": "t:sections.all.layout.grid" },
         { "value": "carousel", "label": "t:sections.all.layout.carousel" }
       ],
       "default": "grid"
+    },
+    {
+      "type": "select", "id": "layout_tablet", "label": "t:sections.all.layout.tablet_label",
+      "options": [
+        { "value": "grid", "label": "t:sections.all.layout.grid" },
+        { "value": "carousel", "label": "t:sections.all.layout.carousel" }
+      ], "default": "carousel"
+    },
+    {
+      "type": "select", "id": "layout_mobile", "label": "t:sections.all.layout.mobile_label",
+      "options": [
+        { "value": "grid", "label": "t:sections.all.layout.grid" },
+        { "value": "carousel", "label": "t:sections.all.layout.carousel" }
+      ], "default": "carousel"
     },
     {
       "type": "select",
@@ -145,7 +156,7 @@
         { "value": "fade", "label": "t:sections.all.carousel_motion.fade" }
       ],
       "default": "slide",
-      "visible_if": "{{ section.settings.layout == 'carousel' }}"
+      "visible_if": "{{ section.settings.layout == 'carousel' or section.settings.layout_tablet == 'carousel' or section.settings.layout_mobile == 'carousel' }}"
     },
     {
       "type": "select",
@@ -158,7 +169,7 @@
         { "value": "side", "label": "t:sections.all.carousel_arrows.side" }
       ],
       "default": "bottom",
-      "visible_if": "{{ section.settings.layout == 'carousel' }}"
+      "visible_if": "{{ section.settings.layout == 'carousel' or section.settings.layout_tablet == 'carousel' or section.settings.layout_mobile == 'carousel' }}"
     },
     {
       "type": "range",
@@ -184,6 +195,23 @@
         { "value": "xlarge", "label": "t:blocks.all.step.xlarge" }
       ],
       "default": "large"
+    },
+    {
+      "type": "select",
+      "id": "column_gap",
+      "label": "t:sections.all.card_column_gap.label",
+      "info": "t:sections.all.card_column_gap.info",
+      "options": [
+        { "value": "theme", "label": "t:sections.catalog.theme_product_gap" },
+        { "value": "none", "label": "t:blocks.all.step.none" },
+        { "value": "minimal", "label": "t:blocks.all.step.minimal" },
+        { "value": "tiny", "label": "t:blocks.all.step.tiny" },
+        { "value": "small", "label": "t:blocks.all.step.small" },
+        { "value": "medium", "label": "t:blocks.all.step.medium" },
+        { "value": "large", "label": "t:blocks.all.step.large" },
+        { "value": "xlarge", "label": "t:blocks.all.step.xlarge" }
+      ],
+      "default": "theme"
     },
     {
       "type": "checkbox",
@@ -256,6 +284,7 @@
           "id": "product-card",
           "blocks": [
             { "type": "_product-card-media", "settings": { "image_ratio": "1/1", "image_fit": "contain" } },
+            { "type": "product_badges" },
             { "type": "text", "settings": { "text": "{{ closest.product.title }}", "style": "small", "element": "h3", "override_case": "uppercase", "override_tracking": "wide" } },
             { "type": "_product-card-option-control", "settings": { "target_by": "auto", "control": "auto", "swatch_shape": "round" } },
             { "type": "_product-card-price" },

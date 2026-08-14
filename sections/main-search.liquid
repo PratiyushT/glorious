@@ -55,13 +55,22 @@
       assign catalog_gap = 'var(--step-' | append: section.settings.gap | append: ')'
     endif
   endunless
+
+  assign catalog_column_gap = ''
+  unless section.settings.column_gap == blank or section.settings.column_gap == 'theme'
+    if section.settings.column_gap == 'none'
+      assign catalog_column_gap = '0'
+    else
+      assign catalog_column_gap = 'var(--step-' | append: section.settings.column_gap | append: ')'
+    endif
+  endunless
 -%}
 
 <section
   class="catalog-page catalog-page--search catalog-page--motion-{{ section.settings.grid_motion | default: 'reference' }}{% if section.settings.sticky_controls %} catalog-page--sticky-controls{% endif %} scheme-{{ section.settings.color_scheme }}"
   data-catalog-section="{{ section.id }}"
   data-catalog-ajax="{{ section.settings.enable_ajax }}"
-  style="{% render 'section-style', padding_top: section.settings.padding_top, padding_bottom: section.settings.padding_bottom %} --catalog-columns: {{ section.settings.columns }}; --catalog-gap: {{ catalog_gap }};"
+  style="{% render 'section-style', padding_top: section.settings.padding_top, padding_bottom: section.settings.padding_bottom %} --catalog-columns: {{ section.settings.columns }}; --catalog-gap: {{ catalog_gap }};{% if catalog_column_gap != blank %} --catalog-column-gap: {{ catalog_column_gap }};{% endif %}"
 >
   <div class="catalog-sticky-bar">
     <div class="catalog-shell catalog-search-controls">
@@ -87,8 +96,12 @@
 
   {%- if section.settings.show_filters and search.filters.size > 0 -%}
     {%- assign drawer_name = 'catalog-filters-' | append: section.id -%}
-    {% render 'catalog-filter-drawer', results: search, section: section, context: 'search', form_action: routes.search_url, clear_url: clear_url, current_sort: current_sort, search_terms: search.terms, search_types: search_types, drawer_name: drawer_name %}
+    {% render 'catalog-filter-drawer', results: search, section: section, context: 'search', form_action: routes.search_url, clear_url: clear_url, current_sort: current_sort, search_terms: search.terms, search_types: search_types, drawer_name: drawer_name, show_sort: section.settings.show_sort, quick_source: quick_source, quick_filter: quick_filter, quick_links_limit: section.settings.quick_links_limit %}
   {%- endif -%}
+
+  <div class="catalog-shell">
+    {% render 'catalog-active-filters', results: search, clear_url: clear_url %}
+  </div>
 
   <main class="catalog-main catalog-main--search">
     <div class="catalog-shell">
@@ -334,13 +347,6 @@
       "default": true
     },
     {
-      "type": "text",
-      "id": "filter_button_label",
-      "label": "t:sections.catalog.filter_button_label",
-      "default": "Filter",
-      "visible_if": "{{ section.settings.show_filters }}"
-    },
-    {
       "type": "header",
       "content": "t:sections.catalog.filter_drawer"
     },
@@ -349,13 +355,6 @@
       "id": "drawer_color_scheme",
       "label": "t:sections.catalog.drawer_color_scheme",
       "default": "scheme_1",
-      "visible_if": "{{ section.settings.show_filters }}"
-    },
-    {
-      "type": "text",
-      "id": "drawer_heading",
-      "label": "t:sections.catalog.drawer_heading",
-      "default": "Refine",
       "visible_if": "{{ section.settings.show_filters }}"
     },
     {
@@ -603,6 +602,23 @@
     },
     {
       "type": "select",
+      "id": "column_gap",
+      "label": "t:sections.all.card_column_gap.label",
+      "info": "t:sections.all.card_column_gap.info",
+      "options": [
+        { "value": "theme", "label": "t:sections.catalog.theme_product_gap" },
+        { "value": "none", "label": "t:blocks.all.step.none" },
+        { "value": "minimal", "label": "t:blocks.all.step.minimal" },
+        { "value": "tiny", "label": "t:blocks.all.step.tiny" },
+        { "value": "small", "label": "t:blocks.all.step.small" },
+        { "value": "medium", "label": "t:blocks.all.step.medium" },
+        { "value": "large", "label": "t:blocks.all.step.large" },
+        { "value": "xlarge", "label": "t:blocks.all.step.xlarge" }
+      ],
+      "default": "theme"
+    },
+    {
+      "type": "select",
       "id": "grid_motion",
       "label": "t:sections.catalog.result_grid_animation",
       "options": [
@@ -669,6 +685,7 @@
           "id": "product-card",
           "blocks": [
             { "type": "_product-card-media", "settings": { "image_ratio": "1/1", "image_fit": "contain" } },
+            { "type": "product_badges" },
             { "type": "text", "settings": { "text": "{{ closest.product.title }}", "style": "small", "element": "h2", "override_case": "uppercase", "override_tracking": "wide" } },
             { "type": "_product-card-option-control", "settings": { "target_by": "auto", "control": "auto", "swatch_shape": "round" } },
             { "type": "_product-card-price" },
@@ -681,6 +698,7 @@
           "id": "featured-product-card",
           "blocks": [
             { "type": "_product-card-media", "settings": { "image_ratio": "1/1", "image_fit": "contain" } },
+            { "type": "product_badges" },
             { "type": "text", "settings": { "text": "{{ closest.product.title }}", "style": "small", "element": "h2", "override_case": "uppercase", "override_tracking": "wide" } },
             { "type": "_product-card-option-control", "settings": { "target_by": "auto", "control": "auto", "swatch_shape": "round" } },
             { "type": "_product-card-price" },
