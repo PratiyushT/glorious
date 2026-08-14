@@ -1032,11 +1032,32 @@
       var step = event.target.closest('[data-cart-step]');
       if (step) {
         var value = row.querySelector('[data-cart-qty]');
-        var current = value ? parseInt(value.textContent, 10) : 1;
-        var next = current + parseInt(step.dataset.cartStep, 10);
 
-        /* Stepping below one is a removal, and gets the removal's motion. */
-        if (next <= 0) { remove(); return; }
+        /* The line's quantity rule, rendered by Liquid onto the control —
+           min 1 / increment 1 exactly where the shop sets none, so nothing
+           changes on a store without rules. The arrows re-snap onto the
+           min-anchored increment grid rather than merely add the increment,
+           the product stepper's own rule: a line stored off the grid — a
+           rule changed while the piece sat in the bag — recovers on the
+           first press instead of riding the wrong grid forever. */
+        var rule = step.closest('[data-cart-rule-step]');
+        var increment = (rule && Number(rule.dataset.cartRuleStep)) || 1;
+        var minimum = (rule && Number(rule.dataset.cartRuleMin)) || 1;
+        var maximum = rule && rule.dataset.cartRuleMax ? Number(rule.dataset.cartRuleMax) : Infinity;
+
+        var current = value ? parseInt(value.textContent, 10) : minimum;
+        var next = (current || minimum) + parseInt(step.dataset.cartStep, 10) * increment;
+        next = minimum + Math.round((next - minimum) / increment) * increment;
+
+        /* Below the minimum the shop sells there is no quantity left to
+           show, so stepping under it is the removal — the same press that
+           meant "below one" while the rule was the default. */
+        if (next < minimum) { remove(); return; }
+        if (next > maximum) next = maximum;
+        /* Clamping can land back on the shown count — a plus at the rule's
+           max — and a request that asks for what is already there buys
+           nothing. */
+        if (next === current) return;
 
         /* Answer the press now. This is the count, not a price — every figure
            still comes back from Liquid, and the re-render overwrites this. */

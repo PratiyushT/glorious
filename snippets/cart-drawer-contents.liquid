@@ -151,7 +151,26 @@
                   {%- endcomment -%}
                   {% render 'line-options', item: item, class: 'drawer-row__meta' %}
 
-                  <div class="drawer-qty">
+                  {%- liquid
+                    comment
+                      The steppers state this line's own quantity rule, the
+                      product form's contract — a store whose admin sets a
+                      minimum of 2 or an increment of 6 must see it here too.
+                      The rule drop always exists (min 1, increment 1 when
+                      unset), so on a shop without quantity rules these
+                      attributes are the old literals exactly. theme.js reads
+                      them off the control and learns a rule from nowhere else.
+                    endcomment
+                    assign quantity_rule = item.variant.quantity_rule
+                    assign rule_min = quantity_rule.min | default: 1
+                    assign rule_increment = quantity_rule.increment | default: 1
+                  -%}
+                  <div
+                    class="drawer-qty"
+                    data-cart-rule-min="{{ rule_min }}"
+                    data-cart-rule-step="{{ rule_increment }}"
+                    {%- if quantity_rule.max %} data-cart-rule-max="{{ quantity_rule.max }}"{% endif -%}
+                  >
                     <button
                       class="drawer-qty__btn"
                       type="button"

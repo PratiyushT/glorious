@@ -122,10 +122,27 @@
                     {% render 'unit-price', price: item.unit_price, measurement: item.unit_price_measurement, class: 'cart-line__unit-price' %}
                   </div>
                   <div class="cart-line__controls">
+                    {%- liquid
+                      comment
+                        The input states the line's own quantity rule, the
+                        product form's contract — native validation's step
+                        base is the min attribute, so min must be the rule's
+                        for the grid to be min-anchored. Typing 0 to remove
+                        went with the old zero min: a zero is below the
+                        minimum the shop sells, and an invalid input blocks
+                        the whole cart form, the checkout submit included —
+                        removal is the Remove link beside it. On a shop
+                        without quantity rules the attributes are the old
+                        integer grid exactly.
+                      endcomment
+                      assign quantity_rule = item.variant.quantity_rule
+                      assign rule_min = quantity_rule.min | default: 1
+                      assign rule_increment = quantity_rule.increment | default: 1
+                    -%}
                     <div class="cart-quantity" data-cart-quantity>
                       <button type="button" data-cart-quantity-change="-1" aria-label="{{ 'cart.decrease' | t: title: item.product.title }}">−</button>
                       <label class="visually-hidden" for="CartQuantity-{{ item.index | plus: 1 }}">{{ 'products.quantity' | t }}</label>
-                      <input id="CartQuantity-{{ item.index | plus: 1 }}" name="updates[]" type="number" min="0" value="{{ item.quantity }}" inputmode="numeric">
+                      <input id="CartQuantity-{{ item.index | plus: 1 }}" name="updates[]" type="number" min="{{ rule_min }}"{% if quantity_rule.max %} max="{{ quantity_rule.max }}"{% endif %} step="{{ rule_increment }}" value="{{ item.quantity }}" inputmode="numeric">
                       <button type="button" data-cart-quantity-change="1" aria-label="{{ 'cart.increase' | t: title: item.product.title }}">+</button>
                     </div>
                     <a class="cart-line__remove" href="{{ item.url_to_remove }}">{{ 'cart.remove' | t }}</a>
