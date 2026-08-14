@@ -2785,11 +2785,13 @@ its pill → bar expansion against.
   and out with the scroll for free. **A fully hidden header was built first
   and taken out on request** — the bar's links stay visible over the
   gallery; do not reintroduce a `.nav--veiled` state.
-- **On product pages the bar wears its own scheme** — `nav_scheme_product`,
-  defaulting to `scheme_1`, because the global header scheme is noir and a
-  noir bar over a porcelain gallery was nobody's decision. Every other
-  template keeps the global choice; the Liquid falls back to it where the
-  setting has never been saved.
+- **The bar is one scheme everywhere, and the transparent rest borrows the
+  page.** `nav_scheme_product` existed for one commit and was removed on
+  request — the solid bar a visitor sees on scroll is the same bar on every
+  template. The transparent state is not a scheme of its own:
+  `[data-nav-transparent]:not(.is-solid)` takes the page's `--c-ink` and
+  `--c-gold` brand tokens, so the links stand readable over the light
+  gallery and the scroll hands over to the ordinary global bar.
 - The nav is its own **query container**, which is what gives the pill the
   compact treatment at 264px without pill-specific overrides. That is free at
   the two resting states and **expensive in between**: the morph sweeps the

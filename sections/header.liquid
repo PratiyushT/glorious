@@ -91,15 +91,12 @@
   endif
 
   comment
-    On product pages the bar wears the product page's own scheme; every
-    other template keeps the header's global choice. The default filter is
-    what keeps a store saved before this setting existed on its global
-    scheme rather than on an empty class.
+    One scheme for the bar on every template — the solid bar a visitor sees
+    on scroll is the same bar everywhere, on request. The transparent
+    resting state needs no scheme of its own: base.css hands it the page's
+    ink and gold brand tokens, which is what keeps its links readable over
+    the light gallery without forking the navigation's colour.
   endcomment
-  assign nav_scheme = section.settings.color_scheme
-  if template.name == 'product'
-    assign nav_scheme = section.settings.nav_scheme_product | default: section.settings.color_scheme
-  endif
 
   comment
     The pill is the resting state for both the always-pill and the morphing
@@ -118,7 +115,7 @@
 {%- endcapture -%}
 
 <nav
-  class="nav nav--{{ section.settings.header_layout | default: 'art_directed' }} scheme-{{ nav_scheme }}{% if overlay %} nav--overlay{% endif %}{% if is_pill %} nav--pill{% endif %}{% if nav_mode != 'morph' and nav_transparent == false %} is-solid{% endif %}"
+  class="nav nav--{{ section.settings.header_layout | default: 'art_directed' }} scheme-{{ section.settings.color_scheme }}{% if overlay %} nav--overlay{% endif %}{% if is_pill %} nav--pill{% endif %}{% if nav_mode != 'morph' and nav_transparent == false %} is-solid{% endif %}"
   data-nav
   data-nav-mode="{{ nav_mode }}"
   {% if nav_transparent %}data-nav-transparent{% endif %}
@@ -314,13 +311,6 @@
       "label": "t:sections.header.nav_product_transparent.label",
       "info": "t:sections.header.nav_product_transparent.info",
       "default": false
-    },
-    {
-      "type": "color_scheme",
-      "id": "nav_scheme_product",
-      "label": "t:sections.header.nav_scheme_product.label",
-      "info": "t:sections.header.nav_scheme_product.info",
-      "default": "scheme_1"
     },
     {
       "type": "range",

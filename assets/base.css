@@ -6113,6 +6113,16 @@ a {
   backdrop-filter: none;
 }
 
+/* The product page's transparent rest is not a scheme of its own — the bar
+   is the same scheme everywhere and turns into the ordinary solid bar on
+   scroll, on request. Standing over the light gallery it borrows the page's
+   ink and gold brand tokens, which stay readable without forking the
+   navigation's colour: one bar, wearing the page while it is transparent. */
+[data-nav-transparent]:not(.is-solid) {
+  color: var(--c-ink);
+  --c-accent: var(--c-gold);
+}
+
 /* The cap lives inside width rather than in a separate max-width. The design
    pairs a 264px width with max-width:min(94vw,760px), but 264px is under
    760px at every viewport, so the only thing that guard ever does is stop the

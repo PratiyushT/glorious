@@ -1548,11 +1548,7 @@
       },
       "nav_product_transparent": {
         "label": "Transparent at the top of product pages",
-        "info": "The bar stands over the gallery with no ground of its own and turns solid on the way down. Without JavaScript it simply never turns solid."
-      },
-      "nav_scheme_product": {
-        "label": "Product page color scheme",
-        "info": "The header's scheme on product pages alone; every other page keeps the scheme above."
+        "info": "The bar stands over the gallery in the page's own ink and turns into the ordinary solid bar on the way down. Without JavaScript it simply never turns solid."
       },
       "scroll_threshold": {
         "label": "Scroll distance before it expands",
