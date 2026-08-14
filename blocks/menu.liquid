@@ -22,30 +22,30 @@
 
 {% schema %}
 {
-  "name": "Menu",
+  "name": "t:blocks.menu.name",
   "tag": null,
   "settings": [
-    { "type": "link_list", "id": "menu", "label": "Menu", "default": "main-menu" },
-    { "type": "inline_richtext", "id": "heading", "label": "Heading" },
+    { "type": "link_list", "id": "menu", "label": "t:blocks.menu.menu.label", "default": "main-menu" },
+    { "type": "inline_richtext", "id": "heading", "label": "t:blocks.menu.heading.label" },
     {
-      "type": "select", "id": "heading_style", "label": "Heading style",
+      "type": "select", "id": "heading_style", "label": "t:blocks.menu.heading_style.label",
       "options": [
-        { "value": "heading_3", "label": "Heading 3" },
-        { "value": "heading_4", "label": "Heading 4" },
-        { "value": "heading_5", "label": "Heading 5" },
-        { "value": "subheading", "label": "Subheading" },
-        { "value": "caption", "label": "Caption" }
+        { "value": "heading_3", "label": "t:settings_schema.typography.presets.heading_3.header" },
+        { "value": "heading_4", "label": "t:settings_schema.typography.presets.heading_4.header" },
+        { "value": "heading_5", "label": "t:settings_schema.typography.presets.heading_5.header" },
+        { "value": "subheading", "label": "t:settings_schema.typography.presets.subheading.header" },
+        { "value": "caption", "label": "t:settings_schema.typography.presets.caption.header" }
       ], "default": "subheading", "visible_if": "{{ block.settings.heading != blank }}"
     },
     {
-      "type": "select", "id": "layout", "label": "Layout",
+      "type": "select", "id": "layout", "label": "t:blocks.menu.layout.label",
       "options": [
-        { "value": "vertical", "label": "Vertical" },
-        { "value": "horizontal", "label": "Horizontal" }
+        { "value": "vertical", "label": "t:blocks.menu.layout.vertical" },
+        { "value": "horizontal", "label": "t:blocks.menu.layout.horizontal" }
       ], "default": "vertical"
     },
-    { "type": "checkbox", "id": "show_nested", "label": "Show nested links", "default": true }
+    { "type": "checkbox", "id": "show_nested", "label": "t:blocks.menu.show_nested.label", "default": true }
   ],
-  "presets": [{ "name": "Menu" }]
+  "presets": [{ "name": "t:blocks.menu.name" }]
 }
 {% endschema %}
