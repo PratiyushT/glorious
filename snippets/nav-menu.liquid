@@ -16,12 +16,14 @@
   drawer shell declares its own smaller step and lead, so the same markup
   cascades at panel scale.
 
-  A row with children is the theme's shared disclosure — the footer's
-  three-layer 0fr/1fr panel and plus/minus mark, dressed in the menu's own
-  type, indent, and champagne hairline. Grandchildren render flat inside their
-  child's group rather than as a third disclosure level: one fold is a menu,
-  two is a tree. Without JavaScript every panel stands open and the toggle is
-  inert, so no link is ever unreachable.
+  **A menu item with children drills, it does not fold.** Every level of the
+  merchant's menu is rendered as its own hidden panel; choosing a parent swaps
+  the whole menu for that branch's list with a Back row, and Back returns.
+  The accordion branch this replaces is gone on request. The parent row stays
+  a real link to its own page: theme.js intercepts the click only when the
+  target level exists, so without scripting a parent simply navigates and
+  every child remains reachable there. Levels reset to the root when the
+  overlay closes, or a reopened menu would greet the visitor mid-branch.
 
   Rendered inert (hidden, not focusable) until opened, so the links never
   appear in the tab order behind the page.
@@ -62,115 +64,171 @@
 
 {%- capture menu_inner -%}
   <div class="nav-menu__body">
-    <ul class="nav-menu__list" data-nav-branches>
-      {%- for link in menu_links -%}
-        {%- assign row_number = forloop.index -%}
-        <li class="nav-menu__item" style="--row: {{ row_number | minus: 1 }};" {{ menu_block.shopify_attributes }}>
-          {%- if link.links.size > 0 -%}
-            {%- assign branch_id = menu_id | append: '-branch-' | append: row_number -%}
-            <div class="nav-menu__branch" data-nav-branch>
-              <button
-                class="nav-menu__link nav-menu__branch-toggle disclosure__toggle"
-                type="button"
-                data-nav-branch-toggle
-                aria-controls="{{ branch_id }}"
-                aria-expanded="false"
+    <div class="nav-menu__levels" data-nav-levels>
+      <div class="nav-menu__level" data-nav-level="root">
+        <ul class="nav-menu__list">
+          {%- for link in menu_links -%}
+            {%- assign row_number = forloop.index -%}
+            <li class="nav-menu__item" style="--row: {{ row_number | minus: 1 }};" {{ menu_block.shopify_attributes }}>
+              {%- if link.links.size > 0 -%}
+                <a
+                  class="nav-menu__link"
+                  href="{{ link.url }}"
+                  data-nav-drill="{{ menu_id }}-level-{{ row_number }}"
+                >
+                  <span class="nav-menu__num" aria-hidden="true">{{ row_number | prepend: '0' | slice: -2, 2 }}</span>
+                  <span>{{ link.title }}</span>
+                  <span class="nav-menu__drill-mark" aria-hidden="true">{% render 'icon', icon: 'chevron-right' %}</span>
+                </a>
+              {%- else -%}
+                <a class="nav-menu__link" href="{{ link.url }}">
+                  <span class="nav-menu__num" aria-hidden="true">{{ row_number | prepend: '0' | slice: -2, 2 }}</span>
+                  {{ link.title }}
+                </a>
+              {%- endif -%}
+            </li>
+          {%- endfor -%}
+
+          {%- comment -%}
+            Both action rows stay real links to real pages. With the drawer or
+            the overlay switched on, theme.js intercepts the click and opens it
+            in place instead — so the row still goes somewhere useful when
+            scripting is unavailable.
+          {%- endcomment -%}
+          {%- if cart_number > 0 -%}
+            <li class="nav-menu__item" style="--row: {{ cart_number | minus: 1 }};">
+              <a
+                class="nav-menu__link"
+                href="{{ routes.cart_url }}"
+                {% if cart_drawer %}data-drawer-open data-from-menu{% endif %}
               >
-                <span class="nav-menu__num" aria-hidden="true">{{ row_number | prepend: '0' | slice: -2, 2 }}</span>
-                <span>{{ link.title }}</span>
-                <span class="nav-menu__branch-mark disclosure__mark" aria-hidden="true">
-                  <span class="disclosure__plus">{% render 'icon', icon: 'plus' %}</span>
-                  <span class="disclosure__minus">{% render 'icon', icon: 'minus' %}</span>
+                <span class="nav-menu__num" aria-hidden="true">
+                  {{ cart_number | prepend: '0' | slice: -2, 2 }}
                 </span>
-              </button>
-              <div class="disclosure__panel" id="{{ branch_id }}">
-                <div class="disclosure__clip">
-                  <div class="nav-menu__submenu">
-                    <a href="{{ link.url }}">{{ 'navigation.view_all' | t: title: link.title }}</a>
-                    {%- for child_link in link.links -%}
-                      {%- if child_link.links.size > 0 -%}
-                        <div class="nav-menu__subgroup">
-                          <a href="{{ child_link.url }}">{{ child_link.title }}</a>
-                          <div class="nav-menu__subgroup-links">
-                            {%- for grandchild_link in child_link.links -%}<a href="{{ grandchild_link.url }}">{{ grandchild_link.title }}</a>{%- endfor -%}
-                          </div>
-                        </div>
-                      {%- else -%}
-                        <a href="{{ child_link.url }}">{{ child_link.title }}</a>
-                      {%- endif -%}
-                    {%- endfor -%}
-                  </div>
-                </div>
-              </div>
-            </div>
-          {%- else -%}
-            <a class="nav-menu__link" href="{{ link.url }}">
-              <span class="nav-menu__num" aria-hidden="true">{{ row_number | prepend: '0' | slice: -2, 2 }}</span>
-              {{ link.title }}
-            </a>
+                {{ 'navigation.your_cart' | t: cart_name: cart_name }}
+                <span class="nav-menu__aside">
+                  {%- if cart.item_count > 0 -%}
+                    {{ 'navigation.cart_count' | t: count: cart.item_count }}
+                  {%- else -%}
+                    {{ 'navigation.cart_empty' | t }}
+                  {%- endif -%}
+                </span>
+              </a>
+            </li>
           {%- endif -%}
-        </li>
-      {%- endfor -%}
+
+          {%- if search_number > 0 -%}
+            <li class="nav-menu__item" style="--row: {{ search_number | minus: 1 }};">
+              <a
+                class="nav-menu__link"
+                href="{{ routes.search_url }}"
+                {% if search_overlay %}data-search-open data-from-menu{% endif %}
+              >
+                <span class="nav-menu__num" aria-hidden="true">
+                  {{ search_number | prepend: '0' | slice: -2, 2 }}
+                </span>
+                {{ 'general.search.search' | t }}
+              </a>
+            </li>
+          {%- endif -%}
+        </ul>
+
+        {%- if cat_blocks.size > 0 -%}
+          <div class="nav-menu__categories" style="--row: {{ tail_row }};">
+            {%- for block in cat_blocks -%}
+              {%- if block.settings.label != blank -%}
+                <a
+                  class="nav-menu__category"
+                  href="{{ block.settings.url | default: routes.all_products_collection_url }}"
+                  {{ block.shopify_attributes }}
+                >
+                  {{ block.settings.label }}
+                </a>
+              {%- endif -%}
+            {%- endfor -%}
+          </div>
+        {%- endif -%}
+      </div>
 
       {%- comment -%}
-        Both action rows stay real links to real pages. With the drawer or the
-        overlay switched on, theme.js intercepts the click and opens it in
-        place instead — so the row still goes somewhere useful when scripting
-        is unavailable.
+        Every branch of the merchant's menu is its own level panel, root's
+        children first, then any grandchild levels — a flat list of siblings
+        the script swaps between. Each level names its parent, which is what
+        Back walks. Rows restart the cascade when a level is shown, because a
+        hidden-to-shown element re-runs its animations — the mechanism the
+        drawer's empty state rides.
       {%- endcomment -%}
-      {%- if cart_number > 0 -%}
-        <li class="nav-menu__item" style="--row: {{ cart_number | minus: 1 }};">
-          <a
-            class="nav-menu__link"
-            href="{{ routes.cart_url }}"
-            {% if cart_drawer %}data-drawer-open data-from-menu{% endif %}
-          >
-            <span class="nav-menu__num" aria-hidden="true">
-              {{ cart_number | prepend: '0' | slice: -2, 2 }}
-            </span>
-            {{ 'navigation.your_cart' | t: cart_name: cart_name }}
-            <span class="nav-menu__aside">
-              {%- if cart.item_count > 0 -%}
-                {{ 'navigation.cart_count' | t: count: cart.item_count }}
-              {%- else -%}
-                {{ 'navigation.cart_empty' | t }}
-              {%- endif -%}
-            </span>
-          </a>
-        </li>
-      {%- endif -%}
+      {%- for link in menu_links -%}
+        {%- if link.links.size > 0 -%}
+          {%- assign level_id = menu_id | append: '-level-' | append: forloop.index -%}
+          <div class="nav-menu__level" data-nav-level="{{ level_id }}" data-nav-level-parent="root" hidden>
+            <button class="nav-menu__back" type="button" data-nav-back>
+              <span class="nav-menu__back-mark" aria-hidden="true">{% render 'icon', icon: 'chevron-left', width: 12, height: 12 %}</span>
+              <span>{{ 'navigation.back' | t }}</span>
+            </button>
+            <p class="nav-menu__level-heading">{{ link.title }}</p>
+            <ul class="nav-menu__list">
+              <li class="nav-menu__item" style="--row: 0;">
+                <a class="nav-menu__link" href="{{ link.url }}">
+                  <span class="nav-menu__num" aria-hidden="true">01</span>
+                  {{ 'navigation.view_all' | t: title: link.title }}
+                </a>
+              </li>
+              {%- for child_link in link.links -%}
+                {%- assign child_number = forloop.index | plus: 1 -%}
+                <li class="nav-menu__item" style="--row: {{ forloop.index }};">
+                  {%- if child_link.links.size > 0 -%}
+                    <a
+                      class="nav-menu__link"
+                      href="{{ child_link.url }}"
+                      data-nav-drill="{{ level_id }}-{{ forloop.index }}"
+                    >
+                      <span class="nav-menu__num" aria-hidden="true">{{ child_number | prepend: '0' | slice: -2, 2 }}</span>
+                      <span>{{ child_link.title }}</span>
+                      <span class="nav-menu__drill-mark" aria-hidden="true">{% render 'icon', icon: 'chevron-right' %}</span>
+                    </a>
+                  {%- else -%}
+                    <a class="nav-menu__link" href="{{ child_link.url }}">
+                      <span class="nav-menu__num" aria-hidden="true">{{ child_number | prepend: '0' | slice: -2, 2 }}</span>
+                      {{ child_link.title }}
+                    </a>
+                  {%- endif -%}
+                </li>
+              {%- endfor -%}
+            </ul>
+          </div>
 
-      {%- if search_number > 0 -%}
-        <li class="nav-menu__item" style="--row: {{ search_number | minus: 1 }};">
-          <a
-            class="nav-menu__link"
-            href="{{ routes.search_url }}"
-            {% if search_overlay %}data-search-open data-from-menu{% endif %}
-          >
-            <span class="nav-menu__num" aria-hidden="true">
-              {{ search_number | prepend: '0' | slice: -2, 2 }}
-            </span>
-            {{ 'general.search.search' | t }}
-          </a>
-        </li>
-      {%- endif -%}
-    </ul>
-
-    {%- if cat_blocks.size > 0 -%}
-      <div class="nav-menu__categories" style="--row: {{ tail_row }};">
-        {%- for block in cat_blocks -%}
-          {%- if block.settings.label != blank -%}
-            <a
-              class="nav-menu__category"
-              href="{{ block.settings.url | default: routes.all_products_collection_url }}"
-              {{ block.shopify_attributes }}
-            >
-              {{ block.settings.label }}
-            </a>
-          {%- endif -%}
-        {%- endfor -%}
-      </div>
-    {%- endif -%}
+          {%- for child_link in link.links -%}
+            {%- if child_link.links.size > 0 -%}
+              <div class="nav-menu__level" data-nav-level="{{ level_id }}-{{ forloop.index }}" data-nav-level-parent="{{ level_id }}" hidden>
+                <button class="nav-menu__back" type="button" data-nav-back>
+                  <span class="nav-menu__back-mark" aria-hidden="true">{% render 'icon', icon: 'chevron-left', width: 12, height: 12 %}</span>
+                  <span>{{ 'navigation.back' | t }}</span>
+                </button>
+                <p class="nav-menu__level-heading">{{ child_link.title }}</p>
+                <ul class="nav-menu__list">
+                  <li class="nav-menu__item" style="--row: 0;">
+                    <a class="nav-menu__link" href="{{ child_link.url }}">
+                      <span class="nav-menu__num" aria-hidden="true">01</span>
+                      {{ 'navigation.view_all' | t: title: child_link.title }}
+                    </a>
+                  </li>
+                  {%- for grandchild_link in child_link.links -%}
+                    {%- assign grandchild_number = forloop.index | plus: 1 -%}
+                    <li class="nav-menu__item" style="--row: {{ forloop.index }};">
+                      <a class="nav-menu__link" href="{{ grandchild_link.url }}">
+                        <span class="nav-menu__num" aria-hidden="true">{{ grandchild_number | prepend: '0' | slice: -2, 2 }}</span>
+                        {{ grandchild_link.title }}
+                      </a>
+                    </li>
+                  {%- endfor -%}
+                </ul>
+              </div>
+            {%- endif -%}
+          {%- endfor -%}
+        {%- endif -%}
+      {%- endfor -%}
+    </div>
   </div>
 
   <div class="nav-menu__foot" style="--row: {{ tail_row }};">

@@ -2806,24 +2806,23 @@ its pill → bar expansion against.
 - Menu rows are **section blocks, not a Shopify linklist**, so the design's
   content ships working without the merchant first building navigation menus.
   Numbering is generated from block order; Bag and Search are appended last.
-- **Nested menus are the theme's own, and a branch is the shared disclosure,
-  not a `<details>` tree.** The design has no nested menus at all — its
-  overlay is six flat rows — so a Shopify menu item with children renders the
-  footer's `.disclosure__*` system dressed in the menu's own type: the parent
-  row identical to a flat row (the toggle shares `.nav-menu__link`), the
-  champagne plus/minus mark, and the three-layer 0fr/1fr panel unfolding
-  smoothly instead of a `details` jump. The child list stays indented behind
-  the champagne hairline, and `data-open` arriving is what staggers
-  `gj-row-in` across the links — they ride the shared transition rather than
-  a display toggle. `initNavBranches` applies the footer's one-at-a-time
-  rule, and closing the overlay folds every open branch, or a reopened menu
-  would greet the visitor mid-tree with its entrance already spent. Without
-  JavaScript every panel stands open and the toggle is inert — the generic
-  no-script disclosure rules — so no link is ever unreachable.
-- **A grandchild never opens a third fold.** A child with children of its own
-  renders as a flat group — its heading is the child's own link, the
-  grandchildren stand inset beneath it. One fold is a menu; two is a tree.
-  The old nested `<details>` subbranch is gone and must stay gone.
+- **Nested menus drill; they do not fold.** The design has no nested menus at
+  all — its overlay is six flat rows — and this theme has now retired two
+  folding treatments on request: the `<details>` tree first, then the
+  footer-style disclosure that replaced it. Every level of the merchant's
+  menu renders as its own hidden panel inside `[data-nav-levels]`; choosing a
+  parent swaps the whole menu for that branch's list — Back row on the title
+  column, the parent's name as a micro heading, rows numbered from 01 with
+  "View all" first — and Back walks each level's stated
+  `data-nav-level-parent`. The leaving level fades through `afterFade` and
+  the arriving rows re-run the row cascade on their own, because
+  hidden-to-shown restarts animations — the drawer empty state's mechanism.
+  A parent row is a **real link to its own page**: `initNavDrill` (and the
+  module-scope capture claim, which must list `[data-nav-drill]` or the
+  ring-builder app steals the click) intercepts only when the target level
+  exists, so without scripting the row navigates and every child is
+  reachable there. Levels reset to root on overlay close, and a menu-row
+  focus state is its colour, never the global outline box.
 - **The menu has two presentations, exactly as Search does.** Theme
   settings → Navigation → `menu_type`: the design's full-screen noir overlay
   (the default), or the cart drawer's shell sliding **from the start edge** —

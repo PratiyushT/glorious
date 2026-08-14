@@ -292,43 +292,63 @@
     scope.querySelectorAll('[data-overlay]').forEach(registerOverlay);
   }
 
-  /* A reopened menu starts folded. The branch keeps its data-open state
-     through the overlay's display toggle, so a branch left open would greet
-     the visitor mid-tree, with its entrance already spent. */
+  /* A reopened menu starts at the root level, or it would greet the
+     visitor mid-branch with its entrance already spent. */
   document.addEventListener('overlay:close', function (event) {
     if (!event.target || event.target.getAttribute('data-overlay') !== 'menu') return;
-    event.target.querySelectorAll('[data-nav-branch][data-open]').forEach(function (branch) {
-      branch.removeAttribute('data-open');
-      var toggle = branch.querySelector('[data-nav-branch-toggle]');
-      if (toggle) toggle.setAttribute('aria-expanded', 'false');
+    event.target.querySelectorAll('[data-nav-level]').forEach(function (level) {
+      level.hidden = level.getAttribute('data-nav-level') !== 'root';
+      level.classList.remove('is-leaving');
     });
   });
 
-  /* The menu's branches are the footer's disclosure — the same three-layer
-     0fr/1fr panel and plus/minus mark — with the footer's one-at-a-time
-     rule: opening a branch folds whichever was open. */
-  function initNavBranches(scope) {
-    scope.querySelectorAll('[data-nav-branch-toggle]').forEach(function (btn) {
-      if (!bindOnce(btn, 'boundNavBranch')) return;
+  /* The menu drills: choosing a parent swaps the whole menu for that
+     branch's own level, and Back walks the level's stated parent. A parent
+     row is a real link — the drill only claims it when its level exists, so
+     without scripting the row navigates to the parent's page. The leaving
+     level fades through afterFade, and the arriving rows re-run their own
+     cascade because hidden-to-shown restarts animations — the drawer empty
+     state's mechanism. */
+  function initNavDrill(scope) {
+    scope.querySelectorAll('[data-nav-levels]').forEach(function (wrap) {
+      if (!bindOnce(wrap, 'boundNavDrill')) return;
 
-      btn.addEventListener('click', function () {
-        var branch = btn.closest('[data-nav-branch]');
-        var group = branch && branch.closest('[data-nav-branches]');
-        if (!branch) return;
+      var switching = false;
 
-        var open = branch.hasAttribute('data-open');
+      function levelById(id) {
+        if (!id) return null;
+        return wrap.querySelector('[data-nav-level="' + id + '"]');
+      }
 
-        if (group) {
-          group.querySelectorAll('[data-nav-branch][data-open]').forEach(function (other) {
-            other.removeAttribute('data-open');
-            var toggle = other.querySelector('[data-nav-branch-toggle]');
-            if (toggle) toggle.setAttribute('aria-expanded', 'false');
-          });
+      function switchTo(from, to) {
+        if (!from || !to || from === to || switching) return;
+        switching = true;
+        from.classList.add('is-leaving');
+        afterFade(from, 180, function () {
+          from.hidden = true;
+          from.classList.remove('is-leaving');
+          to.hidden = false;
+          switching = false;
+          var landing = to.querySelector('button, a');
+          if (landing) landing.focus();
+        });
+      }
+
+      wrap.addEventListener('click', function (event) {
+        var drill = event.target.closest && event.target.closest('[data-nav-drill]');
+        if (drill && wrap.contains(drill)) {
+          var target = levelById(drill.getAttribute('data-nav-drill'));
+          if (target) {
+            event.preventDefault();
+            switchTo(drill.closest('[data-nav-level]'), target);
+          }
+          return;
         }
 
-        if (!open) {
-          branch.setAttribute('data-open', '');
-          btn.setAttribute('aria-expanded', 'true');
+        var back = event.target.closest && event.target.closest('[data-nav-back]');
+        if (back && wrap.contains(back)) {
+          var level = back.closest('[data-nav-level]');
+          switchTo(level, levelById(level.getAttribute('data-nav-level-parent')));
         }
       });
     });
@@ -370,6 +390,12 @@
         }
         return;
       }
+
+      /* A prevented navigation is not a navigation. The menu's drill rows
+         are real links whose click a handler claims to swap levels in
+         place — closing on them tore the menu down mid-drill and the
+         close reset put the root back over the arriving level. */
+      if (event.defaultPrevented) return;
 
       var link = target.closest('[data-overlay] a[href]');
       if (!link) return;
@@ -888,7 +914,7 @@
     if (typeof event.button === 'number' && event.button !== 0) return;
 
     var el = event.target.closest && event.target.closest(
-      '[data-drawer-open],[data-search-open],[data-quick-view],[data-card-option],[data-overlay-open]'
+      '[data-drawer-open],[data-search-open],[data-quick-view],[data-card-option],[data-overlay-open],[data-nav-drill]'
     );
     if (!el) return;
 
@@ -897,6 +923,8 @@
       (el.hasAttribute('data-search-open') && overlays.search) ||
       (el.hasAttribute('data-quick-view') && quickOverlay()) ||
       el.hasAttribute('data-card-option') ||
+      (el.hasAttribute('data-nav-drill') &&
+        document.querySelector('[data-nav-level="' + el.getAttribute('data-nav-drill') + '"]')) ||
       (el.hasAttribute('data-overlay-open') && overlays[el.dataset.overlayOpen]);
 
     if (ours) event.preventDefault();
@@ -4391,7 +4419,7 @@
     initLocalization(scope);
     initAccordions(scope);
     initFooter(scope);
-    initNavBranches(scope);
+    initNavDrill(scope);
     initHero(scope);
     initRowCarousels(scope);
     initLookbook(scope);

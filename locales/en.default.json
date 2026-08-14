@@ -164,6 +164,7 @@
   },
   "navigation": {
     "view_all": "View all {{ title }}",
+    "back": "Back",
     "menu": "Menu",
     "close": "Close",
     "your_cart": "Your {{ cart_name }}",
