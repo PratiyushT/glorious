@@ -250,7 +250,7 @@ body:has([data-nav-transparent]) .main-product {
   align-items: center;
   justify-content: center;
   width: 100%;
-  min-height: 44px;
+  min-height: var(--product-control-height, 3.125rem);
   padding: var(--btn-pad-y, var(--button-padding-y)) var(--btn-pad-x, var(--button-padding-x)) !important;
   border: var(--btn-border-width, var(--button-border-width)) solid var(--btn-border, var(--btn-bg, var(--c-button))) !important;
   border-radius: var(--btn-radius, var(--button-radius)) !important;
@@ -357,10 +357,6 @@ body:has([data-nav-transparent]) .main-product {
 .product-breadcrumbs [aria-current="page"] {
   color: color-mix(in srgb, var(--c-text) 58%, transparent);
 }
-.product-breadcrumbs [data-product-breadcrumb-source-item] {
-  display: contents;
-}
-
 .product-details__vendor,
 .product-details__sku,
 .product-inventory {
@@ -463,7 +459,7 @@ body:has([data-nav-transparent]) .main-product {
 .product-option__pill {
   width: 100%;
   max-width: none;
-  min-height: 44px;
+  min-height: var(--product-control-height, 3.125rem);
   padding: var(--btn-pad-y, 0.688rem) var(--btn-pad-x, 0.813rem);
   border-radius: var(--btn-radius, 0);
   font-size: var(--btn-font, 0.75rem);
@@ -544,7 +540,7 @@ body:has([data-nav-transparent]) .main-product {
 
 .product-option__select select {
   width: 100%;
-  min-height: 3.125rem;
+  min-height: var(--product-control-height, 3.125rem);
   padding: 0.8rem 2.875rem 0.8rem 0.875rem;
   appearance: none;
   border: var(--border-width) solid color-mix(in srgb, var(--c-text) 22%, transparent);
@@ -577,36 +573,19 @@ body:has([data-nav-transparent]) .main-product {
   text-transform: uppercase;
 }
 
-.product-quantity__control {
-  display: grid;
-  grid-template-columns: 2.75rem minmax(3rem, auto) 2.75rem;
-  border: var(--input-border-width, var(--border-width)) solid var(--input-border, color-mix(in srgb, var(--c-text) 22%, transparent));
-  border-radius: var(--input-radius, 0);
-  background: var(--input-bg, transparent);
-  color: var(--input-text, inherit);
-}
-
-.product-quantity__control button,
-.product-quantity__control input {
-  width: 100%;
-  min-height: 2.75rem;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  color: inherit;
-  text-align: center;
-}
-
-.product-quantity__control input { appearance: textfield; }
-.product-quantity__control input::-webkit-inner-spin-button { appearance: none; }
-
 .product-buy-form,
 .product-buy-form__buttons {
   display: grid;
   gap: var(--space-3xs);
 }
 
-.product-buy-form .btn { width: 100%; }
+/* Product choices and purchase actions share one deliberate height on the
+   product page, Featured product, and Quick view. This remains independent of
+   the store-wide Button size, which may intentionally be compact elsewhere. */
+.product-buy-form .btn {
+  width: 100%;
+  min-block-size: var(--product-control-height, 3.125rem);
+}
 
 .gift-recipient {
   display: grid;

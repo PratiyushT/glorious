@@ -129,6 +129,16 @@ and View All action share a horizontal `space-between` Group, while the display
 title remains a sibling before it. The arrangement is stored composition, not
 section-specific heading fields.
 
+**Product List, Recommended Product List, and Collection List have two vertical
+spacing jobs and name both.** `gap` remains the spacing between each section's
+direct header/content blocks and is labelled Vertical block spacing. `row_gap`
+is the gap between wrapped card rows; it writes only `--row-gap` on the grid
+track. In particular, `none` writes `0px` and never enters the column-width or
+carousel-page calculation, so it cannot change card width. Product card and
+Collection card have no horizontal or vertical list-gap settings: the list
+owns its layout, and its Use theme default falls straight through to
+`--grid-gap`. R14 keeps the two product-list section schemas in step.
+
 **The former Promises area is now composition rather than a component.** The
 homepage section is an ordinary `group` instance. Its header is a nested Group
 containing two Text blocks; its item row is another Group containing five
@@ -436,14 +446,18 @@ global Text/Rich text concern elsewhere.
   built into the section. Automatic presentation uses Shopify's native swatch
   data when present and written pills otherwise, with explicit pill, swatch,
   and dropdown presets still available.
-- **`first_value` pins one choice to the front of its row.** A written option
-  value — "18K", "Yellow Gold" — matched case-insensitively against every
-  option's values; the match renders first, everything else keeps admin order,
-  and no match changes nothing. Display order only: the selected variant, the
-  checked control, and the legend's selected value are untouched. It is two
-  passes over one copy of the choice markup rather than a re-sorted list,
-  because the values must stay `product_option_value` drops — the same
-  no-`split` rule the card's swatch row records.
+- **`first_option` pins one complete variant option to the front.** A written
+  option name — "Metal", "Size", "Karat" — is matched case-insensitively;
+  that option's whole fieldset renders first while its values and every other
+  option keep Shopify's catalog order. A blank or unmatched name changes
+  nothing. Display order only: the selected variant, checked controls, and
+  each legend's selected value are untouched.
+- **Variant choices and purchase actions share one product-control height.**
+  Written pills, dropdowns, Add to cart, and Shopify's unbranded Buy Now use
+  `--product-control-height` (3.125rem by default) on Main product, Featured
+  product, and Quick view. This is intentionally independent of the global
+  Button size so a compact site-wide button choice cannot shrink only the
+  purchase action beneath its selector.
 - One variant synchronization path updates the hidden form id, price, compare
   price, unit price, SKU, availability wording, featured media, pickup request,
   URL, the quantity input's rule, and each option header's selected value. A
@@ -505,6 +519,12 @@ global Text/Rich text concern elsewhere.
   boundary is not a presentation Shopify supports. The transition reads
   `var(--duration) var(--ease-ui)` rather than restating 0.3s, so turning
   motion down does not leave this one button animating.
+- **Product breadcrumbs use Shopify's collection context, never browsing-page
+  headings.** A contextual collection URL renders Home / Collection / Product;
+  a direct product URL renders Home / the merchant-editable All products label
+  / Product. Do not restore session-history inference: decorative homepage
+  headings are not catalog hierarchy and previously produced labels such as
+  the repeated store wordmark.
 - The selected variant and quantity are submitted through Shopify's product
   form. Accelerated checkout, installments, gift-card recipients, pickup, and
   a complete no-script form remain Shopify-native features, not simulated UI.
@@ -2706,8 +2726,16 @@ afterthought.
 
 A 1:1 rebuild. Three art-directed arrangements at 990px and 1100px (see
 "Fluid for continuous values" above), the wordmark letters rising 60ms apart
-from `.1s`, and the design's decorative arcs and sparkles rendered through the
-centralized Liquid icon library.
+from `.1s`, and the design's decorative arcs rendered through the centralized
+Liquid icon library. The former sparkle layer, setting, Icon block option, and
+SVG snippet are removed.
+
+**A Collection tab's Media size belongs to its image, not the portrait
+frame.** The selected `.hero__portrait-image` stays in normal flow and its
+`img`/placeholder carries the chosen aspect ratio; `.hero__portrait-frame` has
+no ratio or height of its own and wraps the active image. Tab changes therefore
+swap one intrinsically sized image box for another instead of resizing a fixed
+container around absolutely positioned media.
 
 **The hero fits itself to the screen rather than clipping.** It is a
 screenful, and its content does not always agree — at 1280×560 the grid
@@ -3610,6 +3638,10 @@ two answers and is gone.
   without quantity rules every rendered attribute is the old integer grid
   exactly. The arrows only choose the requested quantity; the money and the
   count still come back from Liquid.
+- **Product, cart page, and cart drawer share one `.quantity-control` visual
+  contract.** Their data hooks stay separate because the Product form, native
+  cart form, and drawer re-render have different update mechanics; the grid,
+  three column sizes, border, radius, glyph buttons, and value styling do not.
 - **A press while a change is in flight is held, not dropped.** `cartBusy` used
   to `return` outright, so pressing + three times quickly moved the bag by one.
   Presses inside 220ms now coalesce into one request and anything arriving
@@ -3773,7 +3805,8 @@ the quick-view disc, `--card-zoom`, the edge colour).
   type only and the surrounding stack does the spacing.
 - The drawer panel resets `line-height` to `normal` (see `--body-leading`,
   above), so **every one of these rules states its own** — including
-  `.drawer-row__meta` and `.drawer-qty__value`, which did not need to before.
+  `.drawer-row__meta` and the shared `.quantity-control__value`, which did not
+  need to before.
 
 ### The tax note
 

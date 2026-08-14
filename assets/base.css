@@ -342,26 +342,6 @@ a {
   --min-pct: 46%;
 }
 
-/* Repeated Product and Collection card blocks own their list spacing. The
-   list reads the child contract so grid and carousel cannot drift apart. */
-/* `0px`, never bare `0`: these feed the column-width calc, where a unitless
-   zero is a <number> and `100% - <number>` is invalid at computed-value time —
-   the whole template dropped and every card sat alone on a full-width row. */
-.grid-auto:has([data-card-column-gap='none']) { --column-gap: 0px; }
-.grid-auto:has([data-card-column-gap='minimal']) { --column-gap: var(--step-minimal); }
-.grid-auto:has([data-card-column-gap='tiny']) { --column-gap: var(--step-tiny); }
-.grid-auto:has([data-card-column-gap='small']) { --column-gap: var(--step-small); }
-.grid-auto:has([data-card-column-gap='medium']) { --column-gap: var(--step-medium); }
-.grid-auto:has([data-card-column-gap='large']) { --column-gap: var(--step-large); }
-.grid-auto:has([data-card-column-gap='xlarge']) { --column-gap: var(--step-xlarge); }
-.grid-auto:has([data-card-row-gap='none']) { --row-gap: 0px; }
-.grid-auto:has([data-card-row-gap='minimal']) { --row-gap: var(--step-minimal); }
-.grid-auto:has([data-card-row-gap='tiny']) { --row-gap: var(--step-tiny); }
-.grid-auto:has([data-card-row-gap='small']) { --row-gap: var(--step-small); }
-.grid-auto:has([data-card-row-gap='medium']) { --row-gap: var(--step-medium); }
-.grid-auto:has([data-card-row-gap='large']) { --row-gap: var(--step-large); }
-.grid-auto:has([data-card-row-gap='xlarge']) { --row-gap: var(--step-xlarge); }
-
 /* A sparse product row should not turn two cards into two enormous feature
    panels. Product cards opt into a capped track by default; merchants can turn
    it off on the shared card block when a deliberately fluid row is wanted.
@@ -1957,14 +1937,13 @@ a {
 
 .hero__portrait-frame {
   position: relative;
-  aspect-ratio: var(--hero-portrait-ratio, 3 / 4);
   overflow: hidden;
   background: radial-gradient(70% 55% at 50% 42%, color-mix(in srgb, var(--c-noir) 70%, var(--c-ink)) 0%, var(--c-noir) 100%);
 }
 
 .hero__portrait-image {
-  position: absolute;
-  inset: 0;
+  position: relative;
+  width: 100%;
 }
 
 .hero__portrait-image[hidden] {
@@ -1973,10 +1952,10 @@ a {
 
 .hero__portrait-image > img,
 .hero__portrait-image > svg {
-  position: absolute;
-  inset: 0;
+  display: block;
   width: 100%;
-  height: 100%;
+  height: auto;
+  aspect-ratio: var(--hero-media-ratio, 3 / 4);
   object-fit: var(--hero-media-fit, cover);
 }
 
@@ -2174,32 +2153,6 @@ a {
   opacity: 0.35;
 }
 
-.hero__sparkles {
-  position: absolute;
-  inset: 0;
-  z-index: 3;
-  pointer-events: none;
-}
-
-.hero__sparkles span {
-  position: absolute;
-  font-size: var(--size, 1em);
-  color: color-mix(in srgb, var(--c-accent) 85%, #fff);
-  animation: gj-twinkle var(--dur, 4s) ease-in-out var(--delay, 0s) infinite;
-}
-
-@keyframes gj-twinkle {
-  0%, 100% { opacity: 0.15; transform: scale(0.7); }
-  50%      { opacity: 0.9;  transform: scale(1.1); }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .hero__sparkles span {
-    animation: none;
-    opacity: 0.5;
-  }
-}
-
 .craft__media {
   display: flex;
   justify-content: center;
@@ -2360,11 +2313,6 @@ a {
   line-height: var(--text-leading);
   letter-spacing: var(--text-tracking);
   text-transform: var(--text-case);
-}
-
-.hero__sparkles svg {
-  width: 1em;
-  height: 1em;
 }
 
 .text-title {
@@ -7602,44 +7550,54 @@ a.nav-menu__address:hover {
   line-height: 1.55;
 }
 
-.drawer-qty {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  margin-top: 0.38rem;
-}
-
-.drawer-qty__btn {
-  width: 1.5rem;
-  height: 1.5rem;
-  padding: 0;
+/* One quantity-stepper appearance on Product, Cart, and the cart drawer. The
+   data hooks remain surface-specific because their update mechanics differ;
+   this class owns only the visual control. Product Quantity can still publish
+   its optional --input-* overrides, while both cart surfaces use the same
+   defaults. */
+.quantity-control {
   display: grid;
+  grid-template-columns: 2.75rem minmax(3rem, auto) 2.75rem;
+  align-items: center;
+  width: fit-content;
+  border: var(--input-border-width, var(--border-width)) solid var(--input-border, color-mix(in srgb, var(--c-text) 22%, transparent));
+  border-radius: var(--input-radius, 0);
+  background: var(--input-bg, transparent);
+  color: var(--input-text, inherit);
+}
+
+.quantity-control__button,
+.quantity-control__value {
+  display: grid;
+  width: 100%;
+  min-height: 2.75rem;
+  padding: 0;
   place-items: center;
-  border: var(--border-width) solid color-mix(in srgb, var(--c-text) 35%, transparent);
-  border-radius: 50%;
-  background: none;
-  color: var(--c-text);
-  cursor: pointer;
-  font-size: 0.9rem;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
   line-height: 1;
-  transition: background var(--duration) var(--ease-ui),
-              color var(--duration) var(--ease-ui),
-              border-color var(--duration) var(--ease-ui);
-}
-
-.drawer-qty__btn:hover {
-  background: var(--c-text);
-  border-color: var(--c-text);
-  color: var(--c-bg);
-}
-
-.drawer-qty__value {
-  min-width: 0.88rem;
   text-align: center;
-  font-size: var(--product-price-size);
-  line-height: var(--product-line);
-  color: var(--c-text);
   font-variant-numeric: tabular-nums;
+}
+
+.quantity-control__button {
+  cursor: pointer;
+}
+
+input.quantity-control__value {
+  appearance: textfield;
+}
+
+input.quantity-control__value::-webkit-inner-spin-button,
+input.quantity-control__value::-webkit-outer-spin-button {
+  margin: 0;
+  appearance: none;
+}
+
+.drawer-qty {
+  margin-top: 0.38rem;
 }
 
 .drawer-row__aside {
@@ -9131,4 +9089,3 @@ a.nav-menu__address:hover {
 .simple-template {
   padding-block: var(--space-2xl);
 }
-

@@ -82,10 +82,17 @@
     {%- endcomment -%}
     {%- capture grid_vars -%}
       --cols: {{ section.settings.columns }}; --gap: var(--grid-gap); --min: 22.5rem;
-      {%- comment -%} Columns only; the ruler reads the same pair, so the carousel follows. {%- endcomment -%}
+      {%- comment -%}
+        Card gaps independently. Only the column gap enters the ruler and
+        carousel page math; row gap spaces wrapped grid rows and nothing else.
+      {%- endcomment -%}
       {%- unless section.settings.column_gap == blank or section.settings.column_gap == 'theme' -%}
-        {%- if section.settings.column_gap == 'none' %} --column-gap: 0;
+        {%- if section.settings.column_gap == 'none' %} --column-gap: 0px;
         {%- else %} --column-gap: var(--step-{{ section.settings.column_gap }});{% endif -%}
+      {%- endunless -%}
+      {%- unless section.settings.row_gap == blank or section.settings.row_gap == 'theme' -%}
+        {%- if section.settings.row_gap == 'none' %} --row-gap: 0px;
+        {%- else %} --row-gap: var(--step-{{ section.settings.row_gap }});{% endif -%}
       {%- endunless -%}
     {%- endcapture -%}
 
@@ -161,8 +168,8 @@
     {
       "type": "select",
       "id": "gap",
-      "label": "t:blocks.all.gap.label",
-      "info": "t:blocks.all.gap.info",
+      "label": "t:sections.group.block_gap.label",
+      "info": "t:sections.group.block_gap.info",
       "options": [
         { "value": "minimal", "label": "t:blocks.all.step.minimal" },
         { "value": "tiny", "label": "t:blocks.all.step.tiny" },
@@ -178,6 +185,23 @@
       "id": "column_gap",
       "label": "t:sections.all.card_column_gap.label",
       "info": "t:sections.all.card_column_gap.info",
+      "options": [
+        { "value": "theme", "label": "t:sections.catalog.theme_product_gap" },
+        { "value": "none", "label": "t:blocks.all.step.none" },
+        { "value": "minimal", "label": "t:blocks.all.step.minimal" },
+        { "value": "tiny", "label": "t:blocks.all.step.tiny" },
+        { "value": "small", "label": "t:blocks.all.step.small" },
+        { "value": "medium", "label": "t:blocks.all.step.medium" },
+        { "value": "large", "label": "t:blocks.all.step.large" },
+        { "value": "xlarge", "label": "t:blocks.all.step.xlarge" }
+      ],
+      "default": "theme"
+    },
+    {
+      "type": "select",
+      "id": "row_gap",
+      "label": "t:sections.all.card_row_gap.label",
+      "info": "t:sections.all.card_row_gap.info",
       "options": [
         { "value": "theme", "label": "t:sections.catalog.theme_product_gap" },
         { "value": "none", "label": "t:blocks.all.step.none" },

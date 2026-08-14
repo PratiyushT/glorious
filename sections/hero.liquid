@@ -36,16 +36,6 @@
     {% render 'icon', icon: 'hero-arc-right' %}
   {%- endif -%}
 
-  {%- if section.settings.show_sparkles -%}
-    <div class="hero__sparkles" aria-hidden="true">
-      <span style="left: 7%;  top: 120px;   --size: 1.13rem; --dur: 3.8s; --delay: 0.4s;">{% render 'icon', icon: 'sparkle' %}</span>
-      <span style="left: 38%; top: 84px;    --size: 0.69rem; --dur: 4.6s; --delay: 1.6s;">{% render 'icon', icon: 'sparkle' %}</span>
-      <span style="right: 9%; top: 132px;   --size: 0.94rem; --dur: 4.2s; --delay: 2.4s;">{% render 'icon', icon: 'sparkle' %}</span>
-      <span style="right: 30%; top: 66px;   --size: 0.63rem; --dur: 5s;   --delay: 3.1s;">{% render 'icon', icon: 'sparkle' %}</span>
-      <span style="left: 16%; bottom: 18%;  --size: 0.75rem; --dur: 5.4s; --delay: 2s;">{% render 'icon', icon: 'sparkle' %}</span>
-    </div>
-  {%- endif -%}
-
   {% render 'huge-text', source: section.settings.huge_text_value, placement: 'hero' %}
 
   <div class="hero__fit" data-hero-fit>
@@ -107,16 +97,14 @@
       </div>
 
       <div class="hero__portrait">
-        {%- assign initial_portrait_ratio = tab_blocks.first.settings.image_ratio | default: '3 / 4' -%}
-        <div class="hero__portrait-frame" data-hero-portrait-frame style="--hero-portrait-ratio: {{ initial_portrait_ratio }};">
+        <div class="hero__portrait-frame">
           {%- if tab_blocks.size > 0 -%}
             {%- for block in tab_blocks -%}
               {%- assign portrait_image = block.settings.image | default: section.settings.image -%}
               <div
                 class="hero__portrait-image"
                 data-hero-portrait="{{ forloop.index0 }}"
-                data-media-ratio="{{ block.settings.image_ratio | default: '3 / 4' }}"
-                style="--hero-media-fit: {{ block.settings.image_fit | default: 'cover' }};"
+                style="--hero-media-ratio: {{ block.settings.image_ratio | default: '3 / 4' }}; --hero-media-fit: {{ block.settings.image_fit | default: 'cover' }};"
                 {% unless forloop.first %}hidden{% endunless %}
               >
                 {%- if portrait_image != blank -%}
@@ -138,7 +126,7 @@
               </div>
             {%- endfor -%}
           {%- else -%}
-            <div class="hero__portrait-image">
+            <div class="hero__portrait-image" style="--hero-media-ratio: 3 / 4; --hero-media-fit: cover;">
               {%- if section.settings.image != blank -%}
                 <img
                   src="{{ section.settings.image | image_url: width: 1200 }}"
@@ -261,12 +249,6 @@
       "id": "huge_text_value",
       "label": "t:blocks.huge_text.value",
       "default": "STORE NAME"
-    },
-    {
-      "type": "checkbox",
-      "id": "show_sparkles",
-      "label": "t:sections.hero.show_sparkles.label",
-      "default": true
     },
     {
       "type": "checkbox",

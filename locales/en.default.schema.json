@@ -823,14 +823,6 @@
     },
     "collection_card": {
       "name": "Collection card",
-      "column_gap": {
-        "label": "Horizontal card gap",
-        "info": "Space between collection cards in every grid or carousel using this card."
-      },
-      "row_gap": {
-        "label": "Vertical card gap",
-        "info": "Space between wrapped rows of collection cards."
-      },
       "hover_reveal": {
         "label": "Show hover reveal",
         "info": "Shows the collection action over the photograph when the card is hovered or focused."
@@ -868,17 +860,6 @@
       "fixed_size": {
         "label": "Keep cards a consistent size",
         "info": "On, a short row keeps the same card width and image height as a full row instead of stretching to fill the section."
-      },
-      "column_gap": {
-        "label": "Horizontal card gap",
-        "info": "Space between product cards in every grid or carousel using this card."
-      },
-      "row_gap": {
-        "label": "Vertical card gap",
-        "info": "Space between wrapped rows of product cards."
-      },
-      "gap": {
-        "inherit": "Use list spacing"
       },
       "views_header": "Views",
       "show_carousel": {
@@ -1321,7 +1302,6 @@
         "star": "Star",
         "gift": "Gift",
         "award": "Award",
-        "sparkle": "Sparkle",
         "flower": "Flower",
         "leaf": "Leaf",
         "sun": "Sun",
@@ -1470,6 +1450,10 @@
       "card_column_gap": {
         "label": "Horizontal card gap",
         "info": "Space between cards across a row. Rows above and below keep the theme's grid gap."
+      },
+      "card_row_gap": {
+        "label": "Vertical card gap",
+        "info": "Space between wrapped rows of cards. This changes the gap only, not the card size."
       },
       "full_height": {
         "label": "Fill the screen height",
@@ -1740,9 +1724,6 @@
     },
     "hero": {
       "name": "Hero",
-      "show_sparkles": {
-        "label": "Show sparkles"
-      },
       "show_arcs": {
         "label": "Show decorative arcs"
       },
@@ -2167,7 +2148,7 @@
       "show_dots": { "label": "Show gallery navigation" },
       "video_label": { "label": "Product video label" },
       "autoplay_video": { "label": "Autoplay hosted video", "info": "Autoplay is muted and loops. Off, the gallery shows a play action instead — the theme draws no native video controls." },
-      "first_value": { "label": "Show this choice first", "info": "A written option value — 18K, Yellow Gold. The match is listed first in its row and everything else keeps the catalog's order. Leave empty for the catalog's order." },
+      "first_option": { "label": "Show this option first", "info": "Enter a complete variant option name — Metal, Size, Karat. The matched option appears first and its choices keep the catalog's order. Leave empty for the catalog's order." },
       "home_label": { "label": "Home breadcrumb label" },
       "details_width": { "label": "Maximum details width" }
     },

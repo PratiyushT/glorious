@@ -16,10 +16,10 @@
 {%- endcomment -%}
 <label class="product-quantity" style="{{ input_style | strip }}" {{ block.shopify_attributes }}>
   {%- if block.settings.show_label -%}<span>{{ 'products.quantity' | t }}</span>{%- endif -%}
-  <span class="product-quantity__control">
-    <button type="button" data-quantity-step="-1" aria-label="{{ 'products.decrease_quantity' | t }}">−</button>
-    <input type="number" name="quantity" value="{{ quantity_min }}" min="{{ quantity_min }}"{% if quantity_rule.max %} max="{{ quantity_rule.max }}"{% endif %} step="{{ quantity_increment }}" inputmode="numeric" form="{{ product_form_id }}" data-product-quantity aria-label="{{ 'products.quantity' | t }}">
-    <button type="button" data-quantity-step="1" aria-label="{{ 'products.increase_quantity' | t }}">+</button>
+  <span class="quantity-control">
+    <button class="quantity-control__button" type="button" data-quantity-step="-1" aria-label="{{ 'products.decrease_quantity' | t }}">−</button>
+    <input class="quantity-control__value" type="number" name="quantity" value="{{ quantity_min }}" min="{{ quantity_min }}"{% if quantity_rule.max %} max="{{ quantity_rule.max }}"{% endif %} step="{{ quantity_increment }}" inputmode="numeric" form="{{ product_form_id }}" data-product-quantity aria-label="{{ 'products.quantity' | t }}">
+    <button class="quantity-control__button" type="button" data-quantity-step="1" aria-label="{{ 'products.increase_quantity' | t }}">+</button>
   </span>
 </label>
 

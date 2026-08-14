@@ -166,27 +166,27 @@
                     assign rule_increment = quantity_rule.increment | default: 1
                   -%}
                   <div
-                    class="drawer-qty"
+                    class="drawer-qty quantity-control"
                     data-cart-rule-min="{{ rule_min }}"
                     data-cart-rule-step="{{ rule_increment }}"
                     {%- if quantity_rule.max %} data-cart-rule-max="{{ quantity_rule.max }}"{% endif -%}
                   >
                     <button
-                      class="drawer-qty__btn"
+                      class="quantity-control__button"
                       type="button"
                       data-cart-step="-1"
                       aria-label="{{ 'cart.decrease' | t: title: item.product.title | escape }}"
                     >
-                      {% render 'icon', icon: 'minus' %}
+                      −
                     </button>
-                    <span class="drawer-qty__value" data-cart-qty>{{ item.quantity }}</span>
+                    <span class="quantity-control__value" data-cart-qty>{{ item.quantity }}</span>
                     <button
-                      class="drawer-qty__btn"
+                      class="quantity-control__button"
                       type="button"
                       data-cart-step="1"
                       aria-label="{{ 'cart.increase' | t: title: item.product.title | escape }}"
                     >
-                      {% render 'icon', icon: 'plus' %}
+                      +
                     </button>
                   </div>
                 </div>

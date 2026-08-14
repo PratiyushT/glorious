@@ -139,11 +139,11 @@
                       assign rule_min = quantity_rule.min | default: 1
                       assign rule_increment = quantity_rule.increment | default: 1
                     -%}
-                    <div class="cart-quantity" data-cart-quantity>
-                      <button type="button" data-cart-quantity-change="-1" aria-label="{{ 'cart.decrease' | t: title: item.product.title }}">−</button>
+                    <div class="cart-quantity quantity-control" data-cart-quantity>
+                      <button class="quantity-control__button" type="button" data-cart-quantity-change="-1" aria-label="{{ 'cart.decrease' | t: title: item.product.title }}">−</button>
                       <label class="visually-hidden" for="CartQuantity-{{ item.index | plus: 1 }}">{{ 'products.quantity' | t }}</label>
-                      <input id="CartQuantity-{{ item.index | plus: 1 }}" name="updates[]" type="number" min="{{ rule_min }}"{% if quantity_rule.max %} max="{{ quantity_rule.max }}"{% endif %} step="{{ rule_increment }}" value="{{ item.quantity }}" inputmode="numeric">
-                      <button type="button" data-cart-quantity-change="1" aria-label="{{ 'cart.increase' | t: title: item.product.title }}">+</button>
+                      <input class="quantity-control__value" id="CartQuantity-{{ item.index | plus: 1 }}" name="updates[]" type="number" min="{{ rule_min }}"{% if quantity_rule.max %} max="{{ quantity_rule.max }}"{% endif %} step="{{ rule_increment }}" value="{{ item.quantity }}" inputmode="numeric">
+                      <button class="quantity-control__button" type="button" data-cart-quantity-change="1" aria-label="{{ 'cart.increase' | t: title: item.product.title }}">+</button>
                     </div>
                     <a class="cart-line__remove" href="{{ item.url_to_remove }}">{{ 'cart.remove' | t }}</a>
                   </div>

@@ -117,8 +117,6 @@
   {% unless block.settings.hover_next %}data-card-hover="off"{% endunless %}
   {% unless block.settings.show_video %}data-card-video="off"{% endunless %}
   {% if block.settings.fixed_size %}data-card-fixed-size{% endif %}
-  data-card-column-gap="{{ block.settings.column_gap | default: 'inherit' }}"
-  data-card-row-gap="{{ block.settings.row_gap | default: 'inherit' }}"
   style="--card-align: {{ block.settings.text_align }};"
   {{ block.shopify_attributes }}
 >
@@ -199,40 +197,6 @@
       "label": "t:blocks.product_card.fixed_size.label",
       "info": "t:blocks.product_card.fixed_size.info",
       "default": true
-    },
-    {
-      "type": "select",
-      "id": "column_gap",
-      "label": "t:blocks.product_card.column_gap.label",
-      "info": "t:blocks.product_card.column_gap.info",
-      "options": [
-        { "value": "inherit", "label": "t:blocks.product_card.gap.inherit" },
-        { "value": "none", "label": "t:blocks.all.step.none" },
-        { "value": "minimal", "label": "t:blocks.all.step.minimal" },
-        { "value": "tiny", "label": "t:blocks.all.step.tiny" },
-        { "value": "small", "label": "t:blocks.all.step.small" },
-        { "value": "medium", "label": "t:blocks.all.step.medium" },
-        { "value": "large", "label": "t:blocks.all.step.large" },
-        { "value": "xlarge", "label": "t:blocks.all.step.xlarge" }
-      ],
-      "default": "inherit"
-    },
-    {
-      "type": "select",
-      "id": "row_gap",
-      "label": "t:blocks.product_card.row_gap.label",
-      "info": "t:blocks.product_card.row_gap.info",
-      "options": [
-        { "value": "inherit", "label": "t:blocks.product_card.gap.inherit" },
-        { "value": "none", "label": "t:blocks.all.step.none" },
-        { "value": "minimal", "label": "t:blocks.all.step.minimal" },
-        { "value": "tiny", "label": "t:blocks.all.step.tiny" },
-        { "value": "small", "label": "t:blocks.all.step.small" },
-        { "value": "medium", "label": "t:blocks.all.step.medium" },
-        { "value": "large", "label": "t:blocks.all.step.large" },
-        { "value": "xlarge", "label": "t:blocks.all.step.xlarge" }
-      ],
-      "default": "inherit"
     },
     {
       "type": "header",

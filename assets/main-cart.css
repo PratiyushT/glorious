@@ -121,40 +121,6 @@
   gap: var(--step-tiny);
 }
 
-.cart-quantity {
-  display: grid;
-  grid-template-columns: auto 2.5rem auto;
-  align-items: center;
-  border: 1px solid var(--c-hairline);
-  border-radius: var(--button-radius, 999px);
-}
-
-.cart-quantity button {
-  display: grid;
-  width: 2.25rem;
-  height: 2.25rem;
-  place-items: center;
-  border: 0;
-  background: transparent;
-  color: inherit;
-  cursor: pointer;
-}
-
-.cart-quantity input {
-  width: 100%;
-  border: 0;
-  background: transparent;
-  color: inherit;
-  text-align: center;
-  -moz-appearance: textfield;
-}
-
-.cart-quantity input::-webkit-inner-spin-button,
-.cart-quantity input::-webkit-outer-spin-button {
-  margin: 0;
-  appearance: none;
-}
-
 .cart-line__remove {
   color: inherit;
   font-size: var(--text-caption-size);

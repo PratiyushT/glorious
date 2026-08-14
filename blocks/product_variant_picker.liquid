@@ -6,19 +6,13 @@
 
 {%- assign product = closest.product -%}
 {%- comment -%}
-  A merchant may pin one choice to the front of its row: `first_value` is a
-  written option value — "18K", "Yellow Gold" — matched case-insensitively
-  against every option's values. The match renders first and everything else
-  keeps admin order; no match changes nothing, which is also why the blank
-  setting needs no special case — the pinned pass simply finds nothing.
-
-  Two passes over the same markup rather than a re-sorted list, because the
-  values must stay `product_option_value` drops — a drop is what carries a
-  merchant's native swatch, and a round trip through `split` would flatten it
-  to a string (see "the swatch row is in the merchant's order").
+  A merchant may pin one complete product option to the front: `first_option`
+  is an option name — "Metal", "Size" — matched case-insensitively. Its whole
+  fieldset renders first while every value inside it keeps Shopify's catalog
+  order. A blank or unmatched name leaves every option in catalog order.
 {%- endcomment -%}
-{%- assign pinned_choice = block.settings.first_value | strip | downcase -%}
-{%- assign choice_phases = 'pinned,rest' | split: ',' -%}
+{%- assign pinned_option = block.settings.first_option | strip | downcase -%}
+{%- assign option_phases = 'pinned,rest' | split: ',' -%}
 {%- unless product == blank or product.has_only_default_variant -%}
   <div
     class="product-options"
@@ -26,7 +20,21 @@
     style="--product-option-label-gap: {{ block.settings.option_gap }}px; {% render 'choice-style', selected_background_color: block.settings.selected_background_color, selected_text_color: block.settings.selected_text_color, selected_border_color: block.settings.selected_border_color %}"
     {{ block.shopify_attributes }}
   >
+    {%- for option_phase in option_phases -%}
     {%- for option in product.options_with_values -%}
+      {%- liquid
+        assign option_name = option.name | strip | downcase
+        assign option_pinned = false
+        if pinned_option != blank and option_name == pinned_option
+          assign option_pinned = true
+        endif
+        if option_phase == 'pinned' and option_pinned == false
+          continue
+        endif
+        if option_phase == 'rest' and option_pinned
+          continue
+        endif
+      -%}
       {%- assign option_has_swatches = false -%}
       {%- for value in option.values -%}
         {%- if value.swatch.color != blank or value.swatch.image != blank -%}
@@ -44,47 +52,16 @@
         {%- if picker_type == 'dropdown' -%}
           <span class="product-option__select">
             <select data-product-option aria-label="{{ option.name | escape }}">
-              {%- for choice_phase in choice_phases -%}
-                {%- for value in option.values -%}
-                  {%- liquid
-                    assign value_name = value | downcase
-                    assign value_pinned = false
-                    if pinned_choice != blank and value_name == pinned_choice
-                      assign value_pinned = true
-                    endif
-                    if choice_phase == 'pinned' and value_pinned == false
-                      continue
-                    endif
-                    if choice_phase == 'rest' and value_pinned
-                      continue
-                    endif
-                  -%}
-                  <option value="{{ value | escape }}" {% if value.selected %}selected{% endif %} {% unless value.available or block.settings.show_sold_out %}disabled{% endunless %}>{{ value }}</option>
-                {%- endfor -%}
+              {%- for value in option.values -%}
+                <option value="{{ value | escape }}" {% if value.selected %}selected{% endif %} {% unless value.available or block.settings.show_sold_out %}disabled{% endunless %}>{{ value }}</option>
               {%- endfor -%}
             </select>
             {% render 'icon', icon: 'chevron-down', width: '11', height: '7' %}
           </span>
         {%- else -%}
           <div class="product-option__values product-option__values--{{ picker_type }}" style="--product-swatch-radius: {% if block.settings.swatch_shape == 'square' %}var(--radius-base, 0){% else %}50%{% endif %};">
-            {%- assign choice_index = 0 -%}
-            {%- for choice_phase in choice_phases -%}
-              {%- for value in option.values -%}
-                {%- liquid
-                  assign value_name = value | downcase
-                  assign value_pinned = false
-                  if pinned_choice != blank and value_name == pinned_choice
-                    assign value_pinned = true
-                  endif
-                  if choice_phase == 'pinned' and value_pinned == false
-                    continue
-                  endif
-                  if choice_phase == 'rest' and value_pinned
-                    continue
-                  endif
-                  assign choice_index = choice_index | plus: 1
-                -%}
-                {%- assign option_input_id = block.id | append: '-' | append: option.position | append: '-' | append: choice_index -%}
+            {%- for value in option.values -%}
+                {%- assign option_input_id = block.id | append: '-' | append: option.position | append: '-' | append: forloop.index -%}
                 <label class="product-option__choice" for="{{ option_input_id }}">
                   <input
                     id="{{ option_input_id }}"
@@ -101,11 +78,11 @@
                     {% render 'button', label: value, element: 'span', appearance: block.settings, class: 'product-option__pill' %}
                   {%- endif -%}
                 </label>
-              {%- endfor -%}
             {%- endfor -%}
           </div>
         {%- endif -%}
       </fieldset>
+    {%- endfor -%}
     {%- endfor -%}
   </div>
 {%- endunless -%}
@@ -121,7 +98,7 @@
     { "type": "select", "id": "swatch_shape", "label": "t:sections.main_product.swatch_shape.label", "options": [
       { "value": "round", "label": "t:sections.main_product.swatch_shape.round" }, { "value": "square", "label": "t:sections.main_product.swatch_shape.square" }
     ], "default": "round" },
-    { "type": "text", "id": "first_value", "label": "t:sections.main_product.first_value.label", "info": "t:sections.main_product.first_value.info" },
+    { "type": "text", "id": "first_option", "label": "t:sections.main_product.first_option.label", "info": "t:sections.main_product.first_option.info" },
     { "type": "checkbox", "id": "show_sold_out", "label": "t:sections.main_product.show_sold_out.label", "default": true },
     { "type": "range", "id": "option_gap", "label": "t:sections.main_product.option_gap.label", "min": 0, "max": 40, "step": 2, "unit": "px", "default": 12 },
     { "type": "header", "content": "t:blocks.button.appearance_header" },

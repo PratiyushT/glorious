@@ -115,17 +115,27 @@
       two can never disagree about a column count.
     {%- endcomment -%}
     {%- comment -%}
-      The horizontal gap alone. `.grid-auto` reads `column-gap:
-      var(--column-gap, var(--gap))`, and the ruler and the live carousel's
-      page math read that same pair — so this one property moves the columns
-      and every layout answer moves with it. Theme, the default, emits
-      nothing and both axes stay on `--grid-gap`.
+      The card gaps, independently. `.grid-auto` reads `column-gap` and
+      `row-gap` from these properties before falling back to `--gap`.
+
+      Column gap also feeds the ruler and live carousel's page math because it
+      changes how many cards fit across. Row gap never enters that width
+      calculation: it changes only the space between wrapped grid rows. Use
+      `0px`, not bare `0`, so each override remains a length everywhere it is
+      consumed.
+
+      Theme, the default, emits nothing and leaves the shared theme grid gap in
+      charge.
     {%- endcomment -%}
     {%- capture grid_vars -%}
       --gap: var(--grid-gap);
       {%- unless section.settings.column_gap == blank or section.settings.column_gap == 'theme' -%}
-        {%- if section.settings.column_gap == 'none' %} --column-gap: 0;
+        {%- if section.settings.column_gap == 'none' %} --column-gap: 0px;
         {%- else %} --column-gap: var(--step-{{ section.settings.column_gap }});{% endif -%}
+      {%- endunless -%}
+      {%- unless section.settings.row_gap == blank or section.settings.row_gap == 'theme' -%}
+        {%- if section.settings.row_gap == 'none' %} --row-gap: 0px;
+        {%- else %} --row-gap: var(--step-{{ section.settings.row_gap }});{% endif -%}
       {%- endunless -%}
     {%- endcapture -%}
 
@@ -316,8 +326,8 @@
     {
       "type": "select",
       "id": "gap",
-      "label": "t:blocks.all.gap.label",
-      "info": "t:blocks.all.gap.info",
+      "label": "t:sections.group.block_gap.label",
+      "info": "t:sections.group.block_gap.info",
       "options": [
         { "value": "none", "label": "t:blocks.all.step.none" },
         { "value": "minimal", "label": "t:blocks.all.step.minimal" },
@@ -334,6 +344,23 @@
       "id": "column_gap",
       "label": "t:sections.all.card_column_gap.label",
       "info": "t:sections.all.card_column_gap.info",
+      "options": [
+        { "value": "theme", "label": "t:sections.catalog.theme_product_gap" },
+        { "value": "none", "label": "t:blocks.all.step.none" },
+        { "value": "minimal", "label": "t:blocks.all.step.minimal" },
+        { "value": "tiny", "label": "t:blocks.all.step.tiny" },
+        { "value": "small", "label": "t:blocks.all.step.small" },
+        { "value": "medium", "label": "t:blocks.all.step.medium" },
+        { "value": "large", "label": "t:blocks.all.step.large" },
+        { "value": "xlarge", "label": "t:blocks.all.step.xlarge" }
+      ],
+      "default": "theme"
+    },
+    {
+      "type": "select",
+      "id": "row_gap",
+      "label": "t:sections.all.card_row_gap.label",
+      "info": "t:sections.all.card_row_gap.info",
       "options": [
         { "value": "theme", "label": "t:sections.catalog.theme_product_gap" },
         { "value": "none", "label": "t:blocks.all.step.none" },

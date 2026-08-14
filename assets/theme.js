@@ -3222,7 +3222,6 @@
       var pools = Array.prototype.slice.call(hero.querySelectorAll('[data-hero-pool]'));
       var switches = Array.prototype.slice.call(hero.querySelectorAll('[data-hero-tab]'));
       var portraits = Array.prototype.slice.call(hero.querySelectorAll('[data-hero-portrait]'));
-      var portraitFrame = hero.querySelector('[data-hero-portrait-frame]');
       var carousel = hero.querySelector('[data-hero-carousel]');
       var windowEl = hero.querySelector('[data-hero-window]');
       var below = hero.querySelector('.hero-carousel__below');
@@ -3243,9 +3242,6 @@
           btn.setAttribute('aria-pressed', String(i === activeTab));
         });
         portraits.forEach(function (portrait, i) { portrait.hidden = i !== activeTab; });
-        if (portraitFrame && portraits[activeTab]) {
-          portraitFrame.style.setProperty('--hero-portrait-ratio', portraits[activeTab].dataset.mediaRatio || '3 / 4');
-        }
 
         var list = cards();
         var cyclable = list.length > VISIBLE;
@@ -4482,60 +4478,6 @@
     }
   }
 
-  /* ---- Product breadcrumb history ------------------------------------ */
-
-  function initProductBreadcrumbs(scope) {
-    var storagePrefix = 'veylin:breadcrumb:';
-
-    function contextLabel() {
-      var heading = document.querySelector('main h1');
-      if (heading && heading.textContent.trim()) return heading.textContent.trim();
-      return (document.title || '').split(/[–—|]/)[0].trim() || 'Home';
-    }
-
-    if (!document.documentElement.dataset.boundBreadcrumbHistory) {
-      document.documentElement.dataset.boundBreadcrumbHistory = 'true';
-      document.addEventListener('click', function (event) {
-        var target = event.target;
-        var link = target && target.closest && target.closest('[data-card] a[href]');
-        if (!link) return;
-
-        var destination;
-        try { destination = new URL(link.href, window.location.origin); } catch (error) { return; }
-        if (destination.origin !== window.location.origin || destination.pathname.indexOf('/products/') === -1) return;
-
-        var sourceUrl = window.location.pathname + window.location.search;
-        var sourceLabel = contextLabel();
-        safeStore(function () {
-          sessionStorage.setItem(storagePrefix + destination.pathname, JSON.stringify({
-            label: sourceLabel,
-            url: sourceUrl
-          }));
-        });
-      });
-    }
-
-    scope.querySelectorAll('[data-product-breadcrumb]').forEach(function (breadcrumb) {
-      var path = breadcrumb.dataset.productPath;
-      if (!path) return;
-      try { path = new URL(path, window.location.origin).pathname; } catch (error) { return; }
-
-      var stored = safeStore(function () {
-        return JSON.parse(sessionStorage.getItem(storagePrefix + path) || 'null');
-      }, null);
-      if (!stored || !stored.label || !stored.url) return;
-
-      var source;
-      try { source = new URL(stored.url, window.location.origin); } catch (error) { return; }
-      if (source.origin !== window.location.origin || source.pathname === path) return;
-
-      var sourceLink = breadcrumb.querySelector('[data-product-breadcrumb-source]');
-      if (!sourceLink) return;
-      sourceLink.textContent = stored.label;
-      sourceLink.href = source.pathname + source.search + source.hash;
-    });
-  }
-
   /* ---- Localization --------------------------------------------------- */
 
   function initLocalization(scope) {
@@ -4564,7 +4506,6 @@
     initCards(scope);
     initCardOptions(scope);
     initCatalog(scope);
-    initProductBreadcrumbs(scope);
     initOverlays(scope);
     initCookieChoice(scope);
     initPolicyToc(scope);
