@@ -58,7 +58,14 @@
         {%- for variant in product.variants -%}<option value="{{ variant.id }}" {% if variant == selected_variant %}selected{% endif %} {% unless variant.available %}disabled{% endunless %}>{{ variant.title }} — {{ variant.price | money }}</option>{%- endfor -%}
       </select>
       <label for="NoScriptQuantity-{{ section.id }}-{{ block.id }}">{{ 'products.quantity' | t }}</label>
-      <input class="field" id="NoScriptQuantity-{{ section.id }}-{{ block.id }}" type="number" name="quantity" value="1" min="1">
+      {%- comment -%}
+        The opening variant's quantity rule, exactly as the scripted input
+        states it — the two forms must not disagree about what quantities the
+        shop sells. A different pick in the select above is the server's to
+        validate; static markup cannot follow it.
+      {%- endcomment -%}
+      {%- assign noscript_rule = selected_variant.quantity_rule -%}
+      <input class="field" id="NoScriptQuantity-{{ section.id }}-{{ block.id }}" type="number" name="quantity" value="{{ noscript_rule.min | default: 1 }}" min="{{ noscript_rule.min | default: 1 }}"{% if noscript_rule.max %} max="{{ noscript_rule.max }}"{% endif %} step="{{ noscript_rule.increment | default: 1 }}">
       {% render 'button', label: add_label, element: 'button', button_type: 'submit', button_name: 'add', appearance: block.settings %}
     {%- endform -%}
   </noscript>

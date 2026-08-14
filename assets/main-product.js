@@ -182,6 +182,25 @@
     }
     if (sku) sku.textContent = variant.sku;
 
+    var quantity = root.querySelector('[data-product-quantity]');
+    if (quantity && variant.quantityRule) {
+      var rule = variant.quantityRule;
+      quantity.min = rule.min;
+      if (rule.max) quantity.max = rule.max;
+      else quantity.removeAttribute('max');
+      quantity.step = rule.increment;
+      /* Snap the carried value onto the new variant's min-anchored grid —
+         min and max are multiples of the increment, but a value carried from
+         another variant's grid need not be, and an off-grid value the theme
+         itself wrote would fail native validation and block the submit
+         before the delegated add ever saw it. */
+      var carried = Number(quantity.value) || rule.min;
+      var snapped = rule.min + Math.round((carried - rule.min) / rule.increment) * rule.increment;
+      snapped = Math.max(rule.min, snapped);
+      if (rule.max) snapped = Math.min(rule.max, snapped);
+      quantity.value = snapped;
+    }
+
     if (submit) {
       submit.disabled = !variant.available;
       (submit.querySelector('[data-button-label]') || submit).textContent = variant.available ? submit.dataset.addLabel : submit.dataset.soldOutLabel;
@@ -283,9 +302,16 @@
       if (quantityButton) {
         var input = root.querySelector('[data-product-quantity]');
         if (!input) return;
-        var step = Number(quantityButton.dataset.quantityStep);
-        var minimum = Number(input.min || 1);
-        input.value = Math.max(minimum, Number(input.value || minimum) + step);
+        /* The input's min/max/step are the variant's quantity rule. Native
+           validation checks the grid anchored at min, so the arrows re-snap
+           rather than merely add the increment — a typed off-grid value must
+           recover on the first press, not ride the wrong grid forever. */
+        var increment = Number(input.step) || 1;
+        var minimum = Number(input.min) || 1;
+        var maximum = input.max === '' ? Infinity : Number(input.max);
+        var next = (Number(input.value) || minimum) + Number(quantityButton.dataset.quantityStep) * increment;
+        next = minimum + Math.round((next - minimum) / increment) * increment;
+        input.value = Math.min(maximum, Math.max(minimum, next));
         return;
       }
 

@@ -453,11 +453,20 @@ global Text/Rich text concern elsewhere.
   `max`, `step`, and opening value come from `variant.quantity_rule` rather
   than a hardcoded 1/1 — a store whose admin sets a minimum of 2 must not
   offer 1. The rule rides through `product-variants-json` as `quantityRule`,
-  so `syncVariant` re-states it when the variant changes and clamps the typed
-  value to the new bounds; the stepper arrows move by the increment and stop
-  at both ends, the same grid native form validation checks. The rule drop
-  always exists (min 1, increment 1 when unset), so on a shop without
-  quantity rules the rendered attributes are the old literals exactly.
+  and `syncVariant` re-states it when the variant changes. **Clamping is not
+  enough: the value must snap onto the min-anchored increment grid.** Native
+  validation's step base is the `min` attribute, so a value carried across
+  variants — or typed — can be off the new grid, and an invalid value the
+  theme itself wrote blocks the submit before the delegated add ever fires,
+  while arrows that only add the increment ride the wrong grid forever. The
+  variant hand-over and both stepper arrows therefore re-snap
+  (`min + round((value − min) / increment) × increment`) before clamping.
+  The no-script buy form states the opening variant's rule too, so the two
+  forms cannot disagree about what quantities the shop sells; a different
+  pick in its variant select is the server's to validate, since static
+  markup cannot follow it. The rule drop always exists (min 1, increment 1
+  when unset), so on a shop without quantity rules the rendered attributes
+  are the old literals exactly.
 - The gallery keeps image, hosted video, external video, and 3D model media
   native. Images open the zoom dialog; navigation changes the one visible
   media item and pauses video when it leaves the stage.
