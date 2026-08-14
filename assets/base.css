@@ -6705,17 +6705,17 @@ a {
   height: 100%;
 }
 
-/* The open branch is a column of its own: indented to the title's own text
-   start, held by a champagne hairline, and breathing at both ends. */
+/* The open branch is a column of its own, and it sits DEEPER than the
+   title column, on request: the hairline stands on the title column itself
+   and the children step past it by a spacing step, so a branch's children
+   read unmistakably inside their parent rather than as more rows. */
 .nav-menu__submenu {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
   gap: 0 var(--step-medium);
-  /* The hairline stands at the number column's edge and the padding is the
-     row's own gap token minus the hairline, so a child link's text starts
-     exactly on the title column — measured to the pixel, not near it. */
-  margin: var(--step-tiny) 0 var(--step-small) clamp(1.6rem, 3vw, 2.5rem);
-  padding-inline-start: calc(var(--nav-num-gap, 0.35em) - var(--border-width));
+  margin: var(--step-tiny) 0 var(--step-small)
+    calc(clamp(1.6rem, 3vw, 2.5rem) + var(--nav-num-gap, 0.35em));
+  padding-inline-start: var(--step-small);
   border-inline-start: var(--border-width) solid color-mix(in srgb, var(--c-accent) 45%, transparent);
 }
 
@@ -7373,6 +7373,18 @@ a.nav-menu__address:hover {
   align-items: stretch;
   justify-content: flex-start;
   padding: var(--space-sm) clamp(1.25rem, 5vw, 1.88rem);
+}
+
+/* In the drawer the category shortcuts are their own region, not the tail
+   of the rows: pushed to the panel's bottom, held apart behind a hairline,
+   and left-aligned with the column, on request. margin-top: auto is what
+   anchors them — the body is a flex column, so the gap grows and the rail
+   stays down whatever the menu's length. */
+.nav-drawer .nav-menu__categories {
+  margin-top: auto;
+  padding-top: var(--space-sm);
+  border-top: var(--border-width) solid color-mix(in srgb, var(--c-text) 12%, transparent);
+  justify-content: flex-start;
 }
 
 .nav-drawer .nav-menu__foot {

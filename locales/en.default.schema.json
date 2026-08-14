@@ -1550,8 +1550,7 @@
         "info": "One scheme for the solid bar on every page. While transparent, the bar borrows the page's own ink instead."
       },
       "wordmark_text": {
-        "label": "Wordmark text",
-        "info": "The lettered wordmark in the bar and the overlay heads. An image logo from Theme settings → Brand replaces the letters."
+        "label": "Wordmark text"
       },
       "nav_mode": {
         "paragraph": "The design gives the home page a floating pill and the inner pages a full bar, so the two are set separately.",
