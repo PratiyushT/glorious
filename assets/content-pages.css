@@ -149,7 +149,8 @@
 }
 
 .policy-rail__link:hover,
-.policy-rail__link:focus-visible {
+.policy-rail__link:focus-visible,
+.policy-rail__link[aria-current='true'] {
   color: var(--c-text);
 }
 

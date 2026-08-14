@@ -4087,6 +4087,7 @@
       var headings = body.querySelectorAll('h2');
       if (!headings.length) return;
 
+      var links = [];
       headings.forEach(function (heading, index) {
         if (!heading.id) heading.id = 'policy-section-' + (index + 1);
         var link = document.createElement('a');
@@ -4094,6 +4095,7 @@
         link.href = '#' + heading.id;
         link.textContent = heading.textContent;
         rail.insertBefore(link, divider);
+        links.push(link);
       });
 
       head.hidden = false;
@@ -4101,6 +4103,42 @@
          policies; with nothing rendered below it there is nothing to
          separate. */
       if (divider.nextElementSibling) divider.hidden = false;
+
+      /* The reading position lights its section's link. The current
+         section is the last heading above the reading line — a couple of
+         pixels past the 110px the headings' scroll-margin reserves, so a
+         jump lands with its own link lit. Position is asked on scroll
+         rather than through an observer because "the last one above the
+         line" is a question about order, not visibility: a section
+         taller than the viewport has no heading on screen and must stay
+         current. */
+      var current = null;
+
+      function markCurrent() {
+        var active = 0;
+        for (var i = 0; i < headings.length; i++) {
+          if (headings[i].getBoundingClientRect().top <= 120) active = i;
+          else break;
+        }
+        if (current === links[active]) return;
+        if (current) current.removeAttribute('aria-current');
+        current = links[active];
+        current.setAttribute('aria-current', 'true');
+      }
+
+      var spyQueued = false;
+      function queueSpy() {
+        if (spyQueued) return;
+        spyQueued = true;
+        window.requestAnimationFrame(function () {
+          spyQueued = false;
+          markCurrent();
+        });
+      }
+
+      window.addEventListener('scroll', queueSpy, { passive: true });
+      window.addEventListener('resize', queueSpy);
+      markCurrent();
     });
   }
 

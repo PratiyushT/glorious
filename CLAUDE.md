@@ -3964,7 +3964,14 @@ Shopify checkout, and the subtotal carries the note.
     disagree with the content; this one cannot. Liquid renders the head
     and divider `hidden`, so without scripting the rail holds only the
     server-rendered links to the other policies, and the divider appears
-    only with something on both sides of it. Links insert *before* the
+    only with something on both sides of it. The reading position lights
+    its link (`aria-current`, the hover colour): the current section is
+    the last heading above the reading line, asked positionally on a
+    rAF-throttled scroll rather than through an observer, because a
+    section taller than the viewport has no heading on screen and must
+    stay current — visibility is the wrong question; order is the right
+    one. The 120px line sits just past the headings' 110px scroll-margin,
+    so a jump lands with its own link lit. Links insert *before* the
     divider: the design keeps the page's own headings above it, and the
     mobile tier hides exactly what follows it. Below the design's 760px
     the rail becomes a wrapping pill row — a container query on
