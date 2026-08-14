@@ -6575,6 +6575,12 @@ a {
    here assumes a particular number of menu items.                     */
 
 .nav-menu {
+  /* The row's display size, a token so the number can size itself to
+     exactly one row line — em inside the number resolves against its own
+     micro type, so only a shared token lets the two agree. The drawer
+     shell overrides it to panel scale. */
+  --nav-row-font: clamp(2.4rem, min(7.2vw, 7.4vh), 4.9rem);
+
   /* The space between a row's number column and its title, mirrored by the
      submenu's indent so child links land exactly on the title column. A
      token rather than an em gap because the submenu inherits a different
@@ -6655,7 +6661,9 @@ a {
   align-items: baseline;
   gap: var(--nav-num-gap, 0.35em);
   font-family: var(--font-display);
-  font-size: clamp(2.4rem, min(7.2vw, 7.4vh), 4.9rem);
+  font-size: var(--nav-row-font, clamp(2.4rem, min(7.2vw, 7.4vh), 4.9rem));
+  /* 1.14 is restated in the number's one-line height below — the pair must
+     move together. */
   line-height: 1.14;
   color: var(--c-ivory);
   text-decoration: none;
@@ -6665,6 +6673,99 @@ a {
 .nav-menu__link:hover,
 .nav-menu__link:focus-visible {
   color: var(--c-accent);
+}
+
+/* The drawer's branch is the theme's shared disclosure — the footer's
+   plus/minus mark and three-layer 0fr/1fr panel — dressed in the menu's own
+   type; the full-screen shell drills instead (below). The generic
+   .disclosure__* rules supply the collapse motion, the mark swap, and the
+   no-script open state. The toggle shares the row's .nav-menu__link class,
+   which is what keeps a branch row and a plain row identical to the eye —
+   all that is left here is unbuttoning the button. */
+.nav-menu__branch-toggle {
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+
+/* Champagne so it reads as a control against the title; centred on the row
+   and sized in the row's own em so it keeps its proportion at any scale. */
+.nav-menu__branch-mark {
+  align-self: center;
+  width: 0.45em;
+  height: 0.45em;
+  margin-inline-start: 0.1em;
+  color: var(--c-accent);
+}
+
+.nav-menu__branch-mark svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* The open branch is a column of its own: indented to the title's own text
+   start, held by a champagne hairline, and breathing at both ends. */
+.nav-menu__submenu {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
+  gap: 0 var(--step-medium);
+  /* The hairline stands at the number column's edge and the padding is the
+     row's own gap token minus the hairline, so a child link's text starts
+     exactly on the title column — measured to the pixel, not near it. */
+  margin: var(--step-tiny) 0 var(--step-small) clamp(1.6rem, 3vw, 2.5rem);
+  padding-inline-start: calc(var(--nav-num-gap, 0.35em) - var(--border-width));
+  border-inline-start: var(--border-width) solid color-mix(in srgb, var(--c-accent) 45%, transparent);
+}
+
+.nav-menu__submenu a {
+  display: flex;
+  min-height: 2.75rem;
+  align-items: center;
+  color: color-mix(in srgb, currentColor 72%, transparent);
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: var(--text-small-size);
+  letter-spacing: var(--track-wide);
+  text-decoration: none;
+  text-transform: uppercase;
+  transition: color var(--duration) var(--ease-ui);
+}
+
+/* Opening a branch staggers its links in behind the panel's unfolding —
+   data-open arriving is what starts these, so they ride the shared 0fr/1fr
+   transition rather than a display toggle. Eight explicit delays rather
+   than a --row variable, because a merchant menu is short and Liquid does
+   not number these children. */
+[data-nav-branch][data-open] .nav-menu__submenu > * {
+  animation: gj-row-in 0.4s var(--ease) both;
+}
+
+[data-nav-branch][data-open] .nav-menu__submenu > :nth-child(1) { animation-delay: 0.03s; }
+[data-nav-branch][data-open] .nav-menu__submenu > :nth-child(2) { animation-delay: 0.08s; }
+[data-nav-branch][data-open] .nav-menu__submenu > :nth-child(3) { animation-delay: 0.13s; }
+[data-nav-branch][data-open] .nav-menu__submenu > :nth-child(4) { animation-delay: 0.18s; }
+[data-nav-branch][data-open] .nav-menu__submenu > :nth-child(5) { animation-delay: 0.23s; }
+[data-nav-branch][data-open] .nav-menu__submenu > :nth-child(6) { animation-delay: 0.28s; }
+[data-nav-branch][data-open] .nav-menu__submenu > :nth-child(7) { animation-delay: 0.33s; }
+[data-nav-branch][data-open] .nav-menu__submenu > :nth-child(n+8) { animation-delay: 0.38s; }
+
+.nav-menu__submenu a:hover,
+.nav-menu__submenu a:focus-visible {
+  color: var(--c-accent);
+}
+
+/* A child with children of its own is a flat group, not a third fold — its
+   heading is the child's own link and the grandchildren stand inset beneath
+   it. One fold is a menu; two is a tree. */
+.nav-menu__subgroup {
+  display: grid;
+}
+
+.nav-menu__subgroup-links {
+  display: grid;
+  padding-inline-start: var(--step-small);
 }
 
 /* The menu drills instead of folding: every branch of the merchant's menu
@@ -6752,19 +6853,21 @@ a {
   color: color-mix(in srgb, var(--c-ivory) 55%, transparent);
 }
 
-/* The number stretches to the row and centres in it, which is what makes
-   its position identical on a link row and a branch row by construction. A
-   baseline raise was tried twice — vertical-align in inline flow, then a
-   relative offset in the number's own em — and both resolved differently
-   against a link's bare text node than against the toggle's span, a 3px
-   wobble measured, not guessed. Centring is derived from the row box the
-   two kinds share. */
+/* The number centres on the row's FIRST LINE, which is what makes its
+   position identical on every row by construction — link or drill row,
+   one line or four. A baseline raise was tried twice and wobbled 3px
+   between row kinds; centring on the whole row was tried next and a long
+   wrapped title floated its number to the middle of a four-line block.
+   So the number is a one-line-tall box: the row's font token times the
+   row's own 1.14 leading, centred within itself and top-aligned to the
+   row. On a single-line row that box IS the row, so nothing moved. */
 .nav-menu__num {
   flex: none;
-  align-self: stretch;
+  align-self: flex-start;
   display: flex;
   align-items: center;
   width: clamp(1.6rem, 3vw, 2.5rem);
+  height: calc(var(--nav-row-font, 1em) * 1.14);
   font-family: var(--font-body);
   font-size: var(--micro-size);
   letter-spacing: 0.2em;
@@ -7229,6 +7332,7 @@ a.nav-menu__address:hover {
    screen's. */
 .nav-drawer .drawer__panel {
   --c-ivory: var(--c-text);
+  --nav-row-font: clamp(1.55rem, 5.4vw, 1.9rem);
   --nav-num-gap: 0.6rem;
   --menu-step: 45ms;
   --menu-lead: 150ms;
@@ -7269,12 +7373,6 @@ a.nav-menu__address:hover {
   align-items: stretch;
   justify-content: flex-start;
   padding: var(--space-sm) clamp(1.25rem, 5vw, 1.88rem);
-}
-
-/* Display type at panel proportions rather than the overlay's viewport
-   scale. */
-.nav-drawer .nav-menu__link {
-  font-size: clamp(1.55rem, 5.4vw, 1.9rem);
 }
 
 .nav-drawer .nav-menu__foot {

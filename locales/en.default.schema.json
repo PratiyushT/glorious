@@ -507,19 +507,6 @@
         "label": "Drawer color scheme"
       }
     },
-    "navigation": {
-      "name": "Navigation",
-      "paragraph": "Choose how the header menu opens. Menu rows, categories, and the footer details are the same in both presentations.",
-      "menu_type": {
-        "label": "Opening the menu",
-        "info": "The drawer slides in from the start edge, in the cart drawer's shell.",
-        "menu": "Full-screen menu",
-        "drawer": "Slide out a drawer"
-      },
-      "drawer_color_scheme": {
-        "label": "Drawer color scheme"
-      }
-    },
     "catalog": {
       "name": "Catalog",
       "filter_word": {
@@ -722,6 +709,26 @@
       "custom_liquid": {
         "label": "Custom Liquid",
         "info": "Add custom Liquid or HTML. This block follows the layout and spacing of the section or Group that contains it."
+      }
+    },
+    "menu": {
+      "name": "Menu",
+      "menu": {
+        "label": "Menu"
+      },
+      "heading": {
+        "label": "Heading"
+      },
+      "heading_style": {
+        "label": "Heading style"
+      },
+      "layout": {
+        "label": "Layout",
+        "vertical": "Vertical",
+        "horizontal": "Horizontal"
+      },
+      "show_nested": {
+        "label": "Show nested links"
       }
     },
     "search_form": {
@@ -1550,7 +1557,6 @@
         "paragraph": "The design gives the home page a floating pill and the inner pages a full bar, so the two are set separately.",
         "home_label": "On the home page",
         "inner_label": "On every other page",
-        "info": "Expand on scroll uses the hero heading as its cue where there is one, and the distance below otherwise.",
         "bar": "Full-width bar",
         "morph": "Floating pill, expanding to a bar on scroll",
         "pill": "Floating pill"
@@ -1601,7 +1607,15 @@
         "info": "Shown in the overlay before anything is typed."
       },
       "menu_header": "Menu",
-      "menu_presentation_paragraph": "How the menu opens — the full-screen overlay or a side drawer — is chosen once in Theme settings → Navigation.",
+      "menu_type": {
+        "label": "Opening the menu",
+        "info": "The drawer slides in from the start edge and folds its branches like the footer; the full-screen overlay drills into a branch with a Back row.",
+        "menu": "Full-screen menu",
+        "drawer": "Slide out a drawer"
+      },
+      "menu_drawer_color_scheme": {
+        "label": "Drawer color scheme"
+      },
       "menu_paragraph": "Menu rows are numbered automatically in the order they appear here. Cart and Search are added last when they are switched on above.",
       "blocks": {
         "link": {
@@ -2113,6 +2127,9 @@
       "video_first": {
         "label": "Show video first",
         "info": "Moves hosted and external product videos before images while keeping variant media synchronized."
+      },
+      "quantity_show_label": {
+        "label": "Show quantity label"
       },
       "sticky_mode": {
         "label": "Desktop sticky column",

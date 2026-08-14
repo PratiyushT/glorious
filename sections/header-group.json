@@ -11,6 +11,8 @@
         "nav_mode_home": "morph",
         "nav_mode": "bar",
         "nav_product_transparent": true,
+        "menu_type": "drawer",
+        "menu_drawer_color_scheme": "scheme_1",
         "scroll_threshold": 60,
         "overlay_home": true,
         "show_contact": true,

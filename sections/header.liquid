@@ -33,7 +33,7 @@
     assign search_overlay = true
   endunless
 
-  assign menu_mode = settings.menu_type | default: 'menu'
+  assign menu_mode = section.settings.menu_type | default: 'menu'
 
   comment
     The overlay numbers every row continuously, including the two action rows,
@@ -416,8 +416,22 @@
       "content": "t:sections.header.menu_header"
     },
     {
-      "type": "paragraph",
-      "content": "t:sections.header.menu_presentation_paragraph"
+      "type": "select",
+      "id": "menu_type",
+      "label": "t:sections.header.menu_type.label",
+      "info": "t:sections.header.menu_type.info",
+      "options": [
+        { "value": "menu", "label": "t:sections.header.menu_type.menu" },
+        { "value": "drawer", "label": "t:sections.header.menu_type.drawer" }
+      ],
+      "default": "menu"
+    },
+    {
+      "type": "color_scheme",
+      "id": "menu_drawer_color_scheme",
+      "label": "t:sections.header.menu_drawer_color_scheme.label",
+      "default": "scheme_1",
+      "visible_if": "{{ section.settings.menu_type == 'drawer' }}"
     },
     {
       "type": "paragraph",

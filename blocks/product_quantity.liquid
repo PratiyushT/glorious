@@ -1,10 +1,24 @@
 {%- assign product_form_id = 'ProductForm-' | append: section.id -%}
+{%- comment -%}
+  The input states the variant's own quantity rule, not a hardcoded 1/1 — a
+  store whose admin sets a minimum or an increment must see it here. The rule
+  drop always exists (min 1, increment 1 when unset); the defaults guard the
+  blank closest.product a Featured product renders before a product is chosen.
+{%- endcomment -%}
+{%- assign quantity_rule = closest.product.selected_or_first_available_variant.quantity_rule -%}
+{%- assign quantity_min = quantity_rule.min | default: 1 -%}
+{%- assign quantity_increment = quantity_rule.increment | default: 1 -%}
 {%- capture input_style -%}{% render 'input-style', background_color: block.settings.background_color, text_color: block.settings.text_color, border_color: block.settings.border_color, radius: block.settings.radius, border_width: block.settings.border_width %}{%- endcapture -%}
+{%- comment -%}
+  The visible word is a merchant choice; the input's own aria-label below
+  keeps the control named for a screen reader either way, so hiding the
+  label costs nothing in the accessibility tree.
+{%- endcomment -%}
 <label class="product-quantity" style="{{ input_style | strip }}" {{ block.shopify_attributes }}>
-  <span>{{ 'products.quantity' | t }}</span>
+  {%- if block.settings.show_label -%}<span>{{ 'products.quantity' | t }}</span>{%- endif -%}
   <span class="product-quantity__control">
     <button type="button" data-quantity-step="-1" aria-label="{{ 'products.decrease_quantity' | t }}">−</button>
-    <input type="number" name="quantity" value="1" min="1" step="1" inputmode="numeric" form="{{ product_form_id }}" data-product-quantity aria-label="{{ 'products.quantity' | t }}">
+    <input type="number" name="quantity" value="{{ quantity_min }}" min="{{ quantity_min }}"{% if quantity_rule.max %} max="{{ quantity_rule.max }}"{% endif %} step="{{ quantity_increment }}" inputmode="numeric" form="{{ product_form_id }}" data-product-quantity aria-label="{{ 'products.quantity' | t }}">
     <button type="button" data-quantity-step="1" aria-label="{{ 'products.increase_quantity' | t }}">+</button>
   </span>
 </label>
@@ -13,6 +27,7 @@
 {
   "name": "t:sections.main_product.blocks.quantity", "tag": null,
   "settings": [
+    { "type": "checkbox", "id": "show_label", "label": "t:sections.main_product.quantity_show_label.label", "default": true },
     { "type": "header", "content": "t:sections.main_product.input_style.header" },
     { "type": "select", "id": "radius", "label": "t:sections.all.button_radius.label", "options": [
       { "value": "inherit", "label": "t:settings_schema.button_radius.inherit" }, { "value": "square", "label": "t:settings_schema.button_radius.square" },

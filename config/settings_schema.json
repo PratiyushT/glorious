@@ -2580,33 +2580,6 @@
     ]
   },
   {
-    "name": "t:settings_schema.navigation.name",
-    "settings": [
-      {
-        "type": "paragraph",
-        "content": "t:settings_schema.navigation.paragraph"
-      },
-      {
-        "type": "select",
-        "id": "menu_type",
-        "label": "t:settings_schema.navigation.menu_type.label",
-        "info": "t:settings_schema.navigation.menu_type.info",
-        "options": [
-          { "value": "menu", "label": "t:settings_schema.navigation.menu_type.menu" },
-          { "value": "drawer", "label": "t:settings_schema.navigation.menu_type.drawer" }
-        ],
-        "default": "menu"
-      },
-      {
-        "type": "color_scheme",
-        "id": "menu_drawer_color_scheme",
-        "label": "t:settings_schema.navigation.drawer_color_scheme.label",
-        "default": "scheme_1",
-        "visible_if": "{{ settings.menu_type == 'drawer' }}"
-      }
-    ]
-  },
-  {
     "name": "t:settings_schema.catalog.name",
     "settings": [
       {

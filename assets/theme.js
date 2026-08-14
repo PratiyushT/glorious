@@ -292,15 +292,53 @@
     scope.querySelectorAll('[data-overlay]').forEach(registerOverlay);
   }
 
-  /* A reopened menu starts at the root level, or it would greet the
-     visitor mid-branch with its entrance already spent. */
+  /* A reopened menu starts at the root, or it would greet the visitor
+     mid-branch with its entrance already spent — the overlay's levels
+     re-root and the drawer's branches fold, whichever shell rendered. */
   document.addEventListener('overlay:close', function (event) {
     if (!event.target || event.target.getAttribute('data-overlay') !== 'menu') return;
     event.target.querySelectorAll('[data-nav-level]').forEach(function (level) {
       level.hidden = level.getAttribute('data-nav-level') !== 'root';
       level.classList.remove('is-leaving');
     });
+    event.target.querySelectorAll('[data-nav-branch][data-open]').forEach(function (branch) {
+      branch.removeAttribute('data-open');
+      var toggle = branch.querySelector('[data-nav-branch-toggle]');
+      if (toggle) toggle.setAttribute('aria-expanded', 'false');
+    });
   });
+
+  /* The drawer's branches are the footer's disclosure — the same three-layer
+     0fr/1fr panel and plus/minus mark — with the footer's one-at-a-time
+     rule: opening a branch folds whichever was open. The full-screen shell
+     renders drill levels instead; each shell's markup only ever contains
+     its own controls, so both controllers can be bound unconditionally. */
+  function initNavBranches(scope) {
+    scope.querySelectorAll('[data-nav-branch-toggle]').forEach(function (btn) {
+      if (!bindOnce(btn, 'boundNavBranch')) return;
+
+      btn.addEventListener('click', function () {
+        var branch = btn.closest('[data-nav-branch]');
+        var group = branch && branch.closest('[data-nav-branches]');
+        if (!branch) return;
+
+        var open = branch.hasAttribute('data-open');
+
+        if (group) {
+          group.querySelectorAll('[data-nav-branch][data-open]').forEach(function (other) {
+            other.removeAttribute('data-open');
+            var toggle = other.querySelector('[data-nav-branch-toggle]');
+            if (toggle) toggle.setAttribute('aria-expanded', 'false');
+          });
+        }
+
+        if (!open) {
+          branch.setAttribute('data-open', '');
+          btn.setAttribute('aria-expanded', 'true');
+        }
+      });
+    });
+  }
 
   /* The menu drills: choosing a parent swaps the whole menu for that
      branch's own level, and Back walks the level's stated parent. A parent
@@ -4420,6 +4458,7 @@
     initAccordions(scope);
     initFooter(scope);
     initNavDrill(scope);
+    initNavBranches(scope);
     initHero(scope);
     initRowCarousels(scope);
     initLookbook(scope);

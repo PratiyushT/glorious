@@ -446,8 +446,18 @@ global Text/Rich text concern elsewhere.
   no-`split` rule the card's swatch row records.
 - One variant synchronization path updates the hidden form id, price, compare
   price, unit price, SKU, availability wording, featured media, pickup request,
-  URL, and each option header's selected value. A checked control with a stale
-  header is a failed variant update, even if the price changed.
+  URL, the quantity input's rule, and each option header's selected value. A
+  checked control with a stale header is a failed variant update, even if the
+  price changed.
+- **The quantity input states the variant's own quantity rule.** Its `min`,
+  `max`, `step`, and opening value come from `variant.quantity_rule` rather
+  than a hardcoded 1/1 — a store whose admin sets a minimum of 2 must not
+  offer 1. The rule rides through `product-variants-json` as `quantityRule`,
+  so `syncVariant` re-states it when the variant changes and clamps the typed
+  value to the new bounds; the stepper arrows move by the increment and stop
+  at both ends, the same grid native form validation checks. The rule drop
+  always exists (min 1, increment 1 when unset), so on a shop without
+  quantity rules the rendered attributes are the old literals exactly.
 - The gallery keeps image, hosted video, external video, and 3D model media
   native. Images open the zoom dialog; navigation changes the one visible
   media item and pauses video when it leaves the stage.
@@ -2808,25 +2818,28 @@ its pill → bar expansion against.
 - Menu rows are **section blocks, not a Shopify linklist**, so the design's
   content ships working without the merchant first building navigation menus.
   Numbering is generated from block order; Bag and Search are appended last.
-- **Nested menus drill; they do not fold.** The design has no nested menus at
-  all — its overlay is six flat rows — and this theme has now retired two
-  folding treatments on request: the `<details>` tree first, then the
-  footer-style disclosure that replaced it. Every level of the merchant's
-  menu renders as its own hidden panel inside `[data-nav-levels]`; choosing a
-  parent swaps the whole menu for that branch's list — Back row on the title
-  column, the parent's name as a micro heading, rows numbered from 01 with
-  "View all" first — and Back walks each level's stated
-  `data-nav-level-parent`. The leaving level fades through `afterFade` and
-  the arriving rows re-run the row cascade on their own, because
-  hidden-to-shown restarts animations — the drawer empty state's mechanism.
-  A parent row is a **real link to its own page**: `initNavDrill` (and the
-  module-scope capture claim, which must list `[data-nav-drill]` or the
-  ring-builder app steals the click) intercepts only when the target level
-  exists, so without scripting the row navigates and every child is
-  reachable there. Levels reset to root on overlay close, and a menu-row
+- **The two shells treat a branch differently, on request.** The overlay
+  drills: every level of the merchant's menu renders as its own hidden panel
+  inside `[data-nav-levels]`; choosing a parent swaps the whole menu for
+  that branch's list — Back row on the title column, the parent's name as a
+  micro heading, rows numbered from 01 with "View all" first — and Back
+  walks each level's stated `data-nav-level-parent`. The leaving level fades
+  through `afterFade` and the arriving rows re-run the row cascade on their
+  own, because hidden-to-shown restarts animations. A drill row is a **real
+  link to its own page**: `initNavDrill` (and the module-scope capture
+  claim, which must list `[data-nav-drill]` or the ring-builder app steals
+  the click) intercepts only when the target level exists. **The drawer
+  folds instead**: a parent row is the footer's disclosure — plus/minus
+  mark, three-layer 0fr/1fr panel, `initNavBranches`' one-at-a-time rule —
+  because a panel column reads naturally as an accordion, and its no-script
+  state is every panel open. Each shell's markup contains only its own
+  controls, so both controllers bind unconditionally; on overlay close the
+  levels re-root and the branches fold, whichever rendered. A menu-row
   focus state is its colour, never the global outline box.
-- **The menu has two presentations, exactly as Search does.** Theme
-  settings → Navigation → `menu_type`: the design's full-screen noir overlay
+- **The menu has two presentations, chosen in the Header section's Menu
+  group** — `menu_type` and the drawer's colour scheme moved there from the
+  global Navigation group (since removed) so everything the header does is
+  set in one place: the design's full-screen noir overlay
   (the default), or the cart drawer's shell sliding **from the start edge** —
   mirrored left where cart and search come from the right, so the two kinds
   of drawer never stack on one edge. One capture in `nav-menu.liquid` holds
