@@ -1,7 +1,7 @@
 {%- comment -%}
   Shared Collection/Search header stage. Data-bound copy and Search form remain
-  child blocks; the two sections differ only by template eligibility, name,
-  defaults, and the Search modifier class.
+  child blocks. Collection alone can arrange its contextual copy/image pair;
+  Search keeps the same unmodified stage and block flow.
 {%- endcomment -%}
 {%- liquid
   assign width_class = 'catalog-shell'
@@ -13,13 +13,25 @@
     when 'edge'
       assign width_class = 'catalog-block-header__width--edge'
   endcase
+
+  assign collection_layout_class = ''
+  assign collection_position_class = ''
+  assign collection_overlay_class = ''
+  if collection_layout != blank
+    assign collection_layout_class = ' catalog-block-header--layout-' | append: collection_layout | replace: '_', '-'
+    if collection_layout == 'side_by_side'
+      assign collection_position_class = ' catalog-block-header--position-' | append: collection_media_position | replace: '_', '-'
+    elsif collection_layout == 'title_over_image' and collection_overlay
+      assign collection_overlay_class = ' catalog-block-header--has-overlay'
+    endif
+  endif
 -%}
 
 <section
-  class="section catalog-block-header{% if search %} catalog-block-header--search{% endif %} catalog-block-header--{{ header_settings.height }} catalog-block-header--align-{{ header_settings.content_alignment }} catalog-block-header--vertical-{{ header_settings.vertical_alignment }} catalog-block-header--motion-{{ header_settings.motion }} scheme-{{ header_settings.color_scheme }}"
+  class="section catalog-block-header{% if search %} catalog-block-header--search{% endif %}{{ collection_layout_class }}{{ collection_position_class }}{{ collection_overlay_class }} catalog-block-header--{{ header_settings.height }} catalog-block-header--align-{{ header_settings.content_alignment }} catalog-block-header--vertical-{{ header_settings.vertical_alignment }} catalog-block-header--motion-{{ header_settings.motion }} scheme-{{ header_settings.color_scheme }}"
   data-catalog-block-header
   data-catalog-header-motion="{{ header_settings.motion }}"
-  style="{% render 'section-style', padding_top: header_settings.padding_top, padding_bottom: header_settings.padding_bottom %}{% render 'block-spacing', gap: header_settings.block_gap %}"
+  style="{% render 'section-style', padding_top: header_settings.padding_top, padding_bottom: header_settings.padding_bottom %}{% render 'block-spacing', gap: header_settings.block_gap %}{% if collection_layout == 'title_over_image' and collection_overlay %} --collection-header-overlay-color: {% if collection_overlay_color != blank %}{{ collection_overlay_color }}{% else %}var(--c-bg){% endif %}; --collection-header-overlay-strength: {{ collection_overlay_strength }}%;{% endif %}"
 >
   <div class="{{ width_class }}">
     <div class="catalog-block-header__content">

@@ -2085,6 +2085,30 @@
     },
     "collection_header": {
       "name": "Collection header",
+      "layout": {
+        "label": "Title and image layout",
+        "info": "Uses the Collection title/copy group and Collection image in this header.",
+        "side_by_side": "Side by side",
+        "title_over_image": "Title over image",
+        "image_only": "Image only",
+        "title_only": "Title only"
+      },
+      "media_position": {
+        "label": "Side-by-side order",
+        "title_first": "Title left, image right",
+        "image_first": "Image left, title right"
+      },
+      "show_overlay": {
+        "label": "Show image overlay",
+        "info": "Adds a color veil between the collection image and header text."
+      },
+      "overlay_color": {
+        "label": "Overlay color",
+        "info": "Leave empty to use this color scheme's background."
+      },
+      "overlay_strength": {
+        "label": "Overlay strength"
+      },
       "height_info": "Minimum height only. Content can always make the header taller.",
       "content_height": "Fit content",
       "vertical_alignment": "Position within the header",

@@ -3398,6 +3398,89 @@ a {
   width: 100%;
 }
 
+/* Collection header layout belongs to the section while title, description,
+   and image presentation stay with their ordinary contextual/global blocks.
+   These rules intentionally address only the default top-level Group pair:
+   arbitrary blocks remain possible, but the four resource-layout choices have
+   one predictable meaning for the collection copy and adapted image. */
+.catalog-block-header--layout-side-by-side .catalog-block-header__content > .layout-group > .layout-group__inner {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: stretch;
+}
+
+.catalog-block-header--layout-side-by-side.catalog-block-header--position-image-first .catalog-block-header__content > .layout-group > .layout-group__inner > .collection-image-block {
+  order: -1;
+}
+
+.catalog-block-header--layout-title-over-image .catalog-block-header__content > .layout-group > .layout-group__inner {
+  display: grid;
+  grid-template: minmax(0, 1fr) / minmax(0, 1fr);
+  gap: 0;
+}
+
+.catalog-block-header--layout-title-over-image .catalog-block-header__content > .layout-group > .layout-group__inner > * {
+  grid-area: 1 / 1;
+  min-width: 0;
+}
+
+.catalog-block-header--layout-title-over-image .catalog-block-header__content > .layout-group > .layout-group__inner > .collection-image-block {
+  position: relative;
+  z-index: 0;
+}
+
+.catalog-block-header--layout-title-over-image .catalog-block-header__content > .layout-group > .layout-group__inner > :not(.collection-image-block) {
+  position: relative;
+  z-index: 2;
+  align-self: stretch;
+}
+
+.catalog-block-header--layout-title-over-image .catalog-block-header__content > .layout-group > .layout-group__inner > .layout-group > .layout-group__inner {
+  height: 100%;
+}
+
+.catalog-block-header--layout-title-over-image.catalog-block-header--vertical-center .catalog-block-header__content > .layout-group > .layout-group__inner > .layout-group > .layout-group__inner {
+  justify-content: center;
+}
+
+.catalog-block-header--layout-title-over-image.catalog-block-header--vertical-end .catalog-block-header__content > .layout-group > .layout-group__inner > .layout-group > .layout-group__inner {
+  justify-content: flex-end;
+}
+
+.catalog-block-header--layout-title-over-image.catalog-block-header--has-overlay .collection-image-block .media::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: color-mix(
+    in srgb,
+    var(--collection-header-overlay-color, var(--c-bg)) var(--collection-header-overlay-strength, 40%),
+    transparent
+  );
+  pointer-events: none;
+}
+
+.catalog-block-header--layout-title-only .collection-image-block {
+  display: none;
+}
+
+.catalog-block-header--layout-image-only .catalog-block-header__content > :not(.layout-group):not(.collection-image-block),
+.catalog-block-header--layout-image-only .catalog-block-header__content > .layout-group > .layout-group__inner > :not(.collection-image-block) {
+  display: none;
+}
+
+@container (max-width: 30rem) {
+  .catalog-block-header--layout-side-by-side .catalog-block-header__content > .layout-group[data-stack="mobile"] > .layout-group__inner {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@container (max-width: 48rem) {
+  .catalog-block-header--layout-side-by-side .catalog-block-header__content > .layout-group[data-stack="tablet"] > .layout-group__inner {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
 .catalog-block-header--motion-reference [data-catalog-title] > span {
   display: inline-block;
   opacity: 0;

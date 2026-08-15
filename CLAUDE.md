@@ -451,6 +451,14 @@ subpixel-overlap guard. Closing or omitting the announcement restores the full
   complete layout contract, with Featured product adding only its product
   selector. `veylin-lint` R14 compares the actual schema objects so a future
   setting cannot be added to one copy and missed in the others.
+- **Collection header owns arrangement, not presentation.** Its default outer
+  Group still contains the reusable Collection copy Group and data-adapted
+  Collection image. The section can place those two children side by side in
+  either order, overlay the copy on the image, show the image alone, or show
+  the copy alone. Only the overlay arrangement exposes a veil toggle, colour,
+  and strength; the fallback colour is the scheme's background token. Search header
+  continues to share the catalog stage but deliberately does not inherit these
+  collection-resource controls, an exception recorded in R14.
 - **Accordion is Group with disclosure behavior, not a second content model.**
   It accepts its own `@theme` and `@app` children, carries Group's complete
   layout contract, and renders them through `layout-group`. Its only additions

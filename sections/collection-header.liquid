@@ -1,13 +1,22 @@
 {%- comment -%}
   Collection header is a composition surface, not a collection-title widget.
-  The section owns only the stage; global theme blocks own every visible piece.
-  The default template connects Text and Rich text to collection data through
-  Shopify dynamic sources, so merchants can move, restyle, replace, or remove
-  them without losing the automatic collection context.
+  Global theme blocks still own every visible piece; the section arranges the
+  default copy and collection-image children as two columns, an image overlay,
+  image only, or copy only. This keeps each child's ordinary appearance
+  controls while giving the resource header one coherent layout decision.
 {%- endcomment -%}
 
 {%- capture header_content -%}{% content_for 'blocks', closest.collection: collection %}{%- endcapture -%}
-{% render 'catalog-header', header_settings: section.settings, content: header_content, search: false %}
+{% render 'catalog-header',
+  header_settings: section.settings,
+  content: header_content,
+  search: false,
+  collection_layout: section.settings.layout,
+  collection_media_position: section.settings.media_position,
+  collection_overlay: section.settings.show_overlay,
+  collection_overlay_color: section.settings.overlay_color,
+  collection_overlay_strength: section.settings.overlay_strength
+%}
 
 {% schema %}
 {
@@ -34,6 +43,56 @@
         { "value": "edge", "label": "t:sections.group.content_width.edge" }
       ],
       "default": "page"
+    },
+    {
+      "type": "select",
+      "id": "layout",
+      "label": "t:sections.collection_header.layout.label",
+      "info": "t:sections.collection_header.layout.info",
+      "options": [
+        { "value": "side_by_side", "label": "t:sections.collection_header.layout.side_by_side" },
+        { "value": "title_over_image", "label": "t:sections.collection_header.layout.title_over_image" },
+        { "value": "image_only", "label": "t:sections.collection_header.layout.image_only" },
+        { "value": "title_only", "label": "t:sections.collection_header.layout.title_only" }
+      ],
+      "default": "side_by_side"
+    },
+    {
+      "type": "select",
+      "id": "media_position",
+      "label": "t:sections.collection_header.media_position.label",
+      "options": [
+        { "value": "title_first", "label": "t:sections.collection_header.media_position.title_first" },
+        { "value": "image_first", "label": "t:sections.collection_header.media_position.image_first" }
+      ],
+      "default": "title_first",
+      "visible_if": "{{ section.settings.layout == 'side_by_side' }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_overlay",
+      "label": "t:sections.collection_header.show_overlay.label",
+      "info": "t:sections.collection_header.show_overlay.info",
+      "default": true,
+      "visible_if": "{{ section.settings.layout == 'title_over_image' }}"
+    },
+    {
+      "type": "color",
+      "id": "overlay_color",
+      "label": "t:sections.collection_header.overlay_color.label",
+      "info": "t:sections.collection_header.overlay_color.info",
+      "visible_if": "{{ section.settings.layout == 'title_over_image' and section.settings.show_overlay }}"
+    },
+    {
+      "type": "range",
+      "id": "overlay_strength",
+      "label": "t:sections.collection_header.overlay_strength.label",
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "unit": "%",
+      "default": 40,
+      "visible_if": "{{ section.settings.layout == 'title_over_image' and section.settings.show_overlay }}"
     },
     {
       "type": "select",

@@ -598,6 +598,8 @@ def R14_shared_setting_contracts():
     same reason. This catches the quiet drift where one copy gains an option,
     label or visibility rule and its siblings do not. Product and Collection
     title deliberately omit the three Wrap values that hide title text.
+    Collection header's title/image arrangement is resource-specific and is
+    therefore excluded from its otherwise shared Search-header contract.
     Group's private contextual copies are covered for the same reason.
     """
     def top_settings(path):
@@ -666,7 +668,10 @@ def R14_shared_setting_contracts():
         ('sections/main-product.liquid', set(), set(), (
             'sections/featured-product.liquid',
         )),
-        ('sections/collection-header.liquid', set(), {'height'}, (
+        ('sections/collection-header.liquid', {
+            'layout', 'media_position', 'show_overlay', 'overlay_color',
+            'overlay_strength'
+        }, {'height'}, (
             'sections/search-header.liquid',
         )),
         ('sections/featured-products.liquid',
@@ -1099,6 +1104,25 @@ def R22_collection_data_contract():
     if 'closest.collection: collection' not in header:
         err('R22', 'sections/collection-header.liquid',
             'Collection header does not pass its collection to child blocks')
+    header_schema = schema_for('sections/collection-header.liquid')
+    header_settings = {
+        setting.get('id'): setting
+        for setting in header_schema.get('settings', []) if setting.get('id')
+    }
+    layout_values = [
+        option.get('value')
+        for option in header_settings.get('layout', {}).get('options', [])
+    ]
+    if layout_values != [
+            'side_by_side', 'title_over_image', 'image_only', 'title_only']:
+        err('R22', 'sections/collection-header.liquid',
+            'Collection header title/image layouts have drifted')
+    for setting_id in (
+            'media_position', 'show_overlay', 'overlay_color',
+            'overlay_strength'):
+        if setting_id not in header_settings:
+            err('R22', 'sections/collection-header.liquid',
+                "Collection header is missing '%s'" % setting_id)
 
     card = read(os.path.join(ROOT, 'blocks', '_collection-card.liquid'))
     group = read(os.path.join(ROOT, 'blocks', '_collection-card-group.liquid'))

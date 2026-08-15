@@ -71,6 +71,10 @@
       "settings": {
         "color_scheme": "scheme_1",
         "content_width": "page",
+        "layout": "side_by_side",
+        "media_position": "title_first",
+        "show_overlay": true,
+        "overlay_strength": 40,
         "height": "reference",
         "content_alignment": "left",
         "vertical_alignment": "center",
