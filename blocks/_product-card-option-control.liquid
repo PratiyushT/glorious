@@ -155,6 +155,7 @@
         {%- endif -%}
         {% render 'unit-price', price: chosen.unit_price, measurement: chosen.unit_price_measurement, class: 'card__unit-price' %}
       {%- endcapture -%}
+      {%- capture value_sale_badge -%}{% render 'sale-badge-label', variant: chosen %}{%- endcapture -%}
 
         <a
           class="{% if is_pills %}card__pill{% else %}card__swatch{% endif %}{% if is_selected %} is-selected{% endif %}"
@@ -167,6 +168,7 @@
           data-option-available="{{ chosen.available }}"
           data-option-meta="{{ value | escape }}"
           data-option-price="{{ value_price_html | escape }}"
+          data-option-sale-badge="{{ value_sale_badge | strip | escape }}"
           {% unless is_pills %}data-tip="{{ value | escape }}"{% endunless %}
           aria-label="{{ value | escape }}"
           aria-current="{% if is_selected %}true{% else %}false{% endif %}"

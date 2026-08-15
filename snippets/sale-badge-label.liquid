@@ -1,0 +1,35 @@
+{%- comment -%}
+  One sale-label formatter for every Product badges surface.
+
+  The selected variant is authoritative: a badge that states a saving must
+  describe the same current and compare-at prices the nearby Price block shows.
+  Liquid owns money and translation formatting; browser code only swaps the
+  already-rendered string when a card or product picker changes variant.
+
+  Accepts:
+    variant - the variant whose saving is described.
+    mode    - optional display mode; defaults to the global badge policy.
+{%- endcomment -%}
+
+{%- liquid
+  assign sale_mode = mode | default: settings.badge_sale_mode | default: 'sale'
+
+  if variant != blank and variant.compare_at_price > variant.price and sale_mode != 'off'
+    assign saving_amount = variant.compare_at_price | minus: variant.price
+    assign saving_percent = saving_amount | times: 100 | divided_by: variant.compare_at_price
+    assign saving_money = saving_amount | money
+
+    case sale_mode
+      when 'amount'
+        echo 'products.sale_amount' | t: amount: saving_money
+      when 'percentage'
+        echo 'products.sale_percentage' | t: percent: saving_percent
+      when 'sale_amount'
+        echo 'products.sale_with_amount' | t: amount: saving_money
+      when 'sale_percentage'
+        echo 'products.sale_with_percentage' | t: percent: saving_percent
+      else
+        echo 'products.on_sale' | t
+    endcase
+  endif
+-%}

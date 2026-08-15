@@ -451,10 +451,15 @@ subpixel-overlap guard. Closing or omitting the announcement restores the full
   selected scheme even though the veil is the panel's sibling.
 - **Product badges are one contextual block, not markup hidden inside Media.**
   `product_badges` owns automatic Sold out, Sale, New, and custom/metafield
-  badges. The block chooses facts, order limit, and card position; Theme
-  settings → Product badges owns the shared type, shape, and state colors.
+  badges. The block owns the order limit and card position; Theme settings →
+  Product badges owns the shared fact policy, type, shape, and state colors.
   Product cards, Main product, Featured product, collection, search, homepage,
-  and recommendations all compose this same block.
+  and recommendations all compose this same block. Sale display is one global
+  six-mode policy: Off, Sale, price difference, percentage difference, or Sale
+  combined with either difference. `sale-badge-label.liquid` formats every
+  surface, while the product variant JSON and card option fragments carry its
+  preformatted result so a picker changes badge, price, and selected variant as
+  one state without browser-side money arithmetic.
 
 - **The product-page swatch ring hugs the dot.** The selection is drawn on the
   dot itself, the card's own language — hairline off, a 2px spacer, a light

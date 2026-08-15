@@ -2809,12 +2809,14 @@
       { "type": "collection", "id": "badge_ignore_collection", "label": "t:settings_schema.badges.ignore_collection", "info": "t:settings_schema.badges.ignore_collection_info" },
       { "type": "checkbox", "id": "badge_show_custom", "label": "t:settings_schema.badges.show_custom", "info": "t:settings_schema.badges.show_custom_info", "default": true },
       { "type": "header", "content": "t:settings_schema.badges.sale" },
-      { "type": "checkbox", "id": "badge_show_sale", "label": "t:settings_schema.badges.show_sale", "default": true },
-      { "type": "select", "id": "badge_sale_label", "label": "t:settings_schema.badges.sale_label.label", "visible_if": "{{ settings.badge_show_sale }}", "options": [
-        { "value": "label", "label": "t:settings_schema.badges.sale_label.label_only" },
-        { "value": "percentage", "label": "t:settings_schema.badges.sale_label.percentage" },
-        { "value": "amount", "label": "t:settings_schema.badges.sale_label.amount" }
-      ], "default": "label" },
+      { "type": "select", "id": "badge_sale_mode", "label": "t:settings_schema.badges.sale_mode.label", "info": "t:settings_schema.badges.sale_mode.info", "options": [
+        { "value": "off", "label": "t:settings_schema.badges.sale_mode.off" },
+        { "value": "sale", "label": "t:settings_schema.badges.sale_mode.sale" },
+        { "value": "amount", "label": "t:settings_schema.badges.sale_mode.amount" },
+        { "value": "percentage", "label": "t:settings_schema.badges.sale_mode.percentage" },
+        { "value": "sale_amount", "label": "t:settings_schema.badges.sale_mode.sale_amount" },
+        { "value": "sale_percentage", "label": "t:settings_schema.badges.sale_mode.sale_percentage" }
+      ], "default": "sale" },
       { "type": "header", "content": "t:settings_schema.badges.sold_out" },
       { "type": "checkbox", "id": "badge_show_sold_out", "label": "t:settings_schema.badges.show_sold_out", "default": true },
       { "type": "header", "content": "t:settings_schema.badges.new" },

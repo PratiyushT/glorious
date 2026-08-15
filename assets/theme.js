@@ -2846,6 +2846,13 @@
 
   var swatchFit = null;
 
+  function syncCardSaleBadge(card, label) {
+    card.querySelectorAll('[data-product-sale-badge]').forEach(function (badge) {
+      badge.innerHTML = label || '';
+      badge.hidden = !label;
+    });
+  }
+
   function fitSwatches(row) {
     var swatches = Array.prototype.slice.call(row.querySelectorAll('[data-card-option]'));
     var more = row.querySelector('[data-card-swatch-more]');
@@ -2923,6 +2930,7 @@
 
     var price = card.querySelector('[data-card-price]');
     if (price && action.dataset.cardAddPrice) price.innerHTML = action.dataset.cardAddPrice;
+    syncCardSaleBadge(card, action.dataset.cardAddSaleBadge || '');
 
     var addId = card.querySelector('[data-card-add-id]');
     if (addId && variantId) addId.value = variantId;
@@ -2982,6 +2990,7 @@
 
     var price = card.querySelector('[data-card-price]');
     if (price) price.innerHTML = swatch.dataset.optionPrice || '';
+    syncCardSaleBadge(card, swatch.dataset.optionSaleBadge || '');
 
     /* Keep every action on the variant the caption and price now describe. */
     var optionId = swatch.dataset.optionId;

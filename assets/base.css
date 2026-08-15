@@ -4710,15 +4710,18 @@ a {
   display: flex;
   flex-wrap: wrap;
   align-items: flex-start;
+  max-width: 100%;
   gap: var(--space-3xs);
 }
 
 .product-badge {
   display: inline-flex;
   align-items: center;
+  max-width: 100%;
   min-height: 1.75rem;
   padding: 0.3em 0.8em;
   border-radius: var(--badge-radius, 0);
+  overflow-wrap: anywhere;
 }
 
 .product-badge--sale { background: var(--badge-sale-bg); color: var(--badge-sale-text); }

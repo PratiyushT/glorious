@@ -67,6 +67,8 @@
     "on_sale": "Sale",
     "sale_percentage": "{{ percent }}% off",
     "sale_amount": "Save {{ amount }}",
+    "sale_with_percentage": "Sale · {{ percent }}% off",
+    "sale_with_amount": "Sale · Save {{ amount }}",
     "new": "New",
     "from_price": "From {{ price }}",
     "add_to_cart": "Add to {{ cart_name }}",

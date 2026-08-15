@@ -151,6 +151,13 @@
       });
   }
 
+  function syncSaleBadge(root, label) {
+    Array.prototype.forEach.call(root.querySelectorAll('[data-product-sale-badge]'), function (badge) {
+      badge.innerHTML = label || '';
+      badge.hidden = !label;
+    });
+  }
+
   function syncVariant(root, variants) {
     syncOptionLabels(root);
     var variant = selectedVariant(variants, optionValues(root));
@@ -162,6 +169,7 @@
     var variantInput = root.querySelector('[data-product-variant-id]');
 
     if (!variant) {
+      syncSaleBadge(root, '');
       if (submit) {
         submit.disabled = true;
         (submit.querySelector('[data-button-label]') || submit).textContent = submit.dataset.unavailableLabel;
@@ -181,6 +189,7 @@
       unit.hidden = !variant.unitPrice;
     }
     if (sku) sku.textContent = variant.sku;
+    syncSaleBadge(root, variant.saleBadge);
 
     var quantity = root.querySelector('[data-product-quantity]');
     if (quantity && variant.quantityRule) {

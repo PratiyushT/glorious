@@ -124,6 +124,9 @@
     endif
     render 'unit-price', price: chosen.unit_price, measurement: chosen.unit_price_measurement, class: 'card__unit-price'
   endcapture
+  capture chosen_sale_badge
+    render 'sale-badge-label', variant: chosen
+  endcapture
 -%}
 
 {%- comment -%}
@@ -175,6 +178,7 @@
           data-card-add-option-value="{{ strategy_option_value | escape }}"
           data-card-add-option-values="{{ chosen.options | json | escape }}"
           data-card-add-price="{{ chosen_price_html | strip | escape }}"
+          data-card-add-sale-badge="{{ chosen_sale_badge | strip | escape }}"
         {% endif %}
         {{ block.shopify_attributes }}
       {%- endcapture -%}

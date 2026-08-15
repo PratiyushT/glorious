@@ -429,12 +429,15 @@
       "show_custom": "Show custom tag badges",
       "show_custom_info": "Add product tags such as badge: Limited edition. Text after badge: becomes the badge label.",
       "sale": "Sale badge",
-      "show_sale": "Show Sale badges",
-      "sale_label": {
-        "label": "Sale wording",
-        "label_only": "Sale",
-        "percentage": "Percentage off",
-        "amount": "Amount saved"
+      "sale_mode": {
+        "label": "Sale badge display",
+        "info": "The saving follows the selected variant's current and compare-at prices.",
+        "off": "Off",
+        "sale": "Sale only",
+        "amount": "Price difference",
+        "percentage": "Percentage difference",
+        "sale_amount": "Sale + price difference",
+        "sale_percentage": "Sale + percentage difference"
       },
       "sold_out": "Sold-out badge",
       "show_sold_out": "Show Sold out badges",
@@ -951,13 +954,6 @@
     "product_badges": {
       "name": "Product badges",
       "show_sold_out": "Show Sold out",
-      "show_sale": "Show Sale",
-      "sale_label": {
-        "label": "Sale wording",
-        "label_only": "Sale",
-        "percentage": "Percentage off",
-        "amount": "Amount saved"
-      },
       "show_new": "Show New",
       "new_days": "Products are new for",
       "custom_text": "Custom badge",

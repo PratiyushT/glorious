@@ -12,12 +12,14 @@
           {{ variant.unit_price | money }} / {%- if variant.unit_price_measurement.reference_value != 1 -%}{{ variant.unit_price_measurement.reference_value }}{%- endif -%}{{ variant.unit_price_measurement.reference_unit }}
         {%- endif -%}
       {%- endcapture -%}
+      {%- capture sale_badge -%}{% render 'sale-badge-label', variant: variant %}{%- endcapture -%}
       {
         "id": {{ variant.id | json }},
         "available": {{ variant.available | json }},
         "options": {{ variant.options | json }},
         "price": {{ variant.price | money | json }},
         "compareAtPrice": {% if variant.compare_at_price > variant.price %}{{ variant.compare_at_price | money | json }}{% else %}""{% endif %},
+        "saleBadge": {{ sale_badge | strip | json }},
         "unitPrice": {{ unit_price | strip | json }},
         "sku": {{ variant.sku | json }},
         "featuredMediaId": {{ variant.featured_media.id | json }},

@@ -20,14 +20,20 @@
   endif
 
   assign badge_variant = product.selected_or_first_available_variant
-  assign is_sale = false
+  assign has_sale_variant = false
   for candidate_variant in product.variants
     if candidate_variant.compare_at_price > candidate_variant.price
-      assign badge_variant = candidate_variant
-      assign is_sale = true
+      assign has_sale_variant = true
       break
     endif
   endfor
+
+  assign sale_mode = settings.badge_sale_mode | default: 'sale'
+
+  capture sale_label
+    render 'sale-badge-label', variant: badge_variant, mode: sale_mode
+  endcapture
+  assign sale_label = sale_label | strip
 
   assign is_new = false
   if product != blank and settings.badge_show_new
@@ -68,16 +74,12 @@
       {%- endfor -%}
     {%- endif -%}
 
-    {%- if is_sale and settings.badge_show_sale and badge_count < max_badges -%}
-      {%- assign sale_label = 'products.on_sale' | t -%}
-      {%- if settings.badge_sale_label == 'percentage' and badge_variant.compare_at_price > 0 -%}
-        {%- assign saving = badge_variant.compare_at_price | minus: badge_variant.price | times: 100 | divided_by: badge_variant.compare_at_price -%}
-        {%- assign sale_label = 'products.sale_percentage' | t: percent: saving -%}
-      {%- elsif settings.badge_sale_label == 'amount' -%}
-        {%- assign saving = badge_variant.compare_at_price | minus: badge_variant.price | money -%}
-        {%- assign sale_label = 'products.sale_amount' | t: amount: saving -%}
-      {%- endif -%}
-      <span class="product-badge product-badge--sale">{{ sale_label }}</span>
+    {%- if has_sale_variant and sale_mode != 'off' and badge_count < max_badges -%}
+      <span
+        class="product-badge product-badge--sale"
+        data-product-sale-badge
+        {% if sale_label == blank %}hidden{% endif %}
+      >{{ sale_label }}</span>
       {%- assign badge_count = badge_count | plus: 1 -%}
     {%- endif -%}
 
