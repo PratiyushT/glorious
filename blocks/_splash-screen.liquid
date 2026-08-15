@@ -1,19 +1,85 @@
 {%- comment -%}
-  The editable action row inside one Hotspot card.
-
-  This private wrapper uses the global Group renderer and complete Group setting
-  contract, but its targeted children exist only inside Hotspot.
+  A composable splash-screen shell. Its children and layout are the same public
+  composition model as Group; this block adds only modal concerns.
 {%- endcomment -%}
 
-{%- capture group_content -%}{% content_for 'blocks' %}{%- endcapture -%}
-{% render 'layout-group', layout_settings: block.settings, content: group_content, attributes: block.shopify_attributes %}
+{%- assign overlay_name = 'splash-' | append: block.id -%}
+{%- capture splash_content -%}{% content_for 'blocks' %}{%- endcapture -%}
+
+<div
+    class="overlay overlay--modal overlay--splash"
+    data-overlay="{{ overlay_name }}"
+    data-overlay-modal
+    data-splash-screen
+    data-delay="{{ block.settings.delay | times: 1000 }}"
+    data-storage-key="veylin-splash-{{ block.id }}"
+    {{ block.shopify_attributes }}
+    hidden
+  >
+    <button class="overlay__veil" type="button" data-overlay-close="{{ overlay_name }}">
+      <span class="visually-hidden">{{ 'navigation.close' | t }}</span>
+    </button>
+
+    <div
+      class="modal modal--splash modal--splash-composed scheme-{{ block.settings.color_scheme }}"
+      style="--splash-width: {{ block.settings.panel_width }}rem;"
+      role="dialog"
+      aria-modal="true"
+      aria-label="{{ block.settings.accessibility_label | escape }}"
+    >
+      {%- capture close_attributes -%}data-overlay-close="{{ overlay_name }}"{%- endcapture -%}
+      {% render 'overlay-close', class: 'modal__close', attributes: close_attributes %}
+
+      <div class="modal__body modal__body--composed">
+        {% render 'layout-group', layout_settings: block.settings, content: splash_content, class: 'splash-composition' %}
+      </div>
+    </div>
+</div>
 
 {% schema %}
 {
-  "name": "t:blocks.hotspot_actions.name",
+  "name": "t:blocks.splash_screen.name",
   "tag": null,
-  "blocks": [{ "type": "_hotspot-price" }, { "type": "button" }, { "type": "_hotspot-add" }],
+  "blocks": [{ "type": "@theme" }, { "type": "@app" }],
   "settings": [
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:sections.all.color_scheme.label",
+      "default": "scheme_1"
+    },
+    {
+      "type": "range",
+      "id": "delay",
+      "label": "t:sections.newsletter_popup.delay.label",
+      "info": "t:sections.newsletter_popup.delay.info",
+      "min": 0,
+      "max": 60,
+      "step": 1,
+      "unit": "s",
+      "default": 2
+    },
+    {
+      "type": "range",
+      "id": "panel_width",
+      "label": "t:sections.newsletter_popup.panel_width.label",
+      "min": 30,
+      "max": 64,
+      "step": 2,
+      "unit": "rem",
+      "default": 42
+    },
+    {
+      "type": "text",
+      "id": "accessibility_label",
+      "label": "t:sections.newsletter_popup.accessibility_label.label",
+      "info": "t:sections.newsletter_popup.accessibility_label.info",
+      "default": "Promotional message"
+    },
+    {
+      "type": "header",
+      "content": "t:sections.group.layout_header"
+    },
     {
       "type": "select",
       "id": "direction",
@@ -23,7 +89,7 @@
         { "value": "horizontal", "label": "t:blocks.group.direction.horizontal" },
         { "value": "vertical", "label": "t:blocks.group.direction.vertical" }
       ],
-      "default": "horizontal"
+      "default": "vertical"
     },
     {
       "type": "select",
@@ -65,7 +131,7 @@
         { "value": "end", "label": "t:blocks.group.align.right" },
         { "value": "stretch", "label": "t:blocks.group.align.full_width" }
       ],
-      "default": "start",
+      "default": "stretch",
       "visible_if": "{{ block.settings.direction == 'vertical' }}"
     },
     {
@@ -79,7 +145,7 @@
         { "value": "center", "label": "t:settings_schema.options.center" },
         { "value": "right", "label": "t:settings_schema.options.right" }
       ],
-      "default": "inherit"
+      "default": "center"
     },
     {
       "type": "checkbox",
@@ -113,7 +179,7 @@
       "default": "natural",
       "visible_if": "{{ block.settings.direction == 'vertical' }}"
     },
-   {
+    {
       "type": "select",
       "id": "stack_below",
       "label": "t:blocks.group.stack_below.label",
@@ -142,8 +208,7 @@
     },
     {
       "type": "header",
-      "content": "t:blocks.all.spacing_header",
-      "visible_if": "{{ block.settings.direction == 'horizontal' }}"
+      "content": "t:blocks.all.spacing_header"
     },
     {
       "type": "select",
@@ -180,7 +245,7 @@
         { "value": "xlarge", "label": "t:blocks.all.step.xlarge" },
         { "value": "maximum", "label": "t:blocks.all.step.maximum" }
       ],
-      "default": "inherit"
+      "default": "small"
     },
     {
       "type": "select",
@@ -197,7 +262,7 @@
         { "value": "xlarge", "label": "t:blocks.all.step.xlarge" },
         { "value": "maximum", "label": "t:blocks.all.step.maximum" }
       ],
-      "default": "none"
+      "default": "large"
     },
     {
       "type": "checkbox",
@@ -260,26 +325,12 @@
   ],
   "presets": [
     {
-      "name": "t:blocks.hotspot_actions.name",
-      "settings": {
-        "direction": "horizontal",
-        "distribute": "between",
-        "align": "center",
-        "wrap": true,
-        "items_width": "natural",
-        "stack_below": "mobile",
-        "content_alignment": "inherit",
-        "content_alignment_mobile": "inherit",
-        "gap": "small",
-        "vertical_gap": "inherit",
-        "padding": "none",
-        "show_borders": false,
-        "group_border_width": 1,
-        "border_top": true,
-        "border_right": true,
-        "border_bottom": true,
-        "border_left": true
-      }
+      "name": "t:blocks.splash_screen.name",
+      "blocks": [
+        { "type": "text", "settings": { "text": "A Private Invitation", "style": "heading_2", "element": "h2", "alignment": "center" } },
+        { "type": "rich-text", "settings": { "text": "<p>Share a considered announcement, private offer, or important store update.</p>", "alignment": "center" } },
+        { "type": "discount-offer" }
+      ]
     }
   ]
 }

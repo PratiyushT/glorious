@@ -1,9 +1,10 @@
 {%- comment -%}
-  Animated announcement header.
+  Announcement bar.
 
-  Messages remain native blocks: merchants can add, reorder, link, and select
-  them in the editor. With scripting, one-message mode rotates through every
-  nonblank block. Without scripting the first message remains visible.
+  Rotate mode gives every nonblank message one shared slot with previous and
+  next controls at its sides. Marquee mode keeps every message in one seamless
+  repeating group and pauses the CSS motion whenever the bar is out of view.
+  The close control uses the theme-wide Text/Icon setting.
 {%- endcomment -%}
 
 {%- liquid
@@ -13,63 +14,112 @@
       assign message_count = message_count | plus: 1
     endif
   endfor
+
+  assign mode = section.settings.mode | default: 'marquee'
+  assign show_announcement = true
+  if section.settings.visibility == 'home' and request.page_type != 'index'
+    assign show_announcement = false
+  endif
+
+  case section.settings.marquee_speed
+    when 'relaxed'
+      assign marquee_duration = 42
+    when 'brisk'
+      assign marquee_duration = 18
+    else
+      assign marquee_duration = 28
+  endcase
+
+  capture announcement_text_style
+    render 'text-style', preset: section.settings.text_style, font_style: section.settings.override_font, font_size: section.settings.override_size, color: section.settings.text_color, line_height: section.settings.override_leading, text_case: section.settings.override_case, letter_spacing: section.settings.override_tracking
+  endcapture
 -%}
 
-{%- if message_count > 0 -%}
+{%- if show_announcement and message_count > 0 -%}
+  <style>
+    :root { --announcement-bar-height: {{ section.settings.bar_height }}px; }
+  </style>
   <div
-    class="announcement announcement--{{ section.settings.animation_style | default: 'slide' }}{% if section.settings.show_all %} announcement--all{% endif %} scheme-{{ section.settings.color_scheme }}"
+    class="announcement announcement--{{ mode }}{% if mode == 'rotate' %} announcement--{{ section.settings.animation_style | default: 'slide' }}{% endif %} scheme-{{ section.settings.color_scheme }}"
     data-announcement
+    data-announcement-mode="{{ mode }}"
     data-announcement-autoplay="{{ section.settings.auto_rotate }}"
     data-announcement-interval="{{ section.settings.interval | times: 1000 }}"
+    data-announcement-storage-key="veylin-announcement"
+    style="--announcement-marquee-duration: {{ marquee_duration }}s;{{ announcement_text_style }}{% unless section.settings.alignment == 'inherit' %}text-align:{{ section.settings.alignment }};{% endunless %}"
   >
-    <div class="announcement__inner page-width">
-      <div
-        class="announcement__viewport"
-        data-announcement-viewport
-        aria-live="{% if section.settings.auto_rotate %}off{% else %}polite{% endif %}"
-      >
-        {%- assign rendered_index = 0 -%}
-        {%- for block in section.blocks -%}
-          {%- if block.settings.text != blank -%}
-            <div
-              class="announcement__message{% if rendered_index == 0 %} is-active{% endif %}"
-              data-announcement-message
-              {% unless section.settings.show_all or rendered_index == 0 %}hidden{% endunless %}
-              {{ block.shopify_attributes }}
-            >
-              {%- if block.settings.link != blank -%}
-                <a href="{{ block.settings.link }}">{{ block.settings.text }}</a>
-              {%- else -%}
-                <span>{{ block.settings.text }}</span>
-              {%- endif -%}
-            </div>
-            {%- assign rendered_index = rendered_index | plus: 1 -%}
-          {%- endif -%}
-        {%- endfor -%}
-      </div>
+    {%- if mode == 'marquee' -%}
+      <div class="announcement__inner announcement__inner--marquee page-width">
+        <div class="announcement__marquee" data-announcement-marquee>
+          <div class="announcement__marquee-track" data-announcement-marquee-track>
+            {%- for copy_index in (1..2) -%}
+              <div class="announcement__marquee-group"{% if copy_index == 2 %} aria-hidden="true"{% endif %}>
+                {%- for block in section.blocks -%}
+                  {%- if block.settings.text != blank -%}
+                    <div class="announcement__marquee-item"{% if copy_index == 1 %} {{ block.shopify_attributes }}{% endif %}>
+                      {%- if block.settings.link != blank -%}
+                        <a href="{{ block.settings.link }}">{{ block.settings.text }}</a>
+                      {%- else -%}
+                        <span>{{ block.settings.text }}</span>
+                      {%- endif -%}
+                    </div>
+                  {%- endif -%}
+                {%- endfor -%}
+              </div>
+            {%- endfor -%}
+          </div>
+        </div>
 
-      {%- if message_count > 1 and section.settings.show_all == false and section.settings.show_controls -%}
-        <div class="announcement__controls" role="group" aria-label="{{ 'announcement.controls' | t }}">
-          <button class="announcement__control" type="button" data-announcement-prev aria-label="{{ 'announcement.previous' | t }}">
+        {%- capture close_attributes -%}data-announcement-close{%- endcapture -%}
+        {% render 'overlay-close', class: 'announcement__close', attributes: close_attributes %}
+      </div>
+    {%- else -%}
+      <div class="announcement__inner announcement__inner--rotate page-width">
+        {%- if message_count > 1 -%}
+          <button class="announcement__control announcement__control--previous" type="button" data-announcement-prev aria-label="{{ 'announcement.previous' | t }}">
             {% render 'icon', icon: 'chevron-left', width: 8, height: 12 %}
           </button>
-          <button
-            class="announcement__control announcement__control--toggle"
-            type="button"
-            data-announcement-toggle
-            data-pause-label="{{ 'announcement.pause' | t | escape }}"
-            data-play-label="{{ 'announcement.play' | t | escape }}"
-            aria-label="{% if section.settings.auto_rotate %}{{ 'announcement.pause' | t }}{% else %}{{ 'announcement.play' | t }}{% endif %}"
-          >
-            <span data-announcement-pause-icon{% unless section.settings.auto_rotate %} hidden{% endunless %}>{% render 'icon', icon: 'pause', width: 9, height: 9 %}</span>
-            <span data-announcement-play-icon{% if section.settings.auto_rotate %} hidden{% endif %}>{% render 'icon', icon: 'play', width: 9, height: 9 %}</span>
-          </button>
-          <button class="announcement__control" type="button" data-announcement-next aria-label="{{ 'announcement.next' | t }}">
+        {%- else -%}
+          <span class="announcement__control-spacer" aria-hidden="true"></span>
+        {%- endif -%}
+
+        <div
+          class="announcement__viewport"
+          data-announcement-viewport
+          aria-live="{% if section.settings.auto_rotate %}off{% else %}polite{% endif %}"
+        >
+          {%- assign rendered_index = 0 -%}
+          {%- for block in section.blocks -%}
+            {%- if block.settings.text != blank -%}
+              <div
+                class="announcement__message{% if rendered_index == 0 %} is-active{% endif %}"
+                data-announcement-message
+                {% unless rendered_index == 0 %}hidden{% endunless %}
+                {{ block.shopify_attributes }}
+              >
+                {%- if block.settings.link != blank -%}
+                  <a href="{{ block.settings.link }}">{{ block.settings.text }}</a>
+                {%- else -%}
+                  <span>{{ block.settings.text }}</span>
+                {%- endif -%}
+              </div>
+              {%- assign rendered_index = rendered_index | plus: 1 -%}
+            {%- endif -%}
+          {%- endfor -%}
+        </div>
+
+        {%- if message_count > 1 -%}
+          <button class="announcement__control announcement__control--next" type="button" data-announcement-next aria-label="{{ 'announcement.next' | t }}">
             {% render 'icon', icon: 'chevron-right', width: 8, height: 12 %}
           </button>
-        </div>
-      {%- endif -%}
-    </div>
+        {%- else -%}
+          <span class="announcement__control-spacer" aria-hidden="true"></span>
+        {%- endif -%}
+
+        {%- capture close_attributes -%}data-announcement-close{%- endcapture -%}
+        {% render 'overlay-close', class: 'announcement__close', attributes: close_attributes %}
+      </div>
+    {%- endif -%}
   </div>
 {%- endif -%}
 
@@ -85,18 +135,53 @@
       "default": "scheme_2"
     },
     {
-      "type": "checkbox",
-      "id": "show_all",
-      "label": "t:sections.announcement_bar.show_all.label",
-      "info": "t:sections.announcement_bar.show_all.info",
-      "default": false
+      "type": "select",
+      "id": "visibility",
+      "label": "t:sections.announcement_bar.visibility.label",
+      "options": [
+        { "value": "everywhere", "label": "t:sections.announcement_bar.visibility.everywhere" },
+        { "value": "home", "label": "t:sections.announcement_bar.visibility.home" }
+      ],
+      "default": "everywhere"
+    },
+    {
+      "type": "range",
+      "id": "bar_height",
+      "label": "t:sections.announcement_bar.bar_height.label",
+      "min": 40,
+      "max": 72,
+      "step": 4,
+      "unit": "px",
+      "default": 40
+    },
+    {
+      "type": "select",
+      "id": "mode",
+      "label": "t:sections.announcement_bar.mode.label",
+      "options": [
+        { "value": "marquee", "label": "t:sections.announcement_bar.mode.marquee" },
+        { "value": "rotate", "label": "t:sections.announcement_bar.mode.rotate" }
+      ],
+      "default": "marquee"
+    },
+    {
+      "type": "select",
+      "id": "marquee_speed",
+      "label": "t:sections.announcement_bar.marquee_speed.label",
+      "options": [
+        { "value": "relaxed", "label": "t:sections.announcement_bar.marquee_speed.relaxed" },
+        { "value": "balanced", "label": "t:sections.announcement_bar.marquee_speed.balanced" },
+        { "value": "brisk", "label": "t:sections.announcement_bar.marquee_speed.brisk" }
+      ],
+      "default": "balanced",
+      "visible_if": "{{ section.settings.mode == 'marquee' }}"
     },
     {
       "type": "checkbox",
       "id": "auto_rotate",
       "label": "t:sections.announcement_bar.auto_rotate.label",
       "default": true,
-      "visible_if": "{{ section.settings.show_all == false }}"
+      "visible_if": "{{ section.settings.mode == 'rotate' }}"
     },
     {
       "type": "select",
@@ -107,7 +192,7 @@
         { "value": "slide", "label": "t:sections.announcement_bar.animation_style.slide" }
       ],
       "default": "slide",
-      "visible_if": "{{ section.settings.show_all == false }}"
+      "visible_if": "{{ section.settings.mode == 'rotate' }}"
     },
     {
       "type": "range",
@@ -118,14 +203,130 @@
       "step": 1,
       "unit": "s",
       "default": 6,
-      "visible_if": "{{ section.settings.show_all == false and section.settings.auto_rotate }}"
+      "visible_if": "{{ section.settings.mode == 'rotate' and section.settings.auto_rotate }}"
     },
     {
-      "type": "checkbox",
-      "id": "show_controls",
-      "label": "t:sections.announcement_bar.show_controls.label",
-      "default": true,
-      "visible_if": "{{ section.settings.show_all == false }}"
+      "type": "header",
+      "content": "t:blocks.all.text_header"
+    },
+    {
+      "type": "select",
+      "id": "text_style",
+      "label": "t:blocks.all.text_preset.label",
+      "info": "t:blocks.all.text_preset.info",
+      "options": [
+        { "value": "title", "label": "t:settings_schema.typography.presets.title.header" },
+        { "value": "heading_1", "label": "t:settings_schema.typography.presets.heading_1.header" },
+        { "value": "heading_2", "label": "t:settings_schema.typography.presets.heading_2.header" },
+        { "value": "heading_3", "label": "t:settings_schema.typography.presets.heading_3.header" },
+        { "value": "heading_4", "label": "t:settings_schema.typography.presets.heading_4.header" },
+        { "value": "heading_5", "label": "t:settings_schema.typography.presets.heading_5.header" },
+        { "value": "subheading", "label": "t:settings_schema.typography.presets.subheading.header" },
+        { "value": "paragraph", "label": "t:settings_schema.typography.presets.paragraph.header" },
+        { "value": "small", "label": "t:settings_schema.typography.presets.small.header" },
+        { "value": "caption", "label": "t:settings_schema.typography.presets.caption.header" }
+      ],
+      "default": "caption"
+    },
+    {
+      "type": "header",
+      "content": "t:blocks.all.override_header"
+    },
+    {
+      "type": "select",
+      "id": "override_font",
+      "label": "t:blocks.all.override_font.label",
+      "options": [
+        { "value": "inherit", "label": "t:blocks.all.inherit.label" },
+        { "value": "accent", "label": "t:settings_schema.typography.roles.accent" },
+        { "value": "body", "label": "t:settings_schema.typography.roles.body" },
+        { "value": "subheading", "label": "t:settings_schema.typography.roles.subheading" },
+        { "value": "heading", "label": "t:settings_schema.typography.roles.heading" }
+      ],
+      "default": "inherit"
+    },
+    {
+      "type": "select",
+      "id": "override_size",
+      "label": "t:blocks.all.override_size.label",
+      "options": [
+        { "value": "inherit", "label": "t:blocks.all.inherit.label" },
+        { "value": "3xs", "label": "t:settings_schema.typography.scale.3xs" },
+        { "value": "2xs", "label": "t:settings_schema.typography.scale.2xs" },
+        { "value": "xs", "label": "t:settings_schema.typography.scale.xs" },
+        { "value": "sm", "label": "t:settings_schema.typography.scale.sm" },
+        { "value": "md", "label": "t:settings_schema.typography.scale.md" },
+        { "value": "lg", "label": "t:settings_schema.typography.scale.lg" },
+        { "value": "xl", "label": "t:settings_schema.typography.scale.xl" },
+        { "value": "2xl", "label": "t:settings_schema.typography.scale.2xl" },
+        { "value": "3xl", "label": "t:settings_schema.typography.scale.3xl" },
+        { "value": "4xl", "label": "t:settings_schema.typography.scale.4xl" },
+        { "value": "5xl", "label": "t:settings_schema.typography.scale.5xl" },
+        { "value": "6xl", "label": "t:settings_schema.typography.scale.6xl" },
+        { "value": "7xl", "label": "t:settings_schema.typography.scale.7xl" },
+        { "value": "8xl", "label": "t:settings_schema.typography.scale.8xl" }
+      ],
+      "default": "inherit"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "t:blocks.all.text_color.label",
+      "info": "t:blocks.all.text_color.info"
+    },
+    {
+      "type": "select",
+      "id": "override_leading",
+      "label": "t:blocks.all.override_leading.label",
+      "options": [
+        { "value": "inherit", "label": "t:blocks.all.inherit.label" },
+        { "value": "tight", "label": "t:settings_schema.typography.leading.tight" },
+        { "value": "snug", "label": "t:settings_schema.typography.leading.snug" },
+        { "value": "normal", "label": "t:settings_schema.typography.leading.normal" },
+        { "value": "relaxed", "label": "t:settings_schema.typography.leading.relaxed" },
+        { "value": "loose", "label": "t:settings_schema.typography.leading.loose" }
+      ],
+      "default": "inherit"
+    },
+    {
+      "type": "select",
+      "id": "override_case",
+      "label": "t:blocks.all.override_case.label",
+      "options": [
+        { "value": "inherit", "label": "t:blocks.all.inherit.label" },
+        { "value": "default", "label": "t:settings_schema.typography.case.default" },
+        { "value": "uppercase", "label": "t:settings_schema.typography.case.uppercase" },
+        { "value": "lowercase", "label": "t:settings_schema.typography.case.lowercase" },
+        { "value": "capitalize", "label": "t:settings_schema.typography.case.capitalize" }
+      ],
+      "default": "uppercase"
+    },
+    {
+      "type": "select",
+      "id": "override_tracking",
+      "label": "t:blocks.all.override_tracking.label",
+      "options": [
+        { "value": "inherit", "label": "t:blocks.all.inherit.label" },
+        { "value": "tighter", "label": "t:settings_schema.typography.tracking.tighter" },
+        { "value": "tight", "label": "t:settings_schema.typography.tracking.tight" },
+        { "value": "normal", "label": "t:settings_schema.typography.tracking.normal" },
+        { "value": "wide", "label": "t:settings_schema.typography.tracking.wide" },
+        { "value": "wider", "label": "t:settings_schema.typography.tracking.wider" }
+      ],
+      "default": "wide"
+    },
+    {
+      "type": "select",
+      "id": "alignment",
+      "label": "t:sections.all.content_alignment.label",
+      "info": "t:sections.all.content_alignment.info",
+      "options": [
+        { "value": "inherit", "label": "t:settings_schema.options.inherit" },
+        { "value": "left", "label": "t:settings_schema.options.left" },
+        { "value": "center", "label": "t:settings_schema.options.center" },
+        { "value": "right", "label": "t:settings_schema.options.right" }
+      ],
+      "default": "center"
     }
   ],
   "blocks": [

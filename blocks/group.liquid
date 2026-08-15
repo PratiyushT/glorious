@@ -13,12 +13,10 @@
   can list `group`, and the group takes `@theme` — every theme block there is —
   so what goes inside it is the merchant's business, not the section's.
 
-  **Horizontal is the default, deliberately.** A vertical group adds nothing
-  over simply placing the blocks one after another, which is what a flat flow
-  already gives; the reason to reach for a group is to put things on one row.
-  Vertical earns its place only *nested inside a horizontal group* — a column
-  of two things sitting on a row — because inside a row that free stacking is
-  gone.
+  **Horizontal is the default, deliberately.** Vertical is still useful when a
+  merchant needs one movable column with its own alignment, spacing, borders,
+  or equal-height children. Child sizing follows the direction: widths for a
+  row and heights for a stack, so a hidden row value never stretches a column.
 
   **Responsive settings are horizontal-only and say so with `visible_if`**, rather
   than sitting in the panel doing nothing:
@@ -151,6 +149,18 @@
       ],
       "default": "natural",
       "visible_if": "{{ block.settings.direction == 'horizontal' }}"
+    },
+    {
+      "type": "select",
+      "id": "items_height",
+      "label": "t:blocks.group.items_height.label",
+      "info": "t:blocks.group.items_height.info",
+      "options": [
+        { "value": "natural", "label": "t:blocks.group.items_height.natural" },
+        { "value": "equal", "label": "t:blocks.group.items_height.equal" }
+      ],
+      "default": "natural",
+      "visible_if": "{{ block.settings.direction == 'vertical' }}"
     },
     {
       "type": "select",
@@ -306,6 +316,7 @@
         "align": "baseline",
         "wrap": true,
         "items_width": "natural",
+        "items_height": "natural",
         "stack_below": "mobile",
         "content_alignment": "inherit",
         "content_alignment_mobile": "inherit",

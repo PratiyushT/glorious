@@ -1,0 +1,177 @@
+{%- comment -%}
+  Reusable Shopify discount hand-off for composable Splash screens and any
+  other Group. The merchant still creates the real code in Shopify Admin.
+{%- endcomment -%}
+
+{% render 'discount-offer',
+  code: block.settings.offer_code,
+  destination: block.settings.offer_destination,
+  button_label: block.settings.offer_button_label,
+  appearance: block.settings
+%}
+
+{% schema %}
+{
+  "name": "t:blocks.discount_offer.name",
+  "tag": null,
+  "settings": [
+    {
+      "type": "text",
+      "id": "offer_code",
+      "label": "t:sections.newsletter_popup.offer_code.label",
+      "info": "t:sections.newsletter_popup.offer_code.info",
+      "default": "WELCOME10"
+    },
+    {
+      "type": "url",
+      "id": "offer_destination",
+      "label": "t:sections.newsletter_popup.offer_destination.label",
+      "info": "t:sections.newsletter_popup.offer_destination.info"
+    },
+    {
+      "type": "text",
+      "id": "offer_button_label",
+      "label": "t:sections.newsletter_popup.offer_button_label.label",
+      "default": "Apply Offer & Shop"
+    },
+    {
+      "type": "header",
+      "content": "t:blocks.button.appearance_header"
+    },
+    {
+      "type": "select",
+      "id": "button_style",
+      "label": "t:sections.all.button_style.label",
+      "options": [
+        { "value": "filled", "label": "t:settings_schema.button_style.filled" },
+        { "value": "outline", "label": "t:settings_schema.button_style.outline" },
+        { "value": "link", "label": "t:settings_schema.button_style.link" },
+        { "value": "quiet", "label": "t:settings_schema.button_style.quiet" },
+        { "value": "arrow", "label": "t:settings_schema.button_style.arrow" },
+        { "value": "arrow_outline", "label": "t:settings_schema.button_style.arrow_outline" }
+      ],
+      "default": "filled"
+    },
+    {
+      "type": "select",
+      "id": "button_size",
+      "label": "t:sections.all.button_size.label",
+      "options": [
+        { "value": "inherit", "label": "t:settings_schema.button_size.inherit" },
+        { "value": "xs", "label": "t:settings_schema.button_size.xs" },
+        { "value": "sm", "label": "t:settings_schema.button_size.sm" },
+        { "value": "md", "label": "t:settings_schema.button_size.md" },
+        { "value": "lg", "label": "t:settings_schema.button_size.lg" },
+        { "value": "xl", "label": "t:settings_schema.button_size.xl" }
+      ],
+      "default": "inherit"
+    },
+    {
+      "type": "select",
+      "id": "button_radius",
+      "label": "t:sections.all.button_radius.label",
+      "options": [
+        { "value": "inherit", "label": "t:settings_schema.button_radius.inherit" },
+        { "value": "square", "label": "t:settings_schema.button_radius.square" },
+        { "value": "soft", "label": "t:settings_schema.button_radius.soft" },
+        { "value": "rounded", "label": "t:settings_schema.button_radius.rounded" },
+        { "value": "pill", "label": "t:settings_schema.button_radius.pill" }
+      ],
+      "default": "inherit",
+      "visible_if": "{{ block.settings.button_style == 'filled' or block.settings.button_style == 'outline' or block.settings.button_style == 'arrow_outline' }}"
+    },
+    {
+      "type": "select",
+      "id": "button_border_width",
+      "label": "t:blocks.button.border_width.label",
+      "options": [
+        { "value": "inherit", "label": "t:blocks.button.inherit" },
+        { "value": "xs", "label": "t:settings_schema.buttons.button_border_width.options__xs" },
+        { "value": "sm", "label": "t:settings_schema.buttons.button_border_width.options__sm" },
+        { "value": "md", "label": "t:settings_schema.buttons.button_border_width.options__md" },
+        { "value": "lg", "label": "t:settings_schema.buttons.button_border_width.options__lg" },
+        { "value": "xl", "label": "t:settings_schema.buttons.button_border_width.options__xl" }
+      ],
+      "default": "inherit",
+      "visible_if": "{{ block.settings.button_style == 'outline' or block.settings.button_style == 'arrow_outline' }}"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "t:blocks.button.background_color.label",
+      "info": "t:blocks.button.color_info",
+      "visible_if": "{{ block.settings.button_style == 'filled' }}"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "t:blocks.button.text_color.label",
+      "info": "t:blocks.button.color_info"
+    },
+    {
+      "type": "color",
+      "id": "border_color",
+      "label": "t:blocks.button.border_color.label",
+      "info": "t:blocks.button.color_info",
+      "visible_if": "{{ block.settings.button_style == 'outline' or block.settings.button_style == 'arrow_outline' }}"
+    },
+    {
+      "type": "color",
+      "id": "underline_color",
+      "label": "t:blocks.button.underline_color.label",
+      "info": "t:blocks.button.color_info",
+      "visible_if": "{{ block.settings.button_style == 'link' or block.settings.button_style == 'quiet' }}"
+    },
+    {
+      "type": "color",
+      "id": "arrow_color",
+      "label": "t:blocks.button.arrow_color.label",
+      "info": "t:blocks.button.color_info",
+      "visible_if": "{{ block.settings.button_style == 'arrow' }}"
+    },
+    {
+      "type": "header",
+      "content": "t:blocks.button.hover_header"
+    },
+    {
+      "type": "color",
+      "id": "hover_background_color",
+      "label": "t:blocks.button.hover_background_color.label",
+      "info": "t:blocks.button.color_info",
+      "visible_if": "{{ block.settings.button_style == 'filled' or block.settings.button_style == 'outline' or block.settings.button_style == 'arrow_outline' }}"
+    },
+    {
+      "type": "color",
+      "id": "hover_text_color",
+      "label": "t:blocks.button.hover_text_color.label",
+      "info": "t:blocks.button.color_info"
+    },
+    {
+      "type": "color",
+      "id": "hover_border_color",
+      "label": "t:blocks.button.hover_border_color.label",
+      "info": "t:blocks.button.color_info",
+      "visible_if": "{{ block.settings.button_style == 'outline' or block.settings.button_style == 'arrow_outline' }}"
+    },
+    {
+      "type": "color",
+      "id": "hover_underline_color",
+      "label": "t:blocks.button.hover_underline_color.label",
+      "info": "t:blocks.button.color_info",
+      "visible_if": "{{ block.settings.button_style == 'link' or block.settings.button_style == 'quiet' }}"
+    },
+    {
+      "type": "color",
+      "id": "hover_arrow_color",
+      "label": "t:blocks.button.hover_arrow_color.label",
+      "info": "t:blocks.button.color_info",
+      "visible_if": "{{ block.settings.button_style == 'arrow' }}"
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:blocks.discount_offer.name"
+    }
+  ]
+}
+{% endschema %}

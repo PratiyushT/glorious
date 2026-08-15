@@ -1176,14 +1176,14 @@
     "group": {
       "name": "Layout group",
       "direction": {
-        "label": "Arrange blocks",
-        "info": "Side by side is what a group is for. Stacked is how blocks already behave without one.",
+        "label": "Arrange children",
+        "info": "Choose whether this Group places its children beside one another or in a vertical stack.",
         "horizontal": "Side by side",
         "vertical": "Stacked"
       },
       "distribute": {
         "label": "Position along the row",
-        "info": "Where the blocks sit once they have been laid out.",
+        "info": "Where the children sit once they have been laid out.",
         "start": "Left",
         "center": "Center",
         "end": "Right",
@@ -1192,8 +1192,8 @@
       "align": {
         "label_horizontal": "Vertical alignment",
         "label_vertical": "Horizontal alignment",
-        "info_horizontal": "How the blocks line up against each other on the row. Line up the text matches the words themselves rather than the boxes around them, which is usually what you want for a label beside a button.",
-        "info_vertical": "Where each block sits across the group.",
+        "info_horizontal": "How the children line up against each other on the row. Line up the text matches the words themselves rather than the boxes around them, which is usually what you want for a label beside a button.",
+        "info_vertical": "Where each child sits across the Group.",
         "text": "Line up the text",
         "top": "Top",
         "middle": "Middle",
@@ -1206,27 +1206,33 @@
       },
       "wrap": {
         "label": "Allow a second row",
-        "info": "Off keeps every block on one row however narrow it gets, so they squeeze instead of wrapping."
+        "info": "Off keeps every child on one row however narrow it gets, so they squeeze instead of wrapping."
       },
       "items_width": {
-        "label": "Block widths",
-        "info": "Natural keeps each block at the width its content needs. Equal divides the available row evenly.",
-        "natural": "Natural",
-        "equal": "Equal"
+        "label": "Children widths",
+        "info": "Choose whether side-by-side children fit their content or divide the available row evenly.",
+        "natural": "Fit content",
+        "equal": "Equal width"
+      },
+      "items_height": {
+        "label": "Children heights",
+        "info": "Choose whether stacked children keep their natural heights or share equal-height rows.",
+        "natural": "Fit content",
+        "equal": "Equal height"
       },
       "gap": {
-        "label": "Space between blocks",
-        "info": "Applies while the blocks sit side by side. Stacked, the space comes from the section so the rhythm matches everything above and below."
+        "label": "Children spacing",
+        "info": "Sets the space between side-by-side children."
       },
-      "vertical_gap_label": "Vertical spacing",
-      "vertical_gap_info": "Override the section's block spacing for this stacked Group.",
+      "vertical_gap_label": "Children spacing",
+      "vertical_gap_info": "Sets the space between this stacked Group's children, or inherits the section default.",
       "vertical_gap_inherit": "Use section spacing",
       "padding": {
         "label": "Inside spacing",
         "info": "Adds equal space inside the Group. This is useful when borders are shown, but it does not require them."
       },
       "show_borders_label": "Show borders",
-      "show_borders_info": "Turn on border controls for this Group. This does not change how its blocks are arranged.",
+      "show_borders_info": "Turn on border controls for this Group. This does not change how its children are arranged.",
       "border_settings_header": "Border settings",
       "border_width_label": "Border width",
       "border_color_label": "Border color override",
@@ -1424,6 +1430,15 @@
         "chevron_down": "Chevron down",
         "none": "None"
       }
+    },
+    "splash_screen": {
+      "name": "Splash screen"
+    },
+    "splash_newsletter": {
+      "name": "Newsletter"
+    },
+    "discount_offer": {
+      "name": "Discount offer"
     }
   },
   "sections": {
@@ -1554,10 +1569,25 @@
       }
     },
     "announcement_bar": {
-      "name": "Animated announcement bar",
-      "show_all": {
-        "label": "Show every message at once",
-        "info": "When off, messages share one animated slot."
+      "name": "Announcement bar",
+      "visibility": {
+        "label": "Show on",
+        "everywhere": "Every page",
+        "home": "Home page only"
+      },
+      "bar_height": {
+        "label": "Bar thickness"
+      },
+      "mode": {
+        "label": "Mode",
+        "marquee": "Marquee",
+        "rotate": "Rotate"
+      },
+      "marquee_speed": {
+        "label": "Marquee speed",
+        "relaxed": "Relaxed",
+        "balanced": "Balanced",
+        "brisk": "Brisk"
       },
       "auto_rotate": {
         "label": "Rotate messages automatically"
@@ -1569,9 +1599,6 @@
       },
       "interval": {
         "label": "Time per message"
-      },
-      "show_controls": {
-        "label": "Show previous, pause, and next controls"
       },
       "blocks": {
         "message": {
@@ -2314,8 +2341,8 @@
         "edge": "Edge to edge"
       },
       "block_gap": {
-        "label": "Vertical block spacing",
-        "info": "Used between stacked blocks and whenever a row stacks on a narrow container."
+        "label": "Default children spacing",
+        "info": "Inherited by stacked Groups whose Children spacing is set to Use section spacing."
       },
       "presets": {
         "feature_grid": "Feature grid"
@@ -2389,13 +2416,10 @@
       }
     },
     "newsletter_popup": {
-      "name": "Splash screen",
-      "enabled": {
-        "label": "Enable the splash screen"
-      },
+      "name": "Splash screens",
       "delay": {
         "label": "Delay before it appears",
-        "info": "Shown once per visitor until they subscribe or dismiss it. Footer links reopen it at any time."
+        "info": "Each splash is shown once per visitor. If another dialog is open, this one waits its turn."
       },
       "layout_header": "Layout",
       "layout": {
@@ -2409,11 +2433,16 @@
       "panel_width": {
         "label": "Maximum panel width"
       },
-      "delivery_header": "Offer delivery",
-      "delivery_mode": {
-        "label": "Show the discount",
-        "after_signup": "After email signup",
-        "immediate": "Immediately"
+      "accessibility_label": {
+        "label": "Accessibility label",
+        "info": "A short name read by assistive technology for a composable Splash screen."
+      },
+      "content_header": "Content",
+      "submit_label": {
+        "label": "Subscribe button"
+      },
+      "decline_label": {
+        "label": "Dismiss text"
       },
       "fine_print": {
         "label": "Small print"

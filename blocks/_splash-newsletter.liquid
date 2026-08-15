@@ -1,0 +1,420 @@
+{%- comment -%}
+  The structured Splash-screen child for newsletter capture. Unlike the
+  composable shell, its email form and success hand-off stay deliberately
+  fixed so Shopify's customer form remains complete and accessible.
+{%- endcomment -%}
+
+{%- liquid
+  assign overlay_name = 'splash-newsletter-' | append: block.id
+  assign layout = block.settings.layout | default: 'split'
+  assign content_alignment = block.settings.content_alignment | default: 'left'
+  assign form_id = 'SplashNewsletter-' | append: block.id
+-%}
+
+<div
+  class="overlay overlay--modal overlay--splash"
+  data-overlay="{{ overlay_name }}"
+  data-overlay-modal
+  data-splash-screen
+  data-splash-newsletter
+  data-delay="{{ block.settings.delay | times: 1000 }}"
+  data-storage-key="veylin-splash-{{ block.id }}"
+  {{ block.shopify_attributes }}
+  hidden
+>
+  <button class="overlay__veil" type="button" data-overlay-close="{{ overlay_name }}">
+    <span class="visually-hidden">{{ 'navigation.close' | t }}</span>
+  </button>
+
+  <div
+    class="modal modal--splash modal--splash-{{ layout }} modal--align-{{ content_alignment }} scheme-{{ block.settings.color_scheme }}"
+    style="--splash-width: {{ block.settings.panel_width }}rem;"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="SplashTitle-{{ block.id }}"
+  >
+    {%- capture close_attributes -%}data-overlay-close="{{ overlay_name }}"{%- endcapture -%}
+    {% render 'overlay-close', class: 'modal__close', attributes: close_attributes %}
+
+    <div class="modal__grid" data-media-position="{{ block.settings.media_position | default: 'left' }}">
+      {%- if layout == 'split' -%}
+        <div class="modal__media">
+          {%- if block.settings.image != blank -%}
+            <img
+              src="{{ block.settings.image | image_url: width: 900 }}"
+              data-image-lqip="{{ block.settings.image | image_url: width: 40 }}"
+              srcset="{{ block.settings.image | image_url: width: 400 }} 400w, {{ block.settings.image | image_url: width: 700 }} 700w, {{ block.settings.image | image_url: width: 900 }} 900w"
+              sizes="(min-width: 56rem) 50vw, 100vw"
+              alt="{{ block.settings.image.alt | escape }}"
+              width="{{ block.settings.image.width }}"
+              height="{{ block.settings.image.height }}"
+              style="object-position: {{ block.settings.image.presentation.focal_point }};"
+              loading="lazy"
+            >
+          {%- else -%}
+            {{ 'lifestyle-1' | placeholder_svg_tag: 'placeholder-svg' }}
+          {%- endif -%}
+        </div>
+      {%- endif -%}
+
+      <div class="modal__body">
+        {%- form 'customer', class: 'modal__form', id: form_id -%}
+          <input type="hidden" name="contact[tags]" value="newsletter,splash-offer">
+
+          {%- if form.posted_successfully? -%}
+            <div class="splash-screen splash-screen--success">
+              <span class="micro splash-screen__eyebrow">{{ 'newsletter.welcome' | t }}</span>
+              <h2 class="modal__title" id="SplashTitle-{{ block.id }}">{{ block.settings.success_heading }}</h2>
+              {%- if block.settings.success_text != blank -%}
+                <p class="modal__text">{{ block.settings.success_text }}</p>
+              {%- endif -%}
+
+              {% render 'discount-offer',
+                code: block.settings.offer_code,
+                destination: block.settings.offer_destination,
+                button_label: block.settings.offer_button_label,
+                appearance: block.settings
+              %}
+            </div>
+          {%- else -%}
+            <div class="splash-screen">
+              {%- if block.settings.eyebrow != blank -%}
+                <span class="micro splash-screen__eyebrow">{{ block.settings.eyebrow }}</span>
+              {%- endif -%}
+              <h2 class="modal__title" id="SplashTitle-{{ block.id }}">{{ block.settings.heading }}</h2>
+              {%- if block.settings.text != blank -%}
+                <p class="modal__text">{{ block.settings.text }}</p>
+              {%- endif -%}
+
+              <label class="visually-hidden" for="SplashEmail-{{ block.id }}">{{ 'newsletter.email' | t }}</label>
+              <input
+                class="modal__field"
+                id="SplashEmail-{{ block.id }}"
+                type="email"
+                name="contact[email]"
+                placeholder="{{ 'newsletter.email' | t }}"
+                autocomplete="email"
+                required
+                data-overlay-autofocus
+              >
+
+              {%- if form.errors -%}
+                <p class="modal__error">{{ form.errors.messages['email'] }}</p>
+              {%- endif -%}
+
+              {%- render 'button',
+                label: block.settings.submit_label,
+                element: 'button',
+                button_type: 'submit',
+                appearance: block.settings,
+                class: 'modal__submit'
+              -%}
+
+              <button class="modal__decline" type="button" data-overlay-close="{{ overlay_name }}">
+                {{ block.settings.decline_label }}
+              </button>
+
+              {%- if block.settings.fine_print != blank -%}
+                <p class="modal__fine">{{ block.settings.fine_print }}</p>
+              {%- endif -%}
+            </div>
+          {%- endif -%}
+        {%- endform -%}
+      </div>
+    </div>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "t:blocks.splash_newsletter.name",
+  "tag": null,
+  "settings": [
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:sections.all.color_scheme.label",
+      "default": "scheme_1"
+    },
+    {
+      "type": "range",
+      "id": "delay",
+      "label": "t:sections.newsletter_popup.delay.label",
+      "info": "t:sections.newsletter_popup.delay.info",
+      "min": 0,
+      "max": 60,
+      "step": 1,
+      "unit": "s",
+      "default": 2
+    },
+    {
+      "type": "header",
+      "content": "t:sections.newsletter_popup.layout_header"
+    },
+    {
+      "type": "select",
+      "id": "layout",
+      "label": "t:sections.newsletter_popup.layout.label",
+      "options": [
+        { "value": "split", "label": "t:sections.newsletter_popup.layout.split" },
+        { "value": "content", "label": "t:sections.newsletter_popup.layout.content" }
+      ],
+      "default": "split"
+    },
+    {
+      "type": "select",
+      "id": "media_position",
+      "label": "t:sections.newsletter_popup.media_position.label",
+      "options": [
+        { "value": "left", "label": "t:settings_schema.options.left" },
+        { "value": "right", "label": "t:settings_schema.options.right" }
+      ],
+      "default": "left",
+      "visible_if": "{{ block.settings.layout == 'split' }}"
+    },
+    {
+      "type": "select",
+      "id": "content_alignment",
+      "label": "t:sections.all.content_alignment.label",
+      "options": [
+        { "value": "left", "label": "t:settings_schema.options.left" },
+        { "value": "center", "label": "t:settings_schema.options.center" }
+      ],
+      "default": "left"
+    },
+    {
+      "type": "range",
+      "id": "panel_width",
+      "label": "t:sections.newsletter_popup.panel_width.label",
+      "min": 36,
+      "max": 64,
+      "step": 2,
+      "unit": "rem",
+      "default": 54
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "t:sections.all.image.label",
+      "visible_if": "{{ block.settings.layout == 'split' }}"
+    },
+    {
+      "type": "header",
+      "content": "t:sections.newsletter_popup.content_header"
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "t:sections.all.subheading.label",
+      "default": "Private offer"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "t:sections.all.heading.label",
+      "default": "A Welcome, Just for You"
+    },
+    {
+      "type": "textarea",
+      "id": "text",
+      "label": "t:sections.all.text.label",
+      "default": "Join the private list for early access to new collections and a welcome offer for your first order."
+    },
+    {
+      "type": "text",
+      "id": "submit_label",
+      "label": "t:sections.newsletter_popup.submit_label.label",
+      "default": "Join the Private List"
+    },
+    {
+      "type": "text",
+      "id": "decline_label",
+      "label": "t:sections.newsletter_popup.decline_label.label",
+      "default": "Continue browsing"
+    },
+    {
+      "type": "textarea",
+      "id": "fine_print",
+      "label": "t:sections.newsletter_popup.fine_print.label",
+      "default": "By subscribing you agree to receive email from this shop. Unsubscribe anytime."
+    },
+    {
+      "type": "header",
+      "content": "t:sections.newsletter_popup.success_header"
+    },
+    {
+      "type": "text",
+      "id": "success_heading",
+      "label": "t:sections.all.heading.label",
+      "default": "Your Private Offer"
+    },
+    {
+      "type": "textarea",
+      "id": "success_text",
+      "label": "t:sections.all.text.label",
+      "default": "Your welcome code is ready. Copy it or apply it as you continue shopping."
+    },
+    {
+      "type": "header",
+      "content": "t:sections.newsletter_popup.discount_header"
+    },
+    {
+      "type": "text",
+      "id": "offer_code",
+      "label": "t:sections.newsletter_popup.offer_code.label",
+      "info": "t:sections.newsletter_popup.offer_code.info",
+      "default": "WELCOME10"
+    },
+    {
+      "type": "url",
+      "id": "offer_destination",
+      "label": "t:sections.newsletter_popup.offer_destination.label",
+      "info": "t:sections.newsletter_popup.offer_destination.info"
+    },
+    {
+      "type": "text",
+      "id": "offer_button_label",
+      "label": "t:sections.newsletter_popup.offer_button_label.label",
+      "default": "Apply Offer & Shop"
+    },
+    {
+      "type": "header",
+      "content": "t:blocks.button.appearance_header"
+    },
+    {
+      "type": "select",
+      "id": "button_style",
+      "label": "t:sections.all.button_style.label",
+      "options": [
+        { "value": "filled", "label": "t:settings_schema.button_style.filled" },
+        { "value": "outline", "label": "t:settings_schema.button_style.outline" },
+        { "value": "link", "label": "t:settings_schema.button_style.link" },
+        { "value": "quiet", "label": "t:settings_schema.button_style.quiet" },
+        { "value": "arrow", "label": "t:settings_schema.button_style.arrow" },
+        { "value": "arrow_outline", "label": "t:settings_schema.button_style.arrow_outline" }
+      ],
+      "default": "filled"
+    },
+    {
+      "type": "select",
+      "id": "button_size",
+      "label": "t:sections.all.button_size.label",
+      "options": [
+        { "value": "inherit", "label": "t:settings_schema.button_size.inherit" },
+        { "value": "xs", "label": "t:settings_schema.button_size.xs" },
+        { "value": "sm", "label": "t:settings_schema.button_size.sm" },
+        { "value": "md", "label": "t:settings_schema.button_size.md" },
+        { "value": "lg", "label": "t:settings_schema.button_size.lg" },
+        { "value": "xl", "label": "t:settings_schema.button_size.xl" }
+      ],
+      "default": "inherit"
+    },
+    {
+      "type": "select",
+      "id": "button_radius",
+      "label": "t:sections.all.button_radius.label",
+      "options": [
+        { "value": "inherit", "label": "t:settings_schema.button_radius.inherit" },
+        { "value": "square", "label": "t:settings_schema.button_radius.square" },
+        { "value": "soft", "label": "t:settings_schema.button_radius.soft" },
+        { "value": "rounded", "label": "t:settings_schema.button_radius.rounded" },
+        { "value": "pill", "label": "t:settings_schema.button_radius.pill" }
+      ],
+      "default": "inherit",
+      "visible_if": "{{ block.settings.button_style == 'filled' or block.settings.button_style == 'outline' or block.settings.button_style == 'arrow_outline' }}"
+    },
+    {
+      "type": "select",
+      "id": "button_border_width",
+      "label": "t:blocks.button.border_width.label",
+      "options": [
+        { "value": "inherit", "label": "t:blocks.button.inherit" },
+        { "value": "xs", "label": "t:settings_schema.buttons.button_border_width.options__xs" },
+        { "value": "sm", "label": "t:settings_schema.buttons.button_border_width.options__sm" },
+        { "value": "md", "label": "t:settings_schema.buttons.button_border_width.options__md" },
+        { "value": "lg", "label": "t:settings_schema.buttons.button_border_width.options__lg" },
+        { "value": "xl", "label": "t:settings_schema.buttons.button_border_width.options__xl" }
+      ],
+      "default": "inherit",
+      "visible_if": "{{ block.settings.button_style == 'outline' or block.settings.button_style == 'arrow_outline' }}"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "t:blocks.button.background_color.label",
+      "info": "t:blocks.button.color_info",
+      "visible_if": "{{ block.settings.button_style == 'filled' }}"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "t:blocks.button.text_color.label",
+      "info": "t:blocks.button.color_info"
+    },
+    {
+      "type": "color",
+      "id": "border_color",
+      "label": "t:blocks.button.border_color.label",
+      "info": "t:blocks.button.color_info",
+      "visible_if": "{{ block.settings.button_style == 'outline' or block.settings.button_style == 'arrow_outline' }}"
+    },
+    {
+      "type": "color",
+      "id": "underline_color",
+      "label": "t:blocks.button.underline_color.label",
+      "info": "t:blocks.button.color_info",
+      "visible_if": "{{ block.settings.button_style == 'link' or block.settings.button_style == 'quiet' }}"
+    },
+    {
+      "type": "color",
+      "id": "arrow_color",
+      "label": "t:blocks.button.arrow_color.label",
+      "info": "t:blocks.button.color_info",
+      "visible_if": "{{ block.settings.button_style == 'arrow' }}"
+    },
+    {
+      "type": "header",
+      "content": "t:blocks.button.hover_header"
+    },
+    {
+      "type": "color",
+      "id": "hover_background_color",
+      "label": "t:blocks.button.hover_background_color.label",
+      "info": "t:blocks.button.color_info",
+      "visible_if": "{{ block.settings.button_style == 'filled' or block.settings.button_style == 'outline' or block.settings.button_style == 'arrow_outline' }}"
+    },
+    {
+      "type": "color",
+      "id": "hover_text_color",
+      "label": "t:blocks.button.hover_text_color.label",
+      "info": "t:blocks.button.color_info"
+    },
+    {
+      "type": "color",
+      "id": "hover_border_color",
+      "label": "t:blocks.button.hover_border_color.label",
+      "info": "t:blocks.button.color_info",
+      "visible_if": "{{ block.settings.button_style == 'outline' or block.settings.button_style == 'arrow_outline' }}"
+    },
+    {
+      "type": "color",
+      "id": "hover_underline_color",
+      "label": "t:blocks.button.hover_underline_color.label",
+      "info": "t:blocks.button.color_info",
+      "visible_if": "{{ block.settings.button_style == 'link' or block.settings.button_style == 'quiet' }}"
+    },
+    {
+      "type": "color",
+      "id": "hover_arrow_color",
+      "label": "t:blocks.button.hover_arrow_color.label",
+      "info": "t:blocks.button.color_info",
+      "visible_if": "{{ block.settings.button_style == 'arrow' }}"
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:blocks.splash_newsletter.name"
+    }
+  ]
+}
+{% endschema %}

@@ -229,11 +229,8 @@
     "copy_code": "Copy discount code {{ code }}"
   },
   "announcement": {
-    "controls": "Announcement controls",
     "previous": "Previous announcement",
-    "next": "Next announcement",
-    "pause": "Pause announcements",
-    "play": "Play announcements"
+    "next": "Next announcement"
   },
   "password_page": {
     "email_label": "Email address",

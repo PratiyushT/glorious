@@ -50,8 +50,8 @@ responsible for being safe wherever a merchant can add it.
 The homepage blocks fall into four contracts:
 
 - **Global composition blocks** are public and require no resource context:
-  `text`, `rich-text`, `button`, `border`, `media`, `icon`, `huge-text`, `group`, and
-  `accordion`. Text
+  `text`, `rich-text`, `button`, `discount-offer`, `border`, `media`, `icon`,
+  `huge-text`, `group`, and `accordion`. Text
   covers every single inline value; Rich text is reserved for paragraphs,
   lists, links, and emphasis. Both content settings support compatible dynamic
   sources. A testimonial is private `_testimonial` structure whose quotation
@@ -970,9 +970,9 @@ It belongs to no section — any section rendering `{% content_for 'blocks' %}`
 can list `group`, and the group takes `@theme`, so what goes inside is the
 merchant's business. Groups nest.
 
-- **Horizontal is the default, deliberately.** A vertical group adds nothing
-  over placing the blocks one after another, which is what a flat flow already
-  gives. The reason to reach for a group is to put things on a row.
+- **Horizontal is the default, deliberately.** A vertical group is the same
+  primitive turned into a merchant-owned column, with its own alignment,
+  vertical spacing, borders, and child-height choice.
 - **Two elements, and the wrapper is load-bearing.** The group answers a
   question about its own width — "am I narrow enough to stack?" — and *a
   container cannot be styled by a query against itself*. So `.layout-group` is
@@ -1021,14 +1021,14 @@ Liquid implementations.
   distribution. Craft's specification rows and Visit's address/hours are
   ordinary Groups containing Text blocks using Eyebrow and Lede layouts. There is no
   Detail block or value-source selector.
-- `items_width` is the one addition the two-column migration needed. Natural is
-  the Group block's backward-compatible default; Equal makes direct row
-  children share the available width. Equal rows that allow wrapping use one
-  internal 12rem floor; it is not a merchant setting. When the container
-  stacks, equal-width children return to full-width natural-height rows. The
-  Fluid / tablet / phone preset is therefore the only responsive decision
-  in the editor. Block order is always the actual visual order; About stores
-  Content before Media instead of carrying a reverse-layout control.
+- **Child sizing follows direction and is never hidden state.** Side by side
+  exposes Children widths (Fit content / Equal width); Stacked exposes
+  Children heights (Fit content / Equal height). Equal rows that allow wrapping
+  use the internal 16rem floor. Equal stacked children use equal grid rows, so
+  the horizontal basis cannot masquerade as a giant vertical gap. Vertical
+  spacing remains the only distance between stacked children. Block order is
+  always the actual visual order; About stores Content before Media instead of
+  carrying a reverse-layout control.
 - **Media is global.** A Shopify-hosted video wins over an image without
   deleting it; both paths keep LQIP, ratio, cover/contain, arch, offset frame,
   captions, and scroll reveal. About's arched portrait, Craft's framed video,
@@ -1321,13 +1321,17 @@ or an unavailable `span`. That keeps one appearance API without turning a form
 submit into a fake link. `mutable_label` wraps only the words, leaving the
 decorative arrow intact when JavaScript changes an action label.
 
-The Splash screen submits to Shopify's real customer form when its offer is set
-to After email signup and calls this same renderer for Subscribe and Apply;
-its editor exposes the complete Button appearance contract. Immediate mode
-skips the form and presents the same offer directly. The cookie banner also
-calls the renderer, using the shared global Button defaults for its filled
-Accept and outline Decline actions. Popup behavior and consent behavior remain
-section-owned; their UI is not a separate button system.
+The Splash screens section is only the collection boundary for two addable and
+deletable popup-shell blocks. `_splash-screen` is Group-like: it accepts public
+theme and app children and uses the shared Group renderer/settings inside its
+modal shell. `_splash-newsletter` is the deliberately structured exception,
+because its customer form, success state, and offer delivery must remain a
+complete unit. Newsletter is the section's default preset, not a permanent or
+disableable setting. A public `discount-offer` child gives composable splashes
+the same real Shopify discount hand-off. Configured splashes wait their turn
+rather than replacing another open dialog. The cookie banner also calls the
+shared Button renderer. Popup behavior and consent behavior remain owned by
+their shells; their UI is not a separate button system.
 
 **A Splash discount is a real Shopify hand-off, not decorative code.** The
 merchant must create the matching active code in Shopify Admin. The shared
@@ -1335,19 +1339,19 @@ merchant must create the matching active code in Shopify Admin. The shared
 `/discount/<code>?redirect=<destination>`; following Apply therefore records
 the discount in Shopify and carries it into checkout. Blank code remains a
 normal destination CTA. The saved section handle and overlay name stay
-`newsletter-popup` / `newsletter`, so existing `#newsletter` menu actions and
-the post-subscription return continue to work while the editor-facing section
-is named Splash screen.
+`newsletter-popup` / `newsletter` for the first Newsletter block, so
+existing `#newsletter` menu actions and the post-subscription return continue
+to work while the editor-facing section is named Splash screens.
 
-**The animated announcement bar is a block rotator, not duplicated copy.**
-Every nonblank Message block participates in one slot; the first remains
-visible without JavaScript. Fade or vertical-slide hand-offs pause on hover,
-focus, a hidden tab, reduced motion, or the visitor's Pause control. Previous
-and Next are real accessible controls, and selecting a block in the Theme
-Editor brings that message into view. Show every message at once remains the
-non-rotating option. Its section wrapper sticks above the fixed nav, and the
-nav offsets by the bar's fixed 2.5rem height through the existing `:has()`
-browser contract—no runtime measurement or body-padding script.
+**The Announcement bar has two explicit modes.** Rotate keeps one real message
+slot with Previous and Next on its sides; it has no Pause control. Marquee
+groups every nonblank Message into one seamless, duplicated visual track with
+Relaxed, Balanced, and Brisk speed presets. Motion pauses while out of view, on
+hover/focus, on a hidden tab, in reduced motion, and while a block is selected
+in the Theme Editor. The theme-wide Text/Icon close choice dismisses the bar
+for the session. Visibility can be every page or home only; adjustable height
+feeds the fixed nav offset through one CSS property, and the section exposes
+the same bounded typography presets and overrides as Text blocks.
 
 The design states its own model: *"Four variants carry every action across the
 store. Pill geometry, uppercase Karla at .15em, and a single gold accent.
@@ -1989,8 +1993,8 @@ but its two behavior blocks are reusable outside that section.
 `hero`, `featured-products` (Most Loved), `collection-list` (Our Products),
 `lookbook` (Shop the look), four `group` instances (feature cards, Craft,
 About, Visit), and `testimonials` — plus `header`,
-animated `announcement-bar`, `header`, `cart-drawer`, composed `quick-view`,
-the editor-facing Splash screen (`newsletter-popup`), and `cookie-banner` in
+`announcement-bar`, `header`, `cart-drawer`, composed `quick-view`,
+the editor-facing Splash screens (`newsletter-popup`), and `cookie-banner` in
 the header group; `footer` in the footer group; and general-purpose `rich-text`
 and `newsletter` sections.
 `predictive-search` remains a schema-less Section Rendering endpoint. Quick

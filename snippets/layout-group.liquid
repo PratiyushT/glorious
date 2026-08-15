@@ -12,6 +12,10 @@
 
 {%- liquid
   assign content_alignment_css = ''
+  assign rendered_items_size = layout_settings.items_width
+  if layout_settings.direction == 'vertical'
+    assign rendered_items_size = layout_settings.items_height | default: 'natural'
+  endif
   if layout_settings.content_alignment == 'left'
     assign content_alignment_css = '--group-content-align: left; --group-content-items: flex-start; --section-align: left; --section-align-jc: flex-start;'
   elsif layout_settings.content_alignment == 'center'
@@ -26,7 +30,7 @@
   data-direction="{{ layout_settings.direction }}"
   data-stack="{% if layout_settings.direction == 'horizontal' %}{{ layout_settings.stack_below }}{% else %}never{% endif %}"
   data-mobile-align="{{ layout_settings.content_alignment_mobile | default: 'inherit' }}"
-  data-items="{{ layout_settings.items_width }}"
+  data-items="{{ rendered_items_size }}"
   data-wrap="{{ layout_settings.wrap }}"
   {% if layout_settings.show_borders %}
     style="--group-border-width: {{ layout_settings.group_border_width }}px; --group-border-color: {% if layout_settings.border_color != blank %}{{ layout_settings.border_color }}{% else %}var(--c-hairline){% endif %}; --group-border-top: {% if layout_settings.border_top %}var(--group-border-width){% else %}0px{% endif %}; --group-border-right: {% if layout_settings.border_right %}var(--group-border-width){% else %}0px{% endif %}; --group-border-bottom: {% if layout_settings.border_bottom %}var(--group-border-width){% else %}0px{% endif %}; --group-border-left: {% if layout_settings.border_left %}var(--group-border-width){% else %}0px{% endif %};"

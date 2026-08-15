@@ -33,14 +33,19 @@
   case align_choice
     when 'center'
       assign align = 'center'
+      assign grid_align = 'center'
     when 'end'
       assign align = 'flex-end'
+      assign grid_align = 'end'
     when 'stretch'
       assign align = 'stretch'
+      assign grid_align = 'stretch'
     when 'start'
       assign align = 'flex-start'
+      assign grid_align = 'start'
     else
       assign align = 'baseline'
+      assign grid_align = 'start'
   endcase
 
   assign wrap = 'wrap'
@@ -76,6 +81,7 @@
 --group-direction: {{ direction }};
 --group-justify: {{ justify }};
 --group-align: {{ align }};
+--group-grid-align: {{ grid_align }};
 --group-wrap: {{ wrap }};
 {{- gap_css -}}
 {{- row_gap_css -}}

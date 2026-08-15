@@ -210,6 +210,7 @@
          page behind the overlay. */
       window.setTimeout(function () {
         var target = el.querySelector('[data-overlay-autofocus]') ||
+                     el.querySelector('.modal [data-overlay-close]') ||
                      el.querySelector('[data-overlay-close]') ||
                      el;
         if (target.focus) {
@@ -264,6 +265,14 @@
       isOpen: function () { return !el.hidden && !closing; }
     };
 
+    /* Footer #newsletter actions and Shopify's customer_posted return target
+       the first Newsletter Splash block, even though every addable block keeps
+       its own unique overlay name. */
+    if (el.hasAttribute('data-splash-newsletter') &&
+        (!overlays.newsletter || !document.contains(overlays.newsletter.el))) {
+      overlays.newsletter = overlays[name];
+    }
+
     if (isModal) {
       document.addEventListener('keydown', function (event) {
         if (el.hidden || closing) return;
@@ -272,13 +281,36 @@
       });
     }
 
-    /* Show itself once per visitor, if it asked to. */
+    /* Show itself once per visitor, if it asked to. Multiple configured
+       Splash blocks wait their turn instead of replacing one another while a
+       visitor is still reading the first dialog. */
     if (storageKey) {
       var seen = safeStore(function () {
         return localStorage.getItem(storageKey) || sessionStorage.getItem(storageKey);
       }, null);
       var delay = parseInt(el.dataset.delay, 10) || 0;
-      if (!seen) window.setTimeout(open, delay);
+      if (!seen) {
+        if (el.hasAttribute('data-splash-screen')) {
+          var trySplash = function () {
+            if (!document.contains(el)) return;
+            var modalOpen = Object.keys(overlays).some(function (other) {
+              return overlays[other].isModal && !overlays[other].el.hidden;
+            });
+            if (modalOpen) {
+              window.setTimeout(trySplash, 750);
+              return;
+            }
+            open();
+          };
+          window.setTimeout(trySplash, delay);
+        } else {
+          window.setTimeout(open, delay);
+        }
+      }
+    }
+
+    if (el.hasAttribute('data-splash-screen')) {
+      el.addEventListener('shopify:block:select', open);
     }
   }
 
@@ -293,16 +325,82 @@
   }
 
   /* ---- Announcement header ------------------------------------------
-     One visible message remains real markup without scripting. The controller
-     only hands that slot to the next merchant block, and pauses whenever the
-     visitor hovers, focuses, hides the tab, or chooses Pause. */
+     Rotate mode hands one real message slot to the previous/next controls.
+     Marquee mode moves one duplicated visual track and stops that motion when
+     it leaves the viewport. Both modes share the theme-wide close control. */
 
   function initAnnouncements(scope) {
     scope.querySelectorAll('[data-announcement]').forEach(function (root) {
+      if (!bindOnce(root, 'boundAnnouncement')) return;
+
+      var storageKey = root.dataset.announcementStorageKey || '';
+      var dismissed = storageKey && safeStore(function () {
+        return sessionStorage.getItem(storageKey) === 'dismissed';
+      }, false);
+      if (dismissed) {
+        root.hidden = true;
+        return;
+      }
+
+      var stop = function () {};
+      var close = root.querySelector('[data-announcement-close]');
+      if (close) {
+        close.addEventListener('click', function () {
+          if (storageKey) {
+            safeStore(function () { sessionStorage.setItem(storageKey, 'dismissed'); });
+          }
+          stop();
+          root.hidden = true;
+        });
+      }
+
+      if (root.dataset.announcementMode === 'marquee') {
+        var inView = true;
+        var hovered = false;
+        var focused = false;
+        var editorPaused = false;
+        var observer = null;
+
+        function syncMarquee() {
+          var paused = reduceMotion.matches || !inView || document.hidden || hovered || focused || editorPaused;
+          root.classList.toggle('is-paused', paused);
+        }
+
+        if ('IntersectionObserver' in window) {
+          observer = new IntersectionObserver(function (entries) {
+            entries.forEach(function (entry) {
+              if (entry.target !== root) return;
+              inView = entry.isIntersecting && entry.intersectionRatio > 0;
+              syncMarquee();
+            });
+          });
+          observer.observe(root);
+        }
+
+        root.addEventListener('mouseenter', function () { hovered = true; syncMarquee(); });
+        root.addEventListener('mouseleave', function () { hovered = false; syncMarquee(); });
+        root.addEventListener('focusin', function () { focused = true; syncMarquee(); });
+        root.addEventListener('focusout', function () {
+          window.setTimeout(function () {
+            focused = root.contains(document.activeElement);
+            syncMarquee();
+          }, 0);
+        });
+        document.addEventListener('visibilitychange', syncMarquee);
+        root.addEventListener('shopify:block:select', function () { editorPaused = true; syncMarquee(); });
+        root.addEventListener('shopify:block:deselect', function () { editorPaused = false; syncMarquee(); });
+
+        stop = function () {
+          if (observer) observer.disconnect();
+          root.classList.add('is-paused');
+        };
+        syncMarquee();
+        return;
+      }
+
       var viewport = root.querySelector('[data-announcement-viewport]');
       var messages = Array.prototype.slice.call(root.querySelectorAll('[data-announcement-message]'));
-      if (!viewport || messages.length < 2 || root.classList.contains('announcement--all')) return;
-      if (!bindOnce(root, 'boundAnnouncement')) return;
+      if (!viewport || messages.length < 2) return;
 
       var active = -1;
       messages.forEach(function (message, index) {
@@ -310,20 +408,13 @@
       });
       if (active < 0) active = 0;
       var interval = Math.max(parseInt(root.dataset.announcementInterval, 10) || 6000, 3000);
-      var paused = root.dataset.announcementAutoplay !== 'true' || reduceMotion.matches;
+      var autoplay = root.dataset.announcementAutoplay === 'true' && !reduceMotion.matches;
       var suspended = false;
       var busy = false;
       var timer = null;
-      var toggle = root.querySelector('[data-announcement-toggle]');
 
-      function syncToggle() {
-        viewport.setAttribute('aria-live', paused || suspended ? 'polite' : 'off');
-        if (!toggle) return;
-        var pauseIcon = toggle.querySelector('[data-announcement-pause-icon]');
-        var playIcon = toggle.querySelector('[data-announcement-play-icon]');
-        if (pauseIcon) pauseIcon.hidden = paused;
-        if (playIcon) playIcon.hidden = !paused;
-        toggle.setAttribute('aria-label', paused ? toggle.dataset.playLabel : toggle.dataset.pauseLabel);
+      function syncLiveRegion() {
+        viewport.setAttribute('aria-live', !autoplay || suspended ? 'polite' : 'off');
       }
 
       function stopTimer() {
@@ -333,7 +424,7 @@
 
       function schedule() {
         stopTimer();
-        if (paused || suspended || busy || !document.contains(root)) return;
+        if (!autoplay || suspended || busy || !document.contains(root) || root.hidden) return;
         timer = window.setTimeout(function () { show(active + 1); }, interval);
       }
 
@@ -365,31 +456,25 @@
       var next = root.querySelector('[data-announcement-next]');
       if (previous) previous.addEventListener('click', function () { show(active - 1); });
       if (next) next.addEventListener('click', function () { show(active + 1); });
-      if (toggle) {
-        toggle.addEventListener('click', function () {
-          paused = !paused;
-          syncToggle();
-          schedule();
-        });
-      }
 
       root.addEventListener('mouseenter', function () { suspended = true; stopTimer(); });
       root.addEventListener('mouseleave', function () { suspended = false; schedule(); });
       root.addEventListener('focusin', function () {
         suspended = true;
         stopTimer();
-        syncToggle();
+        syncLiveRegion();
       });
       root.addEventListener('focusout', function () {
         window.setTimeout(function () {
           suspended = root.contains(document.activeElement);
-          syncToggle();
+          syncLiveRegion();
           schedule();
         }, 0);
       });
 
       document.addEventListener('visibilitychange', function () {
         suspended = document.hidden || root.matches(':hover') || root.contains(document.activeElement);
+        syncLiveRegion();
         schedule();
       });
 
@@ -397,13 +482,14 @@
         var selected = event.target.closest && event.target.closest('[data-announcement-message]');
         var selectedIndex = messages.indexOf(selected);
         if (selectedIndex >= 0) {
-          paused = true;
-          syncToggle();
+          autoplay = false;
+          syncLiveRegion();
           show(selectedIndex);
         }
       });
 
-      syncToggle();
+      stop = stopTimer;
+      syncLiveRegion();
       schedule();
     });
   }
@@ -601,7 +687,7 @@
 
       var host = link.closest('[data-overlay]');
       var leaving = host && overlays[host.dataset.overlay];
-      if (leaving) leaving.close(false);
+      if (leaving) leaving.close(host.hasAttribute('data-splash-screen'));
     });
   }
 

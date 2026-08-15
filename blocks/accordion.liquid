@@ -196,6 +196,18 @@
     },
     {
       "type": "select",
+      "id": "items_height",
+      "label": "t:blocks.group.items_height.label",
+      "info": "t:blocks.group.items_height.info",
+      "options": [
+        { "value": "natural", "label": "t:blocks.group.items_height.natural" },
+        { "value": "equal", "label": "t:blocks.group.items_height.equal" }
+      ],
+      "default": "natural",
+      "visible_if": "{{ block.settings.direction == 'vertical' }}"
+    },
+   {
+      "type": "select",
       "id": "stack_below",
       "label": "t:blocks.group.stack_below.label",
       "info": "t:blocks.group.stack_below.info",
