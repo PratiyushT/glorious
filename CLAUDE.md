@@ -365,11 +365,18 @@ and optional quick links may use collections, the first useful list filter, or
 a merchant-entered filter label. No catalogue vocabulary belongs in Liquid.
 
 - Every control is still a real GET link or form. `initCatalog` progressively
-  enhances those URLs with the Section Rendering endpoint, replaces only the
-  owning `[data-catalog-section]`, and updates browser history. While a filter,
-  sort, clear, or pagination request is in flight, that root is `aria-busy` and
-  shows the shared surface Loader over the dimmed results. Never build a
-  client-side filter table or calculate result counts in JavaScript.
+  enhances same-resource URLs with the Section Rendering endpoint, replaces
+  only the owning `[data-catalog-section]`, and updates browser history after a
+  complete response. A collection-to-collection link requests both the stable
+  Collection header and Main collection section IDs, swaps those two rendered
+  surfaces atomically with the selected result-grid motion, then updates title,
+  canonical URL, navigation state, and history. The current collection stays
+  readable while both sections load. Modified clicks, cross-route forms,
+  unsupported browsers, missing section markup, failed requests, and no-script
+  use native navigation. While a filter, sort, clear, or pagination request is
+  in flight, its root is `aria-busy` and shows the shared surface Loader over
+  the dimmed results. Never build a client-side filter table or calculate result
+  counts in JavaScript.
 - **Catalogue headers are sections made from global blocks.**
   `collection-header` and `search-header` own only their colour, measure,
   minimum-height preset, alignment, block gap, animation, and section padding.

@@ -126,7 +126,7 @@
         {%- if section.settings.show_featured_when_empty and featured_collection != blank -%}
           <div class="catalog-grid-header catalog-grid-header--featured">
             <span class="catalog-kicker">{{ section.settings.featured_label }}</span>
-            {%- if section.settings.show_result_count -%}<span class="catalog-result-count">{{ 'collections.product_count' | t: count: featured_collection.products_count }}</span>{%- endif -%}
+            {%- if section.settings.show_result_count -%}<span class="catalog-result-count" role="status" aria-live="polite">{{ 'collections.product_count' | t: count: featured_collection.products_count }}</span>{%- endif -%}
           </div>
           <div class="catalog-grid" data-catalog-grid>
             {%- for product in featured_collection.products limit: section.settings.featured_limit -%}
@@ -141,7 +141,7 @@
           {%- paginate search.results by section.settings.results_per_page -%}
             <div class="catalog-grid-header catalog-grid-header--results">
               <span class="search-results-for">{{ 'general.search.results_for' | t: terms: search.terms }}</span>
-              {%- if section.settings.show_result_count -%}<span class="catalog-result-count">{{ 'general.search.results_with_count' | t: count: search.results_count }}</span>{%- endif -%}
+              {%- if section.settings.show_result_count -%}<span class="catalog-result-count" role="status" aria-live="polite">{{ 'general.search.results_with_count' | t: count: search.results_count }}</span>{%- endif -%}
             </div>
 
             {%- assign product_result_count = 0 -%}

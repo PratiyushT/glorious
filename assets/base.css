@@ -3787,6 +3787,79 @@ a {
   transition: opacity 0.2s ease;
 }
 
+/* A collection change waits for both of Shopify's rendered sections before
+   anything leaves. The current collection therefore remains readable while
+   the request is in flight; these classes exist only for the short commit
+   transition after the complete response has arrived. */
+.catalog-page.catalog-page--collection-pending[aria-busy='true'] .catalog-main > .catalog-shell {
+  opacity: 1;
+}
+
+.catalog-surface--leaving {
+  pointer-events: none;
+  animation: catalog-surface-out 0.17s ease both;
+}
+
+.catalog-surface--entering {
+  animation: catalog-surface-in 0.52s cubic-bezier(.22, 1, .36, 1) both;
+}
+
+.catalog-surface--leaving.catalog-surface--fade {
+  animation-name: catalog-surface-fade-out;
+}
+
+.catalog-surface--entering.catalog-surface--fade {
+  animation-name: catalog-surface-fade-in;
+}
+
+@keyframes catalog-surface-out {
+  from { opacity: 1; transform: translateY(0); }
+  to { opacity: 0; transform: translateY(-0.5rem); }
+}
+
+@keyframes catalog-surface-in {
+  from { opacity: 0; transform: translateY(0.75rem); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes catalog-surface-fade-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes catalog-surface-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+html.catalog-view-transition [data-catalog-header-section] {
+  view-transition-name: catalog-collection-header;
+}
+
+html.catalog-view-transition [data-catalog-section] {
+  view-transition-name: catalog-collection-results;
+}
+
+::view-transition-old(catalog-collection-header),
+::view-transition-old(catalog-collection-results) {
+  animation: catalog-surface-out 0.17s ease both;
+}
+
+::view-transition-new(catalog-collection-header),
+::view-transition-new(catalog-collection-results) {
+  animation: catalog-surface-in 0.52s cubic-bezier(.22, 1, .36, 1) both;
+}
+
+html.catalog-view-transition--fade::view-transition-old(catalog-collection-header),
+html.catalog-view-transition--fade::view-transition-old(catalog-collection-results) {
+  animation-name: catalog-surface-fade-out;
+}
+
+html.catalog-view-transition--fade::view-transition-new(catalog-collection-header),
+html.catalog-view-transition--fade::view-transition-new(catalog-collection-results) {
+  animation-name: catalog-surface-fade-in;
+}
+
 .catalog-grid-header {
   display: flex;
   justify-content: space-between;
@@ -4445,13 +4518,17 @@ a {
   .catalog-grid__item,
   .catalog-sort-menu__options,
   .catalog-filter-overlay .overlay__veil,
-  .catalog-filter-overlay .drawer__panel {
+  .catalog-filter-overlay .drawer__panel,
+  .catalog-surface--leaving,
+  .catalog-surface--entering {
     animation: none !important;
     transition: none !important;
   }
 
   [data-catalog-title] > span,
-  .catalog-grid__item {
+  .catalog-grid__item,
+  .catalog-surface--leaving,
+  .catalog-surface--entering {
     opacity: 1 !important;
     transform: none !important;
   }

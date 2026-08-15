@@ -4686,16 +4686,18 @@
     });
   }
 
-  /* ---- Catalog filters, sorting and pagination ------------------------
-     Collection and search both render one [data-catalog-section] root. A GET
-     form is the complete no-script contract; this enhancement asks Shopify's
-     Section Rendering endpoint for the same server-rendered result and swaps
-     only that root. Filter values, counts, sorting and URLs therefore remain
-     Shopify-authoritative rather than becoming a second client-side catalog. */
+  /* ---- Catalog filters, sorting and collection changes ----------------
+     Every control remains a real GET link or form. Same-resource changes ask
+     Shopify for the owning catalog section; collection-to-collection changes
+     ask for both the resource header and catalog section, then commit those
+     server-rendered surfaces together. The URL changes only after a complete
+     response. Unsupported browsers and failed requests keep native navigation
+     as the recovery path. */
 
   var catalogPopBound = false;
   var catalogMenusBound = false;
   var catalogRequestController = null;
+  var catalogRequestId = 0;
 
   function prepareCatalogBlockHeaders(root) {
     var headers = Array.prototype.slice.call(root.querySelectorAll('[data-catalog-block-header]'));
@@ -4813,50 +4815,240 @@
     return url;
   }
 
-  function showCatalogLoading(root) {
+  function catalogCanEnhance() {
+    return typeof window.fetch === 'function'
+      && typeof window.DOMParser === 'function'
+      && typeof window.URL === 'function'
+      && window.history
+      && typeof window.history.pushState === 'function';
+  }
+
+  function catalogPathname(url) {
+    var pathname = url.pathname || '/';
+    return pathname.length > 1 ? pathname.replace(/\/$/, '') : pathname;
+  }
+
+  function catalogCollectionHeader() {
+    return document.querySelector('[data-catalog-header-section]');
+  }
+
+  function catalogNeedsCollectionSwap(root, publicUrl) {
+    if (root.classList.contains('catalog-page--search')) return false;
+    if (publicUrl.origin !== window.location.origin || publicUrl.pathname.indexOf('/collections/') === -1) return false;
+
+    var header = catalogCollectionHeader();
+    if (!header || !header.dataset.catalogHeaderSection) return false;
+
+    var renderedUrl;
+    try {
+      renderedUrl = new URL(header.dataset.catalogCanonicalUrl || window.location.href, window.location.origin);
+    } catch (error) {
+      return false;
+    }
+
+    return catalogPathname(renderedUrl) !== catalogPathname(publicUrl);
+  }
+
+  function catalogSectionFromHtml(html, selector) {
+    if (typeof html !== 'string' || html.trim() === '') return null;
+    return new DOMParser().parseFromString(html, 'text/html').querySelector(selector);
+  }
+
+  function catalogSyncNavigation(publicUrl) {
+    document.querySelectorAll('.nav a[href]').forEach(function (link) {
+      var linkUrl;
+      try {
+        linkUrl = new URL(link.href, window.location.origin);
+      } catch (error) {
+        return;
+      }
+
+      var isCurrent = linkUrl.origin === publicUrl.origin
+        && catalogPathname(linkUrl) === catalogPathname(publicUrl);
+      if (isCurrent) link.setAttribute('aria-current', 'page');
+      else link.removeAttribute('aria-current');
+    });
+  }
+
+  function catalogUpdateMetadata(nextHeader, publicUrl) {
+    if (nextHeader.dataset.catalogDocumentTitle) document.title = nextHeader.dataset.catalogDocumentTitle;
+
+    var canonical = document.querySelector('link[rel="canonical"]');
+    if (canonical) canonical.href = nextHeader.dataset.catalogCanonicalUrl || publicUrl.href;
+    catalogSyncNavigation(publicUrl);
+  }
+
+  function catalogFocusHeading(header) {
+    var heading = header.querySelector('h1') || header.querySelector('[data-catalog-title]');
+    if (!heading) return;
+    heading.setAttribute('tabindex', '-1');
+    try {
+      heading.focus({ preventScroll: true });
+    } catch (error) {
+      heading.focus();
+    }
+  }
+
+  function catalogScrollToResults(root) {
+    var target = root.querySelector('.catalog-main') || root;
+    var nav = document.querySelector('.nav');
+    var navOffset = nav ? nav.getBoundingClientRect().height : 0;
+    var top = target.getBoundingClientRect().top + window.scrollY - navOffset;
+    window.scrollTo({ top: Math.max(0, top), behavior: reduceMotion.matches ? 'auto' : 'smooth' });
+  }
+
+  function showCatalogLoading(root, quiet) {
+    root.classList.toggle('catalog-page--collection-pending', Boolean(quiet));
     root.setAttribute('aria-busy', 'true');
     var loader = root.querySelector('[data-catalog-loading]');
-    if (loader) loader.hidden = false;
+    if (loader) loader.hidden = Boolean(quiet);
+  }
+
+  function commitCatalogCollection(root, header, nextRoot, nextHeader, publicUrl, pushState, focusHeading, requestId) {
+    if (requestId !== catalogRequestId) return false;
+
+    var rootTopBefore = root.getBoundingClientRect().top;
+    var nav = document.querySelector('.nav');
+    var navOffset = nav ? nav.getBoundingClientRect().height : 0;
+    var preserveResultsPosition = rootTopBefore <= navOffset;
+
+    header.replaceWith(nextHeader);
+    root.replaceWith(nextRoot);
+    if (preserveResultsPosition) {
+      var rootShift = nextRoot.getBoundingClientRect().top - rootTopBefore;
+      if (Math.abs(rootShift) > 0.5) window.scrollTo(window.scrollX, window.scrollY + rootShift);
+    }
+
+    catalogUpdateMetadata(nextHeader, publicUrl);
+    if (pushState) window.history.pushState({ catalog: true }, '', publicUrl.href);
+
+    nextHeader.dispatchEvent(new CustomEvent('shopify:section:load', { bubbles: true }));
+    nextRoot.dispatchEvent(new CustomEvent('shopify:section:load', { bubbles: true }));
+    if (focusHeading) catalogFocusHeading(nextHeader);
+    return true;
+  }
+
+  function animateCatalogCollection(root, header, nextRoot, nextHeader, publicUrl, pushState, focusHeading, requestId) {
+    var motion = nextRoot.classList.contains('catalog-page--motion-none')
+      ? 'none'
+      : (nextRoot.classList.contains('catalog-page--motion-fade') ? 'fade' : 'reference');
+    var commit = function () {
+      return commitCatalogCollection(root, header, nextRoot, nextHeader, publicUrl, pushState, focusHeading, requestId);
+    };
+
+    if (motion === 'none' || reduceMotion.matches) {
+      commit();
+      return;
+    }
+
+    if (typeof document.startViewTransition === 'function') {
+      document.documentElement.classList.add('catalog-view-transition');
+      document.documentElement.classList.toggle('catalog-view-transition--fade', motion === 'fade');
+      var transition;
+      try {
+        transition = document.startViewTransition(commit);
+      } catch (error) {
+        document.documentElement.classList.remove('catalog-view-transition', 'catalog-view-transition--fade');
+        commit();
+        return;
+      }
+
+      transition.finished.then(function () {
+        document.documentElement.classList.remove('catalog-view-transition', 'catalog-view-transition--fade');
+      }, function () {
+        document.documentElement.classList.remove('catalog-view-transition', 'catalog-view-transition--fade');
+      });
+      return;
+    }
+
+    var currentSurfaces = [header, root];
+    currentSurfaces.forEach(function (surface) {
+      surface.classList.add('catalog-surface--leaving');
+      surface.classList.toggle('catalog-surface--fade', motion === 'fade');
+    });
+
+    window.setTimeout(function () {
+      if (!commit()) {
+        currentSurfaces.forEach(function (surface) {
+          surface.classList.remove('catalog-surface--leaving', 'catalog-surface--fade');
+        });
+        return;
+      }
+
+      [nextHeader, nextRoot].forEach(function (surface) {
+        surface.classList.add('catalog-surface--entering');
+        surface.classList.toggle('catalog-surface--fade', motion === 'fade');
+        window.setTimeout(function () {
+          surface.classList.remove('catalog-surface--entering', 'catalog-surface--fade');
+        }, 560);
+      });
+    }, 170);
   }
 
   function renderCatalog(root, targetUrl, pushState, scrollToResults) {
-    if (!root || root.dataset.catalogAjax !== 'true') {
+    if (!root || root.dataset.catalogAjax !== 'true' || !catalogCanEnhance()) {
       window.location.assign(targetUrl);
       return;
     }
 
     var publicUrl = new URL(targetUrl, window.location.origin);
+    if (publicUrl.origin !== window.location.origin) {
+      window.location.assign(publicUrl.href);
+      return;
+    }
+
     var requestUrl = new URL(publicUrl.href);
-    requestUrl.searchParams.set('section_id', root.dataset.catalogSection);
+    requestUrl.searchParams.delete('section_id');
+    requestUrl.searchParams.delete('sections');
+    var collectionSwap = catalogNeedsCollectionSwap(root, publicUrl);
+    var header = collectionSwap ? catalogCollectionHeader() : null;
+
+    if (collectionSwap) requestUrl.searchParams.set('sections', header.dataset.catalogHeaderSection + ',' + root.dataset.catalogSection);
+    else requestUrl.searchParams.set('section_id', root.dataset.catalogSection);
 
     if (catalogRequestController) catalogRequestController.abort();
     catalogRequestController = typeof AbortController !== 'undefined' ? new AbortController() : null;
+    catalogRequestId += 1;
+    var requestId = catalogRequestId;
 
-    showCatalogLoading(root);
+    showCatalogLoading(root, collectionSwap);
 
-    fetch(requestUrl.href, catalogRequestController ? { signal: catalogRequestController.signal } : undefined)
+    var requestOptions = { headers: { 'X-Requested-With': 'XMLHttpRequest' } };
+    if (catalogRequestController) requestOptions.signal = catalogRequestController.signal;
+
+    fetch(requestUrl.href, requestOptions)
       .then(function (response) {
         if (!response.ok) throw new Error('Catalog request failed');
-        return response.text();
+        return collectionSwap ? response.json() : response.text();
       })
-      .then(function (html) {
-        var documentFragment = new DOMParser().parseFromString(html, 'text/html');
-        var nextRoot = documentFragment.querySelector('[data-catalog-section="' + root.dataset.catalogSection + '"]');
-        if (!nextRoot) throw new Error('Catalog section missing');
+      .then(function (responseBody) {
+        if (requestId !== catalogRequestId) return;
 
-        if (pushState) window.history.pushState({}, '', publicUrl.href);
-        root.replaceWith(nextRoot);
-        nextRoot.dispatchEvent(new CustomEvent('shopify:section:load', { bubbles: true }));
-
-        if (scrollToResults) {
-          var target = nextRoot.querySelector('.catalog-main') || nextRoot;
-          var navOffset = document.querySelector('.nav') ? document.querySelector('.nav').getBoundingClientRect().height : 0;
-          var top = target.getBoundingClientRect().top + window.scrollY - navOffset;
-          window.scrollTo({ top: Math.max(0, top), behavior: reduceMotion.matches ? 'auto' : 'smooth' });
+        var nextRoot;
+        var nextHeader;
+        if (collectionSwap) {
+          nextHeader = catalogSectionFromHtml(responseBody[header.dataset.catalogHeaderSection], '[data-catalog-header-section]');
+          nextRoot = catalogSectionFromHtml(responseBody[root.dataset.catalogSection], '[data-catalog-section]');
+        } else {
+          nextRoot = catalogSectionFromHtml(responseBody, '[data-catalog-section]');
         }
+
+        if (!nextRoot) throw new Error('Catalog section missing');
+        if (collectionSwap && !nextHeader) throw new Error('Collection header section missing');
+
+        if (collectionSwap) {
+          animateCatalogCollection(root, header, nextRoot, nextHeader, publicUrl, pushState, pushState, requestId);
+          return;
+        }
+
+        root.replaceWith(nextRoot);
+        if (pushState) window.history.pushState({ catalog: true }, '', publicUrl.href);
+        nextRoot.dispatchEvent(new CustomEvent('shopify:section:load', { bubbles: true }));
+        if (scrollToResults) catalogScrollToResults(nextRoot);
       })
       .catch(function (error) {
         if (error && error.name === 'AbortError') return;
+        if (requestId !== catalogRequestId) return;
         window.location.assign(publicUrl.href);
       });
   }
@@ -4902,8 +5094,12 @@
         if (!link || link.getAttribute('aria-disabled') === 'true') return;
         if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
         if (typeof event.button === 'number' && event.button !== 0) return;
+        if (link.hasAttribute('download')) return;
+        if (link.target && link.target.toLowerCase() !== '_self') return;
+        if (root.dataset.catalogAjax !== 'true' || !catalogCanEnhance()) return;
 
         var linkUrl = new URL(link.href, window.location.origin);
+        if (linkUrl.origin !== window.location.origin) return;
         var clearParam = link.dataset.catalogClearParam;
         if (clearParam) linkUrl.searchParams.delete(clearParam);
 
@@ -4919,11 +5115,17 @@
       root.addEventListener('submit', function (event) {
         var form = event.target.closest && event.target.closest('[data-catalog-form]');
         if (!form) return;
+        if (form.method && form.method.toLowerCase() !== 'get') return;
+        if (root.dataset.catalogAjax !== 'true' || !catalogCanEnhance()) return;
+
+        var formUrl = catalogFormUrl(form);
+        if (formUrl.origin !== window.location.origin) return;
+        if (catalogPathname(formUrl) !== catalogPathname(new URL(window.location.href))) return;
         event.preventDefault();
 
         var overlay = form.closest('[data-overlay]');
         if (overlay && overlays[overlay.dataset.overlay]) overlays[overlay.dataset.overlay].close(false);
-        renderCatalog(root, catalogFormUrl(form).href, true, true);
+        renderCatalog(root, formUrl.href, true, true);
       });
     });
 

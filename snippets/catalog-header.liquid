@@ -31,6 +31,9 @@
   class="section catalog-block-header{% if search %} catalog-block-header--search{% endif %}{{ collection_layout_class }}{{ collection_position_class }}{{ collection_overlay_class }} catalog-block-header--{{ header_settings.height }} catalog-block-header--align-{{ header_settings.content_alignment }} catalog-block-header--vertical-{{ header_settings.vertical_alignment }} catalog-block-header--motion-{{ header_settings.motion }} scheme-{{ header_settings.color_scheme }}"
   data-catalog-block-header
   data-catalog-header-motion="{{ header_settings.motion }}"
+  {% if catalog_header_section != blank %}data-catalog-header-section="{{ catalog_header_section }}"{% endif %}
+  {% if catalog_document_title != blank %}data-catalog-document-title="{{ catalog_document_title | escape }}"{% endif %}
+  {% if catalog_canonical_url != blank %}data-catalog-canonical-url="{{ catalog_canonical_url | escape }}"{% endif %}
   style="{% render 'section-style', padding_top: header_settings.padding_top, padding_bottom: header_settings.padding_bottom %}{% render 'block-spacing', gap: header_settings.block_gap %}{% if collection_layout == 'title_over_image' and collection_overlay %} --collection-header-overlay-color: {% if collection_overlay_color != blank %}{{ collection_overlay_color }}{% else %}var(--c-bg){% endif %}; --collection-header-overlay-strength: {{ collection_overlay_strength }}%;{% endif %}"
 >
   <div class="{{ width_class }}">

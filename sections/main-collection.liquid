@@ -99,7 +99,7 @@
           {%- endif -%}
 
           {%- if section.settings.show_result_count -%}
-            <span class="catalog-result-count">{{ 'collections.product_count' | t: count: collection.products_count }}</span>
+            <span class="catalog-result-count" role="status" aria-live="polite">{{ 'collections.product_count' | t: count: collection.products_count }}</span>
           {%- endif -%}
         </div>
 

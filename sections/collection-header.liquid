@@ -6,11 +6,20 @@
   controls while giving the resource header one coherent layout decision.
 {%- endcomment -%}
 
+{%- capture catalog_document_title -%}
+  {{- page_title -}}
+  {%- if current_tags %} – {{ 'general.meta.tags' | t: tags: current_tags | join: ', ' }}{% endif -%}
+  {%- if current_page != 1 %} – {{ 'general.meta.page' | t: page: current_page }}{% endif -%}
+  {%- unless page_title contains shop.name %} – {{ shop.name }}{% endunless -%}
+{%- endcapture -%}
 {%- capture header_content -%}{% content_for 'blocks', closest.collection: collection %}{%- endcapture -%}
 {% render 'catalog-header',
   header_settings: section.settings,
   content: header_content,
   search: false,
+  catalog_header_section: section.id,
+  catalog_document_title: catalog_document_title,
+  catalog_canonical_url: canonical_url,
   collection_layout: section.settings.layout,
   collection_media_position: section.settings.media_position,
   collection_overlay: section.settings.show_overlay,

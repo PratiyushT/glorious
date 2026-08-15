@@ -170,7 +170,7 @@ Collection and search pages use Shopify's native result objects, filters, sortin
 
 Both product grids support responsive column and gap presets. Collection product pagination uses Shopify's pagination object and continues to work without JavaScript.
 
-JavaScript progressively enhances filtering, sorting, and pagination through Shopify's Section Rendering API. Links and forms remain functional when JavaScript is unavailable.
+JavaScript progressively enhances filtering, sorting, pagination, and collection-to-collection changes through Shopify's Section Rendering API. Collection changes fetch the destination header and product catalog together, animate the complete server-rendered result, and update the URL without a page flash. Links and forms remain functional when JavaScript is unavailable, a request fails, or the browser cannot support the enhancement.
 
 Search can return products, articles, pages, and other enabled resource types. Predictive search uses Shopify's predictive search endpoint. Empty searches and searches with no results display a clear next step.
 
