@@ -24,7 +24,8 @@
                     "style": "title",
                     "layout": "display",
                     "element": "h1",
-                    "wrap": "balance"
+                    "wrap": "balance",
+                    "alignment": "center"
                   }
                 },
                 "description": {
