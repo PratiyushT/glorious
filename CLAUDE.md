@@ -1524,17 +1524,31 @@ component margin follows this shape or it will reintroduce the tie.
 its text blocks follow; a block carries its own `alignment`, defaulting to
 `inherit`, and overrides the section when set.
 
-A Group block also carries desktop content alignment, defaulting to inherit.
-Both the Group block and Group section expose a separate **Stacked content
-alignment** only when a horizontal row is configured to collapse. The same
-container query that changes the row to one column applies that mobile/tablet
-alignment, so it responds to the Group's available width rather than the
-device name. `Use desktop alignment` preserves the desktop choice.
+A Group names its two alignment jobs rather than presenting both as generic
+Alignment. **Children across the row/stack** positions the child boxes;
+**Content inside children** aligns text and inline content inside those boxes.
+The Group section publishes **Default child content alignment** and a nested
+Group defaults to **Use section default**. The Group override appears only for
+equal-width row children or full-width stacked children, where the boxes offer
+real space for the choice to affect. Stored values continue to render when a
+control is contextually hidden.
 
-- **The section publishes a custom property; it does not wrap anything.**
-  `--section-align` and `--section-align-jc` go on the section root, and
-  `.display` / `.section-lede` / `.section-eyebrow` read them as their default.
-  A wrapper was the obvious approach and is wrong twice over: `.align-*`
+Horizontal Groups expose **Content after stacking** only when a responsive
+stacking preset is active. The same container query that changes the row to one
+column applies that choice, so it responds to the Group's available width
+rather than the device name. `Use desktop content alignment` preserves the
+desktop answer. Spacing follows the same axis language: Horizontal children
+spacing is the column gap, Stacked children spacing is the local row gap, and
+the Group section's Section vertical spacing is the inherited fallback.
+
+- **The section publishes a custom property; it does not add a wrapper.**
+  Ordinary sections put `--section-align` and `--section-align-jc` on the
+  section root. The Group section puts them once on its existing shared
+  `layout-group__inner`, which is also the inheritance boundary for nested
+  Group overrides; it must not calculate the same alignment again on the root.
+  `.display` / `.section-lede` / `.section-eyebrow` read those properties as
+  their default. A new wrapper was the obvious approach and is wrong twice
+  over: `.align-*`
   carries `align-items`, so on any container holding a grid it re-aligns the
   cards; and the collection list's header blocks render **straight into
   `.page-width` with no wrapper at all**, because `.display + .grid-auto`'s gap

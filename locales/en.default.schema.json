@@ -1224,25 +1224,25 @@
     "group": {
       "name": "Layout group",
       "direction": {
-        "label": "Arrange children",
-        "info": "Choose whether this Group places its children beside one another or in a vertical stack.",
+        "label": "Children layout",
+        "info": "Place this Group's direct children in a row or a vertical stack.",
         "horizontal": "Side by side",
         "vertical": "Stacked"
       },
       "distribute": {
-        "label": "Position along the row",
-        "info": "Where the children sit once they have been laid out.",
+        "label": "Children across the row",
+        "info": "Positions the child boxes horizontally within the available row.",
         "start": "Left",
         "center": "Center",
         "end": "Right",
         "between": "Spread apart"
       },
       "align": {
-        "label_horizontal": "Vertical alignment",
-        "label_vertical": "Horizontal alignment",
-        "info_horizontal": "How the children line up against each other on the row. Line up the text matches the words themselves rather than the boxes around them, which is usually what you want for a label beside a button.",
-        "info_vertical": "Where each child sits across the Group.",
-        "text": "Line up the text",
+        "label_horizontal": "Children vertically",
+        "label_vertical": "Children across the stack",
+        "info_horizontal": "Lines up the child boxes vertically. Text baseline is useful for a label beside a button.",
+        "info_vertical": "Positions each child box horizontally, or stretches every child to the Group's full width.",
+        "text": "Text baseline",
         "top": "Top",
         "middle": "Middle",
         "bottom": "Bottom",
@@ -1257,24 +1257,29 @@
         "info": "Off keeps every child on one row however narrow it gets, so they squeeze instead of wrapping."
       },
       "items_width": {
-        "label": "Children widths",
+        "label": "Side-by-side child widths",
         "info": "Choose whether side-by-side children fit their content or divide the available row evenly.",
         "natural": "Fit content",
         "equal": "Equal width"
       },
       "items_height": {
-        "label": "Children heights",
+        "label": "Stacked child heights",
         "info": "Choose whether stacked children keep their natural heights or share equal-height rows.",
         "natural": "Fit content",
         "equal": "Equal height"
       },
+      "content_alignment": {
+        "label": "Content inside children",
+        "info": "Aligns text and inline content inside each child box. A child block's own alignment still takes priority.",
+        "inherit": "Use section default"
+      },
       "gap": {
-        "label": "Children spacing",
+        "label": "Horizontal children spacing",
         "info": "Sets the space between side-by-side children."
       },
-      "vertical_gap_label": "Children spacing",
-      "vertical_gap_info": "Sets the space between this stacked Group's children, or inherits the section default.",
-      "vertical_gap_inherit": "Use section spacing",
+      "vertical_gap_label": "Stacked children spacing",
+      "vertical_gap_info": "Sets the vertical space between this Group's children. Use section default follows the section's inherited stack spacing.",
+      "vertical_gap_inherit": "Use section default",
       "padding": {
         "label": "Inside spacing",
         "info": "Adds equal space inside the Group. This is useful when borders are shown, but it does not require them."
@@ -1297,9 +1302,9 @@
         "mobile": "On phone only"
       },
       "content_alignment_mobile": {
-        "label": "Stacked content alignment",
-        "info": "When this row switches to one column, align its content independently from the desktop setting.",
-        "inherit": "Use desktop alignment"
+        "label": "Content after stacking",
+        "info": "When this responsive row becomes a stack, align its text and inline content independently.",
+        "inherit": "Use desktop content alignment"
       }
     },
     "testimonial": {
@@ -2454,7 +2459,7 @@
     },
     "group": {
       "name": "Group",
-      "layout_header": "Layout",
+      "layout_header": "Children layout",
       "content_width": {
         "label": "Content width",
         "page": "Page width",
@@ -2464,8 +2469,12 @@
         "edge": "Edge to edge"
       },
       "block_gap": {
-        "label": "Default children spacing",
-        "info": "Inherited by stacked Groups whose Children spacing is set to Use section spacing."
+        "label": "Section vertical spacing",
+        "info": "The default space down the page: between wrapped rows, between stacked children set to Use section default, and inside nested stacked Groups that inherit it."
+      },
+      "content_alignment": {
+        "label": "Default child content alignment",
+        "info": "Sets the starting alignment for text and inline content in this section. Individual blocks and nested Groups can override it."
       },
       "presets": {
         "feature_grid": "Feature grid"

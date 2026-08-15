@@ -21,8 +21,9 @@
   **Responsive settings are horizontal-only and say so with `visible_if`**, rather
   than sitting in the panel doing nothing:
 
-    - `gap` resolves to `column-gap`, which a column never uses — a stacked
-      group takes its spacing from the section, by design.
+    - `gap` resolves to the horizontal space in a row. A stacked Group instead
+      shows Stacked children spacing, whose default follows the section's
+      vertical rhythm.
     - `wrap` is meaningless in a column: wrapping one needs a bounded height,
       and nothing here gives it one.
     - `stack_below` exists to turn a row into a column, so it has nothing to
@@ -30,9 +31,11 @@
     - `content_alignment_mobile` only appears when that row is actually set to
       stack; otherwise there is no second layout to align.
 
-  Desktop content alignment inherits from the section unless the Group sets
-  its own. The mobile/tablet choice inherits that desktop answer by default,
-  and can replace it only inside the same container query that stacks the row.
+  Content inside children inherits from the section unless the Group sets its
+  own. That override is shown only when equal-width row children or full-width
+  stacked children provide space in which alignment has a visible effect. The
+  responsive choice inherits the desktop answer by default, and can replace it
+  only inside the same container query that stacks the row.
 
   The children's own vertical margins are zeroed, the same way
   `.collection-list__content` zeroes them: a gap and a margin add, so a block
@@ -120,15 +123,16 @@
     {
       "type": "select",
       "id": "content_alignment",
-      "label": "t:sections.all.content_alignment.label",
-      "info": "t:sections.all.content_alignment.info",
+      "label": "t:blocks.group.content_alignment.label",
+      "info": "t:blocks.group.content_alignment.info",
       "options": [
-        { "value": "inherit", "label": "t:settings_schema.options.inherit" },
+        { "value": "inherit", "label": "t:blocks.group.content_alignment.inherit" },
         { "value": "left", "label": "t:settings_schema.options.left" },
         { "value": "center", "label": "t:settings_schema.options.center" },
         { "value": "right", "label": "t:settings_schema.options.right" }
       ],
-      "default": "inherit"
+      "default": "inherit",
+      "visible_if": "{{ block.settings.direction == 'vertical' and block.settings.align_vertical == 'stretch' or block.settings.direction == 'horizontal' and block.settings.items_width == 'equal' }}"
     },
     {
       "type": "checkbox",

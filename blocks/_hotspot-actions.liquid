@@ -71,15 +71,16 @@
     {
       "type": "select",
       "id": "content_alignment",
-      "label": "t:sections.all.content_alignment.label",
-      "info": "t:sections.all.content_alignment.info",
+      "label": "t:blocks.group.content_alignment.label",
+      "info": "t:blocks.group.content_alignment.info",
       "options": [
-        { "value": "inherit", "label": "t:settings_schema.options.inherit" },
+        { "value": "inherit", "label": "t:blocks.group.content_alignment.inherit" },
         { "value": "left", "label": "t:settings_schema.options.left" },
         { "value": "center", "label": "t:settings_schema.options.center" },
         { "value": "right", "label": "t:settings_schema.options.right" }
       ],
-      "default": "inherit"
+      "default": "inherit",
+      "visible_if": "{{ block.settings.direction == 'vertical' and block.settings.align_vertical == 'stretch' or block.settings.direction == 'horizontal' and block.settings.items_width == 'equal' }}"
     },
     {
       "type": "checkbox",

@@ -20,19 +20,12 @@
     when 'edge'
       assign width_class = 'group-section__width--edge'
   endcase
-
-  assign alignment_css = '--group-content-align: left; --group-content-items: flex-start; --section-align: left; --section-align-jc: flex-start;'
-  if section.settings.content_alignment == 'center'
-    assign alignment_css = '--group-content-align: center; --group-content-items: center; --section-align: center; --section-align-jc: center;'
-  elsif section.settings.content_alignment == 'right'
-    assign alignment_css = '--group-content-align: right; --group-content-items: flex-end; --section-align: right; --section-align-jc: flex-end;'
-  endif
 -%}
 
 <section
   {% if section.settings.anchor != blank %}id="{{ section.settings.anchor | handle }}"{% endif %}
   class="section group-section scheme-{{ section.settings.color_scheme }}{% if section.settings.full_height %} section--tall{% endif %}"
-  style="{% render 'section-style', padding_top: section.settings.padding_top, padding_bottom: section.settings.padding_bottom %} {% render 'block-spacing', gap: section.settings.block_gap %} {{ alignment_css }}"
+  style="{% render 'section-style', padding_top: section.settings.padding_top, padding_bottom: section.settings.padding_bottom %} {% render 'block-spacing', gap: section.settings.block_gap %}"
 >
   <div class="{{ width_class }}">
     {%- capture section_content -%}{% content_for 'blocks' %}{%- endcapture -%}
@@ -76,6 +69,18 @@
       "id": "anchor",
       "label": "t:sections.all.anchor.label",
       "info": "t:sections.all.anchor.info"
+    },
+    {
+      "type": "select",
+      "id": "content_alignment",
+      "label": "t:sections.group.content_alignment.label",
+      "info": "t:sections.group.content_alignment.info",
+      "options": [
+        { "value": "left", "label": "t:settings_schema.options.left" },
+        { "value": "center", "label": "t:settings_schema.options.center" },
+        { "value": "right", "label": "t:settings_schema.options.right" }
+      ],
+      "default": "left"
     },
     {
       "type": "header",
@@ -216,18 +221,6 @@
         { "value": "maximum", "label": "t:blocks.all.step.maximum" }
       ],
       "default": "inherit"
-    },
-    {
-      "type": "select",
-      "id": "content_alignment",
-      "label": "t:sections.all.content_alignment.label",
-      "info": "t:sections.all.content_alignment.info",
-      "options": [
-        { "value": "left", "label": "t:settings_schema.options.left" },
-        { "value": "center", "label": "t:settings_schema.options.center" },
-        { "value": "right", "label": "t:settings_schema.options.right" }
-      ],
-      "default": "left"
     },
     {
       "type": "select",
