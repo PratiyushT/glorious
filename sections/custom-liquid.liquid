@@ -1,0 +1,119 @@
+{%- comment -%}
+  Shopify Theme Store's required standalone Custom Liquid section.
+
+  The global Custom Liquid block remains the composable form merchants place
+  inside Groups and other block surfaces. This section is the template-level
+  insertion point: one Liquid setting surrounded only by the theme's ordinary
+  section concerns. It is available on every JSON template and deliberately
+  excluded from header and footer groups.
+{%- endcomment -%}
+
+{%- liquid
+  assign width_class = 'page-width'
+  case section.settings.content_width
+    when 'narrow'
+      assign width_class = 'page-width page-width--narrow'
+    when 'reading'
+      assign width_class = 'page-width page-width--reading'
+    when 'full'
+      assign width_class = 'page-width custom-liquid-section__width--full'
+    when 'edge'
+      assign width_class = 'custom-liquid-section__width--edge'
+  endcase
+-%}
+
+<section
+  {% if section.settings.anchor != blank %}id="{{ section.settings.anchor | handle }}"{% endif %}
+  class="section custom-liquid-section scheme-{{ section.settings.color_scheme }}"
+  style="{% render 'section-style', padding_top: section.settings.padding_top, padding_bottom: section.settings.padding_bottom %}"
+>
+  <div class="{{ width_class }}">
+    <div class="custom-liquid-section__content">
+      {{ section.settings.custom_liquid }}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "t:sections.custom_liquid.name",
+  "tag": "div",
+  "enabled_on": {
+    "templates": ["*"]
+  },
+  "settings": [
+    {
+      "type": "liquid",
+      "id": "custom_liquid",
+      "label": "t:sections.custom_liquid.custom_liquid.label",
+      "info": "t:sections.custom_liquid.custom_liquid.info"
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:sections.all.color_scheme.label",
+      "default": "scheme_1"
+    },
+    {
+      "type": "select",
+      "id": "content_width",
+      "label": "t:sections.group.content_width.label",
+      "options": [
+        { "value": "page", "label": "t:sections.group.content_width.page" },
+        { "value": "narrow", "label": "t:sections.group.content_width.narrow" },
+        { "value": "reading", "label": "t:sections.group.content_width.reading" },
+        { "value": "full", "label": "t:sections.group.content_width.full" },
+        { "value": "edge", "label": "t:sections.group.content_width.edge" }
+      ],
+      "default": "page"
+    },
+    {
+      "type": "text",
+      "id": "anchor",
+      "label": "t:sections.all.anchor.label",
+      "info": "t:sections.all.anchor.info"
+    },
+    {
+      "type": "header",
+      "content": "t:sections.all.spacing_header"
+    },
+    {
+      "type": "select",
+      "id": "padding_top",
+      "label": "t:sections.all.padding_top.label",
+      "options": [
+        { "value": "none", "label": "t:sections.all.space_step.none" },
+        { "value": "2xs", "label": "t:sections.all.space_step.2xs" },
+        { "value": "xs", "label": "t:sections.all.space_step.xs" },
+        { "value": "sm", "label": "t:sections.all.space_step.sm" },
+        { "value": "md", "label": "t:sections.all.space_step.md" },
+        { "value": "lg", "label": "t:sections.all.space_step.lg" },
+        { "value": "xl", "label": "t:sections.all.space_step.xl" },
+        { "value": "max", "label": "t:sections.all.space_step.max" }
+      ],
+      "default": "lg"
+    },
+    {
+      "type": "select",
+      "id": "padding_bottom",
+      "label": "t:sections.all.padding_bottom.label",
+      "options": [
+        { "value": "none", "label": "t:sections.all.space_step.none" },
+        { "value": "2xs", "label": "t:sections.all.space_step.2xs" },
+        { "value": "xs", "label": "t:sections.all.space_step.xs" },
+        { "value": "sm", "label": "t:sections.all.space_step.sm" },
+        { "value": "md", "label": "t:sections.all.space_step.md" },
+        { "value": "lg", "label": "t:sections.all.space_step.lg" },
+        { "value": "xl", "label": "t:sections.all.space_step.xl" },
+        { "value": "max", "label": "t:sections.all.space_step.max" }
+      ],
+      "default": "lg"
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:sections.custom_liquid.name"
+    }
+  ]
+}
+{% endschema %}

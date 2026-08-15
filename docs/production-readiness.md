@@ -37,7 +37,8 @@ steps/defaults, resolved translations, global setting references, stored block
 types, dead destinations, shop-data leakage, LQIP contracts, ES5 delivery,
 central icon use, shared block schemas/renderers, and shared CTA markup.
 It also rejects missing/orphan snippets and invalid or over-limit JSON
-template/section-group composition.
+template/section-group composition, and protects the mandatory standalone
+Custom Liquid section on every section-capable template.
 
 Every release must also pass:
 

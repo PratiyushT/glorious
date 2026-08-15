@@ -915,6 +915,48 @@ def R19_no_runtime_color_literals():
                 % match.group(0))
 
 
+def R20_custom_liquid_section():
+    """The Theme Store requires one Custom Liquid section on all templates."""
+    path = os.path.join(ROOT, 'sections', 'custom-liquid.liquid')
+    where = 'sections/custom-liquid.liquid'
+    if not os.path.isfile(path):
+        err('R20', where, 'mandatory Theme Store section is missing')
+        return
+
+    bodies = SCHEMA_RE.findall(read(path))
+    if not bodies:
+        err('R20', where, 'section has no schema')
+        return
+
+    try:
+        schema = json.loads(bodies[0])
+    except json.JSONDecodeError:
+        return  # R00 owns the detailed schema error.
+
+    liquid_ids = [
+        setting.get('id') for setting in schema.get('settings', [])
+        if setting.get('type') == 'liquid' and setting.get('id')
+    ]
+    if not liquid_ids:
+        err('R20', where, 'section needs a section-level liquid setting')
+    else:
+        source = strip_comments(read(path))
+        if not any(('section.settings.%s' % setting_id) in source
+                   for setting_id in liquid_ids):
+            err('R20', where, 'liquid setting is never rendered')
+
+    enabled = schema.get('enabled_on')
+    disabled = schema.get('disabled_on')
+    if enabled is None or '*' not in enabled.get('templates', []):
+        err('R20', where, 'section is not enabled on every template')
+    elif enabled.get('groups'):
+        err('R20', where, 'section belongs to templates, not section groups')
+    if disabled is not None and disabled.get('templates'):
+        err('R20', where, 'section disables one or more templates')
+    if not schema.get('presets'):
+        err('R20', where, 'section needs a preset so merchants can add it')
+
+
 RULES = OrderedDict([
     ('R01', (R01_range_steps, 'range steps are legal (Shopify validates server-side)')),
     ('R02', (R02_select_defaults, "a select's default is one of its options")),
@@ -935,6 +977,7 @@ RULES = OrderedDict([
     ('R17', (R17_snippet_graph, 'snippet calls resolve and no snippet is orphaned')),
     ('R18', (R18_json_composition, 'JSON templates/groups use real sections within limits')),
     ('R19', (R19_no_runtime_color_literals, 'runtime colours use scheme tokens, never literals')),
+    ('R20', (R20_custom_liquid_section, 'Custom Liquid section is addable on every template')),
 ])
 
 

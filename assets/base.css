@@ -1069,6 +1069,16 @@ a {
   width: 100%;
 }
 
+/* Custom Liquid is a standalone section rather than a Group, but its width
+   words have the same meaning everywhere in the editor. */
+.custom-liquid-section__width--full {
+  max-width: none;
+}
+
+.custom-liquid-section__width--edge {
+  width: 100%;
+}
+
 /* A group is a flex item wherever it sits. Left to shrink-wrap it would hug
    its contents, and `space-between` would then have nothing to distribute —
    the commonest way a horizontal group looks like it is ignoring its setting. */

@@ -254,6 +254,15 @@ frees `blocks/text.liquid` for every composable section. When adding a public
 block handle, still check section-local block types first; setting types and
 block types use the same spelling in schema files.
 
+**Custom Liquid has one block form and one required section form.** The public
+`custom-liquid` block is the composable primitive used inside Group and other
+block surfaces. `sections/custom-liquid.liquid` is Shopify's Theme Store
+insertion point: one section-level `liquid` setting plus ordinary scheme,
+content-width, anchor, and section-spacing controls. It is enabled on every
+JSON template and not in header or footer groups. R20 protects that compliance
+boundary; turning the section into a Group or leaving its Liquid setting
+unrendered defeats the requirement even if the block still exists.
+
 **`newsletter` had no local blocks either, and converting it added
 composability rather than collapsing anything.** That makes it a different job
 from the rest of the phase and it is worth being explicit, because

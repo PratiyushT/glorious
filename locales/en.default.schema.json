@@ -2410,6 +2410,13 @@
         "feature_grid": "Feature grid"
       }
     },
+    "custom_liquid": {
+      "name": "Custom Liquid",
+      "custom_liquid": {
+        "label": "Custom Liquid",
+        "info": "Add custom Liquid or HTML. The section's color, width, and spacing settings control its surrounding layout."
+      }
+    },
     "craft": {
       "name": "The craft",
       "media_header": "Media",
