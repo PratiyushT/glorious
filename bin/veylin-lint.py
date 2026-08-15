@@ -1091,6 +1091,26 @@ def R22_collection_data_contract():
         err('R22', title_where,
             'Collection title must preserve the closest collection title')
 
+    theme_js_where = 'assets/theme.js'
+    theme_js = strip_comments(read(os.path.join(ROOT, theme_js_where)))
+    if ("character === ' '" not in theme_js
+            or "title.appendChild(document.createTextNode(' '));" not in theme_js):
+        err('R22', theme_js_where,
+            'Animated catalogue titles must retain ordinary wrap-point spaces')
+
+    css_where = 'assets/base.css'
+    css = strip_comments(read(os.path.join(ROOT, css_where)))
+    catalog_title_rule = re.search(
+        r'\.catalog-block-header\s+\[data-catalog-title\]\s*\{([^}]*)\}',
+        css,
+        re.S,
+    )
+    if (not catalog_title_rule
+            or 'white-space: normal' not in catalog_title_rule.group(1)
+            or 'overflow: visible' not in catalog_title_rule.group(1)):
+        err('R22', css_where,
+            'Catalogue resource titles must wrap completely instead of clipping')
+
     image_schema = schema_for(image_where)
     resource_settings = [
         setting for setting in image_schema.get('settings', [])

@@ -4720,9 +4720,14 @@
       if (!title.hasAttribute('aria-label')) title.setAttribute('aria-label', text);
 
       Array.prototype.forEach.call(text, function (character, index) {
+        if (character === ' ') {
+          title.appendChild(document.createTextNode(' '));
+          return;
+        }
+
         var span = document.createElement('span');
         span.style.setProperty('--catalog-title-index', index);
-        span.textContent = character === ' ' ? '\u00a0' : character;
+        span.textContent = character;
         span.setAttribute('aria-hidden', 'true');
         title.appendChild(span);
       });

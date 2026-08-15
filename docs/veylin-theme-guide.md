@@ -170,6 +170,8 @@ For multi-option products, **Open product options** is the safest general defaul
 
 Collection and search pages use Shopify's native result objects, filters, sorting options, active filter URLs, result counts, and pagination. Filter names and values come from Shopify Search and Discovery; the theme does not maintain a separate catalog vocabulary.
 
+Collection and search header titles always remain complete. Long resource names wrap naturally on narrow screens while retaining the selected catalog-title animation; the theme does not shrink or truncate them.
+
 Both product grids support responsive column and gap presets. Collection product pagination uses Shopify's pagination object and continues to work without JavaScript.
 
 JavaScript progressively enhances filtering, sorting, pagination, and collection-to-collection changes through Shopify's Section Rendering API. Collection changes fetch the destination header and product catalog together, animate the complete server-rendered result, and update the URL without a page flash. Main collection provides separate Transition style and Transition speed presets for these page changes; Product grid animation remains independent. Links and forms remain functional when JavaScript is unavailable, a request fails, or the browser cannot support the enhancement.

@@ -391,6 +391,12 @@ a merchant-entered filter label. No catalogue vocabulary belongs in Liquid.
   Never put title, eyebrow, description, image, or search-form content settings
   back on the section. The section minimum heights are floors, not fixed
   heights, so added blocks can always make the header taller.
+- **Animated catalogue titles retain real wrap points.** `prepareCatalogTitle`
+  wraps visible letters for the stagger but appends ordinary spaces as text
+  nodes; it never replaces them with non-breaking spaces. Catalogue Display
+  titles override Display's decorative single-line rule, remain complete, and
+  wrap naturally at narrow collection/search widths without shrinking or
+  truncating the resource name.
 - **Search scope belongs to the Search form block; active scope belongs to
   Shopify.** `blocks/search-form.liquid` submits `type=` from its preset. Once a
   search has been performed, `main-search` reads `search.types` and carries

@@ -3471,6 +3471,17 @@ a {
   display: none;
 }
 
+/* Display text is ordinarily an art-directed single line. A resource title is
+   data, not decoration: long Collection and Search names must remain complete.
+   The catalog animation leaves ordinary spaces as text nodes, so these titles
+   can wrap between words while every visible letter still rises separately. */
+.catalog-block-header [data-catalog-title] {
+  max-width: 100%;
+  overflow: visible;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
 @container (max-width: 30rem) {
   .catalog-block-header--layout-side-by-side .catalog-block-header__content > .layout-group[data-stack="mobile"] > .layout-group__inner {
     grid-template-columns: minmax(0, 1fr);
