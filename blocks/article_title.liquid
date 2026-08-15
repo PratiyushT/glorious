@@ -1,0 +1,109 @@
+{%- comment -%}
+  Contextual Text whose value comes from the closest article. Article titles
+  deliberately exclude every truncating wrap choice so cards and article
+  headers always expose the complete Shopify title.
+{%- endcomment -%}
+
+{%- liquid
+  assign source_article = closest.article
+  if source_article == blank and request.page_type == 'article'
+    assign source_article = article
+  endif
+  assign title = source_article.title
+  if title == blank and request.design_mode
+    assign title = 'onboarding.article_title' | t
+  endif
+-%}
+{%- capture title_content -%}
+  {%- if source_article != blank and block.settings.link_to_article -%}<a href="{{ source_article.url }}">{%- endif -%}
+  {{- title | escape -}}
+  {%- if source_article != blank and block.settings.link_to_article -%}</a>{%- endif -%}
+{%- endcapture -%}
+{% render 'text-block', block: block, content: title_content, class: 'article-details__title', preserve_content: true %}
+
+{% schema %}
+{
+  "name": "t:blocks.article_title.name",
+  "tag": null,
+  "settings": [
+    { "type": "header", "content": "t:blocks.all.text_header" },
+    { "type": "select", "id": "style", "label": "t:blocks.all.text_preset.label", "info": "t:blocks.all.text_preset.info", "options": [
+      { "value": "title", "label": "t:settings_schema.typography.presets.title.header" },
+      { "value": "heading_1", "label": "t:settings_schema.typography.presets.heading_1.header" },
+      { "value": "heading_2", "label": "t:settings_schema.typography.presets.heading_2.header" },
+      { "value": "heading_3", "label": "t:settings_schema.typography.presets.heading_3.header" },
+      { "value": "heading_4", "label": "t:settings_schema.typography.presets.heading_4.header" },
+      { "value": "heading_5", "label": "t:settings_schema.typography.presets.heading_5.header" },
+      { "value": "subheading", "label": "t:settings_schema.typography.presets.subheading.header" },
+      { "value": "paragraph", "label": "t:settings_schema.typography.presets.paragraph.header" },
+      { "value": "small", "label": "t:settings_schema.typography.presets.small.header" },
+      { "value": "caption", "label": "t:settings_schema.typography.presets.caption.header" }
+    ], "default": "paragraph" },
+    { "type": "select", "id": "layout", "label": "t:blocks.text.layout.label", "info": "t:blocks.text.layout.info", "options": [
+      { "value": "standard", "label": "t:blocks.text.layout.standard" },
+      { "value": "display", "label": "t:blocks.text.layout.display" },
+      { "value": "eyebrow", "label": "t:blocks.text.layout.eyebrow" },
+      { "value": "lede", "label": "t:blocks.text.layout.lede" }
+    ], "default": "standard" },
+    { "type": "select", "id": "element", "label": "t:blocks.all.text_element.label", "info": "t:blocks.all.text_element.info", "options": [
+      { "value": "span", "label": "t:blocks.all.text_element.span" }, { "value": "p", "label": "t:blocks.all.text_element.p" },
+      { "value": "h1", "label": "t:blocks.all.text_element.h1" }, { "value": "h2", "label": "t:blocks.all.text_element.h2" },
+      { "value": "h3", "label": "t:blocks.all.text_element.h3" }, { "value": "h4", "label": "t:blocks.all.text_element.h4" },
+      { "value": "h5", "label": "t:blocks.all.text_element.h5" }, { "value": "h6", "label": "t:blocks.all.text_element.h6" },
+      { "value": "blockquote", "label": "t:blocks.all.text_element.blockquote" }, { "value": "figcaption", "label": "t:blocks.all.text_element.figcaption" }
+    ], "default": "p" },
+    { "type": "header", "content": "t:blocks.all.override_header" },
+    { "type": "select", "id": "override_font", "label": "t:blocks.all.override_font.label", "options": [
+      { "value": "inherit", "label": "t:blocks.all.inherit.label" }, { "value": "accent", "label": "t:settings_schema.typography.roles.accent" },
+      { "value": "body", "label": "t:settings_schema.typography.roles.body" }, { "value": "subheading", "label": "t:settings_schema.typography.roles.subheading" },
+      { "value": "heading", "label": "t:settings_schema.typography.roles.heading" }
+    ], "default": "inherit" },
+    { "type": "select", "id": "override_size", "label": "t:blocks.all.override_size.label", "options": [
+      { "value": "inherit", "label": "t:blocks.all.inherit.label" }, { "value": "3xs", "label": "t:settings_schema.typography.scale.3xs" },
+      { "value": "2xs", "label": "t:settings_schema.typography.scale.2xs" }, { "value": "xs", "label": "t:settings_schema.typography.scale.xs" },
+      { "value": "sm", "label": "t:settings_schema.typography.scale.sm" }, { "value": "md", "label": "t:settings_schema.typography.scale.md" },
+      { "value": "lg", "label": "t:settings_schema.typography.scale.lg" }, { "value": "xl", "label": "t:settings_schema.typography.scale.xl" },
+      { "value": "2xl", "label": "t:settings_schema.typography.scale.2xl" }, { "value": "3xl", "label": "t:settings_schema.typography.scale.3xl" },
+      { "value": "4xl", "label": "t:settings_schema.typography.scale.4xl" }, { "value": "5xl", "label": "t:settings_schema.typography.scale.5xl" },
+      { "value": "6xl", "label": "t:settings_schema.typography.scale.6xl" }, { "value": "7xl", "label": "t:settings_schema.typography.scale.7xl" },
+      { "value": "8xl", "label": "t:settings_schema.typography.scale.8xl" }
+    ], "default": "inherit" },
+    { "type": "color", "id": "color", "label": "t:blocks.all.text_color.label", "info": "t:blocks.all.text_color.info" },
+    { "type": "select", "id": "override_leading", "label": "t:blocks.all.override_leading.label", "options": [
+      { "value": "inherit", "label": "t:blocks.all.inherit.label" }, { "value": "tight", "label": "t:settings_schema.typography.leading.tight" },
+      { "value": "snug", "label": "t:settings_schema.typography.leading.snug" }, { "value": "normal", "label": "t:settings_schema.typography.leading.normal" },
+      { "value": "relaxed", "label": "t:settings_schema.typography.leading.relaxed" }, { "value": "loose", "label": "t:settings_schema.typography.leading.loose" }
+    ], "default": "inherit" },
+    { "type": "select", "id": "override_case", "label": "t:blocks.all.override_case.label", "options": [
+      { "value": "inherit", "label": "t:blocks.all.inherit.label" }, { "value": "default", "label": "t:settings_schema.typography.case.default" },
+      { "value": "uppercase", "label": "t:settings_schema.typography.case.uppercase" }, { "value": "lowercase", "label": "t:settings_schema.typography.case.lowercase" },
+      { "value": "capitalize", "label": "t:settings_schema.typography.case.capitalize" }
+    ], "default": "inherit" },
+    { "type": "select", "id": "override_tracking", "label": "t:blocks.all.override_tracking.label", "options": [
+      { "value": "inherit", "label": "t:blocks.all.inherit.label" }, { "value": "tighter", "label": "t:settings_schema.typography.tracking.tighter" },
+      { "value": "tight", "label": "t:settings_schema.typography.tracking.tight" }, { "value": "normal", "label": "t:settings_schema.typography.tracking.normal" },
+      { "value": "wide", "label": "t:settings_schema.typography.tracking.wide" }, { "value": "wider", "label": "t:settings_schema.typography.tracking.wider" }
+    ], "default": "inherit" },
+    { "type": "select", "id": "alignment", "label": "t:sections.all.content_alignment.label", "info": "t:sections.all.content_alignment.info", "options": [
+      { "value": "inherit", "label": "t:settings_schema.options.inherit" }, { "value": "left", "label": "t:settings_schema.options.left" },
+      { "value": "center", "label": "t:settings_schema.options.center" }, { "value": "right", "label": "t:settings_schema.options.right" }
+    ], "default": "inherit" },
+    { "type": "select", "id": "wrap", "label": "t:blocks.all.wrap.label", "info": "t:blocks.all.wrap.info", "options": [
+      { "value": "default", "label": "t:blocks.all.wrap.default" }, { "value": "pretty", "label": "t:blocks.all.wrap.pretty" },
+      { "value": "balance", "label": "t:blocks.all.wrap.balance" }
+    ], "default": "default" },
+    { "type": "header", "content": "t:blocks.all.spacing_header" },
+    { "type": "select", "id": "padding", "label": "t:blocks.all.padding.label", "options": [
+      { "value": "none", "label": "t:blocks.all.step.none" }, { "value": "minimal", "label": "t:blocks.all.step.minimal" },
+      { "value": "tiny", "label": "t:blocks.all.step.tiny" }, { "value": "small", "label": "t:blocks.all.step.small" },
+      { "value": "medium", "label": "t:blocks.all.step.medium" }, { "value": "large", "label": "t:blocks.all.step.large" },
+      { "value": "xlarge", "label": "t:blocks.all.step.xlarge" }
+    ], "default": "none" },
+    { "type": "checkbox", "id": "link_to_article", "label": "t:blocks.article_title.link_to_article", "default": false }
+  ],
+  "presets": [
+    { "name": "t:blocks.article_title.name", "settings": { "style": "heading_1", "element": "h1", "wrap": "balance" } },
+    { "name": "t:blocks.article_card_title.name", "settings": { "style": "heading_5", "element": "h2", "wrap": "balance", "link_to_article": true } }
+  ]
+}
+{% endschema %}

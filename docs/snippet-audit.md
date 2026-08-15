@@ -1,9 +1,9 @@
 # Snippet-by-snippet audit
 
 Snippets are renderers and behavior fragments, never merchant-editable content
-models. The audit found 167 snippets: 50 shared/domain renderers plus 117 icon
-drawing files. Every snippet is referenced and every static `render` target
-exists; there are no orphan or missing snippets.
+models. The audit found 175 snippets: 57 shared/domain renderers plus the icon
+dispatcher and 117 icon drawing files. Every snippet is referenced and every
+static `render` target exists; there are no orphan or missing snippets.
 
 ## Foundations
 
@@ -76,6 +76,7 @@ exists; there are no orphan or missing snippets.
 
 | Snippet | Single responsibility |
 | --- | --- |
+| `media-block` | Canonical editorial/contextual Media renderer with focal-point and presentation settings. |
 | `responsive-image` | Responsive Shopify image URL, dimensions, crop, loading, and LQIP contract. |
 | `video-lqip-frame` | Poster/LQIP wrapper for hosted/external video. |
 | `huge-text` | Shared art-directed oversized word treatment. |

@@ -1,6 +1,6 @@
 # Block and section audit
 
-Audited 13 August 2026. This is the per-file decision record for the current
+Audited 15 August 2026. This is the per-file decision record for the current
 theme, not a catalogue of possible future features. “Shared” means appearance
 or runtime behavior is deliberately inherited from a base component. “Owns”
 means the component has context-specific behavior that should not be pushed
@@ -75,7 +75,11 @@ into a generic block.
 | `_collection-card-header` | Collection-safe Group | Complete Group contract and `layout-group`. |
 | `_collection-card-group` | Collection-safe Group | Complete Group contract and `layout-group`. |
 | `_collection-count-text` | Text | Collection supplies count; complete Text contract and renderer. |
-| `_article-card` | Article result shell | Correctly private; owns article resource rendering. |
+| `_article-card` | Article result shell | Private composition only; children own every article value and presentation decision. |
+| `article_image` | Closest-article Media | Complete Media presentation contract without an uploader; shared focal-point, responsive-image and LQIP renderer. |
+| `article_metadata` | Closest-article Text | Date, author, or both; complete Text contract and renderer. |
+| `article_title` | Closest-article Text | Complete non-truncating title contract with optional article link. |
+| `article_excerpt` | Closest-article Rich text | Complete Rich text contract; optional content fallback and card word limit. |
 | `_testimonial` | Testimonial shell | Correctly private composition of global Text/Rich text children. |
 | `_hotspot` | Product hotspot shell | Correctly private; owns popover/row interaction. |
 | `_hotspot-card` | Hotspot-safe Group | Complete Group contract and `layout-group`. |
@@ -126,7 +130,7 @@ into a generic block.
 | `main-collection` | Collection product source, shared catalog controls, filters, pagination, Product card, and Button clear action. |
 | `main-search` | Search result source, shared catalog controls, pagination, and both standard/featured Product card compositions. |
 | `main-list-collections` | Collection index source and private Collection card; layout parity with Main blog is enforced where applicable. |
-| `main-blog` | Article source and private Article card; layout parity with Collection index is enforced where applicable. |
+| `main-blog` | Article source and private composed Article card; layout parity with Collection index is enforced where applicable. |
 
 ### Product, cart, content, and account routes
 
@@ -136,7 +140,7 @@ into a generic block.
 | `pickup-availability` | Shopify section-render endpoint for selected-variant pickup; intentionally behavior-specific. |
 | `main-cart` | Full cart route. Cart facts remain contextual; checkout/update/empty CTAs now use shared Button. |
 | `contact-form` | Shopify contact form with global content blocks and shared Button submit. |
-| `main-article` | Article/comment route; comment CTA now uses shared Button. |
+| `main-article` | Article/comment route; contextual details/image blocks precede native content, and comment CTA uses shared Button. |
 | `main-password` | Password/signup route with shared Huge Text and Button renderers. |
 | `main-customer` | All customer routes in one contextual shell; every CTA now uses shared Button while recovery/address `details` retain workflow semantics. |
 
@@ -160,5 +164,7 @@ children; these controls remain local but can share design tokens where useful.
 - R17 requires a complete snippet graph with no missing or orphan renderers.
 - R18 validates every JSON template/section group, order, referenced section,
   block order, and Shopify section/block count limit.
+- R23 protects contextual Article sources, shared renderers, complete titles,
+  focal-point imagery, and both default Blog and Article compositions.
 
 Any new contextual extension must be added to R14 and R15 in the same change.

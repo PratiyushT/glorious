@@ -590,10 +590,12 @@ def R13_central_icon_library():
 def R14_shared_setting_contracts():
     """Specialised blocks keep the complete settings of the base they extend.
 
-    A resource title is Text whose content comes from a product or collection;
+    A resource title is Text whose content comes from a product, collection or
+    article;
     Add to cart is Button whose action submits a product form. Their behaviour
     is allowed to differ, but their appearance controls are one editor
-    contract. This catches the quiet drift where one copy gains an option,
+    contract. Article metadata is Text and Article excerpt is Rich text for the
+    same reason. This catches the quiet drift where one copy gains an option,
     label or visibility rule and its siblings do not. Product and Collection
     title deliberately omit the three Wrap values that hide title text.
     Group's private contextual copies are covered for the same reason.
@@ -624,6 +626,8 @@ def R14_shared_setting_contracts():
         ('blocks/text.liquid', {'text'}, set(), (
             'blocks/product_title.liquid',
             'blocks/collection_title.liquid',
+            'blocks/article_title.liquid',
+            'blocks/article_metadata.liquid',
             'blocks/product_vendor.liquid',
             'blocks/product_price.liquid',
             'blocks/_product-card-option-values.liquid',
@@ -633,9 +637,11 @@ def R14_shared_setting_contracts():
         ('blocks/rich-text.liquid', {'text'}, set(), (
             'blocks/product_description.liquid',
             'blocks/product_text.liquid',
+            'blocks/article_excerpt.liquid',
         )),
         ('blocks/media.liquid', {'video', 'image', 'autoplay', 'loop'}, set(), (
             'blocks/collection_image.liquid',
+            'blocks/article_image.liquid',
         )),
         ('blocks/button.liquid', {'button_label', 'button_link'}, {'button_style'}, (
             'blocks/product_variant_picker.liquid',
@@ -688,7 +694,8 @@ def R14_shared_setting_contracts():
                 role_default = setting_id in role_defaults
                 expected_setting = base_setting
                 if (target_path in ('blocks/product_title.liquid',
-                                    'blocks/collection_title.liquid')
+                                    'blocks/collection_title.liquid',
+                                    'blocks/article_title.liquid')
                         and setting_id == 'wrap'):
                     expected_setting = json.loads(json.dumps(base_setting))
                     expected_setting['options'] = [
@@ -708,6 +715,8 @@ def R15_shared_renderers():
             'blocks/text.liquid',
             'blocks/product_title.liquid',
             'blocks/collection_title.liquid',
+            'blocks/article_title.liquid',
+            'blocks/article_metadata.liquid',
             'blocks/product_vendor.liquid',
             'blocks/product_price.liquid',
             'blocks/_product-card-option-values.liquid',
@@ -718,10 +727,12 @@ def R15_shared_renderers():
             'blocks/rich-text.liquid',
             'blocks/product_description.liquid',
             'blocks/product_text.liquid',
+            'blocks/article_excerpt.liquid',
         ),
         'media-block': (
             'blocks/media.liquid',
             'blocks/collection_image.liquid',
+            'blocks/article_image.liquid',
             'blocks/_collection-card-media.liquid',
         ),
         'button': (
@@ -1107,6 +1118,125 @@ def R22_collection_data_contract():
             'collection card presets are missing Collection image')
 
 
+def R23_article_data_contract():
+    """Article cards and pages use contextual blocks and shared renderers."""
+    title_where = 'blocks/article_title.liquid'
+    image_where = 'blocks/article_image.liquid'
+    metadata_where = 'blocks/article_metadata.liquid'
+    excerpt_where = 'blocks/article_excerpt.liquid'
+
+    def schema_for(where):
+        match = SCHEMA_RE.search(read(os.path.join(ROOT, where)))
+        if not match:
+            return {}
+        try:
+            return json.loads(match.group(1))
+        except json.JSONDecodeError:
+            return {}
+
+    title_schema = schema_for(title_where)
+    title_settings = {
+        setting.get('id'): setting
+        for setting in title_schema.get('settings', [])
+        if setting.get('id')
+    }
+    title_values = [
+        option.get('value')
+        for option in title_settings.get('wrap', {}).get('options', [])
+    ]
+    if title_values != ['default', 'pretty', 'balance']:
+        err('R23', title_where, 'Article title Wrap must never hide text')
+    title_source = strip_comments(read(os.path.join(ROOT, title_where)))
+    if ('closest.article' not in title_source
+            or 'preserve_content: true' not in title_source):
+        err('R23', title_where,
+            'Article title must preserve the closest article title')
+    card_title_presets = [
+        preset for preset in title_schema.get('presets', [])
+        if preset.get('settings', {}).get('element') == 'h2'
+    ]
+    if not card_title_presets or not all(
+            preset.get('settings', {}).get('link_to_article') is True
+            for preset in card_title_presets):
+        err('R23', title_where,
+            'Article card title preset must link the visible title')
+
+    image_schema = schema_for(image_where)
+    resource_settings = [
+        setting for setting in image_schema.get('settings', [])
+        if setting.get('type') in ('image_picker', 'video', 'article')
+    ]
+    if resource_settings:
+        err('R23', image_where,
+            'Article image is data-adapted and must not expose an uploader')
+    image_source = strip_comments(read(os.path.join(ROOT, image_where)))
+    if ('closest.article' not in image_source
+            or 'article.image' not in image_source
+            or "render 'media-block'" not in image_source
+            or 'loading: image_loading' not in image_source):
+        err('R23', image_where,
+            'Article image must use article data and shared Media loading')
+
+    metadata_source = strip_comments(read(os.path.join(ROOT, metadata_where)))
+    if ('closest.article' not in metadata_source
+            or "render 'text-block'" not in metadata_source):
+        err('R23', metadata_where,
+            'Article details must use article data and shared Text')
+    excerpt_source = strip_comments(read(os.path.join(ROOT, excerpt_where)))
+    if ('closest.article' not in excerpt_source
+            or "render 'rich-text-block'" not in excerpt_source):
+        err('R23', excerpt_where,
+            'Article excerpt must use article data and shared Rich text')
+    for contextual_where, contextual_source in (
+            (title_where, title_source),
+            (image_where, image_source),
+            (metadata_where, metadata_source),
+            (excerpt_where, excerpt_source)):
+        if ("request.page_type == 'article'" not in contextual_source
+                or 'source_article = article' not in contextual_source):
+            err('R23', contextual_where,
+                'Article block must work in the generic Article header')
+
+    card_where = 'blocks/_article-card.liquid'
+    card = read(os.path.join(ROOT, card_where))
+    for child_type in ('article_image', 'article_metadata', 'article_title',
+                       'article_excerpt', 'button'):
+        if '"type": "%s"' % child_type not in card:
+            err('R23', card_where,
+                'Article card is missing %s composition' % child_type)
+    if "content_for 'blocks'" not in card:
+        err('R23', card_where,
+            'Article card must render its merchant-ordered children')
+
+    blog_where = 'templates/blog.json'
+    blog_template = read(os.path.join(ROOT, blog_where))
+    for child_type in ('article_image', 'article_metadata', 'article_title',
+                       'article_excerpt'):
+        if '"type": "%s"' % child_type not in blog_template:
+            err('R23', blog_where,
+                'Default Blog card is missing %s' % child_type)
+    if '{{ closest.article.url }}' not in blog_template:
+        err('R23', blog_where,
+            'Default Blog action must follow the current article')
+
+    article_where = 'templates/article.json'
+    article_template = read(os.path.join(ROOT, article_where))
+    for child_type in ('article_title', 'article_excerpt',
+                       'article_metadata', 'article_image'):
+        if '"type": "%s"' % child_type not in article_template:
+            err('R23', article_where,
+                'Default Article composition is missing %s' % child_type)
+
+    section_where = 'sections/main-article.liquid'
+    section_source = strip_comments(read(os.path.join(ROOT, section_where)))
+    if "content_for 'blocks', closest.article: article" not in section_source:
+        err('R23', section_where,
+            'Main article must pass its article to contextual children')
+    if 'article.image | image_url' in section_source or 'image_tag:' in section_source:
+        err('R23', section_where,
+            'Main article must not fork Article image rendering')
+
+
 RULES = OrderedDict([
     ('R01', (R01_range_steps, 'range steps are legal (Shopify validates server-side)')),
     ('R02', (R02_select_defaults, "a select's default is one of its options")),
@@ -1130,6 +1260,7 @@ RULES = OrderedDict([
     ('R20', (R20_custom_liquid_section, 'Custom Liquid section is addable on every template')),
     ('R21', (R21_product_titles_remain_complete, 'product titles remain complete and linked')),
     ('R22', (R22_collection_data_contract, 'collection titles and images stay data-adapted')),
+    ('R23', (R23_article_data_contract, 'article cards and pages stay data-adapted')),
 ])
 
 

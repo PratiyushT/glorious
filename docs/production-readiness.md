@@ -43,6 +43,9 @@ also prevent truncating controls or CSS from hiding catalog names and require
 the visible card-title preset to link to its product. Collection checks require
 complete titles, data-adapted collection imagery, shared focal-point/LQIP media,
 and compliant defaults in both the collection header and collection cards.
+Article checks require complete contextual titles, data-adapted focal-point
+imagery, shared Text/Rich text/Media renderers, a composed Blog card, and the
+same contextual family on the Article template.
 
 Every release must also pass:
 

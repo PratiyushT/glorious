@@ -10,6 +10,7 @@
   - fit: optional fit override
   - alt: optional image alt fallback
   - sizes, widths, src_width: responsive image hints
+  - loading: responsive-image loading mode; defaults to lazy
   - placeholder: Shopify placeholder name
   - show_placeholder: render the empty state when no media exists
 {%- endcomment -%}
@@ -92,6 +93,7 @@
               sizes: resolved_sizes,
               widths: resolved_widths,
               src_width: resolved_src_width,
+              loading: loading,
               alt: alt -%}
         {%- elsif render_empty_state -%}
           {{ placeholder | default: 'image' | placeholder_svg_tag: 'placeholder-svg' }}

@@ -4,8 +4,8 @@
       "type": "group",
       "blocks": {
         "eyebrow": { "type": "text", "settings": { "text": "Journal", "style": "subheading", "layout": "eyebrow", "element": "span" } },
-        "title": { "type": "text", "settings": { "text": "{{ article.title }}", "style": "heading_1", "element": "h1" } },
-        "excerpt": { "type": "rich-text", "settings": { "text": "{{ article.excerpt }}", "style": "paragraph" } }
+        "title": { "type": "article_title", "settings": { "style": "heading_1", "element": "h1", "wrap": "balance", "link_to_article": false } },
+        "excerpt": { "type": "article_excerpt", "settings": { "fallback_to_content": false, "truncate": false, "style": "paragraph" } }
       },
       "block_order": ["eyebrow", "title", "excerpt"],
       "settings": {
@@ -15,9 +15,13 @@
     },
     "main": {
       "type": "main-article",
+      "blocks": {
+        "metadata": { "type": "article_metadata", "settings": { "metadata": "date_author", "separator": "·", "style": "caption", "element": "p", "override_case": "uppercase", "override_tracking": "wide" } },
+        "image": { "type": "article_image", "settings": { "ratio": "16 / 9", "fit": "cover", "reveal": true, "reveal_delay": 0, "padding": "none", "link_to_article": false } }
+      },
+      "block_order": ["metadata", "image"],
       "settings": {
-        "color_scheme": "scheme_1", "content_width": "reading", "show_metadata": true, "show_author": true,
-        "show_image": true, "image_ratio": "16/9", "image_fit": "cover", "show_navigation": true,
+        "color_scheme": "scheme_1", "content_width": "reading", "show_navigation": true, "comments_per_page": "10",
         "padding_top": "sm", "padding_bottom": "xl"
       }
     }

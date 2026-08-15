@@ -178,6 +178,22 @@ Theme settings let Search behave as the art-directed menu overlay, a side
 drawer, or a dedicated page. All three preserve a real `/search` form/link as
 their no-JavaScript fallback.
 
+## Blogs and articles
+
+Blog cards are composed from Article image, Article details, Article title,
+Article excerpt, and the global Button block. Reorder or remove those children
+instead of maintaining a second set of show/hide controls. Article images come
+from Shopify's featured article image and support its focal point, responsive
+sizes, fitting, shape, captions, reveal, and low-quality loading preview; there
+is no competing image uploader on the card. Card images load lazily, while the
+Article page's lead image loads eagerly.
+
+The Article template uses the same contextual blocks. Its title and excerpt
+remain part of the editable header composition, while published details and
+featured image can be reordered before the native article body. The body,
+comments, moderation state, pagination, and previous/next links remain owned by
+Shopify's article route.
+
 ## Product and Featured product
 
 Main Product, Featured product, and Quick view use the same Product blocks,

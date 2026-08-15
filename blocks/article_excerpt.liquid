@@ -1,0 +1,86 @@
+{%- comment -%}
+  Contextual Rich text whose value is the closest article excerpt. Cards may
+  opt into a word limit and content fallback; the Article header keeps the
+  merchant's authored excerpt intact.
+{%- endcomment -%}
+
+{%- liquid
+  assign source_article = closest.article
+  if source_article == blank and request.page_type == 'article'
+    assign source_article = article
+  endif
+  assign excerpt = source_article.excerpt
+  if excerpt == blank and block.settings.fallback_to_content
+    assign excerpt = source_article.content
+  endif
+  if excerpt == blank and request.design_mode
+    assign excerpt = 'onboarding.article_excerpt' | t
+  endif
+-%}
+{%- if block.settings.truncate and excerpt != blank -%}
+  {%- assign excerpt_text = excerpt | strip_html | truncatewords: block.settings.excerpt_words -%}
+  {%- capture excerpt_content -%}<p>{{ excerpt_text | escape }}</p>{%- endcapture -%}
+{%- else -%}
+  {%- assign excerpt_content = excerpt -%}
+{%- endif -%}
+{% render 'rich-text-block', block: block, content: excerpt_content, class: 'article-excerpt' %}
+
+{% schema %}
+{
+  "name": "t:blocks.article_excerpt.name",
+  "tag": null,
+  "settings": [
+    { "type": "checkbox", "id": "fallback_to_content", "label": "t:blocks.article_excerpt.fallback_to_content", "info": "t:blocks.article_excerpt.fallback_info", "default": false },
+    { "type": "checkbox", "id": "truncate", "label": "t:blocks.article_excerpt.truncate", "default": false },
+    { "type": "range", "id": "excerpt_words", "label": "t:blocks.article_excerpt.excerpt_words", "min": 10, "max": 50, "step": 5, "default": 25, "visible_if": "{{ block.settings.truncate }}" },
+    { "type": "header", "content": "t:blocks.all.text_header" },
+    { "type": "select", "id": "style", "label": "t:blocks.all.text_preset.label", "info": "t:blocks.all.text_preset.info", "options": [
+      { "value": "title", "label": "t:settings_schema.typography.presets.title.header" }, { "value": "heading_1", "label": "t:settings_schema.typography.presets.heading_1.header" },
+      { "value": "heading_2", "label": "t:settings_schema.typography.presets.heading_2.header" }, { "value": "heading_3", "label": "t:settings_schema.typography.presets.heading_3.header" },
+      { "value": "heading_4", "label": "t:settings_schema.typography.presets.heading_4.header" }, { "value": "heading_5", "label": "t:settings_schema.typography.presets.heading_5.header" },
+      { "value": "subheading", "label": "t:settings_schema.typography.presets.subheading.header" }, { "value": "paragraph", "label": "t:settings_schema.typography.presets.paragraph.header" },
+      { "value": "small", "label": "t:settings_schema.typography.presets.small.header" }, { "value": "caption", "label": "t:settings_schema.typography.presets.caption.header" }
+    ], "default": "paragraph" },
+    { "type": "header", "content": "t:blocks.all.override_header" },
+    { "type": "select", "id": "override_font", "label": "t:blocks.all.override_font.label", "options": [
+      { "value": "inherit", "label": "t:blocks.all.inherit.label" }, { "value": "accent", "label": "t:settings_schema.typography.roles.accent" },
+      { "value": "body", "label": "t:settings_schema.typography.roles.body" }, { "value": "subheading", "label": "t:settings_schema.typography.roles.subheading" },
+      { "value": "heading", "label": "t:settings_schema.typography.roles.heading" }
+    ], "default": "inherit" },
+    { "type": "select", "id": "override_size", "label": "t:blocks.all.override_size.label", "options": [
+      { "value": "inherit", "label": "t:blocks.all.inherit.label" }, { "value": "3xs", "label": "t:settings_schema.typography.scale.3xs" },
+      { "value": "2xs", "label": "t:settings_schema.typography.scale.2xs" }, { "value": "xs", "label": "t:settings_schema.typography.scale.xs" },
+      { "value": "sm", "label": "t:settings_schema.typography.scale.sm" }, { "value": "md", "label": "t:settings_schema.typography.scale.md" },
+      { "value": "lg", "label": "t:settings_schema.typography.scale.lg" }, { "value": "xl", "label": "t:settings_schema.typography.scale.xl" },
+      { "value": "2xl", "label": "t:settings_schema.typography.scale.2xl" }, { "value": "3xl", "label": "t:settings_schema.typography.scale.3xl" },
+      { "value": "4xl", "label": "t:settings_schema.typography.scale.4xl" }, { "value": "5xl", "label": "t:settings_schema.typography.scale.5xl" },
+      { "value": "6xl", "label": "t:settings_schema.typography.scale.6xl" }, { "value": "7xl", "label": "t:settings_schema.typography.scale.7xl" },
+      { "value": "8xl", "label": "t:settings_schema.typography.scale.8xl" }
+    ], "default": "inherit" },
+    { "type": "color", "id": "color", "label": "t:blocks.all.text_color.label", "info": "t:blocks.all.text_color.info" },
+    { "type": "select", "id": "override_leading", "label": "t:blocks.all.override_leading.label", "options": [
+      { "value": "inherit", "label": "t:blocks.all.inherit.label" }, { "value": "tight", "label": "t:settings_schema.typography.leading.tight" },
+      { "value": "snug", "label": "t:settings_schema.typography.leading.snug" }, { "value": "normal", "label": "t:settings_schema.typography.leading.normal" },
+      { "value": "relaxed", "label": "t:settings_schema.typography.leading.relaxed" }, { "value": "loose", "label": "t:settings_schema.typography.leading.loose" }
+    ], "default": "inherit" },
+    { "type": "select", "id": "override_case", "label": "t:blocks.all.override_case.label", "options": [
+      { "value": "inherit", "label": "t:blocks.all.inherit.label" }, { "value": "default", "label": "t:settings_schema.typography.case.default" },
+      { "value": "uppercase", "label": "t:settings_schema.typography.case.uppercase" }, { "value": "lowercase", "label": "t:settings_schema.typography.case.lowercase" },
+      { "value": "capitalize", "label": "t:settings_schema.typography.case.capitalize" }
+    ], "default": "inherit" },
+    { "type": "select", "id": "override_tracking", "label": "t:blocks.all.override_tracking.label", "options": [
+      { "value": "inherit", "label": "t:blocks.all.inherit.label" }, { "value": "tighter", "label": "t:settings_schema.typography.tracking.tighter" },
+      { "value": "tight", "label": "t:settings_schema.typography.tracking.tight" }, { "value": "normal", "label": "t:settings_schema.typography.tracking.normal" },
+      { "value": "wide", "label": "t:settings_schema.typography.tracking.wide" }, { "value": "wider", "label": "t:settings_schema.typography.tracking.wider" }
+    ], "default": "inherit" },
+    { "type": "select", "id": "alignment", "label": "t:sections.all.content_alignment.label", "info": "t:sections.all.content_alignment.info", "options": [
+      { "value": "inherit", "label": "t:settings_schema.options.inherit" }, { "value": "left", "label": "t:settings_schema.options.left" },
+      { "value": "center", "label": "t:settings_schema.options.center" }, { "value": "right", "label": "t:settings_schema.options.right" }
+    ], "default": "inherit" }
+  ],
+  "presets": [
+    { "name": "t:blocks.article_excerpt.name", "settings": { "fallback_to_content": false, "truncate": false, "style": "paragraph" } },
+    { "name": "t:blocks.article_card_excerpt.name", "settings": { "fallback_to_content": true, "truncate": true, "excerpt_words": 25, "style": "paragraph" } }
+  ]
+}
+{% endschema %}

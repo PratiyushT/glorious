@@ -24,8 +24,8 @@ fails when they drift.
 
 | Base | Contextual extension | What changes | Shared renderer or contract |
 | --- | --- | --- | --- |
-| `text` | `product_title`, `collection_title`, `product_vendor`, `product_price` | Content comes from the closest product, collection, or selected variant | `text-block`; resource titles intentionally omit truncating Wrap values |
-| `rich-text` | `product_description` | Content comes from the product description | `rich-text-block`, complete Rich text appearance schema |
+| `text` | `product_title`, `collection_title`, `article_title`, `article_metadata`, `product_vendor`, `product_price` | Content comes from the closest product, collection, article, or selected variant | `text-block`; resource titles intentionally omit truncating Wrap values |
+| `rich-text` | `product_description`, `article_excerpt` | Content comes from the product description or closest article | `rich-text-block`, complete Rich text appearance schema |
 | `button` | `product_buy_buttons` | The action submits Shopify's product form | `button`, `button-style`, complete Button appearance schema |
 | `button` | `product_variant_picker` pills | The action selects one option value and adds selected state | `button`, `button-style`, `choice-style`, complete Button appearance schema |
 | `button` | `_product-card-add` | The action adds or opens Choose options | `button`, `button-style`, complete Button appearance schema |
@@ -35,6 +35,7 @@ fails when they drift.
 | `group` | `accordion` | The Group gains a disclosure heading, open state, and desktop behavior | `layout-group`, complete Group schema; shared footer disclosure motion |
 | `media` | `_product-media-gallery` | Media comes from the closest product and gains gallery navigation | `product-gallery`, `product-media` |
 | `media` | `collection_image` | Image comes from the closest collection; no uploader or video controls | `media-block`, Media presentation schema, responsive image and LQIP |
+| `media` | `article_image` | Image comes from the closest article; no uploader or video controls | `media-block`, Media presentation schema, focal point, responsive image and LQIP |
 | `huge-text` | Header, Hero, Footer section values | Shopify forbids their local blocks beside a static theme block, so only content ownership moves to the section | `huge-text`, one art-directed renderer |
 | Product context | `product_badges` | Facts come from inventory, pricing, age, or a connected metafield | One badge block and one global Product badges style group |
 | Product context | `product_quantity` | Value is submitted to the product form | `input-style` |
@@ -64,8 +65,8 @@ merchant-authored product copy and now follows the complete Rich text contract.
 | Cart | `cart.json`: Main cart | Contextual cart layout with optional theme/app blocks | `line-options`, `tax-note`, shared Button styling; cart drawer uses the same cart facts |
 | Standard page | `page.json`: Group | Global Group/Accordion/Text/Rich text/Button/Media/Icon/Border/Custom Liquid | Base block renderers only |
 | Contact | `page.contact.json`: Contact form | Global content blocks above Shopify's contact form | Base typography and shared Button styling |
-| Blog index | `blog.json`: Group, Main blog | Global heading blocks and `_article-card` results | Responsive image and pagination components |
-| Article | `article.json`: Group, Main article | Global heading blocks plus contextual article/comment content | Base typography, responsive media, shared Button styling |
+| Blog index | `blog.json`: Group, Main blog | Contextual Article image/details/title/excerpt plus global Button inside `_article-card` | Base block renderers, responsive media, and pagination |
+| Article | `article.json`: Group, Main article | Contextual Article title/excerpt header and reorderable details/image before native article/comment content | Base typography, `media-block`, shared Button styling |
 | Collection index | `list-collections.json`: Group, Main list collections | Global heading blocks and `_collection-card` with Collection title/image | Collection card family, contextual media renderer, and pagination |
 | 404 | `404.json`: Group | Text and Button | Base typography and Button renderers |
 | Password | `password.json`: Main password | Static brand heading, global content blocks, Shopify forms | Shared brand and Button styling |
@@ -119,6 +120,28 @@ The full product template supplies Shopify's current `product`. Featured
 product supplies the product chosen in its section setting. No renderer forks
 between the two.
 
+## Article composition
+
+`main-blog` renders one private card shell for every Shopify article. The shell
+contains no duplicated presentation settings; its children are independently
+removable and reorderable:
+
+```text
+_article-card
+├─ article_image
+├─ article_metadata
+├─ article_title
+├─ article_excerpt
+├─ button
+└─ optional global editorial blocks
+```
+
+The Article page reuses the same contextual family. Article title and excerpt
+live in the composed header; Main article renders details and image blocks
+before the native article body, comments, and previous/next navigation. Every
+resource value comes from `closest.article`, so none of these blocks exposes a
+competing article or image picker.
+
 ## Shared snippet map
 
 | Domain | Canonical snippets |
@@ -133,7 +156,7 @@ between the two.
 | Cart | `cart-drawer-contents`, `line-options`, `tax-note` |
 | Overlays | `overlay-head`, `search-overlay`, `quick-view` shell |
 | Layout and tokens | `section-style`, `block-spacing`, `layout-group`, `layout-group-style`, `space-step`, `scale-step`, `theme-tokens` |
-| Media | `responsive-image`, `video-lqip-frame` |
+| Media | `media-block`, `responsive-image`, `video-lqip-frame` |
 | Icons and brand | `icon` dispatcher and `icon-*` implementations; `wordmark`, `wordmark-lockup` |
 
 ## Extension rules

@@ -1,0 +1,110 @@
+{%- comment -%}
+  Contextual Media whose source is the closest article. The article supplies
+  the image and its focal point; the merchant controls presentation only.
+  Blog cards may link the image while the Article page keeps it editorial.
+{%- endcomment -%}
+
+{%- liquid
+  assign source_article = closest.article
+  if source_article == blank and request.page_type == 'article'
+    assign source_article = article
+  endif
+  assign image = source_article.image
+  assign image_alt = image.alt | default: source_article.title
+  assign show_placeholder = request.design_mode
+  assign image_sizes = '(min-width: 75rem) 72rem, 100vw'
+  assign image_widths = '480,720,960,1200,1600,2000'
+  assign image_src_width = 2000
+  assign image_loading = 'eager'
+  if request.page_type == 'blog'
+    assign image_sizes = '(min-width: 63rem) 33vw, (min-width: 47rem) 50vw, 100vw'
+    assign image_widths = '320,480,640,800,1000,1200'
+    assign image_src_width = 1200
+    assign image_loading = 'lazy'
+  endif
+-%}
+{%- capture image_content -%}
+  {% render 'media-block', block: block, image: image, class: 'article-image-block', alt: image_alt, sizes: image_sizes, widths: image_widths, src_width: image_src_width, loading: image_loading, show_placeholder: show_placeholder %}
+{%- endcapture -%}
+{%- if source_article != blank and block.settings.link_to_article -%}
+  <a class="article-image-link" href="{{ source_article.url }}" tabindex="-1" aria-hidden="true">{{ image_content }}</a>
+{%- else -%}
+  {{ image_content }}
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "t:blocks.article_image.name",
+  "tag": null,
+  "settings": [
+    {
+      "type": "select",
+      "id": "ratio",
+      "label": "t:sections.all.image_ratio.label",
+      "options": [
+        { "value": "adapt", "label": "t:settings_schema.options.adapt" },
+        { "value": "1 / 1", "label": "t:settings_schema.options.square" },
+        { "value": "4 / 5", "label": "t:settings_schema.options.portrait" },
+        { "value": "3 / 4", "label": "t:settings_schema.options.tall_portrait" },
+        { "value": "4 / 3", "label": "t:settings_schema.options.landscape" },
+        { "value": "16 / 9", "label": "t:settings_schema.options.wide" }
+      ],
+      "default": "4 / 5"
+    },
+    {
+      "type": "select",
+      "id": "fit",
+      "label": "t:blocks.media.fit.label",
+      "options": [
+        { "value": "cover", "label": "t:settings_schema.options.cover" },
+        { "value": "contain", "label": "t:settings_schema.options.contain" }
+      ],
+      "default": "cover"
+    },
+    { "type": "checkbox", "id": "arch", "label": "t:blocks.media.arch.label", "default": false },
+    { "type": "checkbox", "id": "frame", "label": "t:blocks.media.frame.label", "default": false },
+    { "type": "checkbox", "id": "reveal", "label": "t:blocks.media.reveal.label", "default": true },
+    {
+      "type": "range",
+      "id": "reveal_delay",
+      "label": "t:blocks.media.reveal_delay.label",
+      "info": "t:blocks.media.reveal_delay.info",
+      "min": 0,
+      "max": 1000,
+      "step": 10,
+      "unit": "ms",
+      "default": 0,
+      "visible_if": "{{ block.settings.reveal }}"
+    },
+    { "type": "text", "id": "caption_left", "label": "t:blocks.media.caption_left.label" },
+    { "type": "text", "id": "caption_right", "label": "t:blocks.media.caption_right.label" },
+    { "type": "header", "content": "t:blocks.all.spacing_header" },
+    {
+      "type": "select",
+      "id": "padding",
+      "label": "t:blocks.all.padding.label",
+      "options": [
+        { "value": "none", "label": "t:blocks.all.step.none" },
+        { "value": "minimal", "label": "t:blocks.all.step.minimal" },
+        { "value": "tiny", "label": "t:blocks.all.step.tiny" },
+        { "value": "small", "label": "t:blocks.all.step.small" },
+        { "value": "medium", "label": "t:blocks.all.step.medium" },
+        { "value": "large", "label": "t:blocks.all.step.large" },
+        { "value": "xlarge", "label": "t:blocks.all.step.xlarge" }
+      ],
+      "default": "none"
+    },
+    { "type": "checkbox", "id": "link_to_article", "label": "t:blocks.article_image.link_to_article", "default": false }
+  ],
+  "presets": [
+    {
+      "name": "t:blocks.article_image.name",
+      "settings": { "ratio": "16 / 9", "fit": "cover", "reveal": true, "reveal_delay": 0, "padding": "none", "link_to_article": false }
+    },
+    {
+      "name": "t:blocks.article_card_image.name",
+      "settings": { "ratio": "4 / 3", "fit": "cover", "reveal": true, "reveal_delay": 0, "padding": "none", "link_to_article": true }
+    }
+  ]
+}
+{% endschema %}

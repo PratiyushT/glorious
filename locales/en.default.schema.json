@@ -872,22 +872,7 @@
       }
     },
     "article_card": {
-      "name": "Article card",
-      "show_image": "Show featured image",
-      "image_ratio": "Image ratio",
-      "square": "Square",
-      "landscape": "Landscape",
-      "portrait": "Portrait",
-      "wide": "Wide",
-      "image_fit": "Image fit",
-      "fill": "Fill",
-      "fit": "Fit",
-      "show_date": "Show published date",
-      "show_author": "Show author",
-      "show_excerpt": "Show excerpt",
-      "excerpt_words": "Excerpt length",
-      "show_read_more": "Show article link",
-      "read_more_label": "Article link label"
+      "name": "Article card"
     },
     "collection_card_image": {
       "name": "Media"
@@ -992,6 +977,38 @@
     },
     "collection_image": {
       "name": "Collection image"
+    },
+    "article_title": {
+      "name": "Article title",
+      "link_to_article": "Link to article"
+    },
+    "article_card_title": {
+      "name": "Article card title"
+    },
+    "article_image": {
+      "name": "Article image",
+      "link_to_article": "Link to article"
+    },
+    "article_card_image": {
+      "name": "Article card image"
+    },
+    "article_metadata": {
+      "name": "Article details",
+      "content": "Show",
+      "date": "Published date",
+      "author": "Author",
+      "date_author": "Published date and author",
+      "separator": "Between date and author"
+    },
+    "article_excerpt": {
+      "name": "Article excerpt",
+      "fallback_to_content": "Use article content when the excerpt is empty",
+      "fallback_info": "Useful on article cards. Leave off on the article page to avoid repeating the full story.",
+      "truncate": "Limit the excerpt length",
+      "excerpt_words": "Maximum words"
+    },
+    "article_card_excerpt": {
+      "name": "Article card excerpt"
     },
     "spacer": {
       "name": "Spacer",
@@ -2098,9 +2115,6 @@
     },
     "main_article": {
       "name": "Article content",
-      "show_metadata": "Show published date",
-      "show_author": "Show author",
-      "show_image": "Show featured image",
       "show_navigation": "Show previous and next articles",
       "comments_per_page": "Comments per page"
     },

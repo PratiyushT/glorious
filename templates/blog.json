@@ -17,7 +17,15 @@
       "blocks": {
         "article-card": {
           "type": "_article-card", "static": true,
-          "settings": { "show_image": true, "image_ratio": "4/3", "image_fit": "cover", "show_date": true, "show_author": false, "show_excerpt": true, "excerpt_words": 25, "show_read_more": true, "read_more_label": "Read article" }
+          "blocks": {
+            "image": { "type": "article_image", "settings": { "ratio": "4 / 3", "fit": "cover", "reveal": true, "reveal_delay": 0, "padding": "none", "link_to_article": true } },
+            "metadata": { "type": "article_metadata", "settings": { "metadata": "date", "separator": "·", "style": "caption", "element": "p", "override_case": "uppercase", "override_tracking": "wide" } },
+            "title": { "type": "article_title", "settings": { "style": "heading_5", "element": "h2", "wrap": "balance", "link_to_article": true } },
+            "excerpt": { "type": "article_excerpt", "settings": { "fallback_to_content": true, "truncate": true, "excerpt_words": 25, "style": "paragraph" } },
+            "read-more": { "type": "button", "settings": { "button_label": "Read article", "button_link": "{{ closest.article.url }}", "button_style": "link" } }
+          },
+          "block_order": ["image", "metadata", "title", "excerpt", "read-more"],
+          "settings": {}
         }
       },
       "settings": { "color_scheme": "scheme_1", "articles_per_page": 12, "columns": 3, "gap": "theme", "padding_top": "sm", "padding_bottom": "xl" }

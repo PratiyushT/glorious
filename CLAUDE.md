@@ -68,14 +68,19 @@ The homepage blocks fall into four contracts:
   `closest.collection`, plus its private Count. The contextual image prefers
   `collection.image`, falls back to `collection.featured_image`, and has no
   competing uploader. `_collection-card-media` remains only to render older
-  saved cards through the same Media renderer.
+  saved cards through the same Media renderer. Article card follows the same
+  resource rule: Article title, image, details and excerpt read only
+  `closest.article`; title/details use Text, excerpt uses Rich text, and image
+  uses Media. The card action remains the one global Button block with its Link
+  connected to the current article.
 - **Card-local Group blocks preserve layout without leaking private children.**
   `_product-card-group` and `_collection-card-group` use the exact global Group
   markup and settings but explicitly target only their card's valid children.
   Product media and Collection image own their card media regions outside the
   Group. The ordinary global Group remains unrestricted everywhere else.
 - **Private composition shells** begin with an underscore and are rendered
-  statically by their sections: `_product-card` and `_collection-card`. They
+  statically by their sections: `_product-card`, `_collection-card`, and
+  `_article-card`. They
   establish the card layout, link, quick-view, and interaction context, but are
   implementation structure rather than merchant-addable blocks.
 - **Context-local blocks** exist only where their data or interaction gives them
@@ -1596,6 +1601,7 @@ diligent, and this theme has already paid for that twice — see the footer unde
 | R20 | the required Custom Liquid section is addable on every template |
 | R21 | Product title stays complete, expandable, and linked on cards |
 | R22 | Collection title stays complete and Collection image remains data-adapted across headers and cards |
+| R23 | Article title/image/details/excerpt stay data-adapted across Blog cards and Article pages |
 
 **R05 is the one written from a scar.** `section-style.liquid` stopped
 understanding numbers when padding became a step, the footer kept its range, and
@@ -4100,14 +4106,36 @@ Shopify checkout, and the subtotal carries the note.
 
 ### Content and utility templates
 
+**Article cards are compositions now, not one bundle of visibility toggles.**
+`main-blog` still owns the Shopify article loop and renders one static
+`_article-card` for every result. That card now contains independently
+reorderable Article image, Article details, Article title, Article excerpt and
+the global Button, with ordinary editorial blocks available beside them.
+
+- Article title is the non-truncating Text contract and can link to the current
+  article. Article image is the Media presentation contract without an image
+  picker; it reads `article.image`, its admin focal point, and the shared
+  responsive/LQIP renderer. Article details is Text whose value is date,
+  author, or both. Article excerpt is Rich text, optionally falling back to a
+  word-limited article body on cards. The Blog card image stays lazy; the
+  Article page image keeps eager loading because it is the route's likely LCP.
+- The Article template uses those same contextual blocks. Its composed header
+  owns Article title and excerpt; `main-article` renders reorderable details
+  and image before the fixed native article body, comments and neighbour
+  navigation. Removing an image or details block is the show/hide control, so
+  the section no longer carries parallel visibility and media settings.
+- R23 protects the source, renderer, non-truncating title, no-uploader image,
+  default Blog card tree and default Article composition.
+
 - **Ordinary pages, 404, blogs, articles and the collection index are JSON
   templates.** Their headers and editable prose use the same global Group,
   Text, Rich text and Button blocks as the home page. Do not put a second
   page-heading system into a contextual section.
 - **Contextual sections own only contextual work.** `main-blog` loops Shopify
-  articles through one static `_article-card`; `main-list-collections` loops
+  articles through one static composed `_article-card`; `main-list-collections` loops
   Shopify collections through the existing static `_collection-card`;
-  `main-article` renders the article body and its native neighbour links; and
+  `main-article` renders contextual details/image blocks, the article body and
+  its native neighbour links; and
   `contact-form` owns Shopify's `{% form 'contact' %}`. Everything surrounding
   those objects remains merchant-composed blocks.
 - **The collection index reuses Collection card exactly.** Its contextual
