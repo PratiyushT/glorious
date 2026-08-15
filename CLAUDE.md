@@ -392,10 +392,18 @@ a merchant-entered filter label. No catalogue vocabulary belongs in Liquid.
   The drawer shows ten list values before a progressive “Show more”, includes
   Shopify-authoritative active-filter removal URLs, and pairs the visual price
   range with labelled numeric From/To fields.
-- A product URL returned by search already carries Shopify tracking query
-  parameters. Any card link adding `variant=` must use `&` when `product.url`
-  already contains `?`; blindly appending a second question mark breaks the
-  variant link only on search and recommendation-like contexts.
+- **A filtered product card begins on Shopify's matching variant.** In filtered
+  collections and search results, Shopify makes `product.selected_variant`,
+  `product.featured_media`, and `product.url` relevant to the active variant
+  filters. The card leads with that media and its shared option resolver makes
+  the selected value, price, badge, and add action agree. Links preserve every
+  query parameter while replacing `variant`; appending a second variant or
+  discarding recommendation attribution breaks that authority.
+- A product URL returned by search can already carry `variant`, and a
+  recommendation URL carries Shopify tracking parameters. Liquid uses
+  `product-url-with-variant` and JavaScript uses `setCardVariantHref` so a card
+  replaces only the variant value. Do not append a second `variant`, discard
+  the remaining query, or create a second URL implementation.
 
 **The product template is JSON and Main product and Featured product are the
 same contextual block surface.** Both sections own only the two-column shell,

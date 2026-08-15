@@ -1,0 +1,47 @@
+{%- comment -%}
+  Replaces the variant query parameter in a Shopify product URL while keeping
+  every other query parameter and the fragment intact.
+
+  Filtered collections and search results put their most relevant variant in
+  `product.url`; recommendations can put attribution parameters in the same
+  URL. Appending another `variant` parameter makes the browser choose between
+  two values, while rebuilding the whole query drops Shopify's attribution.
+
+  Accepts:
+    url        - Shopify's product URL.
+    variant_id - The variant the link should open.
+{%- endcomment -%}
+
+{%- liquid
+  assign source_url = url | default: ''
+  assign source_without_fragment = source_url
+  assign fragment = ''
+
+  if source_url contains '#'
+    assign fragment_parts = source_url | split: '#'
+    assign source_without_fragment = fragment_parts.first
+    assign fragment = source_url | remove_first: source_without_fragment
+  endif
+
+  assign url_parts = source_without_fragment | split: '?'
+  assign path = url_parts.first
+  assign query = ''
+  if source_without_fragment contains '?'
+    assign query_prefix = path | append: '?'
+    assign query = source_without_fragment | remove_first: query_prefix
+  endif
+
+  assign separator = ''
+  capture preserved_query
+    assign query_parts = query | split: '&'
+    for query_part in query_parts
+      assign query_key = query_part | split: '=' | first
+      unless query_part == blank or query_key == 'variant'
+        echo separator
+        echo query_part
+        assign separator = '&'
+      endunless
+    endfor
+  endcapture
+-%}
+{{- path -}}?{% if preserved_query != blank %}{{ preserved_query }}&{% endif %}variant={{ variant_id }}{{ fragment }}

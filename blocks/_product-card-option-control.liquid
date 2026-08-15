@@ -156,10 +156,11 @@
         {% render 'unit-price', price: chosen.unit_price, measurement: chosen.unit_price_measurement, class: 'card__unit-price' %}
       {%- endcapture -%}
       {%- capture value_sale_badge -%}{% render 'sale-badge-label', variant: chosen %}{%- endcapture -%}
+      {%- capture option_url -%}{% render 'product-url-with-variant', url: product.url, variant_id: chosen.id %}{%- endcapture -%}
 
         <a
           class="{% if is_pills %}card__pill{% else %}card__swatch{% endif %}{% if is_selected %} is-selected{% endif %}"
-          href="{{ product.url }}{% if product.url contains '?' %}&{% else %}?{% endif %}variant={{ chosen.id }}"
+          href="{{ option_url | strip | escape }}"
           data-card-option
           data-option-value="{{ value | escape }}"
           data-option-index="{{ opt_index }}"

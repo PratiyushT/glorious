@@ -54,7 +54,17 @@
   assign product = closest.product
   assign product_url = product.url
   if collection != blank
-    assign product_url = product.url | within: collection
+    comment
+      Shopify adds the most relevant variant to `product.url` in a filtered
+      collection. Apply the collection context to the path only, then restore
+      Shopify's complete query so the card keeps that matched variant.
+    endcomment
+    assign product_url_parts = product.url | split: '?'
+    assign product_url = product_url_parts.first | within: collection
+    if product.url contains '?'
+      assign product_query = product.url | remove_first: product_url_parts.first
+      assign product_url = product_url | append: product_query
+    endif
   endif
   assign card_photos = product.media | where: 'media_type', 'image'
 

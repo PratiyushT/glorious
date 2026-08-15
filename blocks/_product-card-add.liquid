@@ -98,12 +98,10 @@
     assign opens_options = true
   endif
 
-  assign action_url = product.url
-  if action_url contains '?'
-    assign action_url = action_url | append: '&variant=' | append: chosen.id
-  else
-    assign action_url = action_url | append: '?variant=' | append: chosen.id
-  endif
+  capture action_url
+    render 'product-url-with-variant', url: product.url, variant_id: chosen.id
+  endcapture
+  assign action_url = action_url | strip
 
   assign strategy_option_value = ''
   if option_index >= 0 and chosen != blank

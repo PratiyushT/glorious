@@ -46,6 +46,16 @@
   assign product = closest.product
   assign img_loading = 'lazy'
   assign img_sizes = '(max-width: 700px) 70vw, 460px'
+  assign card_images = product.media | where: 'media_type', 'image'
+  assign lead_image = blank
+  if product.featured_media.media_type == 'image'
+    for card_image in card_images
+      if card_image.id == product.featured_media.id
+        assign lead_image = card_image
+        break
+      endif
+    endfor
+  endif
 
   comment
     Every value has to do what it says, `adapt` included — it fell through to
@@ -57,7 +67,7 @@
 
   assign ratio_value = '3 / 4'
   if ratio_setting == 'adapt'
-    assign ratio_media = product.media | where: 'media_type', 'image' | first
+    assign ratio_media = lead_image | default: card_images.first
     if ratio_media.width > 0 and ratio_media.height > 0
       assign ratio_value = ratio_media.width | append: ' / ' | append: ratio_media.height
     endif
@@ -80,7 +90,6 @@
     assign card_zoom = zoom_number
   endif
 
-  assign card_images = product.media | where: 'media_type', 'image'
   assign photo_count = card_images.size
 
   comment
@@ -134,20 +143,44 @@
   {%- elsif slide_count > 0 -%}
     {%- assign slide_i = 0 -%}
 
-    {%- for media in card_images -%}
-      {%- assign slide_eager = false -%}
-      {%- if slide_i < eager_slides -%}
-        {%- assign slide_eager = true -%}
-      {%- endif -%}
+    {%- comment -%}
+      In filtered collections and search results Shopify changes
+      `product.featured_media` to the first variant that matches the active
+      filters. Lead with that media, then retain the merchant's remaining
+      product-media order without rendering the lead image twice.
+    {%- endcomment -%}
+    {%- if lead_image != blank -%}
       {% render 'card-slide',
-        media: media,
+        media: lead_image,
         index: slide_i,
-        eager: slide_eager,
+        eager: true,
         product: product,
         sizes: img_sizes,
         loading: img_loading
       %}
       {%- assign slide_i = slide_i | plus: 1 -%}
+    {%- endif -%}
+
+    {%- for media in card_images -%}
+      {%- assign is_lead_repeat = false -%}
+      {%- if lead_image != blank and media.id == lead_image.id -%}
+        {%- assign is_lead_repeat = true -%}
+      {%- endif -%}
+      {%- unless is_lead_repeat -%}
+        {%- assign slide_eager = false -%}
+        {%- if slide_i < eager_slides -%}
+          {%- assign slide_eager = true -%}
+        {%- endif -%}
+        {% render 'card-slide',
+          media: media,
+          index: slide_i,
+          eager: slide_eager,
+          product: product,
+          sizes: img_sizes,
+          loading: img_loading
+        %}
+        {%- assign slide_i = slide_i | plus: 1 -%}
+      {%- endunless -%}
     {%- endfor -%}
 
     {%- if card_video != blank -%}

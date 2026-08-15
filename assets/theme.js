@@ -2957,7 +2957,18 @@
   function setCardVariantHref(link, variantId) {
     if (!link || !variantId) return;
     var href = link.getAttribute('href') || '';
-    link.setAttribute('href', href.split('?')[0] + '?variant=' + variantId);
+    try {
+      var url = new URL(href, window.location.origin);
+      url.searchParams.set('variant', variantId);
+      link.setAttribute('href', url.pathname + url.search + url.hash);
+    } catch (error) {
+      if (/[?&]variant=/.test(href)) {
+        link.setAttribute('href', href.replace(/([?&]variant=)[^&#]*/, '$1' + variantId));
+      } else {
+        var separator = href.indexOf('?') === -1 ? '?' : '&';
+        link.setAttribute('href', href + separator + 'variant=' + variantId);
+      }
+    }
   }
 
   function applyCardAddStrategy(card) {
@@ -3008,6 +3019,7 @@
     });
 
     setCardVariantHref(card.querySelector('a.card__title'), variantId);
+    setCardVariantHref(card.querySelector('a.card__link'), variantId);
     card.setAttribute('data-card-strategy-ready', '');
   }
 
@@ -3131,6 +3143,7 @@
          document and would rewrite every card's link as an absolute URL. */
       setCardVariantHref(title, optionId);
     }
+    setCardVariantHref(card.querySelector('a.card__link'), optionId);
   });
 
   function initCards(scope) {
