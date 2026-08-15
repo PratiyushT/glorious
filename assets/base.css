@@ -3416,6 +3416,45 @@ a {
   width: 100%;
 }
 
+/* Collection copy may stay on a narrow editorial measure while its image
+   expands independently. Page width keeps the ordinary site gutters; edge
+   to edge deliberately ignores them. */
+.catalog-block-header--image-width-page {
+  --collection-header-image-width: min(var(--page-width), calc(100vw - var(--gutter) * 2));
+}
+
+.catalog-block-header--image-width-edge {
+  --collection-header-image-width: 100vw;
+}
+
+:is(
+  .catalog-block-header--layout-title-over-image,
+  .catalog-block-header--layout-image-only
+):is(
+  .catalog-block-header--image-width-page,
+  .catalog-block-header--image-width-edge
+) .catalog-block-header__content > .layout-group > .layout-group__inner > .collection-image-block {
+  width: var(--collection-header-image-width);
+  max-width: none;
+  max-inline-size: none;
+  justify-self: center;
+}
+
+.catalog-block-header--layout-side-by-side:is(
+  .catalog-block-header--image-width-page,
+  .catalog-block-header--image-width-edge
+) .catalog-block-header__content > .layout-group {
+  width: var(--collection-header-image-width);
+  max-width: none;
+  align-self: center;
+}
+
+/* When the split itself reaches the screen edge, the image is allowed to
+   touch it while the copy keeps the theme's normal reading gutter. */
+.catalog-block-header--layout-side-by-side.catalog-block-header--image-width-edge .catalog-block-header__content > .layout-group > .layout-group__inner > :not(.collection-image-block) {
+  padding-inline: var(--gutter);
+}
+
 /* Collection header layout belongs to the section while title, description,
    and image presentation stay with their ordinary contextual/global blocks.
    These rules intentionally address only the default top-level Group pair:

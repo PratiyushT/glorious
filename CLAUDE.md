@@ -391,6 +391,13 @@ a merchant-entered filter label. No catalogue vocabulary belongs in Liquid.
   Never put title, eyebrow, description, image, or search-form content settings
   back on the section. The section minimum heights are floors, not fixed
   heights, so added blocks can always make the header taller.
+- **Collection image width is independent from copy measure.** Follow header
+  width keeps the image inside the selected header measure; Page width lets it
+  escape a narrow or reading-width header; Edge to edge ignores the page width
+  and gutters. In a side-by-side header the complete split expands so the image
+  can reach its edge while the copy retains the normal gutter. Collection image
+  also shares the full editorial ratio ladder and can inherit Shopify's focal
+  point or choose a simple crop focus.
 - **Animated catalogue titles retain real wrap points.** `prepareCatalogTitle`
   wraps visible letters for the stagger but appends ordinary spaces as text
   nodes; it never replaces them with non-breaking spaces. Catalogue Display

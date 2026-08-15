@@ -10,8 +10,21 @@
   assign image = collection.image | default: collection.featured_image
   assign image_alt = image.alt | default: collection.title
   assign show_placeholder = request.design_mode
+  assign position_override = ''
+  case block.settings.focus
+    when 'center'
+      assign position_override = '50% 50%'
+    when 'top'
+      assign position_override = '50% 0%'
+    when 'bottom'
+      assign position_override = '50% 100%'
+    when 'left'
+      assign position_override = '0% 50%'
+    when 'right'
+      assign position_override = '100% 50%'
+  endcase
 -%}
-{% render 'media-block', block: block, image: image, class: 'collection-image-block', alt: image_alt, show_placeholder: show_placeholder %}
+{% render 'media-block', block: block, image: image, class: 'collection-image-block', alt: image_alt, position_override: position_override, show_placeholder: show_placeholder %}
 
 {% schema %}
 {
@@ -27,8 +40,12 @@
         { "value": "1 / 1", "label": "t:settings_schema.options.square" },
         { "value": "4 / 5", "label": "t:settings_schema.options.portrait" },
         { "value": "3 / 4", "label": "t:settings_schema.options.tall_portrait" },
+        { "value": "2 / 3", "label": "t:settings_schema.options.extra_tall_portrait" },
+        { "value": "5 / 4", "label": "t:settings_schema.options.soft_landscape" },
         { "value": "4 / 3", "label": "t:settings_schema.options.landscape" },
-        { "value": "16 / 9", "label": "t:settings_schema.options.wide" }
+        { "value": "3 / 2", "label": "t:settings_schema.options.editorial_landscape" },
+        { "value": "16 / 9", "label": "t:settings_schema.options.wide" },
+        { "value": "21 / 9", "label": "t:settings_schema.options.panoramic" }
       ],
       "default": "4 / 5"
     },
@@ -41,6 +58,22 @@
         { "value": "contain", "label": "t:settings_schema.options.contain" }
       ],
       "default": "cover"
+    },
+    {
+      "type": "select",
+      "id": "focus",
+      "label": "t:blocks.collection_image.focus.label",
+      "info": "t:blocks.collection_image.focus.info",
+      "options": [
+        { "value": "image", "label": "t:blocks.collection_image.focus.image" },
+        { "value": "center", "label": "t:settings_schema.options.center" },
+        { "value": "top", "label": "t:settings_schema.options.top" },
+        { "value": "bottom", "label": "t:settings_schema.options.bottom" },
+        { "value": "left", "label": "t:settings_schema.options.left" },
+        { "value": "right", "label": "t:settings_schema.options.right" }
+      ],
+      "default": "image",
+      "visible_if": "{{ block.settings.fit == 'cover' }}"
     },
     { "type": "checkbox", "id": "arch", "label": "t:blocks.media.arch.label", "default": false },
     { "type": "checkbox", "id": "frame", "label": "t:blocks.media.frame.label", "default": false },

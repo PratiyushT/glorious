@@ -619,8 +619,12 @@
       "square": "Square",
       "portrait": "Portrait",
       "tall_portrait": "Tall portrait",
+      "extra_tall_portrait": "Extra tall portrait",
+      "soft_landscape": "Soft landscape",
       "landscape": "Landscape",
+      "editorial_landscape": "Editorial landscape",
       "wide": "Wide",
+      "panoramic": "Panoramic",
       "contain": "Fit the whole piece",
       "cover": "Fill the frame",
       "solid": "Solid",
@@ -980,7 +984,12 @@
       "name": "Collection card title"
     },
     "collection_image": {
-      "name": "Collection image"
+      "name": "Collection image",
+      "focus": {
+        "label": "Image focus",
+        "info": "Use the collection image's focal point, or choose which area remains visible when the frame crops it.",
+        "image": "Use image focal point"
+      }
     },
     "article_title": {
       "name": "Article title",
@@ -2130,6 +2139,13 @@
         "label": "Side-by-side order",
         "title_first": "Title left, image right",
         "image_first": "Image left, title right"
+      },
+      "image_width": {
+        "label": "Collection image width",
+        "info": "Let the image follow the header width, expand beyond a narrow header to the normal page width, or ignore page width and reach the screen edges.",
+        "contained": "Follow header width",
+        "page": "Page width",
+        "edge": "Edge to edge"
       },
       "show_overlay": {
         "label": "Show image overlay",

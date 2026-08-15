@@ -16,9 +16,12 @@
 
   assign collection_layout_class = ''
   assign collection_position_class = ''
+  assign collection_image_width_class = ''
   assign collection_overlay_class = ''
   if collection_layout != blank
     assign collection_layout_class = ' catalog-block-header--layout-' | append: collection_layout | replace: '_', '-'
+    assign resolved_collection_image_width = collection_image_width | default: 'contained'
+    assign collection_image_width_class = ' catalog-block-header--image-width-' | append: resolved_collection_image_width
     if collection_layout == 'side_by_side'
       assign collection_position_class = ' catalog-block-header--position-' | append: collection_media_position | replace: '_', '-'
     elsif collection_layout == 'title_over_image' and collection_overlay
@@ -28,7 +31,7 @@
 -%}
 
 <section
-  class="section catalog-block-header{% if search %} catalog-block-header--search{% endif %}{{ collection_layout_class }}{{ collection_position_class }}{{ collection_overlay_class }} catalog-block-header--{{ header_settings.height }} catalog-block-header--align-{{ header_settings.content_alignment }} catalog-block-header--vertical-{{ header_settings.vertical_alignment }} catalog-block-header--motion-{{ header_settings.motion }} scheme-{{ header_settings.color_scheme }}"
+  class="section catalog-block-header{% if search %} catalog-block-header--search{% endif %}{{ collection_layout_class }}{{ collection_position_class }}{{ collection_image_width_class }}{{ collection_overlay_class }} catalog-block-header--{{ header_settings.height }} catalog-block-header--align-{{ header_settings.content_alignment }} catalog-block-header--vertical-{{ header_settings.vertical_alignment }} catalog-block-header--motion-{{ header_settings.motion }} scheme-{{ header_settings.color_scheme }}"
   data-catalog-block-header
   data-catalog-header-motion="{{ header_settings.motion }}"
   {% if catalog_header_section != blank %}data-catalog-header-section="{{ catalog_header_section }}"{% endif %}

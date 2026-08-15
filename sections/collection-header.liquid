@@ -22,6 +22,7 @@
   catalog_canonical_url: canonical_url,
   collection_layout: section.settings.layout,
   collection_media_position: section.settings.media_position,
+  collection_image_width: section.settings.image_width,
   collection_overlay: section.settings.show_overlay,
   collection_overlay_color: section.settings.overlay_color,
   collection_overlay_strength: section.settings.overlay_strength
@@ -65,6 +66,19 @@
         { "value": "title_only", "label": "t:sections.collection_header.layout.title_only" }
       ],
       "default": "side_by_side"
+    },
+    {
+      "type": "select",
+      "id": "image_width",
+      "label": "t:sections.collection_header.image_width.label",
+      "info": "t:sections.collection_header.image_width.info",
+      "options": [
+        { "value": "contained", "label": "t:sections.collection_header.image_width.contained" },
+        { "value": "page", "label": "t:sections.collection_header.image_width.page" },
+        { "value": "edge", "label": "t:sections.collection_header.image_width.edge" }
+      ],
+      "default": "contained",
+      "visible_if": "{{ section.settings.layout != 'title_only' }}"
     },
     {
       "type": "select",

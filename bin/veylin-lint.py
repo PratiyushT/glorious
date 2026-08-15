@@ -669,7 +669,7 @@ def R14_shared_setting_contracts():
             'sections/featured-product.liquid',
         )),
         ('sections/collection-header.liquid', {
-            'layout', 'media_position', 'show_overlay', 'overlay_color',
+            'layout', 'media_position', 'image_width', 'show_overlay', 'overlay_color',
             'overlay_strength'
         }, {'height'}, (
             'sections/search-header.liquid',

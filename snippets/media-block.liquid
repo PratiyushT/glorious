@@ -8,6 +8,7 @@
   - class: optional root class
   - ratio: optional ratio override
   - fit: optional fit override
+  - position_override: optional object-position override
   - alt: optional image alt fallback
   - sizes, widths, src_width: responsive image hints
   - loading: responsive-image loading mode; defaults to lazy
@@ -34,10 +35,10 @@
   assign resolved_sizes = sizes | default: '(min-width: 60rem) 50vw, 100vw'
   assign resolved_widths = widths | default: '400,700,1000,1400'
   assign resolved_src_width = src_width | default: 1200
-  assign position = '50% 50%'
-  if image != blank and image.presentation.focal_point != blank
+  assign position = position_override | default: '50% 50%'
+  if position_override == blank and image != blank and image.presentation.focal_point != blank
     assign position = image.presentation.focal_point
-  elsif video != blank and video.preview_image.presentation.focal_point != blank
+  elsif position_override == blank and video != blank and video.preview_image.presentation.focal_point != blank
     assign position = video.preview_image.presentation.focal_point
   endif
 
