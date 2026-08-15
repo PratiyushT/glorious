@@ -2623,6 +2623,8 @@
     },
     "ring_builder": {
       "name": "Ring builder",
+      "enable_builder": "Enable ring builder",
+      "enable_builder_info": "Turn this off to pause the experience without deleting the page, redirect, or configuration.",
       "eyebrow": "Eyebrow",
       "heading": "Heading",
       "introduction": "Introduction",

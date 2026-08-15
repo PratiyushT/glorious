@@ -372,6 +372,8 @@
     }
   },
   "ring_builder": {
+    "disabled_heading": "Private ring appointments are temporarily unavailable",
+    "disabled_text": "Please contact us for personal assistance while this experience is paused.",
     "steps": {
       "label": "Ring builder steps",
       "setting": "Setting",

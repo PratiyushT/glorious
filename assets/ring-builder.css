@@ -6,6 +6,25 @@
   container-type: inline-size;
 }
 
+.ring-builder--offline {
+  display: grid;
+  min-block-size: min(32rem, 62vh);
+  place-content: center;
+  text-align: center;
+}
+
+.ring-builder--offline .ring-builder__title {
+  margin-inline: auto;
+}
+
+.ring-builder__offline-text {
+  max-inline-size: 42rem;
+  margin: var(--space-md) auto 0;
+  color: var(--c-muted);
+  font-size: var(--fs-lg);
+  line-height: 1.55;
+}
+
 .ring-builder__width--full {
   max-width: none;
 }

@@ -3,6 +3,7 @@
     "main": {
       "type": "ring-builder",
       "settings": {
+        "enable_builder": true,
         "color_scheme": "scheme_1",
         "content_width": "page",
         "eyebrow": "CREATE YOUR RING",

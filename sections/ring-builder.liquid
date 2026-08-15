@@ -1,5 +1,4 @@
 {{ 'ring-builder.css' | asset_url | stylesheet_tag }}
-<script src="{{ 'ring-builder.js' | asset_url }}" defer="defer"></script>
 
 {%- liquid
   assign setting_collection = section.settings.setting_collection
@@ -15,6 +14,9 @@
     assign initial_step = 'diamonds'
   endif
 -%}
+
+{%- if section.settings.enable_builder -%}
+<script src="{{ 'ring-builder.js' | asset_url }}" defer="defer"></script>
 
 <section
   class="section scheme-{{ section.settings.color_scheme }} ring-builder-section"
@@ -298,6 +300,18 @@
     </script>
   </div>
 </section>
+{%- else -%}
+  <section
+    class="section scheme-{{ section.settings.color_scheme }} ring-builder-section"
+    style="{% render 'section-style', padding_top: section.settings.padding_top, padding_bottom: section.settings.padding_bottom %}"
+    data-ring-builder-section
+  >
+    <div class="{{ width_class }} ring-builder ring-builder--offline">
+      <h1 class="display ring-builder__title">{{ 'ring_builder.disabled_heading' | t }}</h1>
+      <p class="ring-builder__offline-text">{{ 'ring_builder.disabled_text' | t }}</p>
+    </div>
+  </section>
+{%- endif -%}
 
 {% schema %}
 {
@@ -305,6 +319,13 @@
   "tag": "div",
   "enabled_on": { "templates": ["page"] },
   "settings": [
+    {
+      "type": "checkbox",
+      "id": "enable_builder",
+      "label": "t:sections.ring_builder.enable_builder",
+      "info": "t:sections.ring_builder.enable_builder_info",
+      "default": true
+    },
     { "type": "color_scheme", "id": "color_scheme", "label": "t:sections.all.color_scheme.label", "default": "scheme_1" },
     {
       "type": "select", "id": "content_width", "label": "t:sections.group.content_width.label",

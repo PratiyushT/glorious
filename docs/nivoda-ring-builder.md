@@ -40,6 +40,17 @@ checkout, payment, order creation, and customer notifications.
    builder section.
 5. Add `/build` to the desired Shopify navigation menu.
 
+### Pause or deactivate the builder
+
+Turn off **Enable ring builder** in the Ring builder section to stop all
+Nivoda requests immediately. The page remains in place and shows a branded
+temporary-unavailability message, so its template, settings, and `/build`
+redirect can be restored with the same toggle.
+
+For a complete storefront removal, also remove `/build` from navigation and
+unpublish the **Build Your Ring** Shopify page. The redirect can remain for a
+temporary pause; delete it only when `/build` is being retired permanently.
+
 Ring settings are ordinary Shopify products and variants. Keep unavailable
 settings unpublished or out of stock; the app rechecks the selected variant
 before accepting the final ring.
@@ -81,9 +92,11 @@ manually.
 ## Failure behavior and rollback
 
 - Nivoda or network failures leave the cart unchanged and provide a themed
-  retry state.
+  retry state. HTML host or proxy errors are never exposed as raw JSON parsing
+  messages.
 - A price or availability change is shown before Shopify cart submission.
 - If the theme app is unavailable, the normal store, cart, and checkout remain
   usable; only `/build` cannot validate a diamond.
-- To roll back, remove `/build` from navigation and unpublish the page. Existing
-  Shopify orders and cart lines are not altered.
+- To roll back temporarily, turn off **Enable ring builder**. For full removal,
+  remove `/build` from navigation and unpublish the page. Existing Shopify
+  orders and cart lines are not altered.

@@ -85,6 +85,22 @@
       retry.hidden = !canRetry;
     }
 
+    function readJson(response, fallbackMessage) {
+      return response.text().then(function (text) {
+        var payload;
+        try {
+          payload = text ? JSON.parse(text) : {};
+        } catch (error) {
+          throw new Error(fallbackMessage);
+        }
+        if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
+          throw new Error(fallbackMessage);
+        }
+        if (!response.ok) throw new Error(payload.error || fallbackMessage);
+        return payload;
+      });
+    }
+
     function setBusy(busy) {
       state.loading = busy;
       form.setAttribute('aria-busy', busy ? 'true' : 'false');
@@ -291,12 +307,7 @@
         headers: { Accept: 'application/json' },
         signal: state.controller.signal
       })
-        .then(function (response) {
-          return response.json().then(function (payload) {
-            if (!response.ok) throw new Error(payload.error || translations.connectionError);
-            return payload;
-          });
-        })
+        .then(function (response) { return readJson(response, translations.connectionError); })
         .then(function (payload) {
           state.loaded = true;
           renderResults(payload);
@@ -370,12 +381,7 @@
           currency: root.dataset.currency
         })
       })
-        .then(function (response) {
-          return response.json().then(function (payload) {
-            if (!response.ok) throw new Error(payload.error || translations.cartError);
-            return payload;
-          });
-        })
+        .then(function (response) { return readJson(response, translations.cartError); })
         .then(function (payload) {
           if (payload.diamond && payload.diamond.price !== state.diamond.price) {
             state.diamond = payload.diamond;
@@ -415,7 +421,7 @@
     showStep(state.step);
 
     fetch(root.dataset.proxyPath + '/config', { headers: { Accept: 'application/json' } })
-      .then(function (response) { return response.json(); })
+      .then(function (response) { return readJson(response, translations.connectionError); })
       .then(function (payload) {
         if (!payload.ready) showNotice(translations.connectionError, true, 'error');
       })
