@@ -1250,6 +1250,15 @@ hover band, the hero's portrait frame, the menu and search overlays, the bag
 drawer's checkout button. The components that most define the theme's look were
 the ones no colour setting could reach.
 
+**Literal colour values exist only as color-setting defaults and saved
+merchant choices in `config/`.** Rendered CSS, Liquid, JavaScript, and SVG use
+scheme variables, setting values, `currentColor`, or the absence of paint
+(`transparent` / `none`). Even fallback literals are forbidden: a fallback can
+quietly keep a component looking acceptable while disconnecting it from its
+selected scheme. R19 enforces this boundary across every executable theme
+file, while deliberately leaving Shopify's required color defaults and the
+merchant's saved color data alone.
+
 - **The brand palette is emitted at `:root` from two schemes**, not from seven
   new colour pickers. `--c-porcelain`, `--c-ink` and `--c-gold` come from the
   **page scheme**; `--c-noir`, `--c-noir-surface`, `--c-ivory` and
@@ -3288,7 +3297,10 @@ Quick view is a separate overlay shell, not a separate product implementation.
   second variant resolver, or a second gallery implementation.
 - The loading state is a transparent carrier for the shared loader; the actual
   modal entrance begins after its product markup arrives. Keep the close action
-  focusable throughout loading.
+  focusable throughout loading. The carrier retains the Quick View's selected
+  scheme: the mark uses that scheme's Loader color, and the close control uses
+  the same scheme's text, surface, and universal close style. Never replace
+  those with global brand aliases merely because the carrier sits over a veil.
 
 The acceptance test is behavioral parity: select the same option in Main
 product, Featured product, and Quick view and confirm the selected value, hidden

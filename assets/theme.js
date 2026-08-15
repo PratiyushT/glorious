@@ -1487,6 +1487,24 @@
     if (imageLqipViewport) imageLqipViewport.unobserve(image);
   }
 
+  function colorHasVisibleAlpha(value) {
+    if (!value || value === 'transparent') return false;
+
+    var alphaSource = '';
+    var slashIndex = value.lastIndexOf('/');
+    if (slashIndex !== -1) {
+      alphaSource = value.slice(slashIndex + 1);
+    } else {
+      var channels = value.split(',');
+      if (channels.length === 4) alphaSource = channels[3];
+    }
+
+    if (!alphaSource) return true;
+    var alpha = parseFloat(alphaSource);
+    if (alphaSource.indexOf('%') !== -1) alpha /= 100;
+    return isNaN(alpha) || alpha > 0;
+  }
+
   function measureImageLqipFrame(image) {
     var style = window.getComputedStyle(image);
     var width = parseFloat(style.width);
@@ -1513,8 +1531,7 @@
     var transform = style.transform === 'none' ? '' : style.transform;
     var transformOrigin = style.transformOrigin || '';
     var objectPosition = style.objectPosition || '50% 50%';
-    var backgroundColor = style.backgroundColor && style.backgroundColor !== 'transparent' &&
-      style.backgroundColor !== 'rgba(0, 0, 0, 0)' ? style.backgroundColor : '';
+    var backgroundColor = colorHasVisibleAlpha(style.backgroundColor) ? style.backgroundColor : '';
     return {
       backgroundColor: backgroundColor,
       backgroundFit: backgroundFit,

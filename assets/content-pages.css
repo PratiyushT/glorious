@@ -647,11 +647,11 @@
 }
 
 .form-status--success {
-  color: var(--c-success, #23623a);
+  color: var(--c-success);
 }
 
 .form-status--error {
-  color: var(--c-error, #8a2c22);
+  color: var(--c-error);
 }
 
 @media (max-width: 62.4375rem) {

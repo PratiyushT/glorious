@@ -5293,7 +5293,7 @@ a {
   gap: 10px;
   margin-inline: var(--cat-pad-x);
   padding: 14px 0 16px;
-  border-top: var(--border-width) solid color-mix(in srgb, color-mix(in srgb, var(--c-porcelain) 45%, #fff) 55%, transparent);
+  border-top: var(--border-width) solid color-mix(in srgb, color-mix(in srgb, var(--c-porcelain) 45%, var(--c-ivory)) 55%, transparent);
   opacity: 0;
   transform: translateY(0.875rem);
   transition: opacity 0.35s ease 0.06s, transform 0.55s var(--ease) 0.06s;
@@ -5309,12 +5309,12 @@ a {
   font-size: 0.75rem;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: color-mix(in srgb, var(--c-porcelain) 80%, #fff);
+  color: color-mix(in srgb, var(--c-porcelain) 80%, var(--c-ivory));
 }
 
 .cat-card__reveal-arrow {
   font-size: 1rem;
-  color: color-mix(in srgb, var(--c-porcelain) 80%, #fff);
+  color: color-mix(in srgb, var(--c-porcelain) 80%, var(--c-ivory));
   transition: transform 0.45s var(--ease);
 }
 
@@ -5688,7 +5688,7 @@ a {
   padding: 14px;
   background: color-mix(in srgb, var(--c-porcelain) 97%, transparent);
   color: var(--c-ink);
-  box-shadow: 0 22px 50px -24px color-mix(in srgb, #000 80%, transparent);
+  box-shadow: 0 22px 50px -24px color-mix(in srgb, var(--c-noir) 80%, transparent);
   animation: gj-look-card 0.42s var(--ease) both;
 }
 
@@ -8101,8 +8101,8 @@ input.quantity-control__value::-webkit-outer-spin-button {
 .announcement__marquee {
   min-width: 0;
   overflow: hidden;
-  -webkit-mask-image: linear-gradient(to right, transparent, black 1.25rem, black calc(100% - 1.25rem), transparent);
-  mask-image: linear-gradient(to right, transparent, black 1.25rem, black calc(100% - 1.25rem), transparent);
+  -webkit-mask-image: linear-gradient(to right, transparent, currentColor 1.25rem, currentColor calc(100% - 1.25rem), transparent);
+  mask-image: linear-gradient(to right, transparent, currentColor 1.25rem, currentColor calc(100% - 1.25rem), transparent);
 }
 
 .announcement__marquee-track {
@@ -8927,12 +8927,9 @@ body:has(.announcement[data-announcement-header]:not([hidden])) .nav--pill {
      veil. */
   border: 0;
   box-shadow: none;
-  /* On the veil, not on the panel: the dark ground takes the dark ground's
-     champagne and ivory whatever scheme the panel will arrive in — the
-     light schemes' deep gold disappears into the noir wash. The same pair
-     the dark overlays declare. */
-  --c-accent: var(--c-champagne);
-  color: var(--c-ivory);
+  /* The transparent carrier keeps its selected scheme. The Loader color is
+     `--loader-ink` from that scheme, while the shared close control inherits
+     the same scheme's text and surface instead of a brand-colour override. */
   animation: gj-fade-in 0.3s ease both;
 }
 
@@ -9193,7 +9190,7 @@ body:has(.announcement[data-announcement-header]:not([hidden])) .nav--pill {
   text-transform: uppercase;
   line-height: 1;
   white-space: nowrap;
-  color: color-mix(in srgb, var(--c-porcelain) 70%, #fff);
+  color: color-mix(in srgb, var(--c-porcelain) 70%, var(--c-ivory));
   /* Letterspacing pads the right of the last letter but not the left of the
      first, so the label reads off-centre without this. */
   text-indent: 0.17em;

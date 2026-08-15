@@ -4,6 +4,7 @@
   assign formatted_initial_value = gift_card.initial_value | money_without_trailing_zeros
   assign formatted_initial_value_stripped = formatted_initial_value | strip_html
   assign formatted_balance = gift_card.balance | money
+  assign gift_card_scheme = settings.page_scheme
   assign gift_card_image_url = 'gift-card/card.jpg' | shopify_asset_url
   assign gift_card_lqip_separator = '?'
   if gift_card_image_url contains '?'
@@ -58,7 +59,7 @@
       display: block;
       overflow: hidden;
       pointer-events: none;
-      background-color: #fff;
+      background-color: {{ gift_card_scheme.settings.surface | default: gift_card_scheme.settings.background }};
       background-image: var(--gift-card-lqip-source);
       background-position: var(--gift-card-lqip-position, 50% 50%) !important;
       background-repeat: no-repeat !important;

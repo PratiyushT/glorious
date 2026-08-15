@@ -836,6 +836,64 @@ def R18_json_composition():
                         "missing block '%s'" % (section_id, block_id))
 
 
+def R19_no_runtime_color_literals():
+    """Rendered theme code takes colours from settings and semantic tokens.
+
+    Literal values are valid only where Shopify requires the merchant-facing
+    colour defaults (`config/settings_schema.json`) and where the merchant's
+    saved choices live (`config/settings_data.json`). Executable CSS, Liquid,
+    JavaScript and SVG must use scheme variables, `currentColor`, transparent,
+    or a value emitted from a setting. Otherwise a component silently stops
+    following its selected colour scheme.
+    """
+    literal = re.compile(
+        r'#[0-9a-f]{3,8}\b|'
+        r'\b(?:rgb|rgba|hsl|hsla|hwb|lab|lch|oklab|oklch|color)\s*\(',
+        re.I,
+    )
+    named_css = re.compile(
+        r'(?<![-\w])(?:black|white|red|blue|green|gray|grey)(?![-\w])',
+        re.I,
+    )
+    named_markup = re.compile(
+        r'\b(?:fill|stroke|color)\s*=\s*([\'"])'
+        r'(?:black|white|red|blue|green|gray|grey)\1',
+        re.I,
+    )
+
+    def blank(m):
+        return re.sub(r'[^\n]', ' ', m.group(0))
+
+    for path in walk_files('assets', '.css'):
+        src = re.sub(r'/\*.*?\*/', blank, read(path), flags=re.S)
+        for pattern in (literal, named_css):
+            for match in pattern.finditer(src):
+                line = src.count('\n', 0, match.start()) + 1
+                err('R19', '%s:%d' % (rel(path), line),
+                    'runtime colour literal %r; use a scheme token'
+                    % match.group(0))
+
+    for path in walk_files('assets', '.js'):
+        src = re.sub(r'/\*.*?\*/|//[^\n]*', blank, read(path), flags=re.S)
+        for match in literal.finditer(src):
+            line = src.count('\n', 0, match.start()) + 1
+            err('R19', '%s:%d' % (rel(path), line),
+                'runtime colour literal %r; use a scheme token'
+                % match.group(0))
+
+    for sub in ('layout', 'sections', 'blocks', 'snippets', 'templates'):
+        for path in walk_files(sub, '.liquid'):
+            src = strip_comments(read(path))
+            src = re.sub(r'<!--.*?-->|/\*.*?\*/|//[^\n]*', blank, src,
+                         flags=re.S)
+            for pattern in (literal, named_markup):
+                for match in pattern.finditer(src):
+                    line = src.count('\n', 0, match.start()) + 1
+                    err('R19', '%s:%d' % (rel(path), line),
+                        'runtime colour literal %r; use a scheme token or '
+                        'setting value' % match.group(0))
+
+
 RULES = OrderedDict([
     ('R01', (R01_range_steps, 'range steps are legal (Shopify validates server-side)')),
     ('R02', (R02_select_defaults, "a select's default is one of its options")),
@@ -855,6 +913,7 @@ RULES = OrderedDict([
     ('R16', (R16_shared_button_markup, 'CTA button markup uses the shared renderer')),
     ('R17', (R17_snippet_graph, 'snippet calls resolve and no snippet is orphaned')),
     ('R18', (R18_json_composition, 'JSON templates/groups use real sections within limits')),
+    ('R19', (R19_no_runtime_color_literals, 'runtime colours use scheme tokens, never literals')),
 ])
 
 

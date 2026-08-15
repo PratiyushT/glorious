@@ -81,13 +81,13 @@
 .customer-errors {
   padding: var(--step-small);
   border: 1px solid currentColor;
-  color: var(--c-error, #8a2c22);
+  color: var(--c-error);
 }
 
 .customer-success {
   padding: var(--step-small);
   border: 1px solid currentColor;
-  color: var(--c-success, #23623a);
+  color: var(--c-success);
 }
 
 .customer-recovery summary,

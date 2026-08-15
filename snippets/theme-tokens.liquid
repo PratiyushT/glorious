@@ -224,19 +224,19 @@
       assign light = settings.color_schemes[settings.page_scheme.id] | default: settings.color_schemes.scheme_1
       assign dark = settings.color_schemes[settings.dark_scheme.id] | default: settings.color_schemes.scheme_2
     -%}
-    --c-porcelain: {{ light.settings.background | default: '#F4F0E8' }};
-    --c-ink: {{ light.settings.text | default: '#191510' }};
-    --c-gold: {{ light.settings.accent | default: '#9A7836' }};
-    --c-noir: {{ dark.settings.background | default: '#0D0C0A' }};
-    --c-noir-surface: {{ dark.settings.surface | default: '#14110D' }};
-    --c-ivory: {{ dark.settings.text | default: '#EFE9DC' }};
-    --c-champagne: {{ dark.settings.accent | default: '#C7A15C' }};
+    --c-porcelain: {{ light.settings.background }};
+    --c-ink: {{ light.settings.text }};
+    --c-gold: {{ light.settings.accent | default: light.settings.text }};
+    --c-noir: {{ dark.settings.background }};
+    --c-noir-surface: {{ dark.settings.surface | default: dark.settings.background }};
+    --c-ivory: {{ dark.settings.text }};
+    --c-champagne: {{ dark.settings.accent | default: dark.settings.text }};
     {%- comment -%}
-      A shade under the noir, for the veils that sit behind a dark panel. The
-      design states #0B0A08 against its #0D0C0A; derived rather than stored so
-      it follows the merchant's noir instead of drifting away from it.
+      The deepest overlay ground is the merchant's nominated dark background.
+      A separate literal black would stop following that scheme, and mixing in
+      another scheme's text can lighten rather than deepen a custom palette.
     {%- endcomment -%}
-    --c-noir-deep: color-mix(in srgb, var(--c-noir) 88%, #000);
+    --c-noir-deep: var(--c-noir);
 
     /* ---- Motion ------------------------------------------------------
        The merchant picks a named step; motion-step.liquid resolves it to a
@@ -319,11 +319,11 @@
     --c-focus: {{ scheme.settings.focus | default: scheme.settings.accent | default: scheme.settings.text }};
     --c-selection-bg: {{ scheme.settings.focus | default: scheme.settings.accent | default: scheme.settings.text }};
     --c-selection-text: {{ scheme.settings.background }};
-    --c-success: {{ scheme.settings.success | default: '#34735B' }};
-    --c-warning: {{ scheme.settings.accent | default: '#9A6B1F' }};
-    --c-error: {{ scheme.settings.error | default: '#A2422C' }};
+    --c-success: {{ scheme.settings.success | default: scheme.settings.accent }};
+    --c-warning: {{ scheme.settings.accent | default: scheme.settings.text }};
+    --c-error: {{ scheme.settings.error | default: scheme.settings.accent }};
     --loader-ink: {{ scheme.settings.loader | default: scheme.settings.accent }};
-    --veil-tint: {{ scheme.settings.veil | default: dark.settings.background | default: '#0D0C0A' }};
+    --veil-tint: {{ scheme.settings.veil | default: dark.settings.background }};
     --scrollbar-thumb: {{ scheme.settings.scrollbar | default: scheme.settings.muted }};
     --scrollbar-thumb-hover: {{ scheme.settings.scrollbar_hover | default: scheme.settings.text }};
     --badge-sale-bg: {{ scheme.settings.badge_sale_background | default: scheme.settings.filled_background }};
