@@ -1,13 +1,14 @@
 {%- comment -%}
-  Announcement bar is an ordinary page section. It renders exactly where the
-  merchant places it and intentionally has no page-visibility setting.
+  Announcement header is the header-group version. It shares the complete
+  renderer with Announcement bar and adds only page visibility and header
+  placement behavior.
 {%- endcomment -%}
 
-{% render 'announcement', section: section, is_header: false %}
+{% render 'announcement', section: section, is_header: true %}
 
 {% schema %}
 {
-  "name": "t:sections.announcement_bar.name",
+  "name": "t:sections.announcement_header.name",
   "tag": "aside",
   "settings": [
     {
@@ -15,6 +16,16 @@
       "id": "color_scheme",
       "label": "t:sections.all.color_scheme.label",
       "default": "scheme_2"
+    },
+    {
+      "type": "select",
+      "id": "visibility",
+      "label": "t:sections.announcement_bar.visibility.label",
+      "options": [
+        { "value": "everywhere", "label": "t:sections.announcement_bar.visibility.everywhere" },
+        { "value": "home", "label": "t:sections.announcement_bar.visibility.home" }
+      ],
+      "default": "everywhere"
     },
     {
       "type": "select",
@@ -222,7 +233,7 @@
   ],
   "presets": [
     {
-      "name": "t:sections.announcement_bar.name",
+      "name": "t:sections.announcement_header.name",
       "blocks": [
         { "type": "message", "settings": { "text": "Complimentary insured shipping on every order" } },
         { "type": "message", "settings": { "text": "A private welcome offer awaits" } },
@@ -230,7 +241,7 @@
       ]
     }
   ],
-  "disabled_on": {
+  "enabled_on": {
     "groups": ["header"]
   }
 }

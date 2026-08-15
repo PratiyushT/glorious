@@ -7947,11 +7947,13 @@ input.quantity-control__value::-webkit-outer-spin-button {
   flex: 0 0 auto;
 }
 
-/* ---- Announcement bar -------------------------------------------- */
+/* ---- Announcement header / bar ----------------------------------- */
 
-/* The section wrapper is the sticky element. A sticky child would be trapped
-   by a wrapper exactly its own height and would scroll away immediately. */
-[id^='shopify-section-']:has(> .announcement:not([hidden])) {
+/* Only the header-group version is sticky. Announcement bar is an ordinary
+   section whose wrapper stays exactly where the merchant placed it. The
+   header section wrapper is the sticky element because a sticky child would
+   be trapped by a wrapper exactly its own height. */
+[id^='shopify-section-']:has(> .announcement[data-announcement-header]:not([hidden])) {
   position: sticky;
   top: 0;
   z-index: 121;
@@ -8152,11 +8154,11 @@ input.quantity-control__value::-webkit-outer-spin-button {
 /* The text and its em-based padding determine the bar's natural height. The
    controller measures that rendered result so the fixed navigation follows
    typography changes without exposing a separate height setting. */
-body:has(.announcement:not([hidden])) .nav {
+body:has(.announcement[data-announcement-header]:not([hidden])) .nav {
   top: var(--announcement-bar-height, 2.5rem);
 }
 
-body:has(.announcement:not([hidden])) .nav--pill {
+body:has(.announcement[data-announcement-header]:not([hidden])) .nav--pill {
   top: calc(var(--announcement-bar-height, 2.5rem) + 0.875rem);
 }
 

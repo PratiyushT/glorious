@@ -3,7 +3,7 @@
   "type": "header",
   "sections": {
     "announcement": {
-      "type": "announcement-bar",
+      "type": "announcement-header",
       "blocks": {
         "shipping": {
           "type": "message",

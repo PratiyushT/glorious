@@ -324,20 +324,23 @@
     scope.querySelectorAll('[data-overlay]').forEach(registerOverlay);
   }
 
-  /* ---- Announcement header ------------------------------------------
+  /* ---- Announcement header / bar ------------------------------------
      Rotate mode hands one real message slot to the previous/next controls.
      Marquee mode moves one duplicated visual track and stops that motion when
-     it leaves the viewport. Both modes share the theme-wide close control. */
+     it leaves the viewport. Both modes share the theme-wide close control;
+     only the header-group version measures the fixed navigation offset. */
 
   function initAnnouncements(scope) {
     scope.querySelectorAll('[data-announcement]').forEach(function (root) {
       if (!bindOnce(root, 'boundAnnouncement')) return;
 
       var storageKey = root.dataset.announcementStorageKey || '';
+      var isHeader = root.hasAttribute('data-announcement-header');
       var heightObserver = null;
       var resizeFallback = null;
 
       function syncAnnouncementHeight() {
+        if (!isHeader) return;
         var height = root.hidden ? 0 : Math.ceil(root.getBoundingClientRect().height);
         document.documentElement.style.setProperty('--announcement-bar-height', height + 'px');
       }

@@ -1,0 +1,122 @@
+{%- comment -%}
+  Shared Announcement header / Announcement bar renderer.
+
+  Rotate mode gives every nonblank message one shared slot with previous and
+  next controls at its sides. Marquee mode keeps every message in one seamless
+  repeating group and pauses the CSS motion whenever the bar is out of view.
+  The close control uses the theme-wide Text/Icon setting.
+{%- endcomment -%}
+
+{%- liquid
+  assign message_count = 0
+  for block in section.blocks
+    if block.settings.text != blank
+      assign message_count = message_count | plus: 1
+    endif
+  endfor
+
+  assign mode = section.settings.mode | default: 'marquee'
+  assign show_announcement = true
+  if is_header and section.settings.visibility == 'home' and request.page_type != 'index'
+    assign show_announcement = false
+  endif
+
+  case section.settings.marquee_speed
+    when 'relaxed'
+      assign marquee_duration = 42
+    when 'brisk'
+      assign marquee_duration = 18
+    else
+      assign marquee_duration = 28
+  endcase
+
+  capture announcement_text_style
+    render 'text-style', preset: section.settings.text_style, font_style: section.settings.override_font, font_size: section.settings.override_size, color: section.settings.text_color, line_height: section.settings.override_leading, text_case: section.settings.override_case, letter_spacing: section.settings.override_tracking
+  endcapture
+-%}
+
+{%- if show_announcement and message_count > 0 -%}
+  <div
+    class="announcement announcement--{{ mode }}{% if mode == 'rotate' %} announcement--{{ section.settings.animation_style | default: 'slide' }}{% endif %} scheme-{{ section.settings.color_scheme }}"
+    data-announcement
+    {% if is_header %}data-announcement-header{% endif %}
+    data-announcement-mode="{{ mode }}"
+    data-announcement-autoplay="{{ section.settings.auto_rotate }}"
+    data-announcement-interval="{{ section.settings.interval | times: 1000 }}"
+    data-announcement-storage-key="{% if is_header %}veylin-announcement-header{% else %}veylin-announcement-{{ section.id }}{% endif %}"
+    style="--announcement-marquee-duration: {{ marquee_duration }}s;{{ announcement_text_style }}{% unless section.settings.alignment == 'inherit' %}text-align:{{ section.settings.alignment }};{% endunless %}"
+  >
+    {%- if mode == 'marquee' -%}
+      <div class="announcement__inner announcement__inner--marquee{% if section.settings.content_width == 'page' %} page-width{% else %} announcement__inner--full{% endif %}">
+        <div class="announcement__marquee" data-announcement-marquee>
+          <div class="announcement__marquee-track" data-announcement-marquee-track>
+            {%- for copy_index in (1..2) -%}
+              <div class="announcement__marquee-group"{% if copy_index == 2 %} aria-hidden="true"{% endif %}>
+                {%- for block in section.blocks -%}
+                  {%- if block.settings.text != blank -%}
+                    <div class="announcement__marquee-item"{% if copy_index == 1 %} {{ block.shopify_attributes }}{% endif %}>
+                      {%- if block.settings.link != blank -%}
+                        <a href="{{ block.settings.link }}">{{ block.settings.text }}</a>
+                      {%- else -%}
+                        <span>{{ block.settings.text }}</span>
+                      {%- endif -%}
+                    </div>
+                  {%- endif -%}
+                {%- endfor -%}
+              </div>
+            {%- endfor -%}
+          </div>
+        </div>
+
+        {%- capture close_attributes -%}data-announcement-close{%- endcapture -%}
+        {% render 'overlay-close', class: 'announcement__close', attributes: close_attributes %}
+      </div>
+    {%- else -%}
+      <div class="announcement__inner announcement__inner--rotate{% if section.settings.content_width == 'page' %} page-width{% else %} announcement__inner--full{% endif %}">
+        {%- if message_count > 1 -%}
+          <button class="announcement__control announcement__control--previous" type="button" data-announcement-prev aria-label="{{ 'announcement.previous' | t }}">
+            {% render 'icon', icon: 'chevron-left', width: 8, height: 12 %}
+          </button>
+        {%- else -%}
+          <span class="announcement__control-spacer" aria-hidden="true"></span>
+        {%- endif -%}
+
+        <div
+          class="announcement__viewport"
+          data-announcement-viewport
+          aria-live="{% if section.settings.auto_rotate %}off{% else %}polite{% endif %}"
+        >
+          {%- assign rendered_index = 0 -%}
+          {%- for block in section.blocks -%}
+            {%- if block.settings.text != blank -%}
+              <div
+                class="announcement__message{% if rendered_index == 0 %} is-active{% endif %}"
+                data-announcement-message
+                {% unless rendered_index == 0 %}hidden{% endunless %}
+                {{ block.shopify_attributes }}
+              >
+                {%- if block.settings.link != blank -%}
+                  <a href="{{ block.settings.link }}">{{ block.settings.text }}</a>
+                {%- else -%}
+                  <span>{{ block.settings.text }}</span>
+                {%- endif -%}
+              </div>
+              {%- assign rendered_index = rendered_index | plus: 1 -%}
+            {%- endif -%}
+          {%- endfor -%}
+        </div>
+
+        {%- if message_count > 1 -%}
+          <button class="announcement__control announcement__control--next" type="button" data-announcement-next aria-label="{{ 'announcement.next' | t }}">
+            {% render 'icon', icon: 'chevron-right', width: 8, height: 12 %}
+          </button>
+        {%- else -%}
+          <span class="announcement__control-spacer" aria-hidden="true"></span>
+        {%- endif -%}
+
+        {%- capture close_attributes -%}data-announcement-close{%- endcapture -%}
+        {% render 'overlay-close', class: 'announcement__close', attributes: close_attributes %}
+      </div>
+    {%- endif -%}
+  </div>
+{%- endif -%}

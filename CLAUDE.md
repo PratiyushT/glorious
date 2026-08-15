@@ -1347,18 +1347,17 @@ normal destination CTA. The saved section handle and overlay name stay
 existing `#newsletter` menu actions and the post-subscription return continue
 to work while the editor-facing section is named Splash screens.
 
-**The Announcement bar has two explicit modes.** Rotate keeps one real message
-slot with Previous and Next on its sides; it has no Pause control. Marquee
-groups every nonblank Message into one seamless, duplicated visual track with
-Relaxed, Balanced, and Brisk speed presets. Motion pauses while out of view, on
-hover/focus, on a hidden tab, in reduced motion, and while a block is selected
-in the Theme Editor. The theme-wide Text/Icon close choice dismisses the bar
-for the session. Visibility can be every page or home only. The bar has no
-height setting: its text line and em-based padding/controls determine its
-natural height, which the controller measures for the fixed nav offset. The
-inner row defaults to Full screen and may be switched back to the capped Page
-width. The section exposes the same bounded typography presets and overrides
-as Text blocks.
+**Announcement header and Announcement bar are two placements of one shared
+renderer.** Both expose Rotate (Previous/Next, no Pause), Marquee, the three
+speed presets, content width, typography, messages, links, and the theme-wide
+Text/Icon close choice. Motion pauses while out of view, on hover/focus, on a
+hidden tab, in reduced motion, and while a block is selected in the Theme
+Editor. `announcement-header` is header-group only, may show everywhere or on
+the home page only, stays sticky, and alone measures the fixed nav offset.
+`announcement-bar` is an ordinary addable page section with no Show on setting;
+it renders in normal flow exactly where the merchant places it and cannot move
+the nav. Each instance has its own session dismissal key. Neither exposes a
+height setting: text and em-based controls determine the natural height.
 
 The design states its own model: *"Four variants carry every action across the
 store. Pill geometry, uppercase Karla at .15em, and a single gold accent.
@@ -2000,10 +1999,10 @@ but its two behavior blocks are reusable outside that section.
 `hero`, `featured-products` (Most Loved), `collection-list` (Our Products),
 `lookbook` (Shop the look), four `group` instances (feature cards, Craft,
 About, Visit), and `testimonials` — plus `header`,
-`announcement-bar`, `header`, `cart-drawer`, composed `quick-view`,
+`announcement-header`, `header`, `cart-drawer`, composed `quick-view`,
 the editor-facing Splash screens (`newsletter-popup`), and `cookie-banner` in
-the header group; `footer` in the footer group; and general-purpose `rich-text`
-and `newsletter` sections.
+the header group; `footer` in the footer group; and general-purpose
+`announcement-bar`, `rich-text`, and `newsletter` sections.
 `predictive-search` remains a schema-less Section Rendering endpoint. Quick
 view is a real header-group section with merchant-ordered Product blocks; its
 saved section id is fetched against a product URL so those blocks receive the

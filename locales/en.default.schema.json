@@ -1588,6 +1588,9 @@
         "info": "One Heading 1 per page. Sections below it should be Heading 2 so the page reads in order."
       }
     },
+    "announcement_header": {
+      "name": "Announcement header"
+    },
     "announcement_bar": {
       "name": "Announcement bar",
       "visibility": {
