@@ -65,6 +65,7 @@
         quick_source: section.settings.quick_links_source,
         quick_filter: quick_filter,
         quick_links_limit: section.settings.quick_links_limit,
+        quick_button_style: section.settings.collection_filter_button_style,
         show_filters: section.settings.show_filters,
         show_sort: section.settings.show_sort,
         include_drawer: false
@@ -154,7 +155,8 @@
     {
       "type": "select",
       "id": "controls_style",
-      "label": "t:sections.catalog.control_style",
+      "label": "t:sections.main_collection.other_control_style.label",
+      "info": "t:sections.main_collection.other_control_style.info",
       "options": [
         { "value": "pills", "label": "t:sections.catalog.outlined_pills" },
         { "value": "soft", "label": "t:sections.catalog.soft_pills" },
@@ -195,6 +197,22 @@
         { "value": "none", "label": "t:sections.main_collection.quick_links_source.none" }
       ],
       "default": "collections"
+    },
+    {
+      "type": "select",
+      "id": "collection_filter_button_style",
+      "label": "t:sections.main_collection.collection_filter_button_style.label",
+      "info": "t:sections.main_collection.collection_filter_button_style.info",
+      "options": [
+        { "value": "filled", "label": "t:settings_schema.button_style.filled" },
+        { "value": "outline", "label": "t:settings_schema.button_style.outline" },
+        { "value": "link", "label": "t:settings_schema.button_style.link" },
+        { "value": "quiet", "label": "t:settings_schema.button_style.quiet" },
+        { "value": "arrow", "label": "t:settings_schema.button_style.arrow" },
+        { "value": "arrow_outline", "label": "t:settings_schema.button_style.arrow_outline" }
+      ],
+      "default": "outline",
+      "visible_if": "{{ section.settings.quick_links_source != 'none' }}"
     },
     {
       "type": "select",

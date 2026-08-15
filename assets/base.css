@@ -3628,7 +3628,7 @@ a {
   display: none;
 }
 
-.catalog-pill,
+.catalog-pill:not(.btn),
 .catalog-control-button,
 .catalog-sort__select,
 .catalog-search-form__clear {
@@ -3641,7 +3641,7 @@ a {
   white-space: nowrap;
 }
 
-.catalog-pill {
+.catalog-pill:not(.btn) {
   padding: 0.625rem 1.125rem;
   font-size: var(--micro-size);
   line-height: 1.2;
@@ -3650,26 +3650,26 @@ a {
   transition: color 180ms ease, background 180ms ease, border-color 180ms ease;
 }
 
-.catalog-pill:hover,
-.catalog-pill:focus-visible,
-.catalog-pill.is-active {
+.catalog-pill:not(.btn):hover,
+.catalog-pill:not(.btn):focus-visible,
+.catalog-pill:not(.btn).is-active {
   border-color: var(--c-text);
   background: var(--c-text);
   color: var(--c-bg);
 }
 
-.catalog-controls--style-soft :is(.catalog-pill, .catalog-control-button, .catalog-sort__select) {
+.catalog-controls--style-soft :is(.catalog-pill:not(.btn), .catalog-control-button, .catalog-sort__select) {
   border-color: transparent;
   background: color-mix(in srgb, var(--c-text) 7%, transparent);
 }
 
-.catalog-controls--style-soft :is(.catalog-pill, .catalog-control-button):is(:hover, :focus-visible, .is-active) {
+.catalog-controls--style-soft :is(.catalog-pill:not(.btn), .catalog-control-button):is(:hover, :focus-visible, .is-active) {
   background: var(--c-text);
   color: var(--c-bg);
 }
 
-.catalog-controls--style-line :is(.catalog-pill, .catalog-control-button, .catalog-sort__select),
-.catalog-controls--style-minimal :is(.catalog-pill, .catalog-control-button, .catalog-sort__select) {
+.catalog-controls--style-line :is(.catalog-pill:not(.btn), .catalog-control-button, .catalog-sort__select),
+.catalog-controls--style-minimal :is(.catalog-pill:not(.btn), .catalog-control-button, .catalog-sort__select) {
   min-height: auto;
   padding: 0.5rem 0.15rem;
   border: 0;
@@ -3677,17 +3677,17 @@ a {
   background: transparent;
 }
 
-.catalog-controls--style-line :is(.catalog-pill, .catalog-control-button, .catalog-sort__select) {
+.catalog-controls--style-line :is(.catalog-pill:not(.btn), .catalog-control-button, .catalog-sort__select) {
   border-bottom: var(--border-width) solid transparent;
 }
 
-.catalog-controls--style-line :is(.catalog-pill, .catalog-control-button):is(:hover, :focus-visible, .is-active) {
+.catalog-controls--style-line :is(.catalog-pill:not(.btn), .catalog-control-button):is(:hover, :focus-visible, .is-active) {
   border-bottom-color: currentColor;
   background: transparent;
   color: var(--c-text);
 }
 
-.catalog-controls--style-minimal .catalog-pill.is-active {
+.catalog-controls--style-minimal .catalog-pill:not(.btn).is-active {
   background: transparent;
   color: var(--c-accent);
 }
@@ -3695,6 +3695,43 @@ a {
 .catalog-pill.is-disabled {
   opacity: 0.4;
   pointer-events: none;
+}
+
+/* Collection filters are real shared Buttons. An active destination holds
+   that button type's themed hover state so selection remains visible without
+   inventing another palette or motion system. */
+.catalog-pill.btn--primary.is-active {
+  background-color: var(--btn-bg-hover, var(--btn-bg, var(--c-button-hover)));
+  color: var(--btn-text-hover, var(--btn-text, var(--c-button-label-hover)));
+  border-color: var(--btn-border-hover, var(--btn-bg-hover, var(--btn-border, var(--btn-bg, var(--c-button-border-hover)))));
+}
+
+.catalog-pill.btn--outline.is-active {
+  background-color: var(--btn-bg-hover, var(--btn-border-hover, var(--btn-border, var(--c-outline-bg-hover))));
+  color: var(--btn-text-hover, var(--btn-text, var(--c-outline-text-hover)));
+  border-color: var(--btn-border-hover, var(--btn-border, var(--c-outline-border-hover)));
+}
+
+.catalog-pill.btn--link.is-active {
+  color: var(--btn-text-hover, var(--btn-text, var(--c-link-button-text-hover)));
+  border-color: var(--btn-underline-hover, var(--btn-underline, var(--c-link-button-rule-hover)));
+}
+
+.catalog-pill.btn--quiet.is-active {
+  color: var(--btn-text-hover, var(--btn-text, var(--c-quiet-button-text-hover)));
+  border-color: var(--btn-underline-hover, var(--btn-underline, var(--c-quiet-button-rule-hover)));
+}
+
+.catalog-pill.btn--arrow:not(.btn--outline).is-active {
+  color: var(--btn-text-hover, var(--btn-text, var(--c-arrow-button-text-hover)));
+}
+
+.catalog-pill.btn--arrow:not(.btn--outline).is-active > .btn__arrow {
+  color: var(--btn-arrow-hover, var(--btn-arrow, var(--c-arrow-button-arrow-hover)));
+}
+
+.catalog-pill.btn--arrow.btn--outline.is-active > .btn__arrow {
+  color: var(--btn-arrow-hover, var(--btn-arrow, var(--c-arrow-outline-arrow-hover)));
 }
 
 .catalog-controls__actions {

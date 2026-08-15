@@ -3,8 +3,8 @@
   drawer. Shopify remains authoritative for every facet and sort option.
 
   Accepts: results, section_id, section, context, form_action, clear_url,
-  sort_by, quick_source, quick_filter, quick_links_limit, show_filters,
-  show_sort, search_terms, search_types, include_drawer.
+  sort_by, quick_source, quick_filter, quick_links_limit, quick_button_style,
+  show_filters, show_sort, search_terms, search_types, include_drawer.
 {%- endcomment -%}
 
 {%- liquid
@@ -21,6 +21,7 @@
   assign current_sort = sort_by | default: results.default_sort_by
   assign drawer_name = 'catalog-filters-' | append: section_id
   assign quick_links_limit_number = quick_links_limit | default: 6 | plus: 0
+  assign all_filter_label = 'collections.all' | t
 
   comment
     One word for the whole catalog control system — Theme settings → Catalog.
@@ -49,24 +50,65 @@
   {%- if quick_source != 'none' -%}
     <div class="catalog-controls__rail" data-catalog-rail>
       {%- if quick_source == 'collections' -%}
-        <a class="catalog-pill{% if context == 'collection' and results.handle == 'all' %} is-active{% endif %}" href="{{ routes.all_products_collection_url }}" data-catalog-link data-catalog-collection-link>{{ 'collections.all' | t }}</a>
+        {%- liquid
+          assign all_collection_is_active = false
+          if context == 'collection' and results.handle == 'all'
+            assign all_collection_is_active = true
+          endif
+        -%}
+        {%- if quick_button_style != blank -%}
+          {% render 'catalog-filter-button', label: all_filter_label, link: routes.all_products_collection_url, style: quick_button_style, active: all_collection_is_active, collection_link: true %}
+        {%- else -%}
+          <a class="catalog-pill{% if context == 'collection' and results.handle == 'all' %} is-active{% endif %}" href="{{ routes.all_products_collection_url }}" data-catalog-link data-catalog-collection-link>{{ all_filter_label }}</a>
+        {%- endif -%}
 
         {%- assign rendered_links = 0 -%}
         {%- for quick_collection in collections -%}
           {%- unless quick_collection.handle == 'all' or hidden_handles contains quick_collection.handle -%}
             {%- if rendered_links < quick_links_limit_number -%}
-              <a class="catalog-pill{% if context == 'collection' and quick_collection.handle == results.handle %} is-active{% endif %}" href="{{ quick_collection.url }}" data-catalog-link data-catalog-collection-link>{{ quick_collection.title }}</a>
+              {%- assign quick_collection_is_active = false -%}
+              {%- if context == 'collection' and quick_collection.handle == results.handle -%}
+                {%- assign quick_collection_is_active = true -%}
+              {%- endif -%}
+              {%- if quick_button_style != blank -%}
+                {% render 'catalog-filter-button', label: quick_collection.title, link: quick_collection.url, style: quick_button_style, active: quick_collection_is_active, collection_link: true %}
+              {%- else -%}
+                <a class="catalog-pill{% if context == 'collection' and quick_collection.handle == results.handle %} is-active{% endif %}" href="{{ quick_collection.url }}" data-catalog-link data-catalog-collection-link>{{ quick_collection.title }}</a>
+              {%- endif -%}
               {%- assign rendered_links = rendered_links | plus: 1 -%}
             {%- endif -%}
           {%- endunless -%}
         {%- endfor -%}
       {%- elsif quick_source == 'filter' and quick_filter != blank -%}
-        <a class="catalog-pill{% if quick_filter.active_values.size == 0 %} is-active{% endif %}" href="{{ clear_url }}" data-catalog-link data-catalog-clear-param="{{ quick_filter.param_name | escape }}">{{ 'collections.all' | t }}</a>
+        {%- assign all_filter_is_active = false -%}
+        {%- if quick_filter.active_values.size == 0 -%}
+          {%- assign all_filter_is_active = true -%}
+        {%- endif -%}
+        {%- if quick_button_style != blank -%}
+          {% render 'catalog-filter-button', label: all_filter_label, link: clear_url, style: quick_button_style, active: all_filter_is_active, clear_param: quick_filter.param_name %}
+        {%- else -%}
+          <a class="catalog-pill{% if quick_filter.active_values.size == 0 %} is-active{% endif %}" href="{{ clear_url }}" data-catalog-link data-catalog-clear-param="{{ quick_filter.param_name | escape }}">{{ all_filter_label }}</a>
+        {%- endif -%}
 
         {%- for value in quick_filter.values -%}
-          <a class="catalog-pill{% if value.active %} is-active{% endif %}{% if value.count == 0 and value.active == false %} is-disabled{% endif %}" href="{% if value.active %}{{ value.url_to_remove }}{% else %}{{ value.url_to_add }}{% endif %}" data-catalog-link {% if value.count == 0 and value.active == false %}aria-disabled="true"{% endif %}>
-            {{- value.label -}}<span class="visually-hidden"> ({{ value.count }})</span>
-          </a>
+          {%- liquid
+            assign value_link = value.url_to_add
+            if value.active
+              assign value_link = value.url_to_remove
+            endif
+            assign value_disabled = false
+            if value.count == 0 and value.active == false
+              assign value_disabled = true
+            endif
+          -%}
+          {%- if quick_button_style != blank -%}
+            {%- capture value_button_label -%}{{ value.label }}<span class="visually-hidden"> ({{ value.count }})</span>{%- endcapture -%}
+            {% render 'catalog-filter-button', label: value_button_label, link: value_link, style: quick_button_style, active: value.active, disabled: value_disabled %}
+          {%- else -%}
+            <a class="catalog-pill{% if value.active %} is-active{% endif %}{% if value_disabled %} is-disabled{% endif %}" href="{{ value_link }}" data-catalog-link {% if value_disabled %}aria-disabled="true"{% endif %}>
+              {{- value.label -}}<span class="visually-hidden"> ({{ value.count }})</span>
+            </a>
+          {%- endif -%}
         {%- endfor -%}
       {%- endif -%}
     </div>

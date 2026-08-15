@@ -2223,14 +2223,22 @@
         "label": "Show collection description"
       },
       "navigation": {
-        "content": "Navigation and filtering"
+        "content": "Collection filters and controls"
       },
       "quick_links_source": {
-        "label": "Quick links",
-        "info": "Show collection links, or use values from a Shopify filter configured in Search and Discovery.",
-        "collections": "Collections",
-        "filter": "Filter values",
-        "none": "None"
+        "label": "Collection filters",
+        "info": "Show collection names, use values from a Shopify filter configured in Search and Discovery, or hide the row.",
+        "collections": "Collection names",
+        "filter": "Shopify filter values",
+        "none": "Hidden"
+      },
+      "collection_filter_button_style": {
+        "label": "Button type",
+        "info": "Uses this button type's colors, shape, size, and hover animation from Theme settings."
+      },
+      "other_control_style": {
+        "label": "Filter menu and sort style",
+        "info": "Styles the Filter button and sort control. Collection filters use Button type."
       },
       "quick_filter_target": {
         "label": "Choose filter by",

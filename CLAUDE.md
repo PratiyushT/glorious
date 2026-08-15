@@ -361,8 +361,13 @@ check projects to handles first.
 and active-value URLs; `snippets/catalog-pagination.liquid` renders Shopify's
 `paginate.parts`. The collection and search sections decide only which native
 result object to pass. Filter names and values come from Search & Discovery,
-and optional quick links may use collections, the first useful list filter, or
-a merchant-entered filter label. No catalogue vocabulary belongs in Liquid.
+and the optional **Collection filters** row may use collection names, the
+first useful list filter, or a merchant-entered filter label. Its Button type
+calls the shared Button renderer, so Filled, Outline, Link, Quiet, Arrow, and
+Arrow outline inherit their scheme colours, universal shape and size, and
+hover motion instead of maintaining a second pill theme. The active filter
+holds that type's themed hover state. Search quick links keep their own
+search-control presentation. No catalogue vocabulary belongs in Liquid.
 
 - Every control is still a real GET link or form. `initCatalog` progressively
   enhances same-resource URLs with the Section Rendering endpoint, replaces

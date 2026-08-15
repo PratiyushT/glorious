@@ -170,7 +170,7 @@ For multi-option products, **Open product options** is the safest general defaul
 
 ## Collections and search
 
-Collection and search pages use Shopify's native result objects, filters, sorting options, active filter URLs, result counts, and pagination. Filter names and values come from Shopify Search and Discovery; the theme does not maintain a separate catalog vocabulary.
+Collection and search pages use Shopify's native result objects, filters, sorting options, active filter URLs, result counts, and pagination. Filter names and values come from Shopify Search and Discovery; the theme does not maintain a separate catalog vocabulary. Main collection calls its shortcut row **Collection filters**. It can show collection names or native Shopify filter values, and its Button type uses the shared Filled, Outline, Link, Quiet, Arrow, and Arrow outline theme system.
 
 Collection and search header titles always remain complete. Long resource names wrap naturally on narrow screens while retaining the selected catalog-title animation; the theme does not shrink or truncate them.
 

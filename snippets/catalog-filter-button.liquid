@@ -1,0 +1,34 @@
+{%- comment -%}
+  A collection filter is navigation with the shared Button presentation.
+  Its destination and active state remain native catalog data; the Button
+  renderer owns type, theme colours, shape, size, and hover motion.
+
+  Accepts: label, link, style, active, collection_link, clear_param, disabled.
+{%- endcomment -%}
+
+{%- liquid
+  assign filter_button_class = 'catalog-pill'
+  if active
+    assign filter_button_class = filter_button_class | append: ' is-active'
+  endif
+  assign filter_button_style = style
+  if filter_button_style == blank
+    assign filter_button_style = 'outline'
+  endif
+-%}
+
+{%- capture filter_button_attributes -%}
+  data-catalog-link
+  {%- if collection_link %} data-catalog-collection-link{% endif -%}
+  {%- if clear_param != blank %} data-catalog-clear-param="{{ clear_param | escape }}"{% endif -%}
+  {%- if active %} aria-current="true"{% endif -%}
+{%- endcapture -%}
+
+{% render 'button',
+  label: label,
+  link: link,
+  style: filter_button_style,
+  class: filter_button_class,
+  attributes: filter_button_attributes,
+  disabled: disabled
+%}

@@ -1372,6 +1372,36 @@ def R26_collection_pills_follow_filter_contract():
             'Main collection must expose only the shared product grid motion setting')
 
 
+def R27_collection_filters_use_shared_buttons():
+    """Collection filter navigation uses the shared Button presentation contract."""
+    section_where = 'sections/main-collection.liquid'
+    section = read(os.path.join(ROOT, section_where))
+    if '"id": "collection_filter_button_style"' not in section:
+        err('R27', section_where,
+            'Main collection must expose a Collection filters Button type')
+    if 'quick_button_style: section.settings.collection_filter_button_style' not in section:
+        err('R27', section_where,
+            'Main collection must pass its Button type to the shared catalog controls')
+
+    filter_where = 'snippets/catalog-filter-button.liquid'
+    filter_source = read(os.path.join(ROOT, filter_where))
+    if "render 'button'" not in filter_source:
+        err('R27', filter_where,
+            'Collection filter navigation must render the shared Button')
+
+    controls_where = 'snippets/catalog-controls.liquid'
+    controls = read(os.path.join(ROOT, controls_where))
+    if "render 'catalog-filter-button'" not in controls:
+        err('R27', controls_where,
+            'Catalog controls must route collection filters through their shared adapter')
+
+    css_where = 'assets/base.css'
+    css = read(os.path.join(ROOT, css_where))
+    if '.catalog-pill:not(.btn)' not in css:
+        err('R27', css_where,
+            'Legacy catalog pill styles must not override the shared Button contract')
+
+
 RULES = OrderedDict([
     ('R01', (R01_range_steps, 'range steps are legal (Shopify validates server-side)')),
     ('R02', (R02_select_defaults, "a select's default is one of its options")),
@@ -1399,6 +1429,7 @@ RULES = OrderedDict([
     ('R24', (R24_catalog_replacement_lifecycle, 'catalog replacements rebind their own root')),
     ('R25', (R25_group_physical_axes, 'nested Groups keep both physical alignment axes effective')),
     ('R26', (R26_collection_pills_follow_filter_contract, 'collection pills use the filter interaction contract')),
+    ('R27', (R27_collection_filters_use_shared_buttons, 'collection filters use the shared Button contract')),
 ])
 
 
