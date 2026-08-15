@@ -1863,7 +1863,10 @@
             "label": "Product image shape"
           },
           "media_fit": {
-            "label": "Product image fit"
+            "label": "Product image fit",
+            "info": "How product images sit inside this tab's carousel frames.",
+            "scale_down": "Scale down only",
+            "original": "Original size"
           }
         },
         "hero_cta": {

@@ -2777,7 +2777,11 @@ carousel.** The active product pool carries both values into its card frames;
 switching tabs therefore changes the selected collection and the presentation
 of that collection's product images together. The Hero portrait is owned only
 by the section-level Portrait image setting. Collection tabs have no image
-uploader and cannot replace or resize the Hero portrait.
+uploader and cannot replace or resize the Hero portrait. Product image fit has
+four useful, non-distorting modes: Fill the frame (`cover`), Fit the whole piece
+(`contain`), Scale down only (`scale-down`), and Original size (`none`). Do not
+offer CSS `fill` here because stretching product photography changes the piece's
+proportions.
 
 **The hero fits itself to the screen rather than clipping.** It is a
 screenful, and its content does not always agree — at 1280×560 the grid
