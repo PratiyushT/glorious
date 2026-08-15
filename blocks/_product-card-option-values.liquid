@@ -24,9 +24,9 @@
   offers; filtering on `available` would make the sentence flicker as inventory
   moved.
 
-  Its style and element controls are Text's, from the same
-  `snippets/text-style.liquid` — a merchant setting one half of a row should not
-  find the other half cannot be set the same way.
+  It is a contextual Text block rather than a lookalike: the shared renderer
+  supplies the same layout, typography, alignment, wrapping, line-count and
+  spacing controls as ordinary Text. Only the value source is locked here.
 {%- endcomment -%}
 
 {%- liquid
@@ -57,20 +57,9 @@
     endfor
   endif
 
-  assign tags = 'span,p,h1,h2,h3,h4,h5,h6' | split: ','
-  assign tag = 'span'
-  if tags contains block.settings.element
-    assign tag = block.settings.element
-  endif
 -%}
 
-{%- if values_list != blank -%}
-  <{{ tag }}
-    class="card__meta card__text"
-    style="{% render 'text-style', preset: block.settings.style, font_style: block.settings.override_font, font_size: block.settings.override_size, color: block.settings.color, line_height: block.settings.override_leading, text_case: block.settings.override_case, letter_spacing: block.settings.override_tracking %}"
-    {{ block.shopify_attributes }}
-  >{{ values_list }}</{{ tag }}>
-{%- endif -%}
+{% render 'text-block', block: block, content: values_list, class: 'card__meta card__text product-card-option-values' %}
 
 {% schema %}
 {
@@ -110,7 +99,20 @@
         { "value": "small", "label": "t:settings_schema.typography.presets.small.header" },
         { "value": "caption", "label": "t:settings_schema.typography.presets.caption.header" }
       ],
-      "default": "caption"
+      "default": "paragraph"
+    },
+    {
+      "type": "select",
+      "id": "layout",
+      "label": "t:blocks.text.layout.label",
+      "info": "t:blocks.text.layout.info",
+      "options": [
+        { "value": "standard", "label": "t:blocks.text.layout.standard" },
+        { "value": "display", "label": "t:blocks.text.layout.display" },
+        { "value": "eyebrow", "label": "t:blocks.text.layout.eyebrow" },
+        { "value": "lede", "label": "t:blocks.text.layout.lede" }
+      ],
+      "default": "standard"
     },
     {
       "type": "select",
@@ -125,9 +127,11 @@
         { "value": "h3", "label": "t:blocks.all.text_element.h3" },
         { "value": "h4", "label": "t:blocks.all.text_element.h4" },
         { "value": "h5", "label": "t:blocks.all.text_element.h5" },
-        { "value": "h6", "label": "t:blocks.all.text_element.h6" }
+        { "value": "h6", "label": "t:blocks.all.text_element.h6" },
+        { "value": "blockquote", "label": "t:blocks.all.text_element.blockquote" },
+        { "value": "figcaption", "label": "t:blocks.all.text_element.figcaption" }
       ],
-      "default": "span"
+      "default": "p"
     },
     {
       "type": "header",
@@ -215,11 +219,62 @@
         { "value": "wider", "label": "t:settings_schema.typography.tracking.wider" }
       ],
       "default": "inherit"
+    },
+    {
+      "type": "select",
+      "id": "alignment",
+      "label": "t:sections.all.content_alignment.label",
+      "info": "t:sections.all.content_alignment.info",
+      "options": [
+        { "value": "inherit", "label": "t:settings_schema.options.inherit" },
+        { "value": "left", "label": "t:settings_schema.options.left" },
+        { "value": "center", "label": "t:settings_schema.options.center" },
+        { "value": "right", "label": "t:settings_schema.options.right" }
+      ],
+      "default": "inherit"
+    },
+    {
+      "type": "select",
+      "id": "wrap",
+      "label": "t:blocks.all.wrap.label",
+      "info": "t:blocks.all.wrap.info",
+      "options": [
+        { "value": "default", "label": "t:blocks.all.wrap.default" },
+        { "value": "pretty", "label": "t:blocks.all.wrap.pretty" },
+        { "value": "balance", "label": "t:blocks.all.wrap.balance" },
+        { "value": "nowrap", "label": "t:blocks.all.wrap.nowrap" },
+        { "value": "two_line", "label": "t:blocks.all.wrap.two_line" },
+        { "value": "three_line", "label": "t:blocks.all.wrap.three_line" }
+      ],
+      "default": "default"
+    },
+    {
+      "type": "header",
+      "content": "t:blocks.all.spacing_header"
+    },
+    {
+      "type": "select",
+      "id": "padding",
+      "label": "t:blocks.all.padding.label",
+      "options": [
+        { "value": "none", "label": "t:blocks.all.step.none" },
+        { "value": "minimal", "label": "t:blocks.all.step.minimal" },
+        { "value": "tiny", "label": "t:blocks.all.step.tiny" },
+        { "value": "small", "label": "t:blocks.all.step.small" },
+        { "value": "medium", "label": "t:blocks.all.step.medium" },
+        { "value": "large", "label": "t:blocks.all.step.large" },
+        { "value": "xlarge", "label": "t:blocks.all.step.xlarge" }
+      ],
+      "default": "none"
     }
   ],
   "presets": [
     {
-      "name": "t:blocks.product_card_option_values.name"
+      "name": "t:blocks.product_card_option_values.name",
+      "settings": {
+        "style": "caption",
+        "element": "span"
+      }
     }
   ]
 }

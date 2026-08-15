@@ -61,7 +61,10 @@ The homepage blocks fall into four contracts:
   targets `_product-card-media`, `_product-card-option-values`,
   `_product-card-option-control`, `_product-card-price`, and
   `_product-card-add`; none has a resource picker because each always uses the
-  card's `closest.product`. Collection card likewise owns
+  card's `closest.product`. Safe contextual content blocks — Product title,
+  Vendor, and Description — are also valid card children because they already
+  use the shared Text/Rich text renderers and the same `closest.product` source.
+  Collection card likewise owns
   `_collection-card-media` and `_collection-count-text`, both fixed to
   `closest.collection`. Their editor names are simply Media, Option values,
   Option control, Price, Add to cart, and Count—the parent already supplies the
@@ -648,10 +651,12 @@ render up to 50. Keep the two source contracts separate rather than exposing a
 
 - **Text is also the one block for every fixed thing a card says.** Inside a
   composed card, `.card--composed .text-block` supplies the compact meta-line
-  contract; its Caption preset and any explicit overrides still win. There is
-  no Product Text schema and no dead Product picker. A dynamic source resolves
-  against the card's `closest.product`, while literal separators and units use
-  the exact same global block.
+  contract; its Caption preset and any explicit overrides still win. Literal
+  separators and units use global Text, while Product title, Vendor and
+  Description lock the value to `closest.product` and reuse the same shared
+  Text/Rich text presentation contract. Option values is the private Text
+  extension: only its option source and separator are special; layout,
+  typography, alignment, wrapping, line count and spacing are Text's.
 
 - **The tax note is a text block now, and that is how the global one gets
   retired.** `theme.js` replaces `[data-card-price]`'s whole `innerHTML` on a
@@ -2271,12 +2276,16 @@ special.** `wrap` — Default, Pretty (`text-wrap: pretty`, no orphan word),
 Balanced lines (`text-wrap: balance`), Single line (ellipsis), and At most
 two/three lines (the card caption's clamp offered as a choice) — rendered as
 a `text-wrap--*` class by the one `text-block` snippet, so the product page,
-Featured product, Quick view, and every card title get it from the same
-setting. R14 keeps the six schema copies identical. Inside a composed card
+Featured product, Quick view, every card title, and Product-card Option values
+get it from the same setting. R14 keeps the shared schema copies identical.
+Inside a composed card
 the preset re-sizes the reserved caption box to its own line count (1.5em /
 3em / 4.5em), so a row of cards stays level at whatever height the merchant
 chose — the 3em two-line reservation is the default, not the law. An
 unknown stored value emits no class, the same guard as the element tag.
+Product title adds one content-aware extension beside that shared contract:
+`Always use two lines` inserts a balanced word-boundary split and ellipsizes
+either fixed row if its half cannot fit, so it never produces row three.
 
 **`snippets/text-style.liquid` is the one resolver.** It guards every stored
 value and prints inline declarations so a chosen preset or override wins over a
@@ -3004,13 +3013,38 @@ A 1:1 rebuild of `Product Card.dc.html`, now composed through
 `blocks/_product-card.liquid` on Featured products, collection, and search.
 The old `snippets/product-card.liquid` remains only on the design-system page.
 
+- **Product facts are contextual forms of the shared content blocks.** Product
+  title and Vendor render through `text-block`; Description renders through
+  `rich-text-block`. They can be added directly to Product card or its private
+  Group, keep the same settings they have on Product page, Featured product,
+  and Quick view, and always read the card's current `closest.product`. The
+  Product card title preset starts as an `h3` with a two-line limit, while the
+  ordinary Product title preset remains the product-page `h1`. Product title's
+  `Always use two lines` extension chooses the word boundary with the closest
+  character counts and fixes each half to one row; multi-word names therefore
+  occupy exactly two rows, while a one-word name cannot be split and stays on
+  one.
+- **Option values is contextual Text, not a second typography system.** It
+  locks the content to a merchant-named product option and adds only a
+  separator. All layout, semantic element, typography, alignment, wrap/line
+  count and spacing settings come from Text. The interactive Option control
+  remains a separate private behavior block because it also synchronizes the
+  selected variant, price and add action.
+- **Line break is a Spacer preset.** It is zero-height and enables `Start a new
+  row`, which makes Spacer claim a full row inside a horizontal Group so the
+  following children wrap cleanly. The normal Spacer preset remains responsive
+  whitespace and can enable the same row-breaking behavior when a gap is also
+  wanted. Both are valid inside Product card and its private Group; no extra
+  one-purpose global block type is introduced.
+
 - **The design's card is one `<a>` with buttons nested inside it**, which is
-  neither valid HTML nor navigable. Here the title carries the only link and
-  its `::after` covers the card, so the media and the caption open the piece
-  while the controls sit above that layer. **Anything inside the card that
-  must stay clickable needs a `z-index` of its own** — the add button
-  included, because a static element paints *below* a positioned one whatever
-  the document order.
+  neither valid HTML nor navigable. Here the private card shell emits one
+  empty, accessible structural link whose box covers the card, so navigation
+  does not disappear when a merchant removes or rearranges Product title. The
+  media and caption open the piece while controls sit above that layer.
+  **Anything inside the card that must stay clickable needs a `z-index` of its
+  own** — the add button included, because a static element paints *below* a
+  positioned one whatever the document order.
 
   It also moves the events. A touch over the photograph targets the *link*,
   not `.card__media`, so the swipe listener is bound to the card and checks

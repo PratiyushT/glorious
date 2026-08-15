@@ -477,6 +477,22 @@ a {
 .text-wrap--two-line { -webkit-line-clamp: 2; text-wrap: balance; }
 .text-wrap--three-line { -webkit-line-clamp: 3; text-wrap: pretty; }
 
+/* Product title's explicit two-row choice divides the words at the most even
+   boundary. Each half stays on one row, so "always" remains true at every
+   container width; an overlong half truncates instead of creating row three. */
+.product-title--always-two-lines,
+.product-title--always-two-lines > a {
+  display: block;
+  min-width: 0;
+}
+
+.product-title--always-two-lines .product-title__line {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .section-eyebrow .text-block {
   padding: 0;
   /* The wrapper owns the eyebrow's spacing; its inner label must not pick up
@@ -2877,9 +2893,9 @@ a {
   margin-block-start: var(--card-price-top);
 }
 
-/* The product name is an ordinary direct Text block. The card owns the link,
-   so connecting Text to `closest.product.title` does not create a parallel
-   Product Title block merely to supply navigation. */
+/* Product names may be ordinary Text with a dynamic source or the contextual
+   Product title block. The card owns the structural link, so either choice is
+   presentational and neither one is required for navigation. */
 .card--composed > .text-block {
   min-height: 3em;
   color: var(--c-heading);
@@ -3145,9 +3161,9 @@ a {
   margin: var(--card-meta-gap, 0) 0 var(--card-price-gap, 0);
 }
 
-/* A composed card can use the global Text block for its product name. The
-   shared two-line box makes every card caption start and finish on the same
-   rows without taking typography control away from that block. */
+/* A composed card can use global Text or contextual Product title for its
+   product name. The shared two-line box makes every card caption start and
+   finish on the same rows without taking typography control away from it. */
 .card--composed > .text-block {
   display: -webkit-box;
   min-height: 3em;
@@ -3172,6 +3188,42 @@ a {
 
 .card--composed > .text-block.text-wrap--three-line {
   min-height: 4.5em;
+  max-height: 4.5em;
+  -webkit-line-clamp: 3;
+}
+
+.card--composed > .text-block.product-title--always-two-lines {
+  display: block;
+  min-height: 3em;
+  max-height: 3em;
+  -webkit-line-clamp: unset;
+}
+
+/* Vendor and Option values are contextual Text, but they are metadata rather
+   than the reserved product-title row. Their wrap choice limits the value
+   without forcing every card to reserve a title-sized box for it. */
+.card--composed > .text-block:is(.product-details__vendor, .product-card-option-values) {
+  display: block;
+  min-height: 1.5em;
+  max-height: none;
+  -webkit-line-clamp: unset;
+}
+
+.card--composed > .text-block.product-details__vendor.text-wrap--two-line,
+.card--composed > .text-block.product-details__vendor.text-wrap--three-line,
+.card--composed > .text-block.product-card-option-values.text-wrap--two-line,
+.card--composed > .text-block.product-card-option-values.text-wrap--three-line {
+  display: -webkit-box;
+}
+
+.card--composed > .text-block.product-details__vendor.text-wrap--two-line,
+.card--composed > .text-block.product-card-option-values.text-wrap--two-line {
+  max-height: 3em;
+  -webkit-line-clamp: 2;
+}
+
+.card--composed > .text-block.product-details__vendor.text-wrap--three-line,
+.card--composed > .text-block.product-card-option-values.text-wrap--three-line {
   max-height: 4.5em;
   -webkit-line-clamp: 3;
 }
@@ -8483,6 +8535,19 @@ body:has(.announcement[data-announcement-header]:not([hidden])) .nav--pill {
 }
 
 .spacer-block { height: var(--spacer-desktop); }
+
+/* The Line break preset is the zero-height form of Spacer. In a horizontal
+   Group it claims the remaining row so the next child begins on a new one;
+   in a stacked Group or a card it remains harmless responsive whitespace. */
+.layout-group > .layout-group__inner > .spacer-block--full-container,
+.spacer-block--full-container {
+  flex: 1 0 100%;
+  width: 100%;
+}
+
+.layout-group[data-items="equal"] > .layout-group__inner > .spacer-block--full-container {
+  grid-column: 1 / -1;
+}
 
 .menu-block,
 .payment-icons-block,

@@ -1,7 +1,7 @@
 {%- comment -%}
-  Contextual Text: the value is the closest product title; every presentation
-  setting is the global Text contract. The optional link is product behaviour,
-  not a second visual implementation.
+  Contextual Text: the value is the closest product title and its base
+  presentation settings are the global Text contract. The optional link and
+  exact two-row word split are title behavior, not a second visual renderer.
 {%- endcomment -%}
 
 {%- liquid
@@ -10,11 +10,73 @@
   if title == blank and request.design_mode
     assign title = 'onboarding.product_title' | t
   endif
+
+  assign title_words = title | split: ' '
+  assign split_title = false
+  assign title_line_one = ''
+  assign title_line_two = ''
+
+  comment
+    "Always two lines" is title-specific rather than a new generic Text wrap:
+    find the word boundary whose two character counts are closest, then lock
+    each half to one visual row. A one-word name cannot be divided and keeps
+    the ordinary wrap behavior.
+  endcomment
+  if block.settings.always_two_lines and title_words.size > 1
+    assign split_title = true
+    assign best_break = 1
+    assign best_difference = 100000
+    assign candidate_line = ''
+
+    for word in title_words
+      unless forloop.last
+        if candidate_line == blank
+          assign candidate_line = word
+        else
+          assign candidate_line = candidate_line | append: ' ' | append: word
+        endif
+        assign candidate_length = candidate_line | size
+        assign remainder_length = title | size | minus: candidate_length | minus: 1
+        assign difference = candidate_length | minus: remainder_length | abs
+        if difference < best_difference
+          assign best_difference = difference
+          assign best_break = forloop.index
+        endif
+      endunless
+    endfor
+
+    for word in title_words
+      if forloop.index <= best_break
+        if title_line_one == blank
+          assign title_line_one = word
+        else
+          assign title_line_one = title_line_one | append: ' ' | append: word
+        endif
+      else
+        if title_line_two == blank
+          assign title_line_two = word
+        else
+          assign title_line_two = title_line_two | append: ' ' | append: word
+        endif
+      endif
+    endfor
+  endif
+
+  assign title_class = 'product-details__title'
+  if split_title
+    assign title_class = title_class | append: ' product-title--always-two-lines'
+  endif
 -%}
 {%- capture title_content -%}
-  {%- if product != blank and block.settings.link_to_product -%}<a href="{{ product.url }}">{{ product.title | escape }}</a>{%- else -%}{{ title | escape }}{%- endif -%}
+  {%- if product != blank and block.settings.link_to_product -%}<a href="{{ product.url }}">{%- endif -%}
+  {%- if split_title -%}
+    <span class="product-title__line">{{ title_line_one | escape }}</span>{{ ' ' }}<span class="product-title__line">{{ title_line_two | escape }}</span>
+  {%- else -%}
+    {{- title | escape -}}
+  {%- endif -%}
+  {%- if product != blank and block.settings.link_to_product -%}</a>{%- endif -%}
 {%- endcapture -%}
-{% render 'text-block', block: block, content: title_content, class: 'product-details__title' %}
+{% render 'text-block', block: block, content: title_content, class: title_class %}
 
 {% schema %}
 {
@@ -88,6 +150,7 @@
       { "value": "balance", "label": "t:blocks.all.wrap.balance" }, { "value": "nowrap", "label": "t:blocks.all.wrap.nowrap" },
       { "value": "two_line", "label": "t:blocks.all.wrap.two_line" }, { "value": "three_line", "label": "t:blocks.all.wrap.three_line" }
     ], "default": "default" },
+    { "type": "checkbox", "id": "always_two_lines", "label": "t:blocks.product_title.always_two_lines.label", "info": "t:blocks.product_title.always_two_lines.info", "default": false },
     { "type": "header", "content": "t:blocks.all.spacing_header" },
     { "type": "select", "id": "padding", "label": "t:blocks.all.padding.label", "options": [
       { "value": "none", "label": "t:blocks.all.step.none" }, { "value": "minimal", "label": "t:blocks.all.step.minimal" },
@@ -97,6 +160,9 @@
     ], "default": "none" },
     { "type": "checkbox", "id": "link_to_product", "label": "t:sections.featured_product.link_title.label", "default": false }
   ],
-  "presets": [{ "name": "t:sections.main_product.blocks.title", "settings": { "style": "heading_1", "element": "h1", "override_case": "uppercase" } }]
+  "presets": [
+    { "name": "t:sections.main_product.blocks.title", "settings": { "style": "heading_1", "element": "h1", "override_case": "uppercase" } },
+    { "name": "t:blocks.product_card_title.name", "settings": { "style": "small", "element": "h3", "override_case": "uppercase", "wrap": "two_line", "link_to_product": false } }
+  ]
 }
 {% endschema %}

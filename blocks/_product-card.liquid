@@ -21,9 +21,10 @@
   dragged into and every other child flows underneath in the order the merchant
   chose.
 
-  The card-wide product link is structural markup here. Product names are
-  ordinary Text blocks connected to `closest.product.title`; the link must not
-  require a second Product Title block just to make the card clickable.
+  The card-wide product link is structural markup here. A merchant may use
+  ordinary Text with a dynamic source or the product-aware Product title,
+  Vendor, and Description blocks; navigation never depends on one being
+  present because the structural link remains part of the card shell.
 
   Collection, search and Featured products all render this same composed card.
   The class names and every `data-card-*` hook stay rooted at `[data-card]`, so
@@ -170,12 +171,16 @@
     { "type": "product_badges" },
     { "type": "_product-card-option-values" },
     { "type": "_product-card-option-control" },
+    { "type": "product_title" },
+    { "type": "product_vendor" },
+    { "type": "product_description" },
     { "type": "text" },
     { "type": "rich-text" },
     { "type": "accordion" },
     { "type": "button" },
     { "type": "icon" },
     { "type": "border" },
+    { "type": "spacer" },
     { "type": "_product-card-price" },
     { "type": "_product-card-add" },
     { "type": "_product-card-group" }
