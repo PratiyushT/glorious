@@ -369,9 +369,13 @@ a merchant-entered filter label. No catalogue vocabulary belongs in Liquid.
   only the owning `[data-catalog-section]`, and updates browser history after a
   complete response. A collection-to-collection link requests both the stable
   Collection header and Main collection section IDs, swaps those two rendered
-  surfaces atomically with the selected result-grid motion, then updates title,
-  canonical URL, navigation state, and history. The current collection stays
-  readable while both sections load. Modified clicks, cross-route forms,
+  surfaces atomically with Main collection's dedicated transition style and
+  speed presets, then updates title, canonical URL, navigation state, and
+  history. Editorial reveal, Gentle lift, Soft fade, and None are page-change
+  choices; Product grid animation remains the independent entrance behavior
+  after filtering, sorting, and pagination. The current collection stays
+  readable while both sections load. Reduced motion commits immediately.
+  Modified clicks, cross-route forms,
   unsupported browsers, missing section markup, failed requests, and no-script
   use native navigation. While a filter, sort, clear, or pagination request is
   in flight, its root is `aria-busy` and shows the shared surface Loader over

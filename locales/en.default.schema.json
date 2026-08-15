@@ -2082,6 +2082,22 @@
       "card_gap": "Space between product cards",
       "card_gap_info": "Use theme default to match Product List sections. Choose another preset to override this page.",
       "theme_product_gap": "Use theme default",
+      "collection_change_header": "Collection changes",
+      "collection_transition": {
+        "label": "Transition style",
+        "info": "Animates the complete destination header and product catalog after both have loaded.",
+        "none": "None",
+        "fade": "Soft fade",
+        "lift": "Gentle lift",
+        "editorial": "Editorial reveal"
+      },
+      "collection_transition_speed": {
+        "label": "Transition speed",
+        "info": "Reduced-motion preferences always use an immediate change.",
+        "quick": "Quick",
+        "balanced": "Balanced",
+        "relaxed": "Relaxed"
+      },
       "product_grid_animation": "Product grid animation",
       "result_grid_animation": "Result grid animation",
       "pagination_style": "Pagination style",

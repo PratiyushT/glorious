@@ -4928,10 +4928,37 @@
     return true;
   }
 
+  function catalogTransitionTiming(speed) {
+    if (speed === 'quick') return { exit: 120, enter: 360 };
+    if (speed === 'relaxed') return { exit: 220, enter: 720 };
+    return { exit: 170, enter: 520 };
+  }
+
+  function setCatalogTransitionState(style, speed) {
+    document.documentElement.classList.add(
+      'catalog-transition-style--' + style,
+      'catalog-transition-speed--' + speed
+    );
+  }
+
+  function clearCatalogTransitionState() {
+    document.documentElement.classList.remove(
+      'catalog-view-transition',
+      'catalog-transition-style--fade',
+      'catalog-transition-style--lift',
+      'catalog-transition-style--editorial',
+      'catalog-transition-speed--quick',
+      'catalog-transition-speed--balanced',
+      'catalog-transition-speed--relaxed'
+    );
+  }
+
   function animateCatalogCollection(root, header, nextRoot, nextHeader, publicUrl, pushState, focusHeading, requestId) {
-    var motion = nextRoot.classList.contains('catalog-page--motion-none')
-      ? 'none'
-      : (nextRoot.classList.contains('catalog-page--motion-fade') ? 'fade' : 'reference');
+    var motion = nextRoot.dataset.catalogTransitionStyle || 'editorial';
+    if (['none', 'fade', 'lift', 'editorial'].indexOf(motion) === -1) motion = 'editorial';
+    var speed = nextRoot.dataset.catalogTransitionSpeed || 'balanced';
+    if (['quick', 'balanced', 'relaxed'].indexOf(speed) === -1) speed = 'balanced';
+    var timing = catalogTransitionTiming(speed);
     var commit = function () {
       return commitCatalogCollection(root, header, nextRoot, nextHeader, publicUrl, pushState, focusHeading, requestId);
     };
@@ -4941,22 +4968,23 @@
       return;
     }
 
+    setCatalogTransitionState(motion, speed);
+
     if (typeof document.startViewTransition === 'function') {
       document.documentElement.classList.add('catalog-view-transition');
-      document.documentElement.classList.toggle('catalog-view-transition--fade', motion === 'fade');
       var transition;
       try {
         transition = document.startViewTransition(commit);
       } catch (error) {
-        document.documentElement.classList.remove('catalog-view-transition', 'catalog-view-transition--fade');
+        clearCatalogTransitionState();
         commit();
         return;
       }
 
       transition.finished.then(function () {
-        document.documentElement.classList.remove('catalog-view-transition', 'catalog-view-transition--fade');
+        clearCatalogTransitionState();
       }, function () {
-        document.documentElement.classList.remove('catalog-view-transition', 'catalog-view-transition--fade');
+        clearCatalogTransitionState();
       });
       return;
     }
@@ -4964,25 +4992,26 @@
     var currentSurfaces = [header, root];
     currentSurfaces.forEach(function (surface) {
       surface.classList.add('catalog-surface--leaving');
-      surface.classList.toggle('catalog-surface--fade', motion === 'fade');
     });
 
     window.setTimeout(function () {
       if (!commit()) {
         currentSurfaces.forEach(function (surface) {
-          surface.classList.remove('catalog-surface--leaving', 'catalog-surface--fade');
+          surface.classList.remove('catalog-surface--leaving');
         });
+        clearCatalogTransitionState();
         return;
       }
 
       [nextHeader, nextRoot].forEach(function (surface) {
         surface.classList.add('catalog-surface--entering');
-        surface.classList.toggle('catalog-surface--fade', motion === 'fade');
-        window.setTimeout(function () {
-          surface.classList.remove('catalog-surface--entering', 'catalog-surface--fade');
-        }, 560);
       });
-    }, 170);
+      window.setTimeout(function () {
+        nextHeader.classList.remove('catalog-surface--entering');
+        nextRoot.classList.remove('catalog-surface--entering');
+        clearCatalogTransitionState();
+      }, timing.enter + 40);
+    }, timing.exit);
   }
 
   function renderCatalog(root, targetUrl, pushState, scrollToResults) {
