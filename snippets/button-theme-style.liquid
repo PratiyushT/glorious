@@ -1,9 +1,8 @@
 {%- comment -%}
   Compiles one global Button-style group into CSS custom properties.
 
-  Each storefront button type owns its geometry, typography and hover motion.
-  Saved themes are migrated to the new keys in settings_data; schema defaults
-  cover new installs.
+  Button shape and size are universal theme settings. Each storefront button
+  type owns only its tracking, line weight, casing, and hover motion here.
 
   Accepts:
     style          - filled | outline | link | quiet | arrow | arrow_outline
@@ -11,15 +10,13 @@
 {%- endcomment -%}
 
 {%- liquid
-  assign size_key = style | append: '_button_size'
-  assign radius_key = style | append: '_button_radius'
   assign tracking_key = style | append: '_button_tracking'
   assign border_key = style | append: '_button_border_width'
   assign uppercase_key = style | append: '_button_uppercase'
   assign motion_key = style | append: '_button_hover_motion'
 
-  assign size = settings[size_key] | default: 'md'
-  assign radius = settings[radius_key] | default: 'pill'
+  assign size = settings.button_size | default: 'md'
+  assign radius = settings.button_radius | default: 'pill'
   assign tracking = settings[tracking_key] | default: 'md'
   assign border_width = settings[border_key] | default: 'sm'
   assign hover_motion = settings[motion_key] | default: default_motion | default: 'fade'

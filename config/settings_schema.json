@@ -2454,13 +2454,10 @@
         "default": "text"
       },
       {
-        "type": "header",
-        "content": "t:settings_schema.buttons.styles.filled"
-      },
-      {
         "type": "select",
-        "id": "filled_button_radius",
+        "id": "button_radius",
         "label": "t:settings_schema.buttons.button_radius.label",
+        "info": "t:settings_schema.buttons.button_radius.info",
         "options": [
           { "value": "square", "label": "t:settings_schema.buttons.button_radius.options__square" },
           { "value": "soft", "label": "t:settings_schema.buttons.button_radius.options__soft" },
@@ -2471,7 +2468,7 @@
       },
       {
         "type": "select",
-        "id": "filled_button_size",
+        "id": "button_size",
         "label": "t:settings_schema.buttons.button_size.label",
         "info": "t:settings_schema.buttons.button_size.info",
         "options": [
@@ -2482,6 +2479,10 @@
           { "value": "xl", "label": "t:settings_schema.buttons.button_size.options__xl" }
         ],
         "default": "md"
+      },
+      {
+        "type": "header",
+        "content": "t:settings_schema.buttons.styles.filled"
       },
       {
         "type": "select",
@@ -2534,32 +2535,6 @@
       },
       {
         "type": "select",
-        "id": "outline_button_radius",
-        "label": "t:settings_schema.buttons.button_radius.label",
-        "options": [
-          { "value": "square", "label": "t:settings_schema.buttons.button_radius.options__square" },
-          { "value": "soft", "label": "t:settings_schema.buttons.button_radius.options__soft" },
-          { "value": "rounded", "label": "t:settings_schema.buttons.button_radius.options__rounded" },
-          { "value": "pill", "label": "t:settings_schema.buttons.button_radius.options__pill" }
-        ],
-        "default": "pill"
-      },
-      {
-        "type": "select",
-        "id": "outline_button_size",
-        "label": "t:settings_schema.buttons.button_size.label",
-        "info": "t:settings_schema.buttons.button_size.info",
-        "options": [
-          { "value": "xs", "label": "t:settings_schema.buttons.button_size.options__xs" },
-          { "value": "sm", "label": "t:settings_schema.buttons.button_size.options__sm" },
-          { "value": "md", "label": "t:settings_schema.buttons.button_size.options__md" },
-          { "value": "lg", "label": "t:settings_schema.buttons.button_size.options__lg" },
-          { "value": "xl", "label": "t:settings_schema.buttons.button_size.options__xl" }
-        ],
-        "default": "md"
-      },
-      {
-        "type": "select",
         "id": "outline_button_tracking",
         "label": "t:settings_schema.buttons.button_tracking.label",
         "options": [
@@ -2606,32 +2581,6 @@
       {
         "type": "header",
         "content": "t:settings_schema.buttons.styles.link"
-      },
-      {
-        "type": "select",
-        "id": "link_button_radius",
-        "label": "t:settings_schema.buttons.button_radius.label",
-        "options": [
-          { "value": "square", "label": "t:settings_schema.buttons.button_radius.options__square" },
-          { "value": "soft", "label": "t:settings_schema.buttons.button_radius.options__soft" },
-          { "value": "rounded", "label": "t:settings_schema.buttons.button_radius.options__rounded" },
-          { "value": "pill", "label": "t:settings_schema.buttons.button_radius.options__pill" }
-        ],
-        "default": "square"
-      },
-      {
-        "type": "select",
-        "id": "link_button_size",
-        "label": "t:settings_schema.buttons.button_size.label",
-        "info": "t:settings_schema.buttons.button_size.info",
-        "options": [
-          { "value": "xs", "label": "t:settings_schema.buttons.button_size.options__xs" },
-          { "value": "sm", "label": "t:settings_schema.buttons.button_size.options__sm" },
-          { "value": "md", "label": "t:settings_schema.buttons.button_size.options__md" },
-          { "value": "lg", "label": "t:settings_schema.buttons.button_size.options__lg" },
-          { "value": "xl", "label": "t:settings_schema.buttons.button_size.options__xl" }
-        ],
-        "default": "md"
       },
       {
         "type": "select",
@@ -2684,32 +2633,6 @@
       },
       {
         "type": "select",
-        "id": "quiet_button_radius",
-        "label": "t:settings_schema.buttons.button_radius.label",
-        "options": [
-          { "value": "square", "label": "t:settings_schema.buttons.button_radius.options__square" },
-          { "value": "soft", "label": "t:settings_schema.buttons.button_radius.options__soft" },
-          { "value": "rounded", "label": "t:settings_schema.buttons.button_radius.options__rounded" },
-          { "value": "pill", "label": "t:settings_schema.buttons.button_radius.options__pill" }
-        ],
-        "default": "square"
-      },
-      {
-        "type": "select",
-        "id": "quiet_button_size",
-        "label": "t:settings_schema.buttons.button_size.label",
-        "info": "t:settings_schema.buttons.button_size.info",
-        "options": [
-          { "value": "xs", "label": "t:settings_schema.buttons.button_size.options__xs" },
-          { "value": "sm", "label": "t:settings_schema.buttons.button_size.options__sm" },
-          { "value": "md", "label": "t:settings_schema.buttons.button_size.options__md" },
-          { "value": "lg", "label": "t:settings_schema.buttons.button_size.options__lg" },
-          { "value": "xl", "label": "t:settings_schema.buttons.button_size.options__xl" }
-        ],
-        "default": "md"
-      },
-      {
-        "type": "select",
         "id": "quiet_button_tracking",
         "label": "t:settings_schema.buttons.button_tracking.label",
         "options": [
@@ -2759,32 +2682,6 @@
       },
       {
         "type": "select",
-        "id": "arrow_button_radius",
-        "label": "t:settings_schema.buttons.button_radius.label",
-        "options": [
-          { "value": "square", "label": "t:settings_schema.buttons.button_radius.options__square" },
-          { "value": "soft", "label": "t:settings_schema.buttons.button_radius.options__soft" },
-          { "value": "rounded", "label": "t:settings_schema.buttons.button_radius.options__rounded" },
-          { "value": "pill", "label": "t:settings_schema.buttons.button_radius.options__pill" }
-        ],
-        "default": "square"
-      },
-      {
-        "type": "select",
-        "id": "arrow_button_size",
-        "label": "t:settings_schema.buttons.button_size.label",
-        "info": "t:settings_schema.buttons.button_size.info",
-        "options": [
-          { "value": "xs", "label": "t:settings_schema.buttons.button_size.options__xs" },
-          { "value": "sm", "label": "t:settings_schema.buttons.button_size.options__sm" },
-          { "value": "md", "label": "t:settings_schema.buttons.button_size.options__md" },
-          { "value": "lg", "label": "t:settings_schema.buttons.button_size.options__lg" },
-          { "value": "xl", "label": "t:settings_schema.buttons.button_size.options__xl" }
-        ],
-        "default": "md"
-      },
-      {
-        "type": "select",
         "id": "arrow_button_tracking",
         "label": "t:settings_schema.buttons.button_tracking.label",
         "options": [
@@ -2831,32 +2728,6 @@
       {
         "type": "header",
         "content": "t:settings_schema.buttons.styles.arrow_outline"
-      },
-      {
-        "type": "select",
-        "id": "arrow_outline_button_radius",
-        "label": "t:settings_schema.buttons.button_radius.label",
-        "options": [
-          { "value": "square", "label": "t:settings_schema.buttons.button_radius.options__square" },
-          { "value": "soft", "label": "t:settings_schema.buttons.button_radius.options__soft" },
-          { "value": "rounded", "label": "t:settings_schema.buttons.button_radius.options__rounded" },
-          { "value": "pill", "label": "t:settings_schema.buttons.button_radius.options__pill" }
-        ],
-        "default": "pill"
-      },
-      {
-        "type": "select",
-        "id": "arrow_outline_button_size",
-        "label": "t:settings_schema.buttons.button_size.label",
-        "info": "t:settings_schema.buttons.button_size.info",
-        "options": [
-          { "value": "xs", "label": "t:settings_schema.buttons.button_size.options__xs" },
-          { "value": "sm", "label": "t:settings_schema.buttons.button_size.options__sm" },
-          { "value": "md", "label": "t:settings_schema.buttons.button_size.options__md" },
-          { "value": "lg", "label": "t:settings_schema.buttons.button_size.options__lg" },
-          { "value": "xl", "label": "t:settings_schema.buttons.button_size.options__xl" }
-        ],
-        "default": "md"
       },
       {
         "type": "select",

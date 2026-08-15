@@ -426,9 +426,10 @@ global Text/Rich text concern elsewhere.
   quantity steppers, sorting choices—keep their own classes because they are
   interface controls, not merchant Button instances. R16 prevents `.btn`
   markup from being written anywhere else.
-- **Button defaults are per style, and colors are per style per scheme.** Theme
-  settings → Buttons gives Filled, Outline, Link, Quiet, Arrow, and Arrow
-  outline independent shape, size, tracking, line weight, casing, and hover
+- **Button shape and size are universal; the remaining defaults are per style,
+  and colors are per style per scheme.** Theme settings → Buttons states shape
+  and size once for every button type. Filled, Outline, Link, Quiet, Arrow, and
+  Arrow outline keep independent tracking, line weight, casing, and hover
   motion. A section or block override still wins locally. Every color scheme
   owns the resting and hover colors for those six styles, plus focus,
   selection, loader, veil, scrollbar, success, warning, and error colors. An
@@ -520,8 +521,9 @@ global Text/Rich text concern elsewhere.
   publishes its `button_style` as `data-button-style` on `.product-buy-form`,
   because Shopify's injected payment button cannot take the theme's classes
   and CSS cannot read a sibling's settings. `main-product.css` maps that value
-  to the same per-style geometry, scheme colors, local overrides, and hover
-  motion used by the Add to cart button. The wallet control keeps a boundary
+  to the same universal shape and size, per-style line and type details,
+  scheme colors, local overrides, and hover motion used by the Add to cart
+  button. The wallet control keeps a boundary
   for Shopify usability even when Link, Quiet, or Arrow is selected, but its
   color and motion still come from that selected style. Reduced motion removes
   the transform without suppressing the hover color state.

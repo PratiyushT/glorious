@@ -348,6 +348,7 @@
       "name": "Buttons",
       "button_radius": {
         "label": "Button shape",
+        "info": "Applies to every button type unless a Button block overrides it.",
         "options__square": "Square",
         "options__soft": "Soft",
         "options__rounded": "Rounded",
@@ -361,7 +362,7 @@
       },
       "button_size": {
         "label": "Button size",
-        "info": "Sets label size and, for framed styles, padding.",
+        "info": "Sets label size and, for framed styles, padding across every button type unless a Button block overrides it.",
         "options__xs": "Extra small",
         "options__sm": "Small",
         "options__md": "Medium",
