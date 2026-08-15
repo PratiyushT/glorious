@@ -69,7 +69,7 @@ upload, or visual quality.
 2. Media: carousel and stacked layouts, video-first ordering, large-first tile,
    zoom, model/video controls, variant media, and adaptive sticky behavior.
 3. Product cards: fixed and fluid sizing, sparse rows, complete linked titles
-   that expand beyond their two-row minimum, quick view, option controls,
+   whose optional balanced minimum break can expand beyond two rows, quick view, option controls,
    badges, sale/unit prices, sold-out state, and add/choose actions.
 4. Discovery: predictive search, drawer/menu/page modes, no-results state,
    collection filters/sort/pagination, recommendations, and cart upsells.

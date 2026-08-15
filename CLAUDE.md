@@ -2328,9 +2328,12 @@ choices. Font colour is the only free picker. `Default` inherits the preset;
 **Word breaks are a preset on the whole Text contract, with two
 content-safety exceptions.** Generic Text offers Default, Pretty
 (`text-wrap: pretty`), Balanced lines (`text-wrap: balance`), Single line
-(ellipsis), and At most two/three lines. Product title and Collection title keep the same Wrap
-setting but offer only Default, Pretty, and Balanced because Shopify requires
-complete resource titles on product pages, collection pages, and collection grids. The shared
+(ellipsis), and At most two/three lines. Collection title keeps only Default,
+Pretty, and Balanced. Product title adds one non-truncating **Minimum two
+lines** choice: for a title of at least three words, Liquid inserts the most
+balanced word-boundary break; either side continues to wrap normally, so a
+long name can occupy three lines or more. Shopify still receives and exposes
+the complete resource titles on product pages, collection pages, and grids. The shared
 `text-block` renderer also ignores retired truncating values stored on an older
 resource-title Text block. In a composed product card the title reserves a two-line minimum
 so short names align, then expands to a third line or beyond instead of hiding

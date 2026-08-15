@@ -703,10 +703,20 @@ def R14_shared_setting_contracts():
                                     'blocks/article_title.liquid')
                         and setting_id == 'wrap'):
                     expected_setting = json.loads(json.dumps(base_setting))
+                    allowed_wraps = ('default', 'pretty', 'balance')
+                    if target_path == 'blocks/product_title.liquid':
+                        allowed_wraps += ('minimum_two_lines',)
+                        expected_setting['info'] = (
+                            't:blocks.product_title.wrap_info')
                     expected_setting['options'] = [
                         option for option in expected_setting.get('options', [])
-                        if option.get('value') in ('default', 'pretty', 'balance')
+                        if option.get('value') in allowed_wraps
                     ]
+                    if target_path == 'blocks/product_title.liquid':
+                        expected_setting['options'].append({
+                            'value': 'minimum_two_lines',
+                            'label': 't:blocks.product_title.minimum_two_lines'
+                        })
                 if normalise(expected_setting, role_default) != normalise(
                         target[setting_id], role_default):
                     err('R14', target_path, "%s setting '%s' has drifted from %s"
@@ -1014,12 +1024,18 @@ def R21_product_titles_remain_complete():
 
     wrap = settings.get('wrap', {})
     values = [option.get('value') for option in wrap.get('options', [])]
-    if values != ['default', 'pretty', 'balance']:
+    if values != [
+            'default', 'pretty', 'balance', 'minimum_two_lines']:
         err('R21', where, 'Wrap may arrange words but must never hide them')
 
     source = strip_comments(read(path))
     if 'preserve_content: true' not in source:
         err('R21', where, 'shared Text renderer must reject saved truncation values')
+    if ("block.settings.wrap == 'minimum_two_lines'" not in source
+            or 'title_words.size > 2' not in source
+            or 'product-title__minimum-break' not in source):
+        err('R21', where,
+            'Minimum two lines must add a non-truncating break for 3+ words')
 
     card_presets = [
         preset for preset in schema.get('presets', [])
@@ -1036,6 +1052,11 @@ def R21_product_titles_remain_complete():
         err('R21', css_where, 'obsolete title splitting CSS remains')
     if '.card--composed > .product-details__title' not in css:
         err('R21', css_where, 'cards do not reserve an expandable title row')
+    link_rule = re.search(
+        r'\.card--composed \.product-details__title a\s*\{([^}]+)\}', css)
+    if not link_rule or 'text-decoration: none' not in link_rule.group(1):
+        err('R21', css_where,
+            'linked card titles must retain the plain-title presentation')
 
 
 def R22_collection_data_contract():

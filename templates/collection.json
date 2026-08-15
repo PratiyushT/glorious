@@ -109,7 +109,7 @@
                 "element": "h2",
                 "override_case": "uppercase",
                 "override_tracking": "wide",
-                "wrap": "balance",
+                "wrap": "minimum_two_lines",
                 "link_to_product": true
               }
             },

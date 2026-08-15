@@ -1,7 +1,8 @@
 {%- comment -%}
   Contextual Text: the value is the closest product title and its presentation
   settings are the global Text contract. Product titles deliberately exclude
-  truncating wrap choices so every product surface keeps the complete name.
+  truncating wrap choices. Their one extra choice inserts a balanced minimum
+  break without clamping either side, so the complete name remains visible.
 {%- endcomment -%}
 
 {%- liquid
@@ -11,13 +12,64 @@
     assign title = 'onboarding.product_title' | t
   endif
 
+  assign use_minimum_break = false
+  assign title_line_one = ''
+  assign title_line_two = ''
+  assign title_words = title | split: ' '
+
+  comment
+    A title with at least three words can be made at least two lines without
+    imposing a maximum. Find the word boundary whose character counts are
+    closest; the forced break creates row two, while ordinary wrapping on
+    either side is free to create row three and beyond.
+  endcomment
+  if block.settings.wrap == 'minimum_two_lines' and title_words.size > 2
+    assign use_minimum_break = true
+    assign best_break = 1
+    assign best_difference = 100000
+    assign candidate_line = ''
+
+    for word in title_words
+      unless forloop.last
+        if candidate_line == blank
+          assign candidate_line = word
+        else
+          assign candidate_line = candidate_line | append: ' ' | append: word
+        endif
+        assign candidate_length = candidate_line | size
+        assign remainder_length = title | size | minus: candidate_length | minus: 1
+        assign difference = candidate_length | minus: remainder_length | abs
+        if difference < best_difference
+          assign best_difference = difference
+          assign best_break = forloop.index
+        endif
+      endunless
+    endfor
+
+    for word in title_words
+      if forloop.index <= best_break
+        assign title_line_one = title_line_one | append: ' ' | append: word | strip
+      else
+        assign title_line_two = title_line_two | append: ' ' | append: word | strip
+      endif
+    endfor
+  endif
+
+  assign title_class = 'product-details__title'
+  if use_minimum_break
+    assign title_class = title_class | append: ' product-title--minimum-two-lines'
+  endif
 -%}
 {%- capture title_content -%}
   {%- if product != blank and block.settings.link_to_product -%}<a href="{{ product.url }}">{%- endif -%}
-  {{- title | escape -}}
+  {%- if use_minimum_break -%}
+    {{- title_line_one | escape -}}<br class="product-title__minimum-break">{{- title_line_two | escape -}}
+  {%- else -%}
+    {{- title | escape -}}
+  {%- endif -%}
   {%- if product != blank and block.settings.link_to_product -%}</a>{%- endif -%}
 {%- endcapture -%}
-{% render 'text-block', block: block, content: title_content, class: 'product-details__title', preserve_content: true %}
+{% render 'text-block', block: block, content: title_content, class: title_class, preserve_content: true %}
 
 {% schema %}
 {
@@ -86,9 +138,10 @@
       { "value": "inherit", "label": "t:settings_schema.options.inherit" }, { "value": "left", "label": "t:settings_schema.options.left" },
       { "value": "center", "label": "t:settings_schema.options.center" }, { "value": "right", "label": "t:settings_schema.options.right" }
     ], "default": "inherit" },
-    { "type": "select", "id": "wrap", "label": "t:blocks.all.wrap.label", "info": "t:blocks.all.wrap.info", "options": [
+    { "type": "select", "id": "wrap", "label": "t:blocks.all.wrap.label", "info": "t:blocks.product_title.wrap_info", "options": [
       { "value": "default", "label": "t:blocks.all.wrap.default" }, { "value": "pretty", "label": "t:blocks.all.wrap.pretty" },
-      { "value": "balance", "label": "t:blocks.all.wrap.balance" }
+      { "value": "balance", "label": "t:blocks.all.wrap.balance" },
+      { "value": "minimum_two_lines", "label": "t:blocks.product_title.minimum_two_lines" }
     ], "default": "default" },
     { "type": "header", "content": "t:blocks.all.spacing_header" },
     { "type": "select", "id": "padding", "label": "t:blocks.all.padding.label", "options": [
@@ -101,7 +154,7 @@
   ],
   "presets": [
     { "name": "t:sections.main_product.blocks.title", "settings": { "style": "heading_1", "element": "h1", "override_case": "uppercase" } },
-    { "name": "t:blocks.product_card_title.name", "settings": { "style": "small", "element": "h3", "override_case": "uppercase", "wrap": "balance", "link_to_product": true } }
+    { "name": "t:blocks.product_card_title.name", "settings": { "style": "small", "element": "h3", "override_case": "uppercase", "wrap": "minimum_two_lines", "link_to_product": true } }
   ]
 }
 {% endschema %}

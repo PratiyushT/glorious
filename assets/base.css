@@ -2905,6 +2905,8 @@ a {
 .card--composed .product-details__title a {
   position: relative;
   z-index: 2;
+  color: inherit;
+  text-decoration: none;
 }
 
 .card__option-control > .card__meta {

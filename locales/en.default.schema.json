@@ -969,6 +969,10 @@
     "product_card_title": {
       "name": "Product card title"
     },
+    "product_title": {
+      "minimum_two_lines": "Minimum two lines",
+      "wrap_info": "How the title divides across lines. Minimum two lines inserts a balanced break when the title has at least three words. It never truncates, and long titles can use more lines."
+    },
     "collection_title": {
       "name": "Collection title"
     },
