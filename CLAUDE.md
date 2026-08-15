@@ -3771,14 +3771,17 @@ two answers and is gone.
   Presses inside 220ms now coalesce into one request and anything arriving
   mid-flight is kept as `cartPending` and sent when the line frees. Measured:
   three rapid presses take a line from 3 to 6. A removal flushes immediately
-  rather than coalescing — it is the last thing that line will say.
+  rather than coalescing — it is the last thing that line will say. Jobs use
+  Shopify's stable line key rather than a numeric position, so a preceding
+  removal cannot shift a queued press onto the wrong piece.
 
   The **number** under the pointer is written on the press so the control
   answers at once. That is the count, not a price; nothing here does arithmetic
   on money, and the re-render that follows overwrites it.
 
-  `applyCartSection` restores `[data-drawer-scroller]`'s `scrollTop` across the
-  swap, or a scrolled list jumps to the top on every step.
+  `applyCartSection` restores `[data-drawer-scroller]`'s `scrollTop` on the
+  newly rendered scroller across the swap (the old node is detached), or a
+  scrolled list jumps to the top on every step.
 - **Emptying the bag is a hand-over, not a swap.** It changes the whole panel
   at once — the count leaves the header, the list becomes a message, the footer
   goes — and no amount of animation on the arriving empty state fixes the jolt,
@@ -3800,10 +3803,13 @@ two answers and is gone.
   **Removing the last line skips the row collapse entirely.** Collapsing it
   first left an empty list sitting under a stale subtotal for as long as the
   request took, and then jolted. The last line instead starts the fade on the
-  press, so it covers the request. Every other line still collapses on its own
-  and the rest of the panel never moves. Verified: on the last line the fade is
-  running 19ms after the press with no `[data-leaving]`; with two lines it is
-  the reverse.
+  press, so it covers the request. Every other line starts its row collapse and
+  `/cart/change.js` request in the same frame; a fast response waits only for
+  the measured 0.34s exit, while a slower response arrives behind an already
+  closed gap. The earlier animation-then-network sequence made Remove feel
+  stalled. The row now uses opacity and a small translation without blur, so
+  the required layout collapse does not also pay for a filter repaint. The
+  rest of the panel never moves.
 
   A step between two non-zero quantities does not fade the panel — a number
   changing is not a state change, and fading on every press would be worse than
@@ -3893,7 +3899,8 @@ two answers and is gone.
   square, so Shopify centres the piece in the taller box instead of the browser
   cropping a square to fit. Measured: 64×85.
 - Removal collapses the row (`grid-template-rows: 1fr → 0fr`, which *is*
-  animatable, unlike height) before the line is dropped.
+  animatable, unlike height) while the Cart API request is in flight, then
+  drops the line when both are ready.
 - The bag action stays an `<a href="/cart">`; JavaScript intercepts it. Same
   for search. Nothing here is load-bearing without scripting.
 - Cart handlers are **delegated from the document and bound once**, because
@@ -4160,8 +4167,14 @@ Shopify checkout, and the subtotal carries the note.
   unit-versus-line price, note, discounts, tax wording, installments and
   accelerated checkout. They are two presentations of one cart contract.
 - Quantity discs only change the matching native `updates[]` input. The Update
-  button remains a normal cart-form submission, and Remove remains Shopify's
-  `url_to_remove`, so the page works without JavaScript.
+  button remains a normal cart-form submission. Remove remains Shopify's real
+  `url_to_remove` fallback, while `main-cart.js` upgrades it to a section-rendered
+  `/cart/change.js` request: the measured line fades and collapses during the
+  request, totals and global count come from the returned Liquid markup, and
+  the empty state enters without a full-page reload. Unsaved note and quantity
+  drafts on surviving lines are copied into the authoritative replacement.
+  Reduced-motion mode skips the wait, and a failed Ajax request restores the
+  real URL path.
 - Width and image decisions use named presets. Do not replace the summary-width
   preset with a pixel slider; its narrow/medium/wide choices are intentionally
   stable responsive art direction.

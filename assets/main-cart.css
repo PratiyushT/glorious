@@ -42,8 +42,27 @@
   grid-template-columns: minmax(6rem, 9rem) minmax(0, 1fr) auto;
   gap: var(--step-medium);
   align-items: start;
+  max-block-size: var(--cart-line-height, none);
   padding-block: var(--step-medium);
   border-block-end: 1px solid var(--c-hairline);
+  transition: max-block-size .34s cubic-bezier(.22, 1, .36, 1),
+              padding-block .34s cubic-bezier(.22, 1, .36, 1),
+              border-color .2s ease,
+              opacity .18s ease,
+              transform .28s cubic-bezier(.22, 1, .36, 1);
+}
+
+/* JavaScript measures the row before setting data-leaving, so max-block-size
+   has a real pixel start value and the remaining lines close the gap instead
+   of jumping. The Cart API request runs during this motion. */
+.cart-line[data-leaving] {
+  max-block-size: 0;
+  padding-block: 0;
+  overflow: hidden;
+  border-color: transparent;
+  opacity: 0;
+  transform: translateX(.65rem);
+  pointer-events: none;
 }
 
 /* The frame is Theme settings → Cart's shape and fit — the same pair the
@@ -189,6 +208,14 @@
 .cart-page__empty {
   width: min(100%, 35rem);
   padding-block: var(--step-xlarge);
+}
+
+main-cart[data-cart-arriving] .cart-page__empty > * {
+  animation: gj-row-in .38s var(--ease) both;
+}
+
+main-cart[data-cart-arriving] .cart-page__empty > :nth-child(2) {
+  animation-delay: .06s;
 }
 
 @media (max-width: 62.4375rem) {

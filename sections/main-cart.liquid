@@ -30,7 +30,12 @@
   endif
 -%}
 
-<main-cart>
+<main-cart data-section-id="{{ section.id }}">
+  <div
+    data-cart-count-value="{{ cart.item_count }}"
+    data-cart-announce="{{ 'navigation.cart_status' | t: count: cart.item_count, cart_name: cart_name | escape }}"
+    hidden
+  ></div>
   <section
     class="section cart-page scheme-{{ section.settings.color_scheme }}"
     style="{% render 'section-style', padding_top: section.settings.padding_top, padding_bottom: section.settings.padding_bottom %} --cart-summary-width: {{ summary_width }}rem;{% if cart_ratio != '' %} --cart-image-ratio: {{ cart_ratio }};{% endif %} --cart-image-fit: {{ cart_fit }};"
@@ -59,7 +64,7 @@
         {%- form 'cart', cart, class: 'cart-page__layout' -%}
           <div class="cart-page__items">
             {%- for item in cart.items -%}
-              <article class="cart-line" data-cart-line="{{ item.key }}">
+              <article class="cart-line" data-cart-line="{{ item.key | escape }}">
                 <a
                   class="cart-line__media"
                   href="{{ item.url }}"
@@ -145,7 +150,7 @@
                       <input class="quantity-control__value" id="CartQuantity-{{ item.index | plus: 1 }}" name="updates[]" type="number" min="{{ rule_min }}"{% if quantity_rule.max %} max="{{ quantity_rule.max }}"{% endif %} step="{{ rule_increment }}" value="{{ item.quantity }}" inputmode="numeric">
                       <button class="quantity-control__button" type="button" data-cart-quantity-change="1" aria-label="{{ 'cart.increase' | t: title: item.product.title }}">+</button>
                     </div>
-                    <a class="cart-line__remove" href="{{ item.url_to_remove }}">{{ 'cart.remove' | t }}</a>
+                    <a class="cart-line__remove" href="{{ item.url_to_remove }}" data-main-cart-remove>{{ 'cart.remove' | t }}</a>
                   </div>
                 </div>
               </article>

@@ -76,7 +76,7 @@
   {%- else -%}
     <ul class="drawer-lines">
       {%- for item in cart.items -%}
-        <li class="drawer-row" data-cart-line="{{ forloop.index }}">
+        <li class="drawer-row" data-cart-line="{{ forloop.index }}" data-cart-key="{{ item.key | escape }}">
           <div class="drawer-row__collapse">
             <div class="drawer-row__clip">
               <div class="drawer-row__body">

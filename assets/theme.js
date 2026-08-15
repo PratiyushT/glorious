@@ -55,6 +55,12 @@
     );
   }
 
+  function focusWithoutScroll(element) {
+    if (!element || !element.focus) return;
+    try { element.focus({ preventScroll: true }); }
+    catch (error) { element.focus(); }
+  }
+
   function trapFocus(container, event) {
     var items = focusables(container);
     if (!items.length) return;
@@ -1081,7 +1087,7 @@
   /* Swap in the freshly rendered section, and take the item count from it.
      The markup Shopify has just rendered is the only account of the cart
      worth trusting. */
-  function applyCartSection(payload) {
+  function applyCartSection(payload, removalMotion) {
     var drawer = cartDrawer();
     if (!drawer) return;
 
@@ -1106,7 +1112,8 @@
       blurUp(current, true);
       init(current);
 
-      if (scroller) scroller.scrollTop = scrolled;
+      var nextScroller = drawer.querySelector('[data-drawer-scroller]');
+      if (nextScroller) nextScroller.scrollTop = scrolled;
 
       /* A step that moves the money gets a beat on the figure. Guarded on the
          text actually differing, so nothing twitches when it has not. */
@@ -1126,6 +1133,24 @@
           source.dataset.cartAnnounce
         );
       }
+    }
+
+    /* Start a removal's request and exit in the same frame, then hold a fast
+       response only until the row is closed. The previous sequence waited for
+       all motion before contacting Shopify, which added the full network wait
+       after the animation and made Remove feel stalled. */
+    if (removalMotion) {
+      return removalMotion.promise.then(function () {
+        if (removalMotion.last) current.removeAttribute('data-cart-swapping');
+        swap();
+
+        if (removalMotion.restoreFocus) {
+          var focusRow = removalMotion.focusId && drawerRow(removalMotion.focusId);
+          var focusTarget = focusRow && focusRow.querySelector('[data-cart-remove]');
+          if (!focusTarget) focusTarget = current.querySelector('[data-overlay-close="cart"]');
+          focusWithoutScroll(focusTarget);
+        }
+      });
     }
 
     /* Emptying the bag — or filling it from empty — changes the whole panel at
@@ -1191,11 +1216,11 @@
 
     var job = cartPending;
     cartPending = null;
-    changeLine(job.line, job.quantity);
+    changeLine(job.id, job.quantity, job.removing);
   }
 
-  function queueLine(line, quantity, immediate) {
-    cartPending = { line: line, quantity: quantity };
+  function queueLine(id, quantity, immediate, removing) {
+    cartPending = { id: id, quantity: quantity, removing: removing === true };
 
     if (cartTimer) { window.clearTimeout(cartTimer); cartTimer = null; }
     if (immediate) { flushCartChange(); return; }
@@ -1203,26 +1228,87 @@
     cartTimer = window.setTimeout(flushCartChange, CART_COALESCE);
   }
 
-  function changeLine(line, quantity) {
+  /* Cart line numbers shift after a removal. The rendered line key does not,
+     so queued presses keep addressing the piece the shopper actually touched
+     even when another response has re-rendered the drawer first. */
+  function drawerRow(id) {
+    var match = null;
+    var drawer = cartDrawer();
+    if (!drawer) return match;
+
+    drawer.querySelectorAll('[data-cart-line]').forEach(function (row) {
+      if (match) return;
+      var rowId = row.dataset.cartKey || row.dataset.cartLine;
+      if (String(rowId) === String(id)) match = row;
+    });
+    return match;
+  }
+
+  function beginDrawerRemoval(id) {
+    var drawer = cartDrawer();
+    var current = drawer && drawer.querySelector('[data-drawer-contents]');
+    var row = drawerRow(id);
+    var last = drawer && drawer.querySelectorAll('[data-cart-line]').length === 1;
+    var target = last ? current : row;
+
+    if (!target) return null;
+
+    if (last) current.setAttribute('data-cart-swapping', '');
+    else {
+      row.setAttribute('data-leaving', '');
+      row.setAttribute('aria-busy', 'true');
+    }
+
+    var adjacent = row && (row.nextElementSibling || row.previousElementSibling);
+
+    return {
+      last: last,
+      row: row,
+      current: current,
+      focusId: adjacent && (adjacent.dataset.cartKey || adjacent.dataset.cartLine),
+      restoreFocus: row && row.contains(document.activeElement),
+      promise: new Promise(function (resolve) {
+        /* Forces style resolution before getAnimations(), so the measured
+           transition—not a long fallback timer—is the normal path. */
+        afterFade(target, last ? 180 : 450, resolve);
+      })
+    };
+  }
+
+  function cancelDrawerRemoval(motion) {
+    if (!motion) return;
+    if (motion.row) {
+      motion.row.removeAttribute('data-leaving');
+      motion.row.removeAttribute('aria-busy');
+    }
+    if (motion.current) motion.current.removeAttribute('data-cart-swapping');
+  }
+
+  function changeLine(id, quantity, removing) {
     var drawer = cartDrawer();
     if (!drawer) return;
 
     /* Held rather than dropped — the lock used to lose the press entirely. */
-    if (cartBusy) { cartPending = { line: line, quantity: quantity }; return; }
+    if (cartBusy) {
+      cartPending = { id: id, quantity: quantity, removing: removing === true };
+      return;
+    }
     cartBusy = true;
+    var removalMotion = removing ? beginDrawerRemoval(id) : null;
 
     fetch(root() + 'cart/change.js', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
       body: JSON.stringify({
-        line: line,
+        id: id,
         quantity: quantity,
         sections: drawer.dataset.sectionId
       })
     })
       .then(function (res) { return res.ok ? res.json() : Promise.reject(res.status); })
-      .then(applyCartSection)
+      .then(function (payload) { return applyCartSection(payload, removalMotion); })
       .catch(function () {
+        cancelDrawerRemoval(removalMotion);
         /* Rather than guess at what the cart now holds, go to the page that
            can always tell the truth. */
         cartPending = null;
@@ -1269,7 +1355,7 @@
     if (typeof event.button === 'number' && event.button !== 0) return;
 
     var el = event.target.closest && event.target.closest(
-      '[data-drawer-open],[data-search-open],[data-quick-view],[data-card-option],[data-overlay-open],[data-nav-drill]'
+      '[data-drawer-open],[data-search-open],[data-quick-view],[data-card-option],[data-overlay-open],[data-nav-drill],[data-main-cart-remove]'
     );
     if (!el) return;
 
@@ -1278,6 +1364,7 @@
       (el.hasAttribute('data-search-open') && overlays.search) ||
       (el.hasAttribute('data-quick-view') && quickOverlay()) ||
       el.hasAttribute('data-card-option') ||
+      el.hasAttribute('data-main-cart-remove') ||
       (el.hasAttribute('data-nav-drill') &&
         document.querySelector('[data-nav-level="' + el.getAttribute('data-nav-drill') + '"]')) ||
       (el.hasAttribute('data-overlay-open') && overlays[el.dataset.overlayOpen]);
@@ -1318,32 +1405,13 @@
 
       var row = event.target.closest('[data-cart-line]');
       if (!row) return;
-      var index = parseInt(row.dataset.cartLine, 10);
+      var id = row.dataset.cartKey || parseInt(row.dataset.cartLine, 10);
 
       function remove() {
-        /* The last line takes the whole panel with it — the footer, the count,
-           the list. Collapsing it first would leave an empty list sitting
-           under a stale subtotal for as long as the request takes, and then
-           jolt. So the last one skips the collapse entirely and hands the
-           panel over instead: the contents fade while the request flies, and
-           the empty state rises in behind it.
-
-           Any other line still collapses on its own, which is what the design
-           does, and the rest of the panel never moves. */
-        var inner = cartDrawer() && cartDrawer().querySelector('[data-drawer-contents]');
-        var lines = document.querySelectorAll('[data-cart-line]').length;
-
-        if (lines === 1 && inner && !reduceMotion.matches) {
-          inner.setAttribute('data-cart-swapping', '');
-          void inner.offsetWidth;
-          queueLine(index, 0, true);
-          return;
-        }
-
-        row.setAttribute('data-leaving', '');
-        /* Sent the moment the row has finished collapsing, not coalesced — a
-           removal is the last thing this line will say. */
-        afterAnimations(row, 700, function () { queueLine(index, 0, true); });
+        /* Immediate means the request begins with the exit, rather than after
+           it. changeLine() owns the animation so a removal queued behind a
+           quantity response starts against the freshly rendered row. */
+        queueLine(id, 0, true, true);
       }
 
       var step = event.target.closest('[data-cart-step]');
@@ -1380,7 +1448,7 @@
            still comes back from Liquid, and the re-render overwrites this. */
         if (value) value.textContent = next;
 
-        queueLine(index, next);
+        queueLine(id, next);
         return;
       }
 

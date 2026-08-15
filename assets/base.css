@@ -7624,11 +7624,15 @@ a.nav-menu__address:hover {
 .drawer-row__collapse {
   display: grid;
   grid-template-rows: 1fr;
-  transition: grid-template-rows 0.36s cubic-bezier(0.33, 0, 0.15, 1) 0.1s;
+  transition: grid-template-rows 0.34s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .drawer-row[data-leaving] .drawer-row__collapse {
   grid-template-rows: 0fr;
+}
+
+.drawer-row[data-leaving] {
+  pointer-events: none;
 }
 
 .drawer-row__clip {
@@ -7643,15 +7647,13 @@ a.nav-menu__address:hover {
   padding-block: var(--space-xs);
   /* The design's 10% between lines — the lightest of its three hairlines. */
   border-bottom: var(--border-width) solid color-mix(in srgb, var(--c-text) 10%, transparent);
-  transition: opacity 0.2s ease,
-              transform 0.3s cubic-bezier(0.33, 0, 0.15, 1),
-              filter 0.24s ease;
+  transition: opacity 0.18s ease,
+              transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .drawer-row[data-leaving] .drawer-row__body {
   opacity: 0;
-  transform: translateX(16px);
-  filter: blur(3px);
+  transform: translateX(0.65rem);
 }
 
 .drawer-row__thumb {
