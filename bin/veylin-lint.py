@@ -865,33 +865,51 @@ def R19_no_runtime_color_literals():
         return re.sub(r'[^\n]', ' ', m.group(0))
 
     for path in walk_files('assets', '.css'):
-        src = re.sub(r'/\*.*?\*/', blank, read(path), flags=re.S)
-        for pattern in (literal, named_css):
-            for match in pattern.finditer(src):
-                line = src.count('\n', 0, match.start()) + 1
-                err('R19', '%s:%d' % (rel(path), line),
-                    'runtime colour literal %r; use a scheme token'
-                    % match.group(0))
-
-    for path in walk_files('assets', '.js'):
-        src = re.sub(r'/\*.*?\*/|//[^\n]*', blank, read(path), flags=re.S)
-        for match in literal.finditer(src):
+        raw = read(path)
+        src = re.sub(r'/\*.*?\*/', blank, raw, flags=re.S)
+        for match in literal.finditer(raw):
+            line = raw.count('\n', 0, match.start()) + 1
+            err('R19', '%s:%d' % (rel(path), line),
+                'colour literal %r; use a scheme token' % match.group(0))
+        for match in named_css.finditer(src):
             line = src.count('\n', 0, match.start()) + 1
             err('R19', '%s:%d' % (rel(path), line),
                 'runtime colour literal %r; use a scheme token'
                 % match.group(0))
 
+    for path in walk_files('assets', '.js'):
+        src = read(path)
+        for match in literal.finditer(src):
+            line = src.count('\n', 0, match.start()) + 1
+            err('R19', '%s:%d' % (rel(path), line),
+                'colour literal %r; use a scheme token'
+                % match.group(0))
+
     for sub in ('layout', 'sections', 'blocks', 'snippets', 'templates'):
         for path in walk_files(sub, '.liquid'):
-            src = strip_comments(read(path))
+            raw = read(path)
+            src = strip_comments(raw)
             src = re.sub(r'<!--.*?-->|/\*.*?\*/|//[^\n]*', blank, src,
                          flags=re.S)
-            for pattern in (literal, named_markup):
-                for match in pattern.finditer(src):
-                    line = src.count('\n', 0, match.start()) + 1
-                    err('R19', '%s:%d' % (rel(path), line),
-                        'runtime colour literal %r; use a scheme token or '
-                        'setting value' % match.group(0))
+            for match in literal.finditer(raw):
+                line = raw.count('\n', 0, match.start()) + 1
+                err('R19', '%s:%d' % (rel(path), line),
+                    'colour literal %r; use a scheme token or setting value'
+                    % match.group(0))
+            for match in named_markup.finditer(src):
+                line = src.count('\n', 0, match.start()) + 1
+                err('R19', '%s:%d' % (rel(path), line),
+                    'runtime colour literal %r; use a scheme token or '
+                    'setting value' % match.group(0))
+
+    for name in sorted(n for n in os.listdir(ROOT) if n.endswith('.md')):
+        path = os.path.join(ROOT, name)
+        src = read(path)
+        for match in literal.finditer(src):
+            line = src.count('\n', 0, match.start()) + 1
+            err('R19', '%s:%d' % (rel(path), line),
+                'colour literal %r; document the scheme role instead'
+                % match.group(0))
 
 
 RULES = OrderedDict([

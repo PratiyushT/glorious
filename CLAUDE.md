@@ -1266,11 +1266,10 @@ merchant's saved color data alone.
   is still one place each colour is defined, and restyling a scheme restyles
   every surface built from it.
 
-  The mapping was already exact — `scheme_2` *is* the design's noir palette
-  (`#0d0c0a` background, `#14110d` surface, `#efe9dc` text, `#c7a15c` accent),
-  so the literals were re-typing a scheme that existed. `--c-ivory` was already
-  being declared twice as a component-scoped literal, which is this idea
-  arrived at by hand.
+  The mapping was already exact — `scheme_2` *is* the design's noir palette,
+  including its background, surface, text, and accent roles — so the literals
+  were re-typing a scheme that existed. `--c-ivory` was already being declared
+  twice as a component-scoped literal, which is this idea arrived at by hand.
 
 - **Two routes, and which one a component takes is a real distinction.** A
   component inside a section follows that section's scheme — the lookbook is
@@ -1281,33 +1280,29 @@ merchant's saved color data alone.
   nav overlay, and recolouring `--c-noir` moves the nav overlay and not the
   lookbook. Both are correct.
 
-- **`--c-noir-deep` is derived, not stored.** The design states `#0B0A08`
-  against its `#0D0C0A` for the veil behind a dark panel;
-  `color-mix(in srgb, var(--c-noir) 88%, #000)` follows the merchant's noir
-  instead of drifting away from it.
+- **`--c-noir-deep` resolves to the nominated dark background.** A separate
+  fixed black would stop following that scheme, while mixing another scheme's
+  text into it can lighten rather than deepen a custom palette.
 
 - **The page's own scheme is a setting.** `layout/theme.liquid` hardcoded
   `class="scheme-scheme_1"`, so a merchant could define four schemes and never
   choose which the page itself used — every section restyleable and the ground
   under them not.
 
-- **The scrollbar colours are settings but deliberately still not per-scheme.**
-  The reasoning under "Scrollbars" stands: one design file serves the noir home
-  page and the porcelain inner pages and paints the identical thumb on both.
-  Being a literal and being un-styleable are different problems; this fixes the
-  second without giving up the first.
+- **Scrollbar colours are settings in every scheme.** The page and every
+  independently scheme-classed scroller therefore use their own resting and
+  hover roles without a CSS fallback colour.
 
-- **`#FFFFFF` behind a product thumbnail is `--c-surface` now.** The
-  photography is shot on white and the backdrop should match the merchant's
-  surface rather than assume it.
+- **The fixed white behind a product thumbnail is `--c-surface` now.** The
+  photography backdrop should match the merchant's surface rather than assume
+  one colour.
 
 Two traps, both hit here:
 
-- **Replacing `#EFE9DC` with `var(--c-ivory)` across the file turned
-  `--c-ivory: #EFE9DC` into `--c-ivory: var(--c-ivory)`** — a self-reference,
-  which CSS treats as invalid at computed-value time and drops entirely. A
-  blanket literal-to-token sweep has to skip the declarations *of* those
-  tokens.
+- **Replacing the old ivory literal with `var(--c-ivory)` across the file also
+  changed the declaration of `--c-ivory` into a self-reference.** CSS treats
+  that as invalid at computed-value time and drops it entirely. A blanket
+  literal-to-token sweep has to skip the declarations *of* those tokens.
 - **A `str.replace` whose anchor does not match fails silently.** Four settings
   were "added" to `config/settings_schema.json` by a script that printed
   success and changed nothing, because the anchor assumed an indentation the
@@ -1656,11 +1651,10 @@ the design's value cannot be expressed as a token (see the hero, below), keep
 the literal and hold it in a component-scoped custom property so it is still
 one edit away from being changed.
 
-Brand constants taken from it: porcelain `#F4F0E8`, ink `#191510`, noir
-`#0D0C0A`, ivory `#EFE9DC`, champagne `#C7A15C` (on dark), deep gold
-`#9A7836` (on light), error `#A2422C`. Italiana display + Karla body.
-Square corners on cards and imagery, pill CTAs, letterspaced uppercase
-micro-labels.
+Brand roles taken from it: porcelain, ink, noir, ivory, champagne on dark,
+deep gold on light, and error. Their values live only in merchant-editable
+color schemes. Italiana display + Karla body. Square corners on cards and
+imagery, pill CTAs, letterspaced uppercase micro-labels.
 
 ### Not ported
 
@@ -3120,10 +3114,10 @@ The old `snippets/product-card.liquid` remains only on the design-system page.
     swatch row orders itself the same way and the table is the design's rather
     than either component's. A snippet cannot hand a value back, so it *prints*
     the values joined with `||` and callers `capture` then `strip | split`.
-  - **The selected ring is `--c-surface`, not `--c-bg`.** The design's
-    `0 0 0 2px #ffffff, 0 0 0 3px #191510` is a gap in the *card's* colour; on
-    the page background it reads as a porcelain halo. It is two shadows and not
-    a border because a border would consume the dot's width and shift every
+  - **The selected ring is `--c-surface`, not `--c-bg`.** The design uses a
+    surface gap inside an ink ring, so the gap belongs to the *card's* colour;
+    on the page background it reads as a porcelain halo. It is two shadows and
+    not a border because a border would consume the dot's width and shift every
     swatch beside it.
   - **`.swatch-dot` fills its control by default** (`width: 100%`), because
     `--card-swatch-*` is scoped to `.card` and the product page's 56px button
@@ -3313,24 +3307,18 @@ A 1:1 port of the design's `gj-scrollbar.css`, at the top of `base.css` under
 "Scrollbars". All **24** design pages link that file, so it is a site-wide
 theme rather than a component's.
 
-- **The colours are not per-scheme and must not be made so.** The same design
-  file serves its noir home page (`html{background:#0D0C0A}`) and its porcelain
-  inner pages (`html{background:#F4F0E8}`) and paints the identical thumb on
-  both — `#8A8072` is a warm mid grey chosen to read against either end.
-  Splitting it per scheme would also split one design colour in two on the
-  panels that carry a scheme class *and* scroll, `.quick-view` and
-  `.drawer__panel`. They are literals at `:root` rather than settings because
-  `theme-tokens.liquid` compiles only settings into `:root`, and a scrollbar is
-  not one — the same shape as the `--product-*` properties.
+- **Scrollbar colours are per scheme.** Each scheme owns its resting and hover
+  thumb roles, so the page, Quick View, and drawers follow the scheme they
+  actually display. The values compile to `--scrollbar-thumb` and
+  `--scrollbar-thumb-hover`; CSS never carries a fallback colour.
 - **The two halves are not equals.** The design puts the standard
   `scrollbar-width`/`scrollbar-color` on `*`, and where an engine honours those
   it may ignore the `::-webkit-scrollbar` rules and take the 11px width, the 3px
-  inset, the pill radius and the `#6E6558` hover with them. `#8A8072` paints
-  everywhere; the refinements paint only where the pseudo-elements are honoured.
-  That asymmetry is the design's own and is kept. Measured in Blink here: both
-  halves apply, and **`var()` does resolve inside `::-webkit-scrollbar`** (11px
-  bar, `rgb(138,128,114)` thumb, 999px radius), so the tokens need no literal
-  fallbacks.
+  inset, the pill radius and the scheme's hover role with them. The resting
+  role paints everywhere; refinements paint only where the pseudo-elements are
+  honoured. That asymmetry is the design's own and is kept. Measured in Blink
+  here: both halves apply, and **`var()` does resolve inside
+  `::-webkit-scrollbar`**, so the tokens need no literal fallbacks.
 - **`scrollbar-gutter` is deliberately absent.** `theme.js` measures
   `window.innerWidth - html.clientWidth` *before* it sets `overflow: hidden` and
   applies the difference as body padding; a stable gutter would keep that
@@ -3447,10 +3435,9 @@ flight, and whatever waits next. `{% render 'loader', label: text, size: 'sm' %}
   — a thing arriving fast and settling — and on a line being struck it puts 78%
   of the length down in the first 26% of the stroke and then creeps. A pen
   accelerates and slows.
-- It is gold on whatever scheme it lands in — `--c-accent`, which is already
-  `#9A7836` on a light panel and the champagne `#C7A15C` on the noir search
-  overlay. Under reduced motion the stone is simply drawn whole rather than
-  hidden: a wait with no sign of waiting is worse than a still one.
+- It uses the selected scheme's `--loader-ink`, falling back only to that same
+  scheme's accent role. Under reduced motion the stone is simply drawn whole
+  rather than hidden: a wait with no sign of waiting is worse than a still one.
 - **In the quick view it replaces a shimmering skeleton.** Nothing in that panel
   knows the shape of the piece it is fetching, so a skeleton was guessing, and a
   skeleton that guesses wrong is worse than a mark that admits it is waiting.
@@ -3542,7 +3529,7 @@ The markup contract:
 - The dark overlays (`.nav-menu`, `.search-overlay`) **declare their own
   `--c-accent` and `--c-ivory`**. They are noir whatever scheme the page is
   in, and inheriting the page's accent would drop the light-background gold
-  (`#9A7836`) onto a near-black surface.
+  role onto a near-black surface.
 
 ### Close controls
 
@@ -3665,25 +3652,24 @@ two answers and is gone.
   drawer and on the cart page alike. Repeating it down a bag of five pieces
   says the same thing five times in the smallest type on the panel.
 - **The panel is porcelain lifted, not white.** The design gives the panel
-  `#F8F5EE` over a `#F4F0E8` footer; the theme had the panel on `--c-surface`,
-  which is `#ffffff` in scheme_1, so a two-tone read as white against
-  porcelain. It is `color-mix(in srgb, var(--c-surface) 26%, var(--c-bg))`
-  rather than the literal, for the reason the quick view's background is a
-  token — the drawer's scheme is merchant-selectable and a hardcoded near-white
-  panel would carry ivory text on scheme_2. At 26% it lands within one step of
-  255 of the design on every channel.
+  as a lifted porcelain over a porcelain footer; the theme had the panel on
+  `--c-surface`, so the two-tone read as a plain surface against porcelain. It
+  is `color-mix(in srgb, var(--c-surface) 26%, var(--c-bg))` rather than a
+  literal, for the reason the quick view's background is a token — the drawer's
+  scheme is merchant-selectable and a fixed near-white panel would carry ivory
+  text on scheme_2. The mix stays within one channel step of the reference.
 - **The drawer uses three hairline weights and they are the design's, not
   `--c-hairline`.** 12% at the panel edge, under the header and above the
   footer; **10%** between lines; 14% around a thumbnail (which is what
   `--c-hairline` happens to be). The header count and a line's meta are ink at
   **50%**, not `--c-muted`.
 - **The footer's two buttons carry their own values, not the `--button-*`
-  tokens.** Checkout is champagne `#C7A15C` with `#14110D` on it — the design's
-  primary CTA colour, the same one `.quick-view__add` carries as `--qv-gold` —
-  turning ink on hover; Salon is an ink hairline at 35%, not the accent. Both
-  are 15px/22px, where the global tokens give 16px/28px. `--c-accent` is the
-  light-background gold `#9A7836` and is a different colour; do not reach for
-  it here.
+  tokens.** Checkout uses the dark scheme's champagne with its surface text —
+  the design's primary CTA roles, also carried by `.quick-view__add` — turning
+  ink on hover; Salon is an ink hairline at 35%, not the accent. Both are
+  15px/22px, where the global tokens give 16px/28px. The page scheme's accent
+  is the light-background gold role and is a different colour; do not reach
+  for it here.
 - The footer's own geometry is stated too — `20px clamp(20px,5vw,30px) 26px`,
   a 16px subtotal figure and a 10px button gap — because the spacing scale
   lands at 18.7/30.08/28.1 with a 19.18px figure.

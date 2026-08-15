@@ -7352,16 +7352,15 @@ a.nav-menu__address:hover {
   animation: gj-fade-out 0.35s ease both;
 }
 
-/* The design's panel is color-mix(in srgb, var(--c-porcelain) 45%, #fff) and its footer #F4F0E8 — porcelain, lifted a
-   little, over plain porcelain. The theme had the panel on --c-surface, which
-   is #ffffff in scheme_1, so the two-tone read as white against porcelain
-   instead.
+/* The design's panel is lifted porcelain over a plain porcelain footer. The
+   theme had the panel on --c-surface, so the two-tone read as a plain surface
+   against porcelain instead.
 
    Expressed as a mix rather than the literal, for the reason the quick view's
    background is a token: the drawer's scheme is merchant-selectable and a
    hardcoded near-white panel would carry ivory text on scheme_2. At 26% the
-   mix lands on rgb(247,244,238) against the design's rgb(248,245,238) — inside
-   one step of 255 on every channel — and it stays right in every other scheme.
+   mix lands within one channel step of the reference, and it stays right in
+   every other scheme.
 
    The three hairline weights below are the design's own (12% at the panel edge
    and under the header, 10% between lines, 14% around a thumbnail), which is
@@ -7500,7 +7499,7 @@ a.nav-menu__address:hover {
   font-family: var(--font-body);
   font-size: var(--micro-size);
   letter-spacing: calc(var(--micro-tracking) * 0.77);
-  /* The design's rgba(25,21,16,.5) — ink at half, not --c-muted's #75716b. */
+  /* The design uses ink at half strength, not the scheme's muted role. */
   color: color-mix(in srgb, var(--c-text) 50%, transparent);
   vertical-align: 0.15em;
 }
@@ -7626,7 +7625,7 @@ a.nav-menu__address:hover {
   letter-spacing: var(--product-meta-tracking);
   text-transform: uppercase;
   line-height: var(--product-line);
-  /* The design's rgba(25,21,16,.5), as the header's count is. */
+  /* The design uses ink at half strength, as the header's count does. */
   color: color-mix(in srgb, var(--c-text) 50%, transparent);
 }
 
@@ -7842,7 +7841,7 @@ input.quantity-control__value::-webkit-outer-spin-button {
   font-size: var(--micro-size);
   letter-spacing: calc(var(--micro-tracking) * 0.82);
   text-transform: uppercase;
-  /* The design's rgba(25,21,16,.55) — ink at 55%, not --c-muted's #75716b. */
+  /* The design uses ink at 55%, not the scheme's muted role. */
   color: color-mix(in srgb, var(--c-text) 55%, transparent);
 }
 
