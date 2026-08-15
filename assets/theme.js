@@ -3502,7 +3502,6 @@
 
       var pools = Array.prototype.slice.call(hero.querySelectorAll('[data-hero-pool]'));
       var switches = Array.prototype.slice.call(hero.querySelectorAll('[data-hero-tab]'));
-      var portraits = Array.prototype.slice.call(hero.querySelectorAll('[data-hero-portrait]'));
       var carousel = hero.querySelector('[data-hero-carousel]');
       var windowEl = hero.querySelector('[data-hero-window]');
       var below = hero.querySelector('.hero-carousel__below');
@@ -3518,11 +3517,13 @@
 
       function paint(replay) {
         pools.forEach(function (pool, i) { pool.hidden = i !== activeTab; });
+        if (carousel) {
+          carousel.style.setProperty('--hero-card-height-factor', pools[activeTab].dataset.heroCardHeightFactor || '1.18');
+        }
         switches.forEach(function (btn, i) {
           btn.classList.toggle('is-on', i === activeTab);
           btn.setAttribute('aria-pressed', String(i === activeTab));
         });
-        portraits.forEach(function (portrait, i) { portrait.hidden = i !== activeTab; });
 
         var list = cards();
         var cyclable = list.length > VISIBLE;

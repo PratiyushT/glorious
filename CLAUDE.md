@@ -1356,8 +1356,10 @@ Editor. `announcement-header` is header-group only, may show everywhere or on
 the home page only, stays sticky, and alone measures the fixed nav offset.
 `announcement-bar` is an ordinary addable page section with no Show on setting;
 it renders in normal flow exactly where the merchant places it and cannot move
-the nav. Each instance has its own session dismissal key. Neither exposes a
-height setting: text and em-based controls determine the natural height.
+the nav. Each instance has its own session dismissal key. Both expose Compact,
+Standard, and Tall height presets that change only em-based vertical breathing
+room. Typography still determines the minimum natural height, so larger text
+cannot be clipped.
 
 The design states its own model: *"Four variants carry every action across the
 store. Pill geometry, uppercase Karla at .15em, and a single gold accent.
@@ -2768,13 +2770,12 @@ from `.1s`, and the design's decorative arcs rendered through the centralized
 Liquid icon library. The former sparkle layer, setting, Icon block option, and
 SVG snippet are removed.
 
-**A Collection tab's Media size and Media fit both reach the selected
-media.** The selected `.hero__portrait-image` stays in normal flow and carries
-the chosen aspect ratio; its `img`/placeholder fills that box so `cover` and
-`contain` have a definite width and height to act on. The outer
-`.hero__portrait-frame` has no ratio or height of its own and simply wraps the
-active media box. Keeping `height: auto` on the replaced image left its
-intrinsic ratio authoritative and made both editor controls appear inert.
+**A Collection tab's Product image shape and Product image fit belong to its
+carousel.** The active product pool carries both values into its card frames;
+switching tabs therefore changes the selected collection and the presentation
+of that collection's product images together. The Hero portrait is owned only
+by the section-level Portrait image setting. Collection tabs have no image
+uploader and cannot replace or resize the Hero portrait.
 
 **The hero fits itself to the screen rather than clipping.** It is a
 screenful, and its content does not always agree — at 1280×560 the grid
@@ -2798,14 +2799,12 @@ two-column arrangement with the larger cards, and folding that into the
 1100px tier is wrong.
 
 The **piece carousel** shows two at a time out of one collection per Collection
-tab. Each `collection_tab` block carries its own label, collection and optional
-portrait image, so the tab is a complete content choice rather than only a
-product-pool switch. Its editor is deliberately narrow: Content contains the
-label and collection; Image contains the media picker, size and fit controls.
-The size choices use the same square, portrait, tall portrait, landscape and
-wide vocabulary as Lookbook media. A blank tab image falls back to the
-section's default portrait while retaining the selected tab's framing. The whole pool is rendered
-and the carousel picks the visible pair, so stepping never
+tab. Each `collection_tab` block carries its own label, collection, product
+image shape, and product image fit. Its editor is deliberately narrow: Content
+contains the label and collection; Carousel media contains only shape and fit,
+with no image uploader. The shape choices use the same square, portrait, tall
+portrait, landscape, and wide vocabulary as Lookbook media. The whole pool is
+rendered and the carousel picks the visible pair, so stepping never
 waits on a request and every piece is a real link without scripting — a
 visitor without it simply sees the first pair. Arrows hide themselves when
 the pool is too short to cycle.

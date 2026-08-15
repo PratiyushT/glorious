@@ -1603,6 +1603,12 @@
         "full": "Full screen",
         "page": "Page width"
       },
+      "height_preset": {
+        "label": "Height",
+        "compact": "Compact",
+        "standard": "Standard",
+        "tall": "Tall"
+      },
       "mode": {
         "label": "Mode",
         "marquee": "Marquee",
@@ -1852,16 +1858,12 @@
             "label": "Collection",
             "info": "The products shown while this tab is selected."
           },
-          "image_header": "Image",
-          "image": {
-            "label": "Media",
-            "info": "Shown while this tab is selected. Leave empty to use the Hero's default portrait image."
+          "media_header": "Carousel media",
+          "media_ratio": {
+            "label": "Product image shape"
           },
-          "image_ratio": {
-            "label": "Media size"
-          },
-          "image_fit": {
-            "label": "Media fit"
+          "media_fit": {
+            "label": "Product image fit"
           }
         },
         "hero_cta": {

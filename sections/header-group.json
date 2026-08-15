@@ -36,6 +36,7 @@
         "color_scheme": "scheme_2",
         "visibility": "everywhere",
         "content_width": "full",
+        "height_preset": "standard",
         "mode": "marquee",
         "marquee_speed": "balanced",
         "auto_rotate": true,

@@ -98,53 +98,24 @@
 
       <div class="hero__portrait">
         <div class="hero__portrait-frame">
-          {%- if tab_blocks.size > 0 -%}
-            {%- for block in tab_blocks -%}
-              {%- assign portrait_image = block.settings.image | default: section.settings.image -%}
-              <div
-                class="hero__portrait-image"
-                data-hero-portrait="{{ forloop.index0 }}"
-                style="--hero-media-ratio: {{ block.settings.image_ratio | default: '3 / 4' }}; --hero-media-fit: {{ block.settings.image_fit | default: 'cover' }};"
-                {% unless forloop.first %}hidden{% endunless %}
+          <div class="hero__portrait-image" style="--hero-media-ratio: 3 / 4; --hero-media-fit: cover;">
+            {%- if section.settings.image != blank -%}
+              <img
+                src="{{ section.settings.image | image_url: width: 1200 }}"
+                data-image-lqip="{{ section.settings.image | image_url: width: 40 }}"
+                srcset="{{ section.settings.image | image_url: width: 500 }} 500w, {{ section.settings.image | image_url: width: 800 }} 800w, {{ section.settings.image | image_url: width: 1200 }} 1200w"
+                sizes="(min-width: 68.75rem) 44vh, (min-width: 61.875rem) 46vh, 62vw"
+                alt="{{ section.settings.image.alt | escape }}"
+                width="{{ section.settings.image.width }}"
+                height="{{ section.settings.image.height }}"
+                style="object-position: {{ section.settings.image.presentation.focal_point }};"
+                loading="eager"
+                fetchpriority="high"
               >
-                {%- if portrait_image != blank -%}
-                  <img
-                    src="{{ portrait_image | image_url: width: 1200 }}"
-                    data-image-lqip="{{ portrait_image | image_url: width: 40 }}"
-                    srcset="{{ portrait_image | image_url: width: 500 }} 500w, {{ portrait_image | image_url: width: 800 }} 800w, {{ portrait_image | image_url: width: 1200 }} 1200w"
-                    sizes="(min-width: 68.75rem) 44vh, (min-width: 61.875rem) 46vh, 62vw"
-                    alt="{{ portrait_image.alt | escape }}"
-                    width="{{ portrait_image.width }}"
-                    height="{{ portrait_image.height }}"
-                    style="object-position: {{ portrait_image.presentation.focal_point }};"
-                    loading="{% if forloop.first %}eager{% else %}lazy{% endif %}"
-                    {% if forloop.first %}fetchpriority="high"{% endif %}
-                  >
-                {%- else -%}
-                  {{ 'lifestyle-1' | placeholder_svg_tag: 'placeholder-svg' }}
-                {%- endif -%}
-              </div>
-            {%- endfor -%}
-          {%- else -%}
-            <div class="hero__portrait-image" style="--hero-media-ratio: 3 / 4; --hero-media-fit: cover;">
-              {%- if section.settings.image != blank -%}
-                <img
-                  src="{{ section.settings.image | image_url: width: 1200 }}"
-                  data-image-lqip="{{ section.settings.image | image_url: width: 40 }}"
-                  srcset="{{ section.settings.image | image_url: width: 500 }} 500w, {{ section.settings.image | image_url: width: 800 }} 800w, {{ section.settings.image | image_url: width: 1200 }} 1200w"
-                  sizes="(min-width: 68.75rem) 44vh, (min-width: 61.875rem) 46vh, 62vw"
-                  alt="{{ section.settings.image.alt | escape }}"
-                  width="{{ section.settings.image.width }}"
-                  height="{{ section.settings.image.height }}"
-                  style="object-position: {{ section.settings.image.presentation.focal_point }};"
-                  loading="eager"
-                  fetchpriority="high"
-                >
-              {%- else -%}
-                {{ 'lifestyle-1' | placeholder_svg_tag: 'placeholder-svg' }}
-              {%- endif -%}
-            </div>
-          {%- endif -%}
+            {%- else -%}
+              {{ 'lifestyle-1' | placeholder_svg_tag: 'placeholder-svg' }}
+            {%- endif -%}
+          </div>
           <span class="hero__portrait-fade" aria-hidden="true"></span>
         </div>
       </div>
@@ -164,9 +135,24 @@
           <div class="hero-carousel__window" data-hero-window>
             {%- for block in tab_blocks -%}
               {%- assign pool = block.settings.collection -%}
+              {%- assign carousel_ratio = block.settings.image_ratio | default: '3 / 4' -%}
+              {%- case carousel_ratio -%}
+                {%- when '1 / 1' -%}
+                  {%- assign carousel_height_factor = '1' -%}
+                {%- when '4 / 5' -%}
+                  {%- assign carousel_height_factor = '1.25' -%}
+                {%- when '4 / 3' -%}
+                  {%- assign carousel_height_factor = '0.75' -%}
+                {%- when '16 / 9' -%}
+                  {%- assign carousel_height_factor = '0.5625' -%}
+                {%- else -%}
+                  {%- assign carousel_height_factor = '1.333333' -%}
+              {%- endcase -%}
               <div
                 class="hero-carousel__pool"
                 data-hero-pool="{{ forloop.index0 }}"
+                data-hero-card-height-factor="{{ carousel_height_factor }}"
+                style="--hero-card-media-ratio: {{ carousel_ratio }}; --hero-card-media-fit: {{ block.settings.image_fit | default: 'cover' }};"
                 {% unless forloop.first %}hidden{% endunless %}
               >
                 {%- if pool != blank and pool.products.size > 0 -%}
@@ -338,18 +324,12 @@
         },
         {
           "type": "header",
-          "content": "t:sections.hero.blocks.collection_tab.image_header"
-        },
-        {
-          "type": "image_picker",
-          "id": "image",
-          "label": "t:sections.hero.blocks.collection_tab.image.label",
-          "info": "t:sections.hero.blocks.collection_tab.image.info"
+          "content": "t:sections.hero.blocks.collection_tab.media_header"
         },
         {
           "type": "select",
           "id": "image_ratio",
-          "label": "t:sections.hero.blocks.collection_tab.image_ratio.label",
+          "label": "t:sections.hero.blocks.collection_tab.media_ratio.label",
           "options": [
             { "value": "1 / 1", "label": "t:settings_schema.options.square" },
             { "value": "4 / 5", "label": "t:settings_schema.options.portrait" },
@@ -362,7 +342,7 @@
         {
           "type": "select",
           "id": "image_fit",
-          "label": "t:sections.hero.blocks.collection_tab.image_fit.label",
+          "label": "t:sections.hero.blocks.collection_tab.media_fit.label",
           "options": [
             { "value": "cover", "label": "t:settings_schema.options.cover" },
             { "value": "contain", "label": "t:settings_schema.options.contain" }

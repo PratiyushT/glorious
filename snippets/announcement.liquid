@@ -41,6 +41,7 @@
     data-announcement
     {% if is_header %}data-announcement-header{% endif %}
     data-announcement-mode="{{ mode }}"
+    data-announcement-height="{{ section.settings.height_preset | default: 'standard' }}"
     data-announcement-autoplay="{{ section.settings.auto_rotate }}"
     data-announcement-interval="{{ section.settings.interval | times: 1000 }}"
     data-announcement-storage-key="{% if is_header %}veylin-announcement-header{% else %}veylin-announcement-{{ section.id }}{% endif %}"
