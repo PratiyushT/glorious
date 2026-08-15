@@ -4698,7 +4698,6 @@
   var catalogMenusBound = false;
   var catalogRequestController = null;
   var catalogRequestId = 0;
-  var catalogLoadingDelayTimer = null;
 
   function prepareCatalogBlockHeaders(root) {
     var headers = Array.prototype.slice.call(root.querySelectorAll('[data-catalog-block-header]'));
@@ -4884,17 +4883,6 @@
     catalogSyncNavigation(publicUrl);
   }
 
-  function catalogFocusHeading(header) {
-    var heading = header.querySelector('h1') || header.querySelector('[data-catalog-title]');
-    if (!heading) return;
-    heading.setAttribute('tabindex', '-1');
-    try {
-      heading.focus({ preventScroll: true });
-    } catch (error) {
-      heading.focus();
-    }
-  }
-
   function catalogScrollToResults(root) {
     var target = root.querySelector('.catalog-main') || root;
     var nav = document.querySelector('.nav');
@@ -4903,34 +4891,20 @@
     window.scrollTo({ top: Math.max(0, top), behavior: reduceMotion.matches ? 'auto' : 'smooth' });
   }
 
-  function clearCatalogLoadingDelay(root, requestId) {
+  function hideCatalogLoading(root, requestId) {
     if (requestId !== catalogRequestId) return;
-    if (catalogLoadingDelayTimer) window.clearTimeout(catalogLoadingDelayTimer);
-    catalogLoadingDelayTimer = null;
+    if (root) root.removeAttribute('aria-busy');
     var loader = root && root.querySelector('[data-catalog-loading]');
     if (loader) loader.hidden = true;
   }
 
-  function showCatalogLoading(root, delayed, requestId) {
-    if (catalogLoadingDelayTimer) window.clearTimeout(catalogLoadingDelayTimer);
-    catalogLoadingDelayTimer = null;
-    root.classList.toggle('catalog-page--collection-pending', Boolean(delayed));
+  function showCatalogLoading(root) {
     root.setAttribute('aria-busy', 'true');
     var loader = root.querySelector('[data-catalog-loading]');
-    if (!loader) return;
-
-    loader.hidden = Boolean(delayed);
-    if (!delayed) return;
-
-    catalogLoadingDelayTimer = window.setTimeout(function () {
-      catalogLoadingDelayTimer = null;
-      if (requestId !== catalogRequestId || !root.isConnected) return;
-      if (root.getAttribute('aria-busy') !== 'true') return;
-      loader.hidden = false;
-    }, 320);
+    if (loader) loader.hidden = false;
   }
 
-  function commitCatalogCollection(root, header, nextRoot, nextHeader, publicUrl, pushState, focusHeading, requestId) {
+  function commitCatalogCollection(root, header, nextRoot, nextHeader, publicUrl, pushState, requestId) {
     if (requestId !== catalogRequestId) return false;
 
     var rootTopBefore = root.getBoundingClientRect().top;
@@ -4950,94 +4924,7 @@
 
     nextHeader.dispatchEvent(new CustomEvent('shopify:section:load', { bubbles: true }));
     nextRoot.dispatchEvent(new CustomEvent('shopify:section:load', { bubbles: true }));
-    if (focusHeading) catalogFocusHeading(nextHeader);
     return true;
-  }
-
-  function catalogTransitionTiming(speed) {
-    if (speed === 'quick') return { exit: 120, enter: 360 };
-    if (speed === 'relaxed') return { exit: 220, enter: 720 };
-    return { exit: 170, enter: 520 };
-  }
-
-  function setCatalogTransitionState(style, speed) {
-    document.documentElement.classList.add(
-      'catalog-transition-style--' + style,
-      'catalog-transition-speed--' + speed
-    );
-  }
-
-  function clearCatalogTransitionState() {
-    document.documentElement.classList.remove(
-      'catalog-view-transition',
-      'catalog-transition-style--fade',
-      'catalog-transition-style--lift',
-      'catalog-transition-style--editorial',
-      'catalog-transition-speed--quick',
-      'catalog-transition-speed--balanced',
-      'catalog-transition-speed--relaxed'
-    );
-  }
-
-  function animateCatalogCollection(root, header, nextRoot, nextHeader, publicUrl, pushState, focusHeading, requestId) {
-    var motion = nextRoot.dataset.catalogTransitionStyle || 'editorial';
-    if (['none', 'fade', 'lift', 'editorial'].indexOf(motion) === -1) motion = 'editorial';
-    var speed = nextRoot.dataset.catalogTransitionSpeed || 'balanced';
-    if (['quick', 'balanced', 'relaxed'].indexOf(speed) === -1) speed = 'balanced';
-    var timing = catalogTransitionTiming(speed);
-    var commit = function () {
-      return commitCatalogCollection(root, header, nextRoot, nextHeader, publicUrl, pushState, focusHeading, requestId);
-    };
-
-    if (motion === 'none' || reduceMotion.matches) {
-      commit();
-      return;
-    }
-
-    setCatalogTransitionState(motion, speed);
-
-    if (typeof document.startViewTransition === 'function') {
-      document.documentElement.classList.add('catalog-view-transition');
-      var transition;
-      try {
-        transition = document.startViewTransition(commit);
-      } catch (error) {
-        clearCatalogTransitionState();
-        commit();
-        return;
-      }
-
-      transition.finished.then(function () {
-        clearCatalogTransitionState();
-      }, function () {
-        clearCatalogTransitionState();
-      });
-      return;
-    }
-
-    var currentSurfaces = [header, root];
-    currentSurfaces.forEach(function (surface) {
-      surface.classList.add('catalog-surface--leaving');
-    });
-
-    window.setTimeout(function () {
-      if (!commit()) {
-        currentSurfaces.forEach(function (surface) {
-          surface.classList.remove('catalog-surface--leaving');
-        });
-        clearCatalogTransitionState();
-        return;
-      }
-
-      [nextHeader, nextRoot].forEach(function (surface) {
-        surface.classList.add('catalog-surface--entering');
-      });
-      window.setTimeout(function () {
-        nextHeader.classList.remove('catalog-surface--entering');
-        nextRoot.classList.remove('catalog-surface--entering');
-        clearCatalogTransitionState();
-      }, timing.enter + 40);
-    }, timing.exit);
   }
 
   function renderCatalog(root, targetUrl, pushState, scrollToResults) {
@@ -5066,7 +4953,7 @@
     catalogRequestId += 1;
     var requestId = catalogRequestId;
 
-    showCatalogLoading(root, collectionSwap, requestId);
+    showCatalogLoading(root);
 
     var requestOptions = { headers: { 'X-Requested-With': 'XMLHttpRequest' } };
     if (catalogRequestController) requestOptions.signal = catalogRequestController.signal;
@@ -5078,7 +4965,7 @@
       })
       .then(function (responseBody) {
         if (requestId !== catalogRequestId) return;
-        clearCatalogLoadingDelay(root, requestId);
+        hideCatalogLoading(root, requestId);
 
         var nextRoot;
         var nextHeader;
@@ -5093,7 +4980,10 @@
         if (collectionSwap && !nextHeader) throw new Error('Collection header section missing');
 
         if (collectionSwap) {
-          animateCatalogCollection(root, header, nextRoot, nextHeader, publicUrl, pushState, pushState, requestId);
+          if (commitCatalogCollection(root, header, nextRoot, nextHeader, publicUrl, pushState, requestId)
+              && scrollToResults) {
+            catalogScrollToResults(nextRoot);
+          }
           return;
         }
 
@@ -5105,7 +4995,7 @@
       .catch(function (error) {
         if (error && error.name === 'AbortError') return;
         if (requestId !== catalogRequestId) return;
-        clearCatalogLoadingDelay(root, requestId);
+        hideCatalogLoading(root, requestId);
         window.location.assign(publicUrl.href);
       });
   }
@@ -5164,7 +5054,12 @@
         if (clearParam) linkUrl.searchParams.delete(clearParam);
 
         event.preventDefault();
-        renderCatalog(root, linkUrl.href, true, Boolean(link.closest('.catalog-pagination')));
+        renderCatalog(
+          root,
+          linkUrl.href,
+          true,
+          Boolean(link.closest('.catalog-pagination') || link.hasAttribute('data-catalog-collection-link'))
+        );
       });
 
       root.addEventListener('change', function (event) {

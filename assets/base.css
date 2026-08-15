@@ -3837,138 +3837,9 @@ a {
   display: none;
 }
 
-/* Collection changes keep the current page readable for a quick request. If
-   Shopify takes longer, the same themed loader used everywhere else appears
-   on the configured veil instead of leaving an apparently inert storefront. */
-.catalog-page--collection-pending .catalog-loading {
-  color: var(--loader-on-veil-ink, var(--loader-ink, var(--c-text)));
-  background: color-mix(in srgb, var(--veil-tint, var(--c-text)) 42%, transparent);
-  animation: gj-fade-in 0.2s var(--ease-ui) both;
-}
-
-.catalog-page--collection-pending .catalog-loading .loader {
-  color: inherit;
-}
-
 .catalog-page[aria-busy='true'] .catalog-main > .catalog-shell {
   opacity: 0.28;
   transition: opacity 0.2s ease;
-}
-
-/* A collection change waits for both of Shopify's rendered sections before
-   anything leaves. The current collection therefore remains readable until
-   a delayed loading veil is needed; these classes otherwise exist only for
-   the short commit transition after the complete response has arrived. */
-.catalog-page.catalog-page--collection-pending[aria-busy='true'] .catalog-main > .catalog-shell {
-  opacity: 1;
-}
-
-html.catalog-transition-speed--quick {
-  --catalog-transition-exit: 0.12s;
-  --catalog-transition-enter: 0.36s;
-}
-
-html.catalog-transition-speed--balanced {
-  --catalog-transition-exit: 0.17s;
-  --catalog-transition-enter: 0.52s;
-}
-
-html.catalog-transition-speed--relaxed {
-  --catalog-transition-exit: 0.22s;
-  --catalog-transition-enter: 0.72s;
-}
-
-.catalog-surface--leaving {
-  pointer-events: none;
-  animation: catalog-surface-lift-out var(--catalog-transition-exit, 0.17s) ease both;
-}
-
-.catalog-surface--entering {
-  animation: catalog-surface-lift-in var(--catalog-transition-enter, 0.52s) cubic-bezier(.22, 1, .36, 1) both;
-}
-
-html.catalog-transition-style--fade .catalog-surface--leaving {
-  animation-name: catalog-surface-fade-out;
-}
-
-html.catalog-transition-style--fade .catalog-surface--entering {
-  animation-name: catalog-surface-fade-in;
-}
-
-html.catalog-transition-style--editorial .catalog-surface--leaving {
-  animation-name: catalog-surface-editorial-out;
-}
-
-html.catalog-transition-style--editorial .catalog-surface--entering {
-  animation-name: catalog-surface-editorial-in;
-}
-
-@keyframes catalog-surface-lift-out {
-  from { opacity: 1; transform: translateY(0); }
-  to { opacity: 0; transform: translateY(-0.5rem); }
-}
-
-@keyframes catalog-surface-lift-in {
-  from { opacity: 0; transform: translateY(0.75rem); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes catalog-surface-fade-out {
-  from { opacity: 1; }
-  to { opacity: 0; }
-}
-
-@keyframes catalog-surface-fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-@keyframes catalog-surface-editorial-out {
-  from { opacity: 1; clip-path: inset(0); transform: scale(1); }
-  to { opacity: 0; clip-path: inset(0 0 8%); transform: scale(0.995); }
-}
-
-@keyframes catalog-surface-editorial-in {
-  from { opacity: 0; clip-path: inset(8% 0 0); transform: translateY(0.625rem) scale(0.995); }
-  to { opacity: 1; clip-path: inset(0); transform: translateY(0) scale(1); }
-}
-
-html.catalog-view-transition [data-catalog-header-section] {
-  view-transition-name: catalog-collection-header;
-}
-
-html.catalog-view-transition [data-catalog-section] {
-  view-transition-name: catalog-collection-results;
-}
-
-::view-transition-old(catalog-collection-header),
-::view-transition-old(catalog-collection-results) {
-  animation: catalog-surface-lift-out var(--catalog-transition-exit, 0.17s) ease both;
-}
-
-::view-transition-new(catalog-collection-header),
-::view-transition-new(catalog-collection-results) {
-  animation: catalog-surface-lift-in var(--catalog-transition-enter, 0.52s) cubic-bezier(.22, 1, .36, 1) both;
-}
-
-html.catalog-transition-style--fade::view-transition-old(catalog-collection-header),
-html.catalog-transition-style--fade::view-transition-old(catalog-collection-results) {
-  animation-name: catalog-surface-fade-out;
-}
-
-html.catalog-transition-style--fade::view-transition-new(catalog-collection-header),
-html.catalog-transition-style--fade::view-transition-new(catalog-collection-results) {
-  animation-name: catalog-surface-fade-in;
-}
-
-html.catalog-transition-style--editorial::view-transition-old(catalog-collection-header),
-html.catalog-transition-style--editorial::view-transition-old(catalog-collection-results) {
-  animation-name: catalog-surface-editorial-out;
-}
-
-html.catalog-transition-style--editorial::view-transition-new(catalog-collection-header),
-html.catalog-transition-style--editorial::view-transition-new(catalog-collection-results) {
-  animation-name: catalog-surface-editorial-in;
 }
 
 .catalog-grid-header {
@@ -4629,17 +4500,13 @@ html.catalog-transition-style--editorial::view-transition-new(catalog-collection
   .catalog-grid__item,
   .catalog-sort-menu__options,
   .catalog-filter-overlay .overlay__veil,
-  .catalog-filter-overlay .drawer__panel,
-  .catalog-surface--leaving,
-  .catalog-surface--entering {
+  .catalog-filter-overlay .drawer__panel {
     animation: none !important;
     transition: none !important;
   }
 
   [data-catalog-title] > span,
-  .catalog-grid__item,
-  .catalog-surface--leaving,
-  .catalog-surface--entering {
+  .catalog-grid__item {
     opacity: 1 !important;
     transform: none !important;
   }

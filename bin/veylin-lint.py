@@ -1346,6 +1346,32 @@ def R25_group_physical_axes():
             'Collection header must not override a nested Group vertical alignment')
 
 
+def R26_collection_pills_follow_filter_contract():
+    """Collection pills use the ordinary catalog loading, motion, and scroll path."""
+    controls_where = 'snippets/catalog-controls.liquid'
+    controls = read(os.path.join(ROOT, controls_where))
+    if controls.count('data-catalog-collection-link') < 2:
+        err('R26', controls_where,
+            'All collection quick links must identify the filter-like interaction contract')
+
+    js_where = 'assets/theme.js'
+    js = read(os.path.join(ROOT, js_where))
+    if "link.hasAttribute('data-catalog-collection-link')" not in js:
+        err('R26', js_where,
+            'Collection quick links must opt into the catalog results scroll')
+    for legacy in ('animateCatalogCollection', 'catalogLoadingDelayTimer',
+                   'catalog-page--collection-pending'):
+        if legacy in js:
+            err('R26', js_where,
+                'Collection quick links must not keep the legacy %s fork' % legacy)
+
+    section_where = 'sections/main-collection.liquid'
+    section = read(os.path.join(ROOT, section_where))
+    if 'collection_transition' in section:
+        err('R26', section_where,
+            'Main collection must expose only the shared product grid motion setting')
+
+
 RULES = OrderedDict([
     ('R01', (R01_range_steps, 'range steps are legal (Shopify validates server-side)')),
     ('R02', (R02_select_defaults, "a select's default is one of its options")),
@@ -1372,6 +1398,7 @@ RULES = OrderedDict([
     ('R23', (R23_article_data_contract, 'article cards and pages stay data-adapted')),
     ('R24', (R24_catalog_replacement_lifecycle, 'catalog replacements rebind their own root')),
     ('R25', (R25_group_physical_axes, 'nested Groups keep both physical alignment axes effective')),
+    ('R26', (R26_collection_pills_follow_filter_contract, 'collection pills use the filter interaction contract')),
 ])
 
 

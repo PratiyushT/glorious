@@ -50,8 +50,6 @@
   class="catalog-page catalog-page--motion-{{ section.settings.grid_motion | default: 'reference' }}{% if section.settings.sticky_controls %} catalog-page--sticky-controls{% endif %} scheme-{{ section.settings.color_scheme }}"
   data-catalog-section="{{ section.id }}"
   data-catalog-ajax="{{ section.settings.enable_ajax }}"
-  data-catalog-transition-style="{{ section.settings.collection_transition | default: 'editorial' }}"
-  data-catalog-transition-speed="{{ section.settings.collection_transition_speed | default: 'balanced' }}"
   style="{% render 'section-style', padding_top: section.settings.padding_top, padding_bottom: section.settings.padding_bottom %} --catalog-columns: {{ section.settings.columns }}; --catalog-gap: {{ catalog_gap }};{% if catalog_column_gap != blank %} --catalog-column-gap: {{ catalog_column_gap }};{% endif %}"
 >
   <div class="catalog-sticky-bar">
@@ -451,36 +449,6 @@
         { "value": "xlarge", "label": "t:blocks.all.step.xlarge" }
       ],
       "default": "theme"
-    },
-    {
-      "type": "header",
-      "content": "t:sections.catalog.collection_change_header"
-    },
-    {
-      "type": "select",
-      "id": "collection_transition",
-      "label": "t:sections.catalog.collection_transition.label",
-      "info": "t:sections.catalog.collection_transition.info",
-      "options": [
-        { "value": "none", "label": "t:sections.catalog.collection_transition.none" },
-        { "value": "fade", "label": "t:sections.catalog.collection_transition.fade" },
-        { "value": "lift", "label": "t:sections.catalog.collection_transition.lift" },
-        { "value": "editorial", "label": "t:sections.catalog.collection_transition.editorial" }
-      ],
-      "default": "editorial"
-    },
-    {
-      "type": "select",
-      "id": "collection_transition_speed",
-      "label": "t:sections.catalog.collection_transition_speed.label",
-      "info": "t:sections.catalog.collection_transition_speed.info",
-      "options": [
-        { "value": "quick", "label": "t:sections.catalog.collection_transition_speed.quick" },
-        { "value": "balanced", "label": "t:sections.catalog.collection_transition_speed.balanced" },
-        { "value": "relaxed", "label": "t:sections.catalog.collection_transition_speed.relaxed" }
-      ],
-      "default": "balanced",
-      "visible_if": "{{ section.settings.collection_transition != 'none' }}"
     },
     {
       "type": "select",

@@ -49,13 +49,13 @@
   {%- if quick_source != 'none' -%}
     <div class="catalog-controls__rail" data-catalog-rail>
       {%- if quick_source == 'collections' -%}
-        <a class="catalog-pill{% if context == 'collection' and results.handle == 'all' %} is-active{% endif %}" href="{{ routes.all_products_collection_url }}" data-catalog-link>{{ 'collections.all' | t }}</a>
+        <a class="catalog-pill{% if context == 'collection' and results.handle == 'all' %} is-active{% endif %}" href="{{ routes.all_products_collection_url }}" data-catalog-link data-catalog-collection-link>{{ 'collections.all' | t }}</a>
 
         {%- assign rendered_links = 0 -%}
         {%- for quick_collection in collections -%}
           {%- unless quick_collection.handle == 'all' or hidden_handles contains quick_collection.handle -%}
             {%- if rendered_links < quick_links_limit_number -%}
-              <a class="catalog-pill{% if context == 'collection' and quick_collection.handle == results.handle %} is-active{% endif %}" href="{{ quick_collection.url }}" data-catalog-link>{{ quick_collection.title }}</a>
+              <a class="catalog-pill{% if context == 'collection' and quick_collection.handle == results.handle %} is-active{% endif %}" href="{{ quick_collection.url }}" data-catalog-link data-catalog-collection-link>{{ quick_collection.title }}</a>
               {%- assign rendered_links = rendered_links | plus: 1 -%}
             {%- endif -%}
           {%- endunless -%}

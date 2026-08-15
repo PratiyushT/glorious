@@ -369,15 +369,13 @@ a merchant-entered filter label. No catalogue vocabulary belongs in Liquid.
   only the owning `[data-catalog-section]`, and updates browser history after a
   complete response. A collection-to-collection link requests both the stable
   Collection header and Main collection section IDs, swaps those two rendered
-  surfaces atomically with Main collection's dedicated transition style and
-  speed presets, then updates title, canonical URL, navigation state, and
-  history. Editorial reveal, Gentle lift, Soft fade, and None are page-change
-  choices; Product grid animation remains the independent entrance behavior
-  after filtering, sorting, and pagination. The current collection stays
-  readable while both sections load. A fast response shows no transient UI;
-  after 320ms the shared Loader appears over the configured veil, then clears
-  as soon as the complete response arrives so it never competes with the page
-  transition. Reduced motion commits immediately.
+  surfaces atomically, then updates title, canonical URL, navigation state,
+  and history. Collection pills deliberately use the filter contract rather
+  than a second page-transition system: the shared Loader appears immediately,
+  current results dim, Product grid animation introduces the replacement
+  cards, and a click scrolls smoothly to the results. Back and Forward do not
+  force that click-only scroll. This keeps one loading and motion vocabulary
+  while still updating the resource-dependent header correctly.
   Modified clicks, cross-route forms,
   unsupported browsers, missing section markup, failed requests, and no-script
   use native navigation. While a filter, sort, clear, or pagination request is
