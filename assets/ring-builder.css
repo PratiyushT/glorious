@@ -1,0 +1,453 @@
+.ring-builder-section {
+  overflow: clip;
+}
+
+.ring-builder {
+  container-type: inline-size;
+}
+
+.ring-builder__width--full {
+  max-width: none;
+}
+
+.ring-builder__width--edge {
+  width: 100%;
+}
+
+.ring-builder__header {
+  display: grid;
+  gap: var(--space-sm);
+  max-width: var(--content-width);
+  margin-inline: auto;
+  margin-bottom: var(--space-xl);
+}
+
+.ring-builder__header--left {
+  margin-inline-start: 0;
+  text-align: left;
+}
+
+.ring-builder__header--center {
+  text-align: center;
+}
+
+.ring-builder__header--right {
+  margin-inline-end: 0;
+  text-align: right;
+}
+
+.ring-builder__title {
+  max-width: min(16ch, 100%);
+  margin-inline: inherit;
+  overflow: visible;
+  overflow-wrap: break-word;
+  white-space: normal;
+  text-wrap: balance;
+}
+
+.ring-builder__introduction {
+  color: var(--c-muted);
+}
+
+.ring-builder__progress {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  margin-bottom: var(--space-xl);
+  border-block: var(--border-width) solid var(--c-hairline);
+}
+
+.ring-builder__step {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2xs);
+  min-height: 4rem;
+  padding: var(--space-xs);
+  border: 0;
+  border-inline-end: var(--border-width) solid var(--c-hairline);
+  background: transparent;
+  color: var(--c-muted);
+  font-size: var(--text-small-size);
+  letter-spacing: var(--text-small-tracking);
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: color var(--duration) var(--ease), background var(--duration) var(--ease);
+}
+
+.ring-builder__step:last-child {
+  border-inline-end: 0;
+}
+
+.ring-builder__step span {
+  color: var(--c-accent);
+}
+
+.ring-builder__step[aria-selected="true"] {
+  background: color-mix(in srgb, var(--c-accent) 7%, transparent);
+  color: var(--c-heading);
+}
+
+.ring-builder__step:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.ring-builder__shell {
+  display: grid;
+  gap: var(--space-xl);
+  align-items: start;
+}
+
+.ring-builder[data-sticky-summary] .ring-builder__summary {
+  position: sticky;
+  top: calc(var(--header-height, 0px) + var(--space-sm));
+}
+
+.ring-builder__workspace,
+.ring-builder__panel {
+  min-width: 0;
+}
+
+.ring-builder__panel:not([hidden]) {
+  display: block;
+  animation: ring-builder-arrive calc(var(--duration) * 2) var(--ease) both;
+}
+
+.ring-builder__panel-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  justify-content: space-between;
+  gap: var(--space-sm) var(--space-xl);
+  margin-bottom: var(--space-lg);
+}
+
+.ring-builder__panel-head > div {
+  display: grid;
+  gap: var(--space-3xs);
+}
+
+.ring-builder__panel-head > p {
+  max-width: 38rem;
+  color: var(--c-muted);
+}
+
+.ring-builder__notice,
+.ring-builder__empty {
+  display: grid;
+  justify-items: start;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-lg);
+  padding: var(--space-md);
+  border: var(--border-width) solid var(--c-hairline);
+  background: color-mix(in srgb, var(--c-accent) 5%, var(--c-bg));
+}
+
+.ring-builder__notice[data-tone="error"] {
+  border-color: color-mix(in srgb, var(--c-error) 45%, var(--c-hairline));
+}
+
+.ring-builder__settings-grid,
+.ring-builder__diamonds-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
+  gap: var(--grid-gap);
+}
+
+.ring-builder__setting-card,
+.ring-builder__diamond-card,
+.ring-builder__review-card {
+  min-width: 0;
+  border: var(--border-width) solid var(--c-hairline);
+  background: var(--c-surface);
+  color: var(--c-text);
+  transition: border-color var(--duration) var(--ease), transform var(--duration) var(--ease), box-shadow var(--duration) var(--ease);
+}
+
+.ring-builder__setting-card:is(:hover, [data-selected]),
+.ring-builder__diamond-card:is(:hover, [aria-pressed="true"]) {
+  border-color: var(--c-accent);
+  box-shadow: 0 0 0 var(--border-width) var(--c-accent);
+}
+
+.ring-builder__setting-select,
+.ring-builder__diamond-card {
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: inherit;
+  cursor: pointer;
+}
+
+.ring-builder__setting-media,
+.ring-builder__diamond-media {
+  position: relative;
+  display: grid;
+  aspect-ratio: var(--builder-media-ratio, 1 / 1);
+  overflow: hidden;
+  place-items: center;
+  background: color-mix(in srgb, var(--c-text) 3%, var(--c-surface));
+}
+
+.ring-builder__setting-media img,
+.ring-builder__setting-media svg,
+.ring-builder__diamond-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: var(--builder-media-fit, contain);
+}
+
+.ring-builder__selected-mark {
+  position: absolute;
+  inset-block-start: var(--space-xs);
+  inset-inline-end: var(--space-xs);
+  display: grid;
+  width: 2rem;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  place-items: center;
+  background: var(--c-heading);
+  color: var(--c-bg);
+  opacity: 0;
+  transform: scale(0.75);
+  transition: opacity var(--duration) var(--ease), transform var(--duration) var(--ease);
+}
+
+.ring-builder__setting-card[data-selected] .ring-builder__selected-mark {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.ring-builder__selected-mark svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+.ring-builder__setting-copy,
+.ring-builder__diamond-copy {
+  display: grid;
+  gap: var(--space-3xs);
+  padding: var(--space-sm);
+}
+
+.ring-builder__setting-copy label,
+.ring-builder__filters label {
+  display: grid;
+  gap: var(--space-3xs);
+  color: var(--c-muted);
+  font-size: var(--fs-sm);
+}
+
+.ring-builder__setting-copy h3,
+.ring-builder__diamond-copy h3 {
+  font-size: var(--text-heading_5-size);
+}
+
+.ring-builder__filters {
+  display: grid;
+  gap: var(--space-md);
+  margin-bottom: var(--space-lg);
+  padding: var(--space-md);
+  border: var(--border-width) solid var(--c-hairline);
+}
+
+.ring-builder__shape-filter {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.ring-builder__shape-filter legend {
+  margin-bottom: var(--space-2xs);
+  color: var(--c-muted);
+  font-size: var(--fs-sm);
+}
+
+.ring-builder__shape-filter > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2xs);
+}
+
+.ring-builder__shape-filter label {
+  position: relative;
+  display: block;
+  color: inherit;
+}
+
+.ring-builder__shape-filter input {
+  position: absolute;
+  opacity: 0;
+}
+
+.ring-builder__shape-filter span {
+  display: block;
+  padding: var(--space-2xs) var(--space-xs);
+  border: var(--border-width) solid var(--c-hairline);
+  border-radius: var(--button-radius);
+  cursor: pointer;
+  transition: border-color var(--duration) var(--ease), background var(--duration) var(--ease), color var(--duration) var(--ease);
+}
+
+.ring-builder__shape-filter input:checked + span {
+  border-color: var(--c-heading);
+  background: var(--c-heading);
+  color: var(--c-bg);
+}
+
+.ring-builder__shape-filter input:focus-visible + span {
+  outline: 2px solid var(--c-focus, var(--c-accent));
+  outline-offset: 3px;
+}
+
+.ring-builder__filter-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 9rem), 1fr));
+  gap: var(--space-sm);
+}
+
+.ring-builder__filters .btn {
+  justify-self: start;
+}
+
+.ring-builder__results-head {
+  display: flex;
+  min-height: 3rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-sm);
+  color: var(--c-muted);
+}
+
+.ring-builder__diamond-card {
+  position: relative;
+  display: grid;
+  align-content: start;
+}
+
+.ring-builder__diamond-media {
+  --builder-media-ratio: 1 / 1;
+  --builder-media-fit: contain;
+}
+
+.ring-builder__diamond-placeholder {
+  max-width: 14ch;
+  color: var(--c-muted);
+  text-align: center;
+}
+
+.ring-builder__diamond-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3xs) var(--space-xs);
+  color: var(--c-muted);
+  font-size: var(--fs-sm);
+}
+
+.ring-builder__diamond-price {
+  margin-top: var(--space-2xs);
+  color: var(--c-heading);
+}
+
+.ring-builder__pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  margin-top: var(--space-lg);
+}
+
+.ring-builder__review {
+  display: grid;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-lg);
+}
+
+.ring-builder__review-card {
+  display: grid;
+  gap: var(--space-2xs);
+  padding: var(--space-md);
+}
+
+.ring-builder__summary {
+  display: grid;
+  gap: var(--space-sm);
+  padding: var(--space-md);
+  border: var(--border-width) solid var(--c-hairline);
+  background: var(--c-surface);
+}
+
+.ring-builder__summary-row {
+  display: grid;
+  gap: var(--space-3xs);
+  padding-bottom: var(--space-sm);
+  border-bottom: var(--border-width) solid var(--c-hairline);
+}
+
+.ring-builder__summary-row span {
+  color: var(--c-muted);
+  font-size: var(--fs-sm);
+}
+
+.ring-builder__summary-total {
+  grid-template-columns: 1fr auto;
+  align-items: baseline;
+  border: 0;
+}
+
+.ring-builder__summary-link {
+  justify-self: start;
+  padding: 0;
+  border: 0;
+  border-bottom: var(--border-width) solid currentColor;
+  background: transparent;
+  color: var(--c-link);
+  cursor: pointer;
+}
+
+.ring-builder__add[aria-busy="true"] {
+  cursor: wait;
+}
+
+@container (min-width: 46rem) {
+  .ring-builder__settings-grid {
+    grid-template-columns: repeat(var(--builder-columns), minmax(0, 1fr));
+  }
+
+  .ring-builder__review {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@container (min-width: 64rem) {
+  .ring-builder__shell {
+    grid-template-columns: minmax(0, 1fr) minmax(17rem, 22rem);
+  }
+}
+
+@container (max-width: 36rem) {
+  .ring-builder__step {
+    min-height: 3.5rem;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .ring-builder__panel-head {
+    align-items: start;
+  }
+}
+
+@keyframes ring-builder-arrive {
+  from {
+    opacity: 0;
+    transform: translateY(var(--space-xs));
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

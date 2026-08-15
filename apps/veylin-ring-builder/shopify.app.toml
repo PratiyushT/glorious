@@ -1,0 +1,57 @@
+# Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
+
+client_id = "8a3798f677f2b0282563f41d242f2919"
+name = "Veylin Ring Builder"
+application_url = "https://shopify.dev/apps/default-app-home"
+embedded = true
+
+[access_scopes]
+# Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
+scopes = "read_content,read_online_store_navigation,read_products,read_publications,write_app_proxy,write_content,write_online_store_navigation,write_products,write_publications"
+
+[app_proxy]
+url = "/proxy"
+prefix = "apps"
+subpath = "veylin-ring-builder"
+
+[product.metafields.app.nivoda_offer_id]
+type = "single_line_text_field"
+name = "Nivoda offer ID"
+description = "The Nivoda offer used to price and order this temporary diamond product."
+
+  [product.metafields.app.nivoda_offer_id.access]
+  admin = "merchant_read_write"
+
+[product.metafields.app.nivoda_diamond_id]
+type = "single_line_text_field"
+name = "Nivoda diamond ID"
+description = "The underlying Nivoda diamond ID used for availability revalidation."
+
+  [product.metafields.app.nivoda_diamond_id.access]
+  admin = "merchant_read_write"
+
+[product.metafields.app.nivoda_snapshot]
+type = "json"
+name = "Nivoda selection snapshot"
+description = "The non-secret diamond details shown to the shopper when the variant was priced."
+
+  [product.metafields.app.nivoda_snapshot.access]
+  admin = "merchant_read_write"
+
+[webhooks]
+api_version = "2026-07"
+
+  [[webhooks.subscriptions]]
+  uri = "/webhooks/app/uninstalled"
+  topics = [ "app/uninstalled" ]
+
+  [[webhooks.subscriptions]]
+  uri = "/webhooks/app/scopes_update"
+  topics = [ "app/scopes_update" ]
+
+[auth]
+redirect_urls = [ "https://shopify.dev/apps/default-app-home/api/auth" ]
+
+[build]
+include_config_on_deploy = true
+automatically_update_urls_on_dev = true

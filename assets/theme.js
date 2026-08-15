@@ -1195,6 +1195,33 @@
     });
   }
 
+  function addCartItems(items) {
+    var drawer = cartDrawer();
+    var body = { items: items };
+    if (drawer) body.sections = drawer.dataset.sectionId;
+
+    return fetch(root() + 'cart/add.js', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify(body)
+    })
+      .then(function (response) {
+        if (!response.ok) return response.json().then(function (payload) {
+          return Promise.reject(new Error(payload.description || payload.message || 'Cart request failed'));
+        });
+        return response.json();
+      })
+      .then(function (payload) {
+        if (!drawer) return payload;
+        applyCartSection(payload);
+        if (drawer.dataset.openOnAdd === 'true' && overlays.cart) overlays.cart.open();
+        return payload;
+      });
+  }
+
+  window.VeylinCart = window.VeylinCart || {};
+  window.VeylinCart.addItems = addCartItems;
+
   /* ---- Changing a quantity ---------------------------------------------
      Every change still posts and every figure still comes back from Liquid —
      nothing here does arithmetic on a price. What this adds is that a second

@@ -1,0 +1,398 @@
+{{ 'ring-builder.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'ring-builder.js' | asset_url }}" defer="defer"></script>
+
+{%- liquid
+  assign setting_collection = section.settings.setting_collection
+  assign width_class = 'page-width'
+  if section.settings.content_width == 'full'
+    assign width_class = 'page-width ring-builder__width--full'
+  elsif section.settings.content_width == 'edge'
+    assign width_class = 'ring-builder__width--edge'
+  endif
+
+  assign initial_step = 'settings'
+  if section.settings.start_with == 'diamond'
+    assign initial_step = 'diamonds'
+  endif
+-%}
+
+<section
+  class="section scheme-{{ section.settings.color_scheme }} ring-builder-section"
+  style="{% render 'section-style', padding_top: section.settings.padding_top, padding_bottom: section.settings.padding_bottom %}"
+  data-ring-builder-section
+>
+  <div
+    class="{{ width_class }} ring-builder"
+    data-ring-builder
+    data-proxy-path="/apps/veylin-ring-builder"
+    data-public-path="/build"
+    data-native-path="{{ page.url | escape }}"
+    data-initial-step="{{ initial_step }}"
+    data-results-per-page="{{ section.settings.results_per_page }}"
+    data-source="{{ section.settings.diamond_source }}"
+    data-currency="{{ cart.currency.iso_code | default: localization.country.currency.iso_code | default: 'USD' }}"
+    data-primary-style="{{ section.settings.primary_button_style }}"
+    data-secondary-style="{{ section.settings.secondary_button_style }}"
+    {% if section.settings.sticky_summary %}data-sticky-summary{% endif %}
+  >
+    <header class="ring-builder__header ring-builder__header--{{ section.settings.header_alignment }}">
+      {%- if section.settings.eyebrow != blank -%}
+        <p class="micro-label">{{ section.settings.eyebrow | escape }}</p>
+      {%- endif -%}
+      {%- if section.settings.heading != blank -%}
+        <h1 class="display ring-builder__title">{{ section.settings.heading | escape }}</h1>
+      {%- endif -%}
+      {%- if section.settings.introduction != blank -%}
+        <div class="ring-builder__introduction rte">{{ section.settings.introduction }}</div>
+      {%- endif -%}
+    </header>
+
+    <div class="ring-builder__progress" role="tablist" aria-label="{{ 'ring_builder.steps.label' | t }}">
+      <button class="ring-builder__step" type="button" role="tab" data-builder-tab="settings">
+        <span aria-hidden="true">01</span>
+        {{- 'ring_builder.steps.setting' | t -}}
+      </button>
+      <button class="ring-builder__step" type="button" role="tab" data-builder-tab="diamonds">
+        <span aria-hidden="true">02</span>
+        {{- 'ring_builder.steps.diamond' | t -}}
+      </button>
+      <button class="ring-builder__step" type="button" role="tab" data-builder-tab="review" disabled>
+        <span aria-hidden="true">03</span>
+        {{- 'ring_builder.steps.review' | t -}}
+      </button>
+    </div>
+
+    <div class="ring-builder__shell">
+      <div class="ring-builder__workspace">
+        <div class="ring-builder__notice" data-builder-notice hidden>
+          <p data-builder-notice-text></p>
+          {%- assign retry_label = 'ring_builder.actions.retry' | t -%}
+          {% render 'button',
+            label: retry_label,
+            element: 'button',
+            style: section.settings.secondary_button_style,
+            class: 'ring-builder__retry',
+            attributes: 'data-builder-retry hidden'
+          %}
+        </div>
+
+        <div class="ring-builder__panel" role="tabpanel" data-builder-panel="settings">
+          <div class="ring-builder__panel-head">
+            <div>
+              <p class="micro-label">{{ 'ring_builder.steps.setting' | t }}</p>
+              <h2>{{ section.settings.setting_heading | escape }}</h2>
+            </div>
+            <p>{{ 'ring_builder.setting_help' | t }}</p>
+          </div>
+
+          {%- if setting_collection != blank and setting_collection.products_count > 0 -%}
+            <div
+              class="ring-builder__settings-grid"
+              style="--builder-columns: {{ section.settings.setting_columns }}; --builder-media-ratio: {{ section.settings.setting_image_ratio }}; --builder-media-fit: {{ section.settings.setting_image_fit }};"
+            >
+              {%- for setting_product in setting_collection.products limit: section.settings.settings_to_show -%}
+                {%- assign selected_variant = setting_product.selected_or_first_available_variant -%}
+                <article class="ring-builder__setting-card" data-setting-card data-product-title="{{ setting_product.title | escape }}">
+                  <button
+                    class="ring-builder__setting-select"
+                    type="button"
+                    data-setting-select
+                    data-variant-id="{{ selected_variant.id }}"
+                    data-variant-title="{{ selected_variant.title | escape }}"
+                    data-price="{{ selected_variant.price | money | escape }}"
+                    data-price-minor="{{ selected_variant.price }}"
+                    aria-pressed="false"
+                  >
+                    <span class="visually-hidden">{{ 'ring_builder.actions.choose_setting' | t: title: setting_product.title }}</span>
+                    <span class="ring-builder__setting-media">
+                      {%- if section.settings.show_setting_media -%}
+                        {% render 'responsive-image',
+                          image: setting_product.featured_image,
+                          widths: '320,480,720,960',
+                          src_width: 720,
+                          sizes: '(min-width: 990px) 25vw, 50vw',
+                          placeholder: 'product-1',
+                          alt: setting_product.featured_image.alt
+                        %}
+                      {%- endif -%}
+                      <span class="ring-builder__selected-mark" aria-hidden="true">{% render 'icon', icon: 'check' %}</span>
+                    </span>
+                  </button>
+                  <div class="ring-builder__setting-copy">
+                    {%- if section.settings.show_setting_vendor and setting_product.vendor != blank -%}
+                      <p class="micro-label">{{ setting_product.vendor | escape }}</p>
+                    {%- endif -%}
+                    <h3>{{ setting_product.title | escape }}</h3>
+                    {%- if section.settings.show_setting_price -%}
+                      <p data-setting-price>{{ selected_variant.price | money }}</p>
+                    {%- endif -%}
+                    {%- if setting_product.variants.size > 1 -%}
+                      <label>
+                        <span>{{ 'ring_builder.setting_options' | t }}</span>
+                        <select class="field" data-setting-variant>
+                          {%- for variant in setting_product.variants -%}
+                            <option
+                              value="{{ variant.id }}"
+                              data-title="{{ variant.title | escape }}"
+                              data-price="{{ variant.price | money | escape }}"
+                              data-price-minor="{{ variant.price }}"
+                              {% unless variant.available %}disabled{% endunless %}
+                              {% if variant.id == selected_variant.id %}selected{% endif %}
+                            >
+                              {{- variant.title | escape }} · {{ variant.price | money -}}
+                              {%- unless variant.available %} · {{ 'products.sold_out' | t }}{% endunless -%}
+                            </option>
+                          {%- endfor -%}
+                        </select>
+                      </label>
+                    {%- endif -%}
+                  </div>
+                </article>
+              {%- endfor -%}
+            </div>
+          {%- else -%}
+            <div class="ring-builder__empty">
+              <h3>{{ 'ring_builder.empty_settings_heading' | t }}</h3>
+              <p>{{ 'ring_builder.empty_settings_text' | t }}</p>
+            </div>
+          {%- endif -%}
+        </div>
+
+        <div class="ring-builder__panel" role="tabpanel" data-builder-panel="diamonds" hidden>
+          <div class="ring-builder__panel-head">
+            <div>
+              <p class="micro-label">{{ 'ring_builder.steps.diamond' | t }}</p>
+              <h2>{{ section.settings.diamond_heading | escape }}</h2>
+            </div>
+            <p>{{ 'ring_builder.diamond_help' | t }}</p>
+          </div>
+
+          <form class="ring-builder__filters" data-diamond-filters>
+            <label>
+              <span>{{ 'ring_builder.filters.origin' | t }}</span>
+              <select class="field" name="source">
+                <option value="both">{{ 'ring_builder.filters.both' | t }}</option>
+                <option value="natural"{% if section.settings.diamond_source == 'natural' %} selected{% endif %}>{{ 'ring_builder.filters.natural' | t }}</option>
+                <option value="lab"{% if section.settings.diamond_source == 'lab' %} selected{% endif %}>{{ 'ring_builder.filters.lab' | t }}</option>
+              </select>
+            </label>
+            <fieldset class="ring-builder__shape-filter">
+              <legend>{{ 'ring_builder.filters.shape' | t }}</legend>
+              <div>
+                {%- assign shapes = 'ROUND,OVAL,PRINCESS,CUSHION,EMERALD,PEAR,HEART,MARQUISE,RADIANT,ASSCHER' | split: ',' -%}
+                {%- for shape in shapes -%}
+                  <label>
+                    <input type="checkbox" name="shapes" value="{{ shape }}"{% if shape == 'ROUND' %} checked{% endif %}>
+                    <span>{{ shape | capitalize }}</span>
+                  </label>
+                {%- endfor -%}
+              </div>
+            </fieldset>
+            <div class="ring-builder__filter-grid">
+              <label>
+                <span>{{ 'ring_builder.filters.carat_from' | t }}</span>
+                <input class="field" name="minCarat" type="number" min="0.001" max="30" step="0.01" value="{{ section.settings.min_carat }}">
+              </label>
+              <label>
+                <span>{{ 'ring_builder.filters.carat_to' | t }}</span>
+                <input class="field" name="maxCarat" type="number" min="0.001" max="30" step="0.01" value="{{ section.settings.max_carat }}">
+              </label>
+              <label>
+                <span>{{ 'ring_builder.filters.price_from' | t }}</span>
+                <input class="field" name="minPrice" type="number" min="0" step="100" value="{{ section.settings.min_price }}">
+              </label>
+              <label>
+                <span>{{ 'ring_builder.filters.price_to' | t }}</span>
+                <input class="field" name="maxPrice" type="number" min="0" step="100" value="{{ section.settings.max_price }}">
+              </label>
+              <label>
+                <span>{{ 'ring_builder.filters.sort' | t }}</span>
+                <select class="field" name="sort">
+                  <option value="price_asc">{{ 'ring_builder.filters.price_low' | t }}</option>
+                  <option value="price_desc">{{ 'ring_builder.filters.price_high' | t }}</option>
+                  <option value="size_asc">{{ 'ring_builder.filters.carat_low' | t }}</option>
+                  <option value="size_desc">{{ 'ring_builder.filters.carat_high' | t }}</option>
+                </select>
+              </label>
+            </div>
+            {%- assign search_label = 'ring_builder.actions.search' | t -%}
+            {% render 'button', label: search_label, element: 'button', button_type: 'submit', style: section.settings.primary_button_style %}
+          </form>
+
+          <div class="ring-builder__results-head">
+            <p data-results-count aria-live="polite"></p>
+            <div data-results-loader></div>
+          </div>
+          <div class="ring-builder__diamonds-grid" data-diamond-results></div>
+          <nav class="ring-builder__pagination" aria-label="{{ 'general.pagination.label' | t }}" data-diamond-pagination hidden>
+            {%- assign previous_label = 'general.pagination.previous' | t -%}
+            {%- assign next_label = 'general.pagination.next' | t -%}
+            {% render 'button', label: previous_label, element: 'button', style: section.settings.secondary_button_style, attributes: 'data-diamond-previous' %}
+            <span data-diamond-page></span>
+            {% render 'button', label: next_label, element: 'button', style: section.settings.secondary_button_style, attributes: 'data-diamond-next' %}
+          </nav>
+        </div>
+
+        <div class="ring-builder__panel" role="tabpanel" data-builder-panel="review" hidden>
+          <div class="ring-builder__panel-head">
+            <div>
+              <p class="micro-label">{{ 'ring_builder.steps.review' | t }}</p>
+              <h2>{{ section.settings.review_heading | escape }}</h2>
+            </div>
+            <p>{{ 'ring_builder.review_help' | t }}</p>
+          </div>
+          <div class="ring-builder__review" data-builder-review></div>
+          {%- assign add_label = 'ring_builder.actions.add_ring' | t -%}
+          {% render 'button',
+            label: add_label,
+            element: 'button',
+            style: section.settings.primary_button_style,
+            class: 'ring-builder__add',
+            attributes: 'data-ring-add',
+            mutable_label: true,
+            disabled: true
+          %}
+        </div>
+      </div>
+
+      <aside class="ring-builder__summary" aria-label="{{ 'ring_builder.summary.label' | t }}">
+        <p class="micro-label">{{ 'ring_builder.summary.label' | t }}</p>
+        <div class="ring-builder__summary-row">
+          <span>{{ 'ring_builder.summary.setting' | t }}</span>
+          <strong data-summary-setting>{{ 'ring_builder.summary.not_selected' | t }}</strong>
+        </div>
+        <div class="ring-builder__summary-row">
+          <span>{{ 'ring_builder.summary.diamond' | t }}</span>
+          <strong data-summary-diamond>{{ 'ring_builder.summary.not_selected' | t }}</strong>
+        </div>
+        <div class="ring-builder__summary-row ring-builder__summary-total">
+          <span>{{ 'ring_builder.summary.total' | t }}</span>
+          <strong data-summary-total>—</strong>
+        </div>
+        <button class="ring-builder__summary-link" type="button" data-summary-edit="settings" hidden>{{ 'ring_builder.actions.edit_setting' | t }}</button>
+        <button class="ring-builder__summary-link" type="button" data-summary-edit="diamonds" hidden>{{ 'ring_builder.actions.edit_diamond' | t }}</button>
+      </aside>
+    </div>
+
+    {%- assign builder_loading_label = 'ring_builder.loading' | t -%}
+    <template data-builder-loader>
+      {% render 'loader', label: builder_loading_label, size: 'sm' %}
+    </template>
+    <script type="application/json" data-builder-translations>
+      {
+        "results": {{ 'ring_builder.results' | t | json }},
+        "noResults": {{ 'ring_builder.no_results' | t | json }},
+        "select": {{ 'ring_builder.actions.choose_diamond' | t | json }},
+        "selected": {{ 'ring_builder.actions.selected' | t | json }},
+        "imageUnavailable": {{ 'ring_builder.image_unavailable' | t | json }},
+        "page": {{ 'ring_builder.page' | t | json }},
+        "setting": {{ 'ring_builder.summary.setting' | t | json }},
+        "diamond": {{ 'ring_builder.summary.diamond' | t | json }},
+        "adding": {{ 'ring_builder.adding' | t | json }},
+        "added": {{ 'ring_builder.added' | t | json }},
+        "priceUpdated": {{ 'ring_builder.price_updated' | t | json }},
+        "cartError": {{ 'ring_builder.cart_error' | t | json }},
+        "connectionError": {{ 'ring_builder.connection_error' | t | json }},
+        "stillLoading": {{ 'ring_builder.still_loading' | t | json }}
+      }
+    </script>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "t:sections.ring_builder.name",
+  "tag": "div",
+  "enabled_on": { "templates": ["page"] },
+  "settings": [
+    { "type": "color_scheme", "id": "color_scheme", "label": "t:sections.all.color_scheme.label", "default": "scheme_1" },
+    {
+      "type": "select", "id": "content_width", "label": "t:sections.group.content_width.label",
+      "options": [
+        { "value": "page", "label": "t:sections.group.content_width.page" },
+        { "value": "full", "label": "t:sections.group.content_width.full" },
+        { "value": "edge", "label": "t:sections.group.content_width.edge" }
+      ], "default": "page"
+    },
+    { "type": "text", "id": "eyebrow", "label": "t:sections.ring_builder.eyebrow", "default": "CREATE YOUR RING" },
+    { "type": "text", "id": "heading", "label": "t:sections.ring_builder.heading", "default": "A ring, made entirely yours" },
+    { "type": "richtext", "id": "introduction", "label": "t:sections.ring_builder.introduction", "default": "<p>Pair a setting from your collection with a live, independently certified diamond.</p>" },
+    {
+      "type": "text_alignment", "id": "header_alignment", "label": "t:sections.ring_builder.header_alignment", "default": "center"
+    },
+    { "type": "header", "content": "t:sections.ring_builder.settings_header" },
+    { "type": "collection", "id": "setting_collection", "label": "t:sections.ring_builder.setting_collection", "info": "t:sections.ring_builder.setting_collection_info" },
+    { "type": "text", "id": "setting_heading", "label": "t:sections.ring_builder.setting_heading", "default": "Choose your setting" },
+    { "type": "range", "id": "settings_to_show", "label": "t:sections.ring_builder.settings_to_show", "min": 4, "max": 24, "step": 1, "default": 12 },
+    { "type": "range", "id": "setting_columns", "label": "t:sections.ring_builder.setting_columns", "min": 2, "max": 5, "step": 1, "default": 3 },
+    { "type": "checkbox", "id": "show_setting_media", "label": "t:sections.ring_builder.show_setting_media", "default": true },
+    { "type": "checkbox", "id": "show_setting_vendor", "label": "t:sections.ring_builder.show_setting_vendor", "default": false },
+    { "type": "checkbox", "id": "show_setting_price", "label": "t:sections.ring_builder.show_setting_price", "default": true },
+    {
+      "type": "select", "id": "setting_image_ratio", "label": "t:sections.ring_builder.setting_image_ratio",
+      "options": [
+        { "value": "1 / 1", "label": "t:sections.ring_builder.square" },
+        { "value": "4 / 5", "label": "t:sections.ring_builder.portrait" },
+        { "value": "4 / 3", "label": "t:sections.ring_builder.landscape" }
+      ], "default": "1 / 1", "visible_if": "{{ section.settings.show_setting_media }}"
+    },
+    {
+      "type": "select", "id": "setting_image_fit", "label": "t:sections.ring_builder.setting_image_fit",
+      "options": [
+        { "value": "cover", "label": "t:sections.ring_builder.cover" },
+        { "value": "contain", "label": "t:sections.ring_builder.contain" }
+      ], "default": "contain", "visible_if": "{{ section.settings.show_setting_media }}"
+    },
+    { "type": "header", "content": "t:sections.ring_builder.diamonds_header" },
+    { "type": "text", "id": "diamond_heading", "label": "t:sections.ring_builder.diamond_heading", "default": "Choose your diamond" },
+    {
+      "type": "select", "id": "diamond_source", "label": "t:sections.ring_builder.diamond_source",
+      "options": [
+        { "value": "both", "label": "t:sections.ring_builder.both" },
+        { "value": "natural", "label": "t:sections.ring_builder.natural" },
+        { "value": "lab", "label": "t:sections.ring_builder.lab" }
+      ], "default": "both"
+    },
+    { "type": "range", "id": "results_per_page", "label": "t:sections.ring_builder.results_per_page", "min": 12, "max": 48, "step": 12, "default": 24 },
+    { "type": "range", "id": "min_carat", "label": "t:sections.ring_builder.min_carat", "min": 0.1, "max": 5, "step": 0.1, "default": 0.5 },
+    { "type": "range", "id": "max_carat", "label": "t:sections.ring_builder.max_carat", "min": 0.5, "max": 10, "step": 0.5, "default": 3 },
+    { "type": "number", "id": "min_price", "label": "t:sections.ring_builder.min_price", "default": 0 },
+    { "type": "number", "id": "max_price", "label": "t:sections.ring_builder.max_price", "default": 20000 },
+    { "type": "header", "content": "t:sections.ring_builder.experience_header" },
+    {
+      "type": "select", "id": "start_with", "label": "t:sections.ring_builder.start_with",
+      "options": [
+        { "value": "setting", "label": "t:sections.ring_builder.setting_first" },
+        { "value": "diamond", "label": "t:sections.ring_builder.diamond_first" }
+      ], "default": "setting"
+    },
+    { "type": "text", "id": "review_heading", "label": "t:sections.ring_builder.review_heading", "default": "Review your ring" },
+    { "type": "checkbox", "id": "sticky_summary", "label": "t:sections.ring_builder.sticky_summary", "default": true },
+    {
+      "type": "select", "id": "primary_button_style", "label": "t:sections.ring_builder.primary_button_style",
+      "options": [
+        { "value": "filled", "label": "t:settings_schema.button_style.filled" },
+        { "value": "outline", "label": "t:settings_schema.button_style.outline" },
+        { "value": "arrow", "label": "t:settings_schema.button_style.arrow" },
+        { "value": "arrow_outline", "label": "t:settings_schema.button_style.arrow_outline" }
+      ], "default": "filled"
+    },
+    {
+      "type": "select", "id": "secondary_button_style", "label": "t:sections.ring_builder.secondary_button_style",
+      "options": [
+        { "value": "outline", "label": "t:settings_schema.button_style.outline" },
+        { "value": "link", "label": "t:settings_schema.button_style.link" },
+        { "value": "quiet", "label": "t:settings_schema.button_style.quiet" },
+        { "value": "arrow_outline", "label": "t:settings_schema.button_style.arrow_outline" }
+      ], "default": "outline"
+    },
+    { "type": "select", "id": "padding_top", "label": "t:sections.all.padding_top.label", "options": [
+      { "value": "none", "label": "t:settings_schema.spacing.section_padding_default.options__none" }, { "value": "sm", "label": "t:settings_schema.spacing.section_padding_default.options__sm" }, { "value": "md", "label": "t:settings_schema.spacing.section_padding_default.options__md" }, { "value": "lg", "label": "t:settings_schema.spacing.section_padding_default.options__lg" }, { "value": "xl", "label": "t:settings_schema.spacing.section_padding_default.options__xl" }
+    ], "default": "lg" },
+    { "type": "select", "id": "padding_bottom", "label": "t:sections.all.padding_bottom.label", "options": [
+      { "value": "none", "label": "t:settings_schema.spacing.section_padding_default.options__none" }, { "value": "sm", "label": "t:settings_schema.spacing.section_padding_default.options__sm" }, { "value": "md", "label": "t:settings_schema.spacing.section_padding_default.options__md" }, { "value": "lg", "label": "t:settings_schema.spacing.section_padding_default.options__lg" }, { "value": "xl", "label": "t:settings_schema.spacing.section_padding_default.options__xl" }
+    ], "default": "xl" }
+  ],
+  "presets": [{ "name": "t:sections.ring_builder.name" }]
+}
+{% endschema %}
