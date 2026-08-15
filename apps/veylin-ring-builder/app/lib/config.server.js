@@ -12,12 +12,31 @@ function nonNegativeNumber(value, fallback) {
 }
 
 export function ringBuilderConfig() {
+  const nivodaUrl = process.env.NIVODA_API_URL || DEFAULT_NIVODA_URL;
+  const nivodaUsername = process.env.NIVODA_USERNAME || "";
+  const nivodaPassword = process.env.NIVODA_PASSWORD || "";
+  const requestedProviderMode = process.env.RING_BUILDER_PROVIDER_MODE;
+  const useDevelopmentFixtures = !requestedProviderMode
+    && process.env.NODE_ENV === "development"
+    && !(nivodaUsername && nivodaPassword);
+  const providerMode = requestedProviderMode === "fixture" || useDevelopmentFixtures
+    ? "fixture"
+    : "nivoda";
+  const providerEnvironment = providerMode === "fixture"
+    ? "fixture"
+    : /(^|[.-])(intg|staging)([.-]|$)/i.test(new URL(nivodaUrl).hostname)
+      ? "staging"
+      : "production";
+  const requestedOrderMode = process.env.NIVODA_ORDER_MODE || "disabled";
+
   return {
-    nivodaUrl: process.env.NIVODA_API_URL || DEFAULT_NIVODA_URL,
-    nivodaUsername: process.env.NIVODA_USERNAME || "",
-    nivodaPassword: process.env.NIVODA_PASSWORD || "",
+    providerMode,
+    providerEnvironment,
+    nivodaUrl,
+    nivodaUsername,
+    nivodaPassword,
     nivodaDestinationId: process.env.NIVODA_DESTINATION_ID || "",
-    orderMode: process.env.NIVODA_ORDER_MODE || "disabled",
+    orderMode: providerMode === "fixture" ? "disabled" : requestedOrderMode,
     cacheSeconds: Math.max(
       30,
       positiveNumber(process.env.RING_BUILDER_CACHE_SECONDS, 30),
@@ -42,6 +61,10 @@ export function ringBuilderConfig() {
 
 export function isNivodaConfigured(config = ringBuilderConfig()) {
   return Boolean(config.nivodaUsername && config.nivodaPassword);
+}
+
+export function isDiamondProviderReady(config = ringBuilderConfig()) {
+  return config.providerMode === "fixture" || isNivodaConfigured(config);
 }
 
 export function assertAllowedShop(shop, config = ringBuilderConfig()) {

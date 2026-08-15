@@ -43,6 +43,14 @@ model NivodaCache {
   @@index([expiresAt])
 }
 
+model ShopConfiguration {
+  shop                   String   @id
+  settingCollectionId    String?
+  settingCollectionTitle String?
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+}
+
 model DiamondVariant {
   id          String   @id @default(cuid())
   shop        String

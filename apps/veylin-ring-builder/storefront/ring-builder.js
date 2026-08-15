@@ -2,12 +2,9 @@
   'use strict';
 
   function buttonClass(style) {
-    if (style === 'outline') return 'btn btn--outline';
-    if (style === 'link') return 'btn btn--link';
-    if (style === 'quiet') return 'btn btn--quiet';
-    if (style === 'arrow') return 'btn btn--arrow';
-    if (style === 'arrow_outline') return 'btn btn--arrow btn--outline';
-    return 'btn btn--primary';
+    return style === 'primary'
+      ? 'ring-builder__button ring-builder__button--primary'
+      : 'ring-builder__button ring-builder__button--secondary';
   }
 
   function interpolate(text, values) {
@@ -31,18 +28,6 @@
     if (root.dataset.builderBound === 'true') return;
     root.dataset.builderBound = 'true';
 
-    if (
-      root.dataset.publicPath &&
-      root.dataset.nativePath &&
-      window.location.pathname === root.dataset.nativePath
-    ) {
-      window.history.replaceState(
-        window.history.state,
-        '',
-        root.dataset.publicPath + window.location.search + window.location.hash
-      );
-    }
-
     var translations = JSON.parse(root.querySelector('[data-builder-translations]').textContent);
     var panels = root.querySelectorAll('[data-builder-panel]');
     var tabs = root.querySelectorAll('[data-builder-tab]');
@@ -51,6 +36,11 @@
     var retry = root.querySelector('[data-builder-retry]');
     var form = root.querySelector('[data-diamond-filters]');
     var results = root.querySelector('[data-diamond-results]');
+    var settingResults = root.querySelector('[data-setting-results]');
+    var settingsLoader = root.querySelector('[data-settings-loader]');
+    var settingsEmpty = root.querySelector('[data-settings-empty]');
+    var fixtureBanner = root.querySelector('[data-fixture-banner]');
+    var stagingBanner = root.querySelector('[data-staging-banner]');
     var resultsCount = root.querySelector('[data-results-count]');
     var loaderHost = root.querySelector('[data-results-loader]');
     var loaderTemplate = root.querySelector('[data-builder-loader]');
@@ -72,6 +62,8 @@
       offset: 0,
       total: 0,
       loaded: false,
+      settingsLoaded: false,
+      settingsLoading: false,
       loading: false,
       controller: null,
       lastAction: null,
@@ -121,6 +113,7 @@
         tab.setAttribute('aria-selected', selected ? 'true' : 'false');
         tab.tabIndex = selected ? 0 : -1;
       });
+      if (step === 'settings' && !state.settingsLoaded && !state.settingsLoading) loadSettings();
       if (step === 'diamonds' && !state.loaded && !state.loading) searchDiamonds(false);
       if (step === 'review') renderReview();
     }
@@ -219,6 +212,96 @@
       if (card.hasAttribute('data-selected')) selectSetting(card);
     });
 
+    function settingCard(product) {
+      var variant = product.variants[0];
+      var card = element('article', 'ring-builder__setting-card');
+      card.dataset.settingCard = '';
+      card.dataset.productTitle = product.title;
+
+      var selectButton = element('button', 'ring-builder__setting-select');
+      selectButton.type = 'button';
+      selectButton.dataset.settingSelect = '';
+      selectButton.dataset.variantId = variant.id;
+      selectButton.dataset.variantTitle = variant.title;
+      selectButton.dataset.price = money(variant.price, variant.currency);
+      selectButton.dataset.priceMinor = String(Math.round(Number(variant.price) * 100));
+      selectButton.setAttribute('aria-label', translations.chooseSetting + ': ' + product.title);
+      selectButton.setAttribute('aria-pressed', 'false');
+
+      var media = element('span', 'ring-builder__setting-media');
+      var productImage = variant.image || product.image;
+      if (productImage && productImage.url) {
+        var image = document.createElement('img');
+        image.src = productImage.url;
+        image.alt = productImage.altText || product.title;
+        image.width = productImage.width || 720;
+        image.height = productImage.height || 720;
+        image.loading = 'lazy';
+        media.appendChild(image);
+      } else {
+        media.appendChild(element('span', 'ring-builder__diamond-placeholder', translations.imageUnavailable));
+      }
+      media.appendChild(element('span', 'ring-builder__selected-mark', '✓'));
+      selectButton.appendChild(media);
+      card.appendChild(selectButton);
+
+      var copy = element('div', 'ring-builder__setting-copy');
+      if (product.vendor) copy.appendChild(element('p', 'ring-builder__eyebrow', product.vendor));
+      copy.appendChild(element('h3', '', product.title));
+      var price = element('p', '', money(variant.price, variant.currency));
+      price.dataset.settingPrice = '';
+      copy.appendChild(price);
+
+      if (product.variants.length > 1) {
+        var label = element('label', '', '');
+        label.appendChild(element('span', '', translations.settingOptions));
+        var variantSelect = document.createElement('select');
+        variantSelect.className = 'ring-builder__field';
+        variantSelect.dataset.settingVariant = '';
+        product.variants.forEach(function (item) {
+          var option = document.createElement('option');
+          option.value = item.id;
+          option.dataset.title = item.title;
+          option.dataset.price = money(item.price, item.currency);
+          option.dataset.priceMinor = String(Math.round(Number(item.price) * 100));
+          option.textContent = item.title + ' · ' + money(item.price, item.currency);
+          variantSelect.appendChild(option);
+        });
+        label.appendChild(variantSelect);
+        copy.appendChild(label);
+      }
+
+      copy.appendChild(element('span', buttonClass('secondary'), translations.chooseSetting));
+      card.appendChild(copy);
+      return card;
+    }
+
+    function loadSettings() {
+      state.settingsLoading = true;
+      state.lastAction = loadSettings;
+      settingsLoader.hidden = false;
+      settingsEmpty.hidden = true;
+      showNotice('', false);
+
+      fetch(root.dataset.proxyPath + '/settings', { headers: { Accept: 'application/json' } })
+        .then(function (response) { return readJson(response, translations.settingsError); })
+        .then(function (payload) {
+          settingResults.replaceChildren();
+          (payload.items || []).forEach(function (product) {
+            settingResults.appendChild(settingCard(product));
+          });
+          state.settingsLoaded = true;
+          settingsEmpty.hidden = Boolean(payload.items && payload.items.length);
+        })
+        .catch(function (error) {
+          showNotice(error.message || translations.settingsError, true, 'error');
+        })
+        .finally(function () {
+          state.settingsLoading = false;
+          settingsLoader.hidden = true;
+        });
+    }
+
     function filterParams() {
       var data = new FormData(form);
       var params = new URLSearchParams();
@@ -262,7 +345,7 @@
       card.appendChild(media);
 
       var copy = element('span', 'ring-builder__diamond-copy');
-      copy.appendChild(element('span', 'micro-label', [diamond.certificate.lab, diamond.certificate.number].filter(Boolean).join(' ')));
+      copy.appendChild(element('span', 'ring-builder__eyebrow', [diamond.certificate.lab, diamond.certificate.number].filter(Boolean).join(' ')));
       copy.appendChild(element('h3', '', [diamond.certificate.carats + ' ct', diamond.certificate.shape].filter(Boolean).join(' ')));
       var meta = element('span', 'ring-builder__diamond-meta');
       [diamond.certificate.color, diamond.certificate.clarity, diamond.certificate.cut].filter(Boolean).forEach(function (value) {
@@ -270,7 +353,7 @@
       });
       copy.appendChild(meta);
       copy.appendChild(element('strong', 'ring-builder__diamond-price', money(diamond.price, diamond.currency)));
-      copy.appendChild(element('span', buttonClass(root.dataset.secondaryStyle), translations.select));
+      copy.appendChild(element('span', buttonClass('secondary'), translations.select));
       card.appendChild(copy);
       return card;
     }
@@ -281,8 +364,13 @@
       payload.items.forEach(function (diamond) {
         results.appendChild(diamondCard(diamond));
       });
+      var resultsLabel = payload.providerMode === 'fixture'
+        ? translations.fixtureResults
+        : payload.providerEnvironment === 'staging'
+          ? translations.stagingResults
+          : translations.results;
       resultsCount.textContent = state.total
-        ? interpolate(translations.results, { count: state.total })
+        ? interpolate(resultsLabel, { count: state.total })
         : translations.noResults;
       var limit = Number(root.dataset.resultsPerPage);
       var currentPage = Math.floor(state.offset / limit) + 1;
@@ -348,14 +436,14 @@
       review.replaceChildren();
       if (!state.setting || !state.diamond) return;
       var settingCard = element('article', 'ring-builder__review-card');
-      settingCard.appendChild(element('p', 'micro-label', translations.setting));
+      settingCard.appendChild(element('p', 'ring-builder__eyebrow', translations.setting));
       settingCard.appendChild(element('h3', '', state.setting.productTitle));
       if (state.setting.variantTitle !== 'Default Title') settingCard.appendChild(element('p', '', state.setting.variantTitle));
       settingCard.appendChild(element('strong', '', state.setting.price));
       review.appendChild(settingCard);
 
       var diamondCard = element('article', 'ring-builder__review-card');
-      diamondCard.appendChild(element('p', 'micro-label', translations.diamond));
+      diamondCard.appendChild(element('p', 'ring-builder__eyebrow', translations.diamond));
       diamondCard.appendChild(element('h3', '', [state.diamond.certificate.carats + ' ct', state.diamond.certificate.shape].filter(Boolean).join(' ')));
       diamondCard.appendChild(element('p', '', [state.diamond.certificate.color, state.diamond.certificate.clarity, state.diamond.certificate.cut].filter(Boolean).join(' · ')));
       diamondCard.appendChild(element('strong', '', money(state.diamond.price, state.diamond.currency)));
@@ -424,6 +512,8 @@
       .then(function (response) { return readJson(response, translations.connectionError); })
       .then(function (payload) {
         if (!payload.ready) showNotice(translations.connectionError, true, 'error');
+        fixtureBanner.hidden = payload.providerMode !== 'fixture';
+        stagingBanner.hidden = payload.providerEnvironment !== 'staging';
       })
       .catch(function () { showNotice(translations.connectionError, true, 'error'); });
   }

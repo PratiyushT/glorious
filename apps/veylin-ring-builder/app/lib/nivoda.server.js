@@ -1,6 +1,10 @@
 import crypto from "node:crypto";
 import prisma from "../db.server.js";
 import { ringBuilderConfig, isNivodaConfigured } from "./config.server.js";
+import {
+  getFixtureDiamond,
+  searchFixtureDiamonds,
+} from "./diamond-fixtures.server.js";
 import { retailPrice } from "./pricing.js";
 
 const AUTH_QUERY = `#graphql
@@ -239,15 +243,21 @@ async function cached(key, seconds, loader) {
 export async function searchDiamonds(filters, config = ringBuilderConfig()) {
   const hash = crypto.createHash("sha256").update(JSON.stringify({
     filters,
+    providerMode: config.providerMode,
     markupPercent: config.markupPercent,
     priceDivisor: config.priceDivisor,
     searchPriceMode: config.searchPriceMode,
   })).digest("hex");
   return cached(`search:${hash}`, config.cacheSeconds, async () => {
+    if (config.providerMode === "fixture") {
+      return searchFixtureDiamonds(filters, config);
+    }
     const data = await authorizedRequest(buildSearchQuery(filters), {}, config);
     const result = data?.as?.diamonds_by_query;
     if (!result) throw new Error("Nivoda returned no diamond results");
     return {
+      providerMode: "nivoda",
+      providerEnvironment: config.providerEnvironment,
       items: result.items.map((item) =>
         normalizeItem(item, filters, config, config.searchPriceMode),
       ),
@@ -260,7 +270,10 @@ export async function searchDiamonds(filters, config = ringBuilderConfig()) {
 
 export async function getDiamond(diamondId, currency, config = ringBuilderConfig()) {
   const filters = { currency };
-  return cached(`diamond:${diamondId}:${currency}`, config.cacheSeconds, async () => {
+  return cached(`diamond:${config.providerMode}:${diamondId}:${currency}`, config.cacheSeconds, async () => {
+    if (config.providerMode === "fixture") {
+      return getFixtureDiamond(diamondId, currency, config);
+    }
     const data = await authorizedRequest(DETAIL_QUERY, { diamondId }, config);
     const item = data?.as?.get_diamond_by_id;
     if (!item) throw new Error("This diamond is no longer available");
@@ -269,6 +282,9 @@ export async function getDiamond(diamondId, currency, config = ringBuilderConfig
 }
 
 export async function createNivodaOrder({ offerId, reference }, config = ringBuilderConfig()) {
+  if (config.providerMode === "fixture") {
+    throw new Error("Supplier ordering is unavailable for fixture diamonds");
+  }
   if (config.orderMode !== "paid") throw new Error("Automatic Nivoda ordering is disabled");
   if (!config.nivodaDestinationId) throw new Error("Nivoda destination is not configured");
   const productId = offerId.replace(/^DIAMOND\//, "");

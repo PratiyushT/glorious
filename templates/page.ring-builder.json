@@ -1,41 +1,21 @@
 {
   "sections": {
     "main": {
-      "type": "ring-builder",
+      "type": "group",
+      "blocks": {},
+      "block_order": [],
       "settings": {
-        "enable_builder": true,
         "color_scheme": "scheme_1",
         "content_width": "page",
-        "eyebrow": "CREATE YOUR RING",
-        "heading": "A ring, made entirely yours",
-        "introduction": "<p>Pair a setting from your collection with a live, independently certified diamond.</p>",
-        "header_alignment": "center",
-        "setting_heading": "Choose your setting",
-        "settings_to_show": 12,
-        "setting_columns": 3,
-        "show_setting_media": true,
-        "show_setting_vendor": false,
-        "show_setting_price": true,
-        "setting_image_ratio": "1 / 1",
-        "setting_image_fit": "contain",
-        "diamond_heading": "Choose your diamond",
-        "diamond_source": "both",
-        "results_per_page": 24,
-        "min_carat": 0.5,
-        "max_carat": 3,
-        "min_price": 0,
-        "max_price": 20000,
-        "start_with": "setting",
-        "review_heading": "Review your ring",
-        "sticky_summary": true,
-        "primary_button_style": "filled",
-        "secondary_button_style": "outline",
+        "direction": "vertical",
+        "align_vertical": "stretch",
+        "vertical_gap": "large",
+        "content_alignment": "left",
+        "block_gap": "large",
         "padding_top": "lg",
         "padding_bottom": "xl"
       }
     }
   },
-  "order": [
-    "main"
-  ]
+  "order": ["main"]
 }

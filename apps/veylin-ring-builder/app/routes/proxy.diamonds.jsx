@@ -19,7 +19,7 @@ export const loader = async ({ request }) => {
   } catch (error) {
     console.error("Nivoda search failed", error);
     return Response.json(
-      { error: "Live diamonds are temporarily unavailable. Please try again." },
+      { error: "Diamond search is temporarily unavailable. Please try again." },
       { status: 503, headers: { "Retry-After": String(config.cacheSeconds) } },
     );
   }

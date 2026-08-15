@@ -371,66 +371,6 @@
       "fallback": "Details"
     }
   },
-  "ring_builder": {
-    "disabled_heading": "Private ring appointments are temporarily unavailable",
-    "disabled_text": "Please contact us for personal assistance while this experience is paused.",
-    "steps": {
-      "label": "Ring builder steps",
-      "setting": "Setting",
-      "diamond": "Diamond",
-      "review": "Review"
-    },
-    "setting_help": "Select the setting and its exact available variant.",
-    "setting_options": "Setting options",
-    "diamond_help": "Live availability and pricing are confirmed again before the ring enters your cart.",
-    "review_help": "Your setting and diamond are added together as one custom ring selection.",
-    "empty_settings_heading": "Choose a ring setting collection",
-    "empty_settings_text": "Select a collection in this section’s settings. Every available product variant becomes a valid ring setting.",
-    "filters": {
-      "origin": "Diamond origin",
-      "both": "Natural and lab-grown",
-      "natural": "Natural",
-      "lab": "Lab-grown",
-      "shape": "Shape",
-      "carat_from": "Minimum carat",
-      "carat_to": "Maximum carat",
-      "price_from": "Minimum price",
-      "price_to": "Maximum price",
-      "sort": "Sort",
-      "price_low": "Price, low to high",
-      "price_high": "Price, high to low",
-      "carat_low": "Carat, low to high",
-      "carat_high": "Carat, high to low"
-    },
-    "actions": {
-      "search": "Find diamonds",
-      "retry": "Try again",
-      "choose_setting": "Choose {{ title }}",
-      "choose_diamond": "Choose diamond",
-      "selected": "Selected",
-      "add_ring": "Add complete ring to cart",
-      "edit_setting": "Change setting",
-      "edit_diamond": "Change diamond"
-    },
-    "summary": {
-      "label": "Your ring",
-      "setting": "Setting",
-      "diamond": "Diamond",
-      "total": "Estimated total",
-      "not_selected": "Not selected"
-    },
-    "results": "[[count]] live diamonds",
-    "no_results": "No diamonds match these filters. Try broadening your search.",
-    "page": "Page [[current]] of [[total]]",
-    "image_unavailable": "Image unavailable",
-    "loading": "Loading live diamonds",
-    "still_loading": "Still checking live inventory…",
-    "adding": "Confirming price and availability…",
-    "added": "Added to cart",
-    "price_updated": "The live diamond price changed while you were building. Your total has been updated before anything was added.",
-    "cart_error": "The ring could not be added. Your selections are still here—please try again.",
-    "connection_error": "The live diamond connection is not ready. Please try again shortly."
-  },
   "onboarding": {
     "collection_title": "Example collection",
     "article_title": "A journal story",

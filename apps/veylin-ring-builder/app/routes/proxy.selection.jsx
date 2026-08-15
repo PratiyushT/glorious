@@ -50,6 +50,20 @@ export const action = async ({ request }) => {
       certificate.clarity,
     ].filter(Boolean).join(" · ");
     const certificateLabel = [certificate.lab, certificate.number].filter(Boolean).join(" ");
+    const diamondProperties = config.providerMode === "fixture"
+      ? {
+          "_Veylin Ring Builder": bundleId,
+          "_Ring Builder Test Offer": diamond.offerId,
+          Diamond: description,
+          Certificate: certificateLabel,
+        }
+      : {
+          "_Veylin Ring Builder": bundleId,
+          "_Nivoda Offer ID": diamond.offerId,
+          "_Nivoda Diamond ID": diamond.diamondId,
+          Diamond: description,
+          Certificate: certificateLabel,
+        };
 
     return Response.json({
       diamond,
@@ -65,13 +79,7 @@ export const action = async ({ request }) => {
         {
           id: Number(mapping.numericVariantId),
           quantity: 1,
-          properties: {
-            "_Veylin Ring Builder": bundleId,
-            "_Nivoda Offer ID": diamond.offerId,
-            "_Nivoda Diamond ID": diamond.diamondId,
-            Diamond: description,
-            Certificate: certificateLabel,
-          },
+          properties: diamondProperties,
         },
       ],
     });

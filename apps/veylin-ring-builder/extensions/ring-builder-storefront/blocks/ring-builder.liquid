@@ -1,0 +1,216 @@
+<script src="{{ 'ring-builder.js' | asset_url }}" defer="defer"></script>
+
+<div
+  class="ring-builder"
+  data-ring-builder
+  data-proxy-path="/apps/veylin-ring-builder"
+  data-initial-step="settings"
+  data-results-per-page="24"
+  data-currency="{{ cart.currency.iso_code | default: localization.country.currency.iso_code | default: 'USD' }}"
+  data-sticky-summary
+>
+  <header class="ring-builder__header ring-builder__header--center">
+    <p class="ring-builder__eyebrow">{{ 'ring_builder.eyebrow' | t }}</p>
+    <h1 class="ring-builder__title">{{ 'ring_builder.heading' | t }}</h1>
+    <p class="ring-builder__introduction">{{ 'ring_builder.introduction' | t }}</p>
+    <div class="ring-builder__test-banner" data-fixture-banner hidden>
+      <strong>{{ 'ring_builder.test_heading' | t }}</strong>
+      <span>{{ 'ring_builder.test_text' | t }}</span>
+    </div>
+    <div class="ring-builder__test-banner" data-staging-banner hidden>
+      <strong>{{ 'ring_builder.staging_heading' | t }}</strong>
+      <span>{{ 'ring_builder.staging_text' | t }}</span>
+    </div>
+  </header>
+
+  <div class="ring-builder__progress" role="tablist" aria-label="{{ 'ring_builder.steps.label' | t }}">
+    <button class="ring-builder__step" type="button" role="tab" data-builder-tab="settings">
+      <span aria-hidden="true">01</span>
+      {{- 'ring_builder.steps.setting' | t -}}
+    </button>
+    <button class="ring-builder__step" type="button" role="tab" data-builder-tab="diamonds">
+      <span aria-hidden="true">02</span>
+      {{- 'ring_builder.steps.diamond' | t -}}
+    </button>
+    <button class="ring-builder__step" type="button" role="tab" data-builder-tab="review" disabled>
+      <span aria-hidden="true">03</span>
+      {{- 'ring_builder.steps.review' | t -}}
+    </button>
+  </div>
+
+  <div class="ring-builder__shell">
+    <div class="ring-builder__workspace">
+      <div class="ring-builder__notice" data-builder-notice hidden>
+        <p data-builder-notice-text></p>
+        <button class="ring-builder__button ring-builder__button--secondary" type="button" data-builder-retry hidden>
+          {{ 'ring_builder.actions.retry' | t }}
+        </button>
+      </div>
+
+      <div class="ring-builder__panel" role="tabpanel" data-builder-panel="settings">
+        <div class="ring-builder__panel-head">
+          <div>
+            <p class="ring-builder__eyebrow">{{ 'ring_builder.steps.setting' | t }}</p>
+            <h2>{{ 'ring_builder.setting_heading' | t }}</h2>
+          </div>
+          <p>{{ 'ring_builder.setting_help' | t }}</p>
+        </div>
+        <div class="ring-builder__loader" data-settings-loader aria-live="polite">
+          {{ 'ring_builder.loading_settings' | t }}
+        </div>
+        <div class="ring-builder__settings-grid" data-setting-results></div>
+        <div class="ring-builder__empty" data-settings-empty hidden>
+          <h3>{{ 'ring_builder.empty_settings_heading' | t }}</h3>
+          <p>{{ 'ring_builder.empty_settings_text' | t }}</p>
+        </div>
+      </div>
+
+      <div class="ring-builder__panel" role="tabpanel" data-builder-panel="diamonds" hidden>
+        <div class="ring-builder__panel-head">
+          <div>
+            <p class="ring-builder__eyebrow">{{ 'ring_builder.steps.diamond' | t }}</p>
+            <h2>{{ 'ring_builder.diamond_heading' | t }}</h2>
+          </div>
+          <p>{{ 'ring_builder.diamond_help' | t }}</p>
+        </div>
+
+        <form class="ring-builder__filters" data-diamond-filters>
+          <label>
+            <span>{{ 'ring_builder.filters.origin' | t }}</span>
+            <select class="ring-builder__field" name="source">
+              <option value="both">{{ 'ring_builder.filters.both' | t }}</option>
+              <option value="natural">{{ 'ring_builder.filters.natural' | t }}</option>
+              <option value="lab">{{ 'ring_builder.filters.lab' | t }}</option>
+            </select>
+          </label>
+          <fieldset class="ring-builder__shape-filter">
+            <legend>{{ 'ring_builder.filters.shape' | t }}</legend>
+            <div>
+              {%- assign shapes = 'ROUND,OVAL,PRINCESS,CUSHION,EMERALD,PEAR,HEART,MARQUISE,RADIANT,ASSCHER' | split: ',' -%}
+              {%- for shape in shapes -%}
+                <label>
+                  <input type="checkbox" name="shapes" value="{{ shape }}">
+                  <span>{{ shape | capitalize }}</span>
+                </label>
+              {%- endfor -%}
+            </div>
+          </fieldset>
+          <div class="ring-builder__filter-grid">
+            <label>
+              <span>{{ 'ring_builder.filters.carat_from' | t }}</span>
+              <input class="ring-builder__field" name="minCarat" type="number" min="0.001" max="30" step="0.01" value="0.5">
+            </label>
+            <label>
+              <span>{{ 'ring_builder.filters.carat_to' | t }}</span>
+              <input class="ring-builder__field" name="maxCarat" type="number" min="0.001" max="30" step="0.01" value="3">
+            </label>
+            <label>
+              <span>{{ 'ring_builder.filters.price_from' | t }}</span>
+              <input class="ring-builder__field" name="minPrice" type="number" min="0" step="100" value="0">
+            </label>
+            <label>
+              <span>{{ 'ring_builder.filters.price_to' | t }}</span>
+              <input class="ring-builder__field" name="maxPrice" type="number" min="0" step="100" value="20000">
+            </label>
+            <label>
+              <span>{{ 'ring_builder.filters.sort' | t }}</span>
+              <select class="ring-builder__field" name="sort">
+                <option value="price_asc">{{ 'ring_builder.filters.price_low' | t }}</option>
+                <option value="price_desc">{{ 'ring_builder.filters.price_high' | t }}</option>
+                <option value="size_asc">{{ 'ring_builder.filters.carat_low' | t }}</option>
+                <option value="size_desc">{{ 'ring_builder.filters.carat_high' | t }}</option>
+              </select>
+            </label>
+          </div>
+          <button class="ring-builder__button ring-builder__button--primary" type="submit">
+            {{ 'ring_builder.actions.search' | t }}
+          </button>
+        </form>
+
+        <div class="ring-builder__results-head">
+          <p data-results-count aria-live="polite"></p>
+          <div data-results-loader></div>
+        </div>
+        <div class="ring-builder__diamonds-grid" data-diamond-results></div>
+        <nav class="ring-builder__pagination" aria-label="{{ 'ring_builder.pagination' | t }}" data-diamond-pagination hidden>
+          <button class="ring-builder__button ring-builder__button--secondary" type="button" data-diamond-previous>
+            {{ 'ring_builder.actions.previous' | t }}
+          </button>
+          <span data-diamond-page></span>
+          <button class="ring-builder__button ring-builder__button--secondary" type="button" data-diamond-next>
+            {{ 'ring_builder.actions.next' | t }}
+          </button>
+        </nav>
+      </div>
+
+      <div class="ring-builder__panel" role="tabpanel" data-builder-panel="review" hidden>
+        <div class="ring-builder__panel-head">
+          <div>
+            <p class="ring-builder__eyebrow">{{ 'ring_builder.steps.review' | t }}</p>
+            <h2>{{ 'ring_builder.review_heading' | t }}</h2>
+          </div>
+          <p>{{ 'ring_builder.review_help' | t }}</p>
+        </div>
+        <div class="ring-builder__review" data-builder-review></div>
+        <button class="ring-builder__button ring-builder__button--primary ring-builder__add" type="button" data-ring-add disabled>
+          <span data-button-label>{{ 'ring_builder.actions.add_ring' | t }}</span>
+        </button>
+      </div>
+    </div>
+
+    <aside class="ring-builder__summary" aria-label="{{ 'ring_builder.summary.label' | t }}">
+      <p class="ring-builder__eyebrow">{{ 'ring_builder.summary.label' | t }}</p>
+      <div class="ring-builder__summary-row">
+        <span>{{ 'ring_builder.summary.setting' | t }}</span>
+        <strong data-summary-setting>{{ 'ring_builder.summary.not_selected' | t }}</strong>
+      </div>
+      <div class="ring-builder__summary-row">
+        <span>{{ 'ring_builder.summary.diamond' | t }}</span>
+        <strong data-summary-diamond>{{ 'ring_builder.summary.not_selected' | t }}</strong>
+      </div>
+      <div class="ring-builder__summary-row ring-builder__summary-total">
+        <span>{{ 'ring_builder.summary.total' | t }}</span>
+        <strong data-summary-total>—</strong>
+      </div>
+      <button class="ring-builder__summary-link" type="button" data-summary-edit="settings" hidden>{{ 'ring_builder.actions.edit_setting' | t }}</button>
+      <button class="ring-builder__summary-link" type="button" data-summary-edit="diamonds" hidden>{{ 'ring_builder.actions.edit_diamond' | t }}</button>
+    </aside>
+  </div>
+
+  <template data-builder-loader>
+    <span class="ring-builder__loader">{{ 'ring_builder.loading' | t }}</span>
+  </template>
+  <script type="application/json" data-builder-translations>
+    {
+      "results": {{ 'ring_builder.results' | t | json }},
+      "fixtureResults": {{ 'ring_builder.fixture_results' | t | json }},
+      "stagingResults": {{ 'ring_builder.staging_results' | t | json }},
+      "noResults": {{ 'ring_builder.no_results' | t | json }},
+      "select": {{ 'ring_builder.actions.choose_diamond' | t | json }},
+      "chooseSetting": {{ 'ring_builder.actions.choose_setting' | t | json }},
+      "settingOptions": {{ 'ring_builder.setting_options' | t | json }},
+      "selected": {{ 'ring_builder.actions.selected' | t | json }},
+      "imageUnavailable": {{ 'ring_builder.image_unavailable' | t | json }},
+      "page": {{ 'ring_builder.page' | t | json }},
+      "setting": {{ 'ring_builder.summary.setting' | t | json }},
+      "diamond": {{ 'ring_builder.summary.diamond' | t | json }},
+      "adding": {{ 'ring_builder.adding' | t | json }},
+      "added": {{ 'ring_builder.added' | t | json }},
+      "priceUpdated": {{ 'ring_builder.price_updated' | t | json }},
+      "cartError": {{ 'ring_builder.cart_error' | t | json }},
+      "connectionError": {{ 'ring_builder.connection_error' | t | json }},
+      "settingsError": {{ 'ring_builder.settings_error' | t | json }},
+      "stillLoading": {{ 'ring_builder.still_loading' | t | json }}
+    }
+  </script>
+</div>
+
+{% schema %}
+{
+  "name": "Ring Builder",
+  "target": "section",
+  "stylesheet": "ring-builder.css",
+  "enabled_on": { "templates": ["page"] },
+  "settings": []
+}
+{% endschema %}

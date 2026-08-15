@@ -16,6 +16,17 @@ const PRODUCT_CREATE = `#graphql
   }
 `;
 
+const PRODUCT_BY_IDENTIFIER = `#graphql
+  query RingBuilderProductByIdentifier($identifier: ProductIdentifierInput!) {
+    product: productByIdentifier(identifier: $identifier) {
+      id
+      handle
+      tags
+      variants(first: 1) { nodes { id } }
+    }
+  }
+`;
+
 const VARIANT_UPDATE = `#graphql
   mutation RingBuilderVariantUpdate($productId: ID!, $variants: [ProductVariantsBulkInput!]!) {
     productVariantsBulkUpdate(productId: $productId, variants: $variants) {
@@ -27,7 +38,7 @@ const VARIANT_UPDATE = `#graphql
 
 const PUBLICATIONS = `#graphql
   query RingBuilderPublications {
-    publications(first: 50) { nodes { id catalog { title } } }
+    publications(first: 50) { nodes { id name catalog { title } } }
   }
 `;
 
@@ -65,7 +76,7 @@ async function graph(admin, query, variables, path) {
   return errors(await response.json(), path);
 }
 
-function titleFor(diamond) {
+function titleFor(diamond, config) {
   const certificate = diamond.certificate;
   const pieces = [
     certificate.carats ? `${certificate.carats} ct` : null,
@@ -74,7 +85,21 @@ function titleFor(diamond) {
     certificate.clarity,
     "Diamond",
   ];
-  return pieces.filter(Boolean).join(" ");
+  const title = pieces.filter(Boolean).join(" ");
+  return config.providerMode === "fixture" ? `[TEST] ${title}` : title;
+}
+
+export function handleFor(diamond, config) {
+  const hash = crypto.createHash("sha256").update(diamond.offerId).digest("hex").slice(0, 16);
+  return config.providerMode === "fixture"
+    ? `veylin-test-diamond-${hash}`
+    : `veylin-nivoda-${hash}`;
+}
+
+export function onlineStorePublication(publications) {
+  return publications.find(
+    (item) => item.name === "Online Store" || item.catalog?.title === "Online Store",
+  );
 }
 
 async function updateVariant(admin, mapping, diamond) {
@@ -99,9 +124,7 @@ async function publish(admin, productId) {
   const response = await admin.graphql(PUBLICATIONS);
   const payload = await response.json();
   if (payload.errors?.length) throw new Error(payload.errors[0].message);
-  const publication = payload.data?.publications?.nodes?.find(
-    (item) => item.catalog?.title === "Online Store",
-  );
+  const publication = onlineStorePublication(payload.data?.publications?.nodes || []);
   if (!publication) throw new Error("Online Store publication is unavailable");
   await graph(
     admin,
@@ -111,14 +134,31 @@ async function publish(admin, productId) {
   );
 }
 
-async function createProduct(admin, diamond) {
-  const hash = crypto.createHash("sha256").update(diamond.offerId).digest("hex").slice(0, 16);
+async function createProduct(admin, diamond, config) {
+  const handle = handleFor(diamond, config);
+  const existing = await graph(
+    admin,
+    PRODUCT_BY_IDENTIFIER,
+    { identifier: { handle } },
+    ["product"],
+  );
+  if (existing) {
+    if (!existing.tags.includes("_veylin_ring_builder")) {
+      throw new Error(`Product handle ${handle} is already in use`);
+    }
+    const variantId = existing.variants?.nodes?.[0]?.id;
+    if (!variantId) throw new Error("Existing Shopify diamond has no variant");
+    const mapping = { productId: existing.id, variantId };
+    await updateVariant(admin, mapping, diamond);
+    await publish(admin, existing.id);
+    return mapping;
+  }
   const media = diamond.image
     ? [
         {
           originalSource: diamond.image,
           mediaContentType: "IMAGE",
-          alt: titleFor(diamond),
+          alt: titleFor(diamond, config),
         },
       ]
     : [];
@@ -127,29 +167,35 @@ async function createProduct(admin, diamond) {
     PRODUCT_CREATE,
     {
       product: {
-        title: titleFor(diamond),
-        handle: `veylin-nivoda-${hash}`,
-        descriptionHtml: "<p>Diamond selected through the Veylin Ring Builder.</p>",
+        title: titleFor(diamond, config),
+        handle,
+        descriptionHtml: config.providerMode === "fixture"
+          ? "<p>Test diamond created by the Veylin Ring Builder fixture catalog.</p>"
+          : "<p>Diamond selected through the Veylin Ring Builder.</p>",
         productType: "Loose Diamond",
-        vendor: "Nivoda",
+        vendor: config.providerMode === "fixture" ? "Veylin Test" : "Nivoda",
         status: "ACTIVE",
-        tags: ["_veylin_ring_builder", "_nivoda_diamond"],
+        tags: config.providerMode === "fixture"
+          ? ["_veylin_ring_builder", "_ring_builder_fixture"]
+          : ["_veylin_ring_builder", "_nivoda_diamond"],
         metafields: [
-          {
-            namespace: "$app",
-            key: "nivoda_offer_id",
-            value: diamond.offerId,
-          },
-          {
-            namespace: "$app",
-            key: "nivoda_diamond_id",
-            value: diamond.diamondId,
-          },
-          {
-            namespace: "$app",
-            key: "nivoda_snapshot",
-            value: JSON.stringify(diamond),
-          },
+          ...(config.providerMode === "fixture" ? [] : [
+            {
+              namespace: "$app",
+              key: "nivoda_offer_id",
+              value: diamond.offerId,
+            },
+            {
+              namespace: "$app",
+              key: "nivoda_diamond_id",
+              value: diamond.diamondId,
+            },
+            {
+              namespace: "$app",
+              key: "nivoda_snapshot",
+              value: JSON.stringify(diamond),
+            },
+          ]),
           {
             namespace: "seo",
             key: "hidden",
@@ -197,7 +243,7 @@ export async function ensureDiamondVariant({ admin, shop, diamond }) {
   }
 
   if (!mapping) {
-    const created = await createProduct(admin, diamond);
+    const created = await createProduct(admin, diamond, config);
     mapping = await prisma.diamondVariant.create({
       data: {
         shop,

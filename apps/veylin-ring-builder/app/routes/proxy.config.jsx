@@ -1,7 +1,7 @@
 import { authenticate } from "../shopify.server";
 import {
   assertAllowedShop,
-  isNivodaConfigured,
+  isDiamondProviderReady,
   ringBuilderConfig,
 } from "../lib/config.server";
 
@@ -13,8 +13,12 @@ export const loader = async ({ request }) => {
 
   return Response.json(
     {
-      ready: isNivodaConfigured(config),
-      orderMode: config.orderMode === "paid" ? "automatic" : "manual",
+      ready: isDiamondProviderReady(config),
+      providerMode: config.providerMode,
+      providerEnvironment: config.providerEnvironment,
+      orderMode: config.providerMode === "fixture"
+        ? "disabled"
+        : config.orderMode === "paid" ? "automatic" : "manual",
       cacheSeconds: config.cacheSeconds,
     },
     { headers: { "Cache-Control": "private, max-age=30" } },
