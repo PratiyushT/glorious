@@ -368,7 +368,7 @@ body:has([data-nav-transparent]) .main-product {
   align-items: center;
   justify-content: center;
   width: 100%;
-  min-height: var(--product-control-height, 3.125rem);
+  min-height: var(--product-control-height, 3.125rem) !important;
   padding: var(--btn-pad-y, var(--button-style-padding-y)) var(--btn-pad-x, var(--button-style-padding-x)) !important;
   border: var(--btn-border-width, var(--button-style-border-width)) solid var(--btn-border, var(--btn-bg, var(--payment-border))) !important;
   border-radius: var(--btn-radius, var(--button-style-radius)) !important;
@@ -559,9 +559,9 @@ body:has([data-nav-transparent]) .main-product {
   width: 100%;
   max-width: none;
   min-height: var(--product-control-height, 3.125rem);
-  padding: var(--btn-pad-y, 0.688rem) var(--btn-pad-x, 0.813rem);
-  border-radius: var(--btn-radius, 0);
-  font-size: var(--btn-font, 0.75rem);
+  padding: var(--btn-pad-y, var(--button-style-padding-y)) var(--btn-pad-x, var(--button-style-padding-x));
+  border-radius: var(--btn-radius, var(--button-style-radius));
+  font-size: var(--btn-font, var(--button-style-size));
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

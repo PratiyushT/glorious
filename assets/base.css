@@ -7654,7 +7654,7 @@ a.nav-menu__address:hover {
   align-items: center;
   width: fit-content;
   border: var(--input-border-width, var(--border-width)) solid var(--input-border, color-mix(in srgb, var(--c-text) 22%, transparent));
-  border-radius: var(--input-radius, 0);
+  border-radius: var(--input-radius, var(--button-radius));
   background: var(--input-bg, transparent);
   color: var(--input-text, inherit);
 }

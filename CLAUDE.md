@@ -527,6 +527,14 @@ global Text/Rich text concern elsewhere.
   for Shopify usability even when Link, Quiet, or Arrow is selected, but its
   color and motion still come from that selected style. Reduced motion removes
   the transform without suppressing the hover color state.
+- **Rendered product controls keep one inheritance boundary.** Variant pills
+  use the Button block's local overrides and otherwise inherit the universal
+  Button shape, padding, and label size; they keep only the shared 50px product
+  control height as a product-specific constraint. Buy Now needs its 50px
+  minimum marked important because Shopify's later stylesheet otherwise puts
+  it back at 44px. Quantity remains a purpose-built interface control, but its
+  `Use theme setting` radius now resolves to the universal Button shape on the
+  product page, Quick View, Featured product, cart page, and cart drawer.
 - **Product breadcrumbs use Shopify's collection context, never browsing-page
   headings.** A contextual collection URL renders Home / Collection / Product;
   a direct product URL renders Home / the merchant-editable All products label
