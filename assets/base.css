@@ -5308,7 +5308,8 @@ a {
   width: 100%;
 }
 
-.cat-card__media {
+.cat-card__media,
+.cat-card > .collection-image-block {
   grid-area: media;
   position: relative;
   display: block;
@@ -5317,7 +5318,8 @@ a {
   background: var(--c-surface);
 }
 
-.cat-card__media img {
+.cat-card__media img,
+.cat-card > .collection-image-block img {
   position: absolute;
   inset: 0;
   width: 100%;
@@ -5326,7 +5328,8 @@ a {
   transition: transform 1.3s var(--ease);
 }
 
-.cat-card:hover .cat-card__media img {
+.cat-card:hover .cat-card__media img,
+.cat-card:hover > .collection-image-block img {
   transform: scale(1.06);
 }
 
@@ -5418,10 +5421,12 @@ a {
 
 @media (prefers-reduced-motion: reduce) {
   .cat-card__media img,
+  .cat-card > .collection-image-block img,
   .cat-card__reveal,
   .cat-card__reveal-row,
   .cat-card__reveal-arrow { transition: none; }
-  .cat-card:hover .cat-card__media img { transform: none; }
+  .cat-card:hover .cat-card__media img,
+  .cat-card:hover > .collection-image-block img { transform: none; }
 }
 
 /* ---- Lookbook -------------------------------------------------------

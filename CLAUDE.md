@@ -64,16 +64,16 @@ The homepage blocks fall into four contracts:
   card's `closest.product`. Safe contextual content blocks — Product title,
   Vendor, and Description — are also valid card children because they already
   use the shared Text/Rich text renderers and the same `closest.product` source.
-  Collection card likewise owns
-  `_collection-card-media` and `_collection-count-text`, both fixed to
-  `closest.collection`. Their editor names are simply Media, Option values,
-  Option control, Price, Add to cart, and Count—the parent already supplies the
-  context, so a `Product —` or `Collection —` prefix adds noise.
+  Collection card accepts Collection title and Collection image, both fixed to
+  `closest.collection`, plus its private Count. The contextual image prefers
+  `collection.image`, falls back to `collection.featured_image`, and has no
+  competing uploader. `_collection-card-media` remains only to render older
+  saved cards through the same Media renderer.
 - **Card-local Group blocks preserve layout without leaking private children.**
   `_product-card-group` and `_collection-card-group` use the exact global Group
   markup and settings but explicitly target only their card's valid children.
-  Generic Media is excluded; media in either card is its owner-specific private
-  block. The ordinary global Group remains unrestricted everywhere else.
+  Product media and Collection image own their card media regions outside the
+  Group. The ordinary global Group remains unrestricted everywhere else.
 - **Private composition shells** begin with an underscore and are rendered
   statically by their sections: `_product-card` and `_collection-card`. They
   establish the card layout, link, quick-view, and interaction context, but are
@@ -98,8 +98,10 @@ is a valid merchant choice and never falls back to the shop name. R15 enforces
 the shared renderer so this platform exception cannot fork its markup.
 
 Underscore targeting is the restriction, not a label. Product-card blocks are
-accepted only by Product card and its private Group; collection-card blocks are
-accepted only by Collection card, its header, and its private Group. Hotspot
+accepted only by Product card and its private Group; private collection count,
+header, Group, and legacy media types stay inside Collection card. Public
+Collection title and Collection image are safe wherever a closest collection
+exists because they own no resource picker. Hotspot
 has separate private Price/Add blocks and private Group-compatible wrappers, so
 it does not reopen the Product-card family through Lookbook.
 
@@ -434,10 +436,11 @@ edge. The separately rounded `--announcement-bar-height` remains the nav's
 subpixel-overlap guard. Closing or omitting the announcement restores the full
 `100dvh` gallery.
 
-- **A contextual product block extends a global base; it does not invent an
-  editor.** Product title, vendor, and price carry the complete Text appearance
+- **A contextual resource block extends a global base; it does not invent an
+  editor.** Product title, Collection title, vendor, and price carry the Text appearance
   contract minus editable content. Product description carries Rich text minus
-  editable content. Variant pills, Add to cart, product-card Add, and the offer
+  editable content. Collection image carries Media's presentation contract
+  without an uploader or video controls. Variant pills, Add to cart, product-card Add, and the offer
   popup carry Button's complete appearance contract, with only their role and
   intentional default added. Main product and Featured product also share the
   complete layout contract, with Featured product adding only its product
@@ -1584,7 +1587,7 @@ diligent, and this theme has already paid for that twice — see the footer unde
 | R11 | `assets/*.js` stays ES5 — ES6 stops Shopify auto-minifying the file |
 | R12 | an icon whose SVG declares an id is rendered with a `uid` |
 | R13 | all icon SVGs and glyphs live in the centralized Liquid icon library |
-| R14 | specialised Text, Rich text, Button, Group, and product-section surfaces retain the base settings contract, with Product title's non-truncating Wrap subset |
+| R14 | specialised Text, Rich text, Media, Button, Group, and product-section surfaces retain the base settings contract, with resource titles' non-truncating Wrap subset |
 | R15 | every shared settings contract calls one canonical runtime renderer |
 | R16 | CTA-style `.btn` markup is emitted only by `snippets/button.liquid` |
 | R17 | snippet calls resolve and no snippet is orphaned |
@@ -1592,6 +1595,7 @@ diligent, and this theme has already paid for that twice — see the footer unde
 | R19 | runtime colours use scheme tokens rather than literals |
 | R20 | the required Custom Liquid section is addable on every template |
 | R21 | Product title stays complete, expandable, and linked on cards |
+| R22 | Collection title stays complete and Collection image remains data-adapted across headers and cards |
 
 **R05 is the one written from a scar.** `section-style.liquid` stopped
 understanding numbers when padding became a step, the footer kept its range, and
@@ -2307,18 +2311,18 @@ height Tight … Loose, letter spacing Tighter … Wider and case one of the nam
 choices. Font colour is the only free picker. `Default` inherits the preset;
 `As typed` is a distinct case override that explicitly emits no transform.
 
-**Word breaks are a preset on the whole Text contract, with one
-content-safety exception.** Generic Text offers Default, Pretty
+**Word breaks are a preset on the whole Text contract, with two
+content-safety exceptions.** Generic Text offers Default, Pretty
 (`text-wrap: pretty`), Balanced lines (`text-wrap: balance`), Single line
-(ellipsis), and At most two/three lines. Product title keeps the same Wrap
-setting but offers only Default, Pretty, and Balanced because Shopify requires
-the complete title on product pages and collection grids. The shared
+(ellipsis), and At most two/three lines. Product title and Collection title keep the same Wrap
+setting but offer only Default, Pretty, and Balanced because Shopify requires
+complete resource titles on product pages, collection pages, and collection grids. The shared
 `text-block` renderer also ignores retired truncating values stored on an older
-Product title block. In a composed card the title reserves a two-line minimum
+resource-title Text block. In a composed product card the title reserves a two-line minimum
 so short names align, then expands to a third line or beyond instead of hiding
 words. Generic Text and product metadata retain their explicit line-count
-choices. R14 permits only this narrowed option list; R21 protects the complete,
-linked title contract.
+choices. R14 permits only this narrowed option list; R21 and R22 protect the
+complete resource-title contracts.
 
 **`snippets/text-style.liquid` is the one resolver.** It guards every stored
 value and prints inline declarations so a chosen preset or override wins over a
@@ -4106,8 +4110,8 @@ Shopify checkout, and the subtotal carries the note.
   `main-article` renders the article body and its native neighbour links; and
   `contact-form` owns Shopify's `{% form 'contact' %}`. Everything surrounding
   those objects remains merchant-composed blocks.
-- **The collection index reuses Collection card exactly.** Its title, count,
-  media, reveal and arrow therefore inherit one card contract instead of a
+- **The collection index reuses Collection card exactly.** Its contextual
+  Collection title, Collection image, count, reveal and arrow therefore inherit one card contract instead of a
   lookalike maintained by the template. The native `collections` array is
   paginated by the section's Collections per page setting and uses the shared
   catalogue pager rather than rendering an unbounded index.

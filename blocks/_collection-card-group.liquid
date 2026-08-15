@@ -1,5 +1,6 @@
 {%- comment -%}
-  Collection-card-only Group. Normal Media is deliberately absent; the card uses its private Media block.
+  Collection-card-only Group. Collection title is contextual Text and valid
+  here. Collection image owns the card's media grid area outside this Group.
 
   It uses the same markup, responsive controls, borders, spacing and
   layout-group-style renderer as global Group. Its curated child list is what
@@ -13,7 +14,7 @@
 {
   "name": "t:blocks.collection_card_group.name",
   "tag": null,
-  "blocks": [{ "type": "text" }, { "type": "rich-text" }, { "type": "button" }, { "type": "icon" }, { "type": "border" }, { "type": "_collection-count-text" }, { "type": "_collection-card-group" }],
+  "blocks": [{ "type": "collection_title" }, { "type": "text" }, { "type": "rich-text" }, { "type": "button" }, { "type": "icon" }, { "type": "border" }, { "type": "_collection-count-text" }, { "type": "_collection-card-group" }],
   "settings": [
     {
       "type": "select",

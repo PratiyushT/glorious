@@ -24,7 +24,7 @@ fails when they drift.
 
 | Base | Contextual extension | What changes | Shared renderer or contract |
 | --- | --- | --- | --- |
-| `text` | `product_title`, `product_vendor`, `product_price` | Content comes from the closest product or selected variant | `text-block`, complete Text appearance schema |
+| `text` | `product_title`, `collection_title`, `product_vendor`, `product_price` | Content comes from the closest product, collection, or selected variant | `text-block`; resource titles intentionally omit truncating Wrap values |
 | `rich-text` | `product_description` | Content comes from the product description | `rich-text-block`, complete Rich text appearance schema |
 | `button` | `product_buy_buttons` | The action submits Shopify's product form | `button`, `button-style`, complete Button appearance schema |
 | `button` | `product_variant_picker` pills | The action selects one option value and adds selected state | `button`, `button-style`, `choice-style`, complete Button appearance schema |
@@ -34,6 +34,7 @@ fails when they drift.
 | `group` | `_product-card-group`, `_collection-card-group`, `_hotspot-actions`, `_hotspot-card`, `_collection-card-header`, `_interactive-media-list-header` | Allowed child types are contextual | `layout-group`, `layout-group-style`, complete Group schema |
 | `group` | `accordion` | The Group gains a disclosure heading, open state, and desktop behavior | `layout-group`, complete Group schema; shared footer disclosure motion |
 | `media` | `_product-media-gallery` | Media comes from the closest product and gains gallery navigation | `product-gallery`, `product-media` |
+| `media` | `collection_image` | Image comes from the closest collection; no uploader or video controls | `media-block`, Media presentation schema, responsive image and LQIP |
 | `huge-text` | Header, Hero, Footer section values | Shopify forbids their local blocks beside a static theme block, so only content ownership moves to the section | `huge-text`, one art-directed renderer |
 | Product context | `product_badges` | Facts come from inventory, pricing, age, or a connected metafield | One badge block and one global Product badges style group |
 | Product context | `product_quantity` | Value is submitted to the product form | `input-style` |
@@ -58,14 +59,14 @@ merchant-authored product copy and now follows the complete Rich text contract.
 | Product | `product.json`: Main product, Product recommendations | Static `_product-media-gallery`; ordered `product_*` contextual blocks; recommendation `_product-card` | `product-gallery`, `product-media`, `product-variants-json`, base Text/Rich text/Button renderers |
 | Featured product anywhere | `featured-product` section | Exactly the Main product block surface plus a product selector | The same gallery, contextual product blocks, variant JSON, CSS, and JavaScript as Main product |
 | Quick view | Header-group `quick-view` section | Static `_product-media-gallery`; merchant-ordered `product_*` blocks; shell-owned full-details link | The same gallery, variant JSON, Product blocks, CSS, and JavaScript as Main product |
-| Collection | `collection.json`: Collection header, Main collection | Header theme blocks; static `_product-card` with Media, Badges, Text, Option control, Price, Add | Catalog controls/filter/sort/pagination and the shared product card family |
+| Collection | `collection.json`: Collection header, Main collection | Contextual Collection title/image header composition; static `_product-card` | Catalog controls/filter/sort/pagination, responsive collection media, and the shared product card family |
 | Search | `search.json`: Search header, Main search | `search-form`; standard and featured static `_product-card` compositions | Search overlay/rows plus the same catalog and card components as Collection |
 | Cart | `cart.json`: Main cart | Contextual cart layout with optional theme/app blocks | `line-options`, `tax-note`, shared Button styling; cart drawer uses the same cart facts |
 | Standard page | `page.json`: Group | Global Group/Accordion/Text/Rich text/Button/Media/Icon/Border/Custom Liquid | Base block renderers only |
 | Contact | `page.contact.json`: Contact form | Global content blocks above Shopify's contact form | Base typography and shared Button styling |
 | Blog index | `blog.json`: Group, Main blog | Global heading blocks and `_article-card` results | Responsive image and pagination components |
 | Article | `article.json`: Group, Main article | Global heading blocks plus contextual article/comment content | Base typography, responsive media, shared Button styling |
-| Collection index | `list-collections.json`: Group, Main list collections | Global heading blocks and `_collection-card` | Collection card family and pagination |
+| Collection index | `list-collections.json`: Group, Main list collections | Global heading blocks and `_collection-card` with Collection title/image | Collection card family, contextual media renderer, and pagination |
 | 404 | `404.json`: Group | Text and Button | Base typography and Button renderers |
 | Password | `password.json`: Main password | Static brand heading, global content blocks, Shopify forms | Shared brand and Button styling |
 | Customer/account routes | `main-customer` | Contextual login, registration, orders, and addresses | Shared field tokens, Button styling, and pagination |

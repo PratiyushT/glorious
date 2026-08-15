@@ -590,12 +590,12 @@ def R13_central_icon_library():
 def R14_shared_setting_contracts():
     """Specialised blocks keep the complete settings of the base they extend.
 
-    A Product title is Text whose content comes from a product; Add to cart is
-    Button whose action submits a product form. Their behaviour is allowed to
-    differ, but their appearance controls are one editor contract. This catches
-    the quiet drift where one copy gains an option, label or visibility rule
-    and its siblings do not. Product title has one deliberate content-safety
-    exception: its Wrap setting omits the three values that hide title text.
+    A resource title is Text whose content comes from a product or collection;
+    Add to cart is Button whose action submits a product form. Their behaviour
+    is allowed to differ, but their appearance controls are one editor
+    contract. This catches the quiet drift where one copy gains an option,
+    label or visibility rule and its siblings do not. Product and Collection
+    title deliberately omit the three Wrap values that hide title text.
     Group's private contextual copies are covered for the same reason.
     """
     def top_settings(path):
@@ -623,6 +623,7 @@ def R14_shared_setting_contracts():
     families = (
         ('blocks/text.liquid', {'text'}, set(), (
             'blocks/product_title.liquid',
+            'blocks/collection_title.liquid',
             'blocks/product_vendor.liquid',
             'blocks/product_price.liquid',
             'blocks/_product-card-option-values.liquid',
@@ -632,6 +633,9 @@ def R14_shared_setting_contracts():
         ('blocks/rich-text.liquid', {'text'}, set(), (
             'blocks/product_description.liquid',
             'blocks/product_text.liquid',
+        )),
+        ('blocks/media.liquid', {'video', 'image', 'autoplay', 'loop'}, set(), (
+            'blocks/collection_image.liquid',
         )),
         ('blocks/button.liquid', {'button_label', 'button_link'}, {'button_style'}, (
             'blocks/product_variant_picker.liquid',
@@ -683,7 +687,8 @@ def R14_shared_setting_contracts():
                     continue
                 role_default = setting_id in role_defaults
                 expected_setting = base_setting
-                if (target_path == 'blocks/product_title.liquid'
+                if (target_path in ('blocks/product_title.liquid',
+                                    'blocks/collection_title.liquid')
                         and setting_id == 'wrap'):
                     expected_setting = json.loads(json.dumps(base_setting))
                     expected_setting['options'] = [
@@ -702,6 +707,7 @@ def R15_shared_renderers():
         'text-block': (
             'blocks/text.liquid',
             'blocks/product_title.liquid',
+            'blocks/collection_title.liquid',
             'blocks/product_vendor.liquid',
             'blocks/product_price.liquid',
             'blocks/_product-card-option-values.liquid',
@@ -712,6 +718,11 @@ def R15_shared_renderers():
             'blocks/rich-text.liquid',
             'blocks/product_description.liquid',
             'blocks/product_text.liquid',
+        ),
+        'media-block': (
+            'blocks/media.liquid',
+            'blocks/collection_image.liquid',
+            'blocks/_collection-card-media.liquid',
         ),
         'button': (
             'blocks/button.liquid',
@@ -1011,6 +1022,91 @@ def R21_product_titles_remain_complete():
         err('R21', css_where, 'cards do not reserve an expandable title row')
 
 
+def R22_collection_data_contract():
+    """Collection titles remain complete and collection images stay adapted."""
+    title_where = 'blocks/collection_title.liquid'
+    image_where = 'blocks/collection_image.liquid'
+
+    def schema_for(where):
+        match = SCHEMA_RE.search(read(os.path.join(ROOT, where)))
+        if not match:
+            return {}
+        try:
+            return json.loads(match.group(1))
+        except json.JSONDecodeError:
+            return {}
+
+    title_schema = schema_for(title_where)
+    title_settings = {
+        setting.get('id'): setting
+        for setting in title_schema.get('settings', [])
+        if setting.get('id')
+    }
+    title_wrap = title_settings.get('wrap', {})
+    title_values = [
+        option.get('value') for option in title_wrap.get('options', [])
+    ]
+    if title_values != ['default', 'pretty', 'balance']:
+        err('R22', title_where, 'Collection title Wrap must never hide text')
+    title_source = strip_comments(read(os.path.join(ROOT, title_where)))
+    if ('closest.collection' not in title_source
+            or 'preserve_content: true' not in title_source):
+        err('R22', title_where,
+            'Collection title must preserve the closest collection title')
+
+    image_schema = schema_for(image_where)
+    resource_settings = [
+        setting for setting in image_schema.get('settings', [])
+        if setting.get('type') in ('image_picker', 'video', 'collection')
+    ]
+    if resource_settings:
+        err('R22', image_where,
+            'Collection image is data-adapted and must not expose an uploader')
+    image_source = strip_comments(read(os.path.join(ROOT, image_where)))
+    if ('collection.image' not in image_source
+            or 'collection.featured_image' not in image_source
+            or "render 'media-block'" not in image_source):
+        err('R22', image_where,
+            'Collection image must use collection data and shared Media')
+
+    media_source = strip_comments(read(os.path.join(
+        ROOT, 'snippets', 'media-block.liquid')))
+    if ('presentation.focal_point' not in media_source
+            or "render 'responsive-image'" not in media_source):
+        err('R22', 'snippets/media-block.liquid',
+            'shared Media must retain focal points and responsive images')
+
+    template = read(os.path.join(ROOT, 'templates', 'collection.json'))
+    if '"type": "collection_title"' not in template:
+        err('R22', 'templates/collection.json',
+            'default collection header is missing Collection title')
+    if '"type": "collection_image"' not in template:
+        err('R22', 'templates/collection.json',
+            'default collection header is missing Collection image')
+
+    header = read(os.path.join(ROOT, 'sections', 'collection-header.liquid'))
+    if 'closest.collection: collection' not in header:
+        err('R22', 'sections/collection-header.liquid',
+            'Collection header does not pass its collection to child blocks')
+
+    card = read(os.path.join(ROOT, 'blocks', '_collection-card.liquid'))
+    group = read(os.path.join(ROOT, 'blocks', '_collection-card-group.liquid'))
+    if '"type": "collection_image"' not in card:
+        err('R22', 'blocks/_collection-card.liquid',
+            'Collection card does not accept Collection image')
+    if '"type": "collection_title"' not in group:
+        err('R22', 'blocks/_collection-card-group.liquid',
+            'Collection card Group does not accept Collection title')
+
+    presets = read(os.path.join(ROOT, 'sections', 'collection-list.liquid'))
+    if '"type": "collection_title"' not in presets:
+        err('R22', 'sections/collection-list.liquid',
+            'collection card presets are missing Collection title')
+    if '"type": "collection_image"' not in presets:
+        err('R22', 'sections/collection-list.liquid',
+            'collection card presets are missing Collection image')
+
+
 RULES = OrderedDict([
     ('R01', (R01_range_steps, 'range steps are legal (Shopify validates server-side)')),
     ('R02', (R02_select_defaults, "a select's default is one of its options")),
@@ -1033,6 +1129,7 @@ RULES = OrderedDict([
     ('R19', (R19_no_runtime_color_literals, 'runtime colours use scheme tokens, never literals')),
     ('R20', (R20_custom_liquid_section, 'Custom Liquid section is addable on every template')),
     ('R21', (R21_product_titles_remain_complete, 'product titles remain complete and linked')),
+    ('R22', (R22_collection_data_contract, 'collection titles and images stay data-adapted')),
 ])
 
 

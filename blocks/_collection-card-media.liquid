@@ -1,7 +1,7 @@
 {%- comment -%}
-  Private to Collection card; explicitly targeted there and nowhere else.
-
-  Collection card — the photograph.
+  Saved-template compatibility for the old private Collection card media type.
+  New cards use the public contextual Collection image block; both call the
+  same media-block renderer and read the closest collection.
 
   The card is one *static* block that the section renders once per collection,
   so this renders once per collection too and reads the one it was handed
@@ -10,9 +10,8 @@
   The collection's own featured image is the only sensible source, which is
   what the old per-category block fell back to anyway.
 
-  `image_ratio` lives on this block rather than on the section because the
-  frame belongs to the photograph, and every card shares the one template, so
-  the row still cannot end up with mismatched frames.
+  `image_ratio` remains readable so existing merchant layouts retain their
+  frame. New Collection image blocks use the shared Media `ratio` setting.
 
   Every raster image in this theme carries `data-image-lqip` — a ~40px
   rendition of this exact source. See "Not ported" in CLAUDE.md.
@@ -21,29 +20,21 @@
 {%- liquid
   assign collection = closest.collection
   assign image = collection.featured_image
-  assign alt = image.alt | default: collection.title | escape
+  assign image_alt = image.alt | default: collection.title
 -%}
-
-<span
-  class="cat-card__media"
-  style="aspect-ratio: {{ block.settings.image_ratio }};"
-  {{ block.shopify_attributes }}
->
-  {%- if image != blank -%}
-    <img
-      src="{{ image | image_url: width: 900 }}"
-      data-image-lqip="{{ image | image_url: width: 40 }}"
-      srcset="{{ image | image_url: width: 300 }} 300w, {{ image | image_url: width: 500 }} 500w, {{ image | image_url: width: 700 }} 700w, {{ image | image_url: width: 1000 }} 1000w"
-      sizes="(min-width: 60rem) 25vw, 100vw"
-      alt="{{ alt }}"
-      width="{{ image.width }}"
-      height="{{ image.height }}"
-      loading="lazy"
-    >
-  {%- else -%}
-    {{ 'collection-1' | placeholder_svg_tag: 'placeholder-svg' }}
-  {%- endif -%}
-</span>
+{% render 'media-block',
+  block: block,
+  image: image,
+  class: 'cat-card__media',
+  ratio: block.settings.image_ratio,
+  fit: 'cover',
+  alt: image_alt,
+  sizes: '(min-width: 75rem) 25vw, (min-width: 48rem) 50vw, 100vw',
+  widths: '300,500,700,1000',
+  src_width: 900,
+  placeholder: 'collection-1',
+  show_placeholder: true
+%}
 
 {% schema %}
 {

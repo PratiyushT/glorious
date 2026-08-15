@@ -27,9 +27,11 @@
     placeholder - a `placeholder_svg_tag` name for the empty state.
     loading     - `lazy` (default) or `eager`.
     class       - extra classes for the caller.
+    alt         - optional alt override; falls back to the image's own alt.
 
-  Deliberately no `crop`: these are art-directed feature images and the whole
-  frame is the point. The card and hero crop and are not callers.
+  Deliberately no `crop`: the owning Media renderer controls fit. Product-card
+  and hero media keep their specialised image paths; contextual Collection
+  image uses this renderer so focal points and LQIP stay shared.
 {%- endcomment -%}
 
 {%- liquid
@@ -37,6 +39,7 @@
   assign biggest = w_list | last
   assign src_w = src_width | default: biggest
   assign load = loading | default: 'lazy'
+  assign image_alt = alt | default: image.alt
 -%}
 
 {%- if image != blank -%}
@@ -50,7 +53,7 @@
       {%- endfor -%}
     "
     sizes="{{ sizes }}"
-    alt="{{ image.alt | escape }}"
+    alt="{{ image_alt | escape }}"
     width="{{ image.width }}"
     height="{{ image.height }}"
     loading="{{ load }}"

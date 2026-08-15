@@ -1,0 +1,109 @@
+{%- comment -%}
+  Shared renderer for merchant-selected Media and contextual image blocks.
+
+  Accepts:
+  - block: owner of the shared presentation settings and editor attributes
+  - image: image drop to render
+  - video: optional Shopify-hosted video; takes precedence over image
+  - class: optional root class
+  - ratio: optional ratio override
+  - fit: optional fit override
+  - alt: optional image alt fallback
+  - sizes, widths, src_width: responsive image hints
+  - placeholder: Shopify placeholder name
+  - show_placeholder: render the empty state when no media exists
+{%- endcomment -%}
+
+{%- liquid
+  assign resolved_ratio = ratio
+  if resolved_ratio == blank
+    assign resolved_ratio = block.settings.ratio | default: '4 / 5'
+  endif
+
+  if resolved_ratio == 'adapt'
+    assign resolved_ratio = '4 / 5'
+    if video != blank and video.preview_image.aspect_ratio != blank
+      assign resolved_ratio = video.preview_image.aspect_ratio
+    elsif image != blank and image.aspect_ratio != blank
+      assign resolved_ratio = image.aspect_ratio
+    endif
+  endif
+
+  assign resolved_fit = fit | default: block.settings.fit | default: 'cover'
+  assign resolved_sizes = sizes | default: '(min-width: 60rem) 50vw, 100vw'
+  assign resolved_widths = widths | default: '400,700,1000,1400'
+  assign resolved_src_width = src_width | default: 1200
+  assign position = '50% 50%'
+  if image != blank and image.presentation.focal_point != blank
+    assign position = image.presentation.focal_point
+  elsif video != blank and video.preview_image.presentation.focal_point != blank
+    assign position = video.preview_image.presentation.focal_point
+  endif
+
+  assign render_empty_state = show_placeholder
+  if show_placeholder == nil
+    assign render_empty_state = true
+  endif
+  assign has_media = false
+  if image != blank or video != blank
+    assign has_media = true
+  endif
+-%}
+
+{%- if has_media or render_empty_state -%}
+  <div
+    class="media-block{% if class != blank %} {{ class }}{% endif %}{% if block.settings.reveal %} reveal{% endif %}"
+    style="{% render 'block-spacing', padding: block.settings.padding %}{% if block.settings.reveal and block.settings.reveal_delay > 0 %} --reveal-delay: {{ block.settings.reveal_delay }}ms;{% endif %}"
+    {{ block.shopify_attributes }}
+  >
+    <div class="{% if block.settings.frame %}media-frame{% endif %}">
+      <div
+        class="media{% if block.settings.arch %} media--arch{% endif %}{% if resolved_fit == 'contain' %} media--contain{% endif %}"
+        style="aspect-ratio: {{ resolved_ratio }}; --media-position: {{ position }};"
+      >
+        {%- if video != blank -%}
+          {%- assign video_lqip = video.preview_image | image_url: width: 40 -%}
+          {%- if block.settings.autoplay -%}
+            {{
+              video
+              | video_tag:
+                image_size: '1400x',
+                loop: block.settings.loop,
+                muted: true,
+                controls: false,
+                data-video-lqip: video_lqip,
+                data-video-autoplay: true
+            }}
+          {%- else -%}
+            {{
+              video
+              | video_tag:
+                image_size: '1400x',
+                loop: block.settings.loop,
+                muted: false,
+                controls: true,
+                data-video-lqip: video_lqip
+            }}
+          {%- endif -%}
+          {% render 'video-lqip-frame', lqip: video_lqip %}
+        {%- elsif image != blank -%}
+          {%- render 'responsive-image',
+              image: image,
+              sizes: resolved_sizes,
+              widths: resolved_widths,
+              src_width: resolved_src_width,
+              alt: alt -%}
+        {%- elsif render_empty_state -%}
+          {{ placeholder | default: 'image' | placeholder_svg_tag: 'placeholder-svg' }}
+        {%- endif -%}
+      </div>
+    </div>
+
+    {%- if block.settings.caption_left != blank or block.settings.caption_right != blank -%}
+      <div class="caption-row">
+        <span>{{ block.settings.caption_left }}</span>
+        <span>{{ block.settings.caption_right }}</span>
+      </div>
+    {%- endif -%}
+  </div>
+{%- endif -%}

@@ -18,9 +18,9 @@
 
   The heading row is a real layout-block composition, not card-specific CSS:
   its private header wrapper uses the global Group layout contract, a nested
-  global Group holds the global Text name and Icon arrow, and a private
-  collection-count Text supplies the contextual value without leaking a mode
-  into the global Text block.
+  Group holds contextual Collection title and the global Icon arrow, and a
+  private collection-count Text supplies the contextual count. Collection
+  image owns the media region and reads the same closest collection.
 
   The hover reveal is a behavior of the card, not content in the block tree.
   Its switch and label therefore live on this Collection card and the card
@@ -58,6 +58,7 @@
   "name": "t:blocks.collection_card.name",
   "tag": null,
   "blocks": [
+    { "type": "collection_image" },
     { "type": "_collection-card-media" },
     { "type": "_collection-card-header" }
   ],

@@ -568,13 +568,13 @@
                   "type": "_collection-card-group",
                   "blocks": {
                     "name": {
-                      "type": "text",
+                      "type": "collection_title",
                       "settings": {
-                        "text": "{{ closest.collection.title }}",
                         "style": "heading_4",
                         "element": "span",
                         "override_case": "uppercase",
-                        "override_tracking": "wider"
+                        "override_tracking": "wider",
+                        "wrap": "balance"
                       }
                     },
                     "arrow": {
@@ -634,9 +634,10 @@
               }
             },
             "photograph": {
-              "type": "_collection-card-media",
+              "type": "collection_image",
               "settings": {
-                "image_ratio": "4 / 5"
+                "ratio": "4 / 5",
+                "fit": "cover"
               }
             }
           },

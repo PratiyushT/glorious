@@ -18,14 +18,14 @@
         "collection-card": {
           "type": "_collection-card", "static": true,
           "blocks": {
-            "media": { "type": "_collection-card-media", "settings": { "image_ratio": "4/3", "image_fit": "cover" } },
+            "media": { "type": "collection_image", "settings": { "ratio": "4 / 3", "fit": "cover" } },
             "header": {
               "type": "_collection-card-header",
               "blocks": {
                 "content": {
                   "type": "_collection-card-group",
                   "blocks": {
-                    "title": { "type": "text", "settings": { "text": "{{ closest.collection.title }}", "style": "heading_5", "element": "h2" } },
+                    "title": { "type": "collection_title", "settings": { "style": "heading_5", "element": "h2", "wrap": "balance" } },
                     "arrow": { "type": "icon", "settings": { "icon": "arrow-right", "icon_size": "2xs", "show_frame": false, "hover_animation": "nudge" } }
                   },
                   "block_order": ["title", "arrow"],

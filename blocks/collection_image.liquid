@@ -1,0 +1,86 @@
+{%- comment -%}
+  Contextual Media whose source is the closest collection. Shopify's
+  collection image is preferred; featured_image supplies the first product's
+  image when a collection has no uploaded image. The merchant controls only
+  presentation, never a second competing upload.
+{%- endcomment -%}
+
+{%- liquid
+  assign collection = closest.collection
+  assign image = collection.image | default: collection.featured_image
+  assign image_alt = image.alt | default: collection.title
+  assign show_placeholder = request.design_mode
+-%}
+{% render 'media-block', block: block, image: image, class: 'collection-image-block', alt: image_alt, show_placeholder: show_placeholder %}
+
+{% schema %}
+{
+  "name": "t:blocks.collection_image.name",
+  "tag": null,
+  "settings": [
+    {
+      "type": "select",
+      "id": "ratio",
+      "label": "t:sections.all.image_ratio.label",
+      "options": [
+        { "value": "adapt", "label": "t:settings_schema.options.adapt" },
+        { "value": "1 / 1", "label": "t:settings_schema.options.square" },
+        { "value": "4 / 5", "label": "t:settings_schema.options.portrait" },
+        { "value": "3 / 4", "label": "t:settings_schema.options.tall_portrait" },
+        { "value": "4 / 3", "label": "t:settings_schema.options.landscape" },
+        { "value": "16 / 9", "label": "t:settings_schema.options.wide" }
+      ],
+      "default": "4 / 5"
+    },
+    {
+      "type": "select",
+      "id": "fit",
+      "label": "t:blocks.media.fit.label",
+      "options": [
+        { "value": "cover", "label": "t:settings_schema.options.cover" },
+        { "value": "contain", "label": "t:settings_schema.options.contain" }
+      ],
+      "default": "cover"
+    },
+    { "type": "checkbox", "id": "arch", "label": "t:blocks.media.arch.label", "default": false },
+    { "type": "checkbox", "id": "frame", "label": "t:blocks.media.frame.label", "default": false },
+    { "type": "checkbox", "id": "reveal", "label": "t:blocks.media.reveal.label", "default": true },
+    {
+      "type": "range",
+      "id": "reveal_delay",
+      "label": "t:blocks.media.reveal_delay.label",
+      "info": "t:blocks.media.reveal_delay.info",
+      "min": 0,
+      "max": 1000,
+      "step": 10,
+      "unit": "ms",
+      "default": 0,
+      "visible_if": "{{ block.settings.reveal }}"
+    },
+    { "type": "text", "id": "caption_left", "label": "t:blocks.media.caption_left.label" },
+    { "type": "text", "id": "caption_right", "label": "t:blocks.media.caption_right.label" },
+    { "type": "header", "content": "t:blocks.all.spacing_header" },
+    {
+      "type": "select",
+      "id": "padding",
+      "label": "t:blocks.all.padding.label",
+      "options": [
+        { "value": "none", "label": "t:blocks.all.step.none" },
+        { "value": "minimal", "label": "t:blocks.all.step.minimal" },
+        { "value": "tiny", "label": "t:blocks.all.step.tiny" },
+        { "value": "small", "label": "t:blocks.all.step.small" },
+        { "value": "medium", "label": "t:blocks.all.step.medium" },
+        { "value": "large", "label": "t:blocks.all.step.large" },
+        { "value": "xlarge", "label": "t:blocks.all.step.xlarge" }
+      ],
+      "default": "none"
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:blocks.collection_image.name",
+      "settings": { "ratio": "4 / 5", "fit": "cover", "reveal": true, "reveal_delay": 0, "padding": "none" }
+    }
+  ]
+}
+{% endschema %}

@@ -984,6 +984,15 @@
     "product_card_title": {
       "name": "Product card title"
     },
+    "collection_title": {
+      "name": "Collection title"
+    },
+    "collection_card_title": {
+      "name": "Collection card title"
+    },
+    "collection_image": {
+      "name": "Collection image"
+    },
     "spacer": {
       "name": "Spacer",
       "line_break": "Line break",

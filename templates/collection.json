@@ -3,33 +3,71 @@
     "header": {
       "type": "collection-header",
       "blocks": {
-        "title": {
-          "type": "text",
+        "content": {
+          "type": "group",
+          "blocks": {
+            "copy": {
+              "type": "group",
+              "blocks": {
+                "eyebrow": {
+                  "type": "text",
+                  "settings": {
+                    "text": "Explore the collection",
+                    "style": "subheading",
+                    "layout": "eyebrow",
+                    "element": "span"
+                  }
+                },
+                "title": {
+                  "type": "collection_title",
+                  "settings": {
+                    "style": "title",
+                    "layout": "display",
+                    "element": "h1",
+                    "wrap": "balance"
+                  }
+                },
+                "description": {
+                  "type": "rich-text",
+                  "settings": {
+                    "text": "{{ collection.description }}",
+                    "style": "paragraph"
+                  }
+                }
+              },
+              "block_order": ["eyebrow", "title", "description"],
+              "settings": {
+                "direction": "vertical",
+                "align_vertical": "stretch",
+                "vertical_gap": "small",
+                "padding": "medium"
+              }
+            },
+            "image": {
+              "type": "collection_image",
+              "settings": {
+                "ratio": "4 / 3",
+                "fit": "cover",
+                "reveal": true,
+                "padding": "none"
+              }
+            }
+          },
+          "block_order": ["copy", "image"],
           "settings": {
-            "text": "{{ collection.title }}",
-            "style": "title",
-            "layout": "display",
-            "element": "h1"
-          }
-        },
-        "eyebrow": {
-          "type": "text",
-          "settings": {
-            "text": "Explore the collection",
-            "style": "subheading",
-            "layout": "eyebrow",
-            "element": "span"
-          }
-        },
-        "description": {
-          "type": "rich-text",
-          "settings": {
-            "text": "{{ collection.description }}",
-            "style": "paragraph"
+            "direction": "horizontal",
+            "distribute": "start",
+            "align": "stretch",
+            "content_alignment": "left",
+            "wrap": false,
+            "items_width": "equal",
+            "stack_below": "mobile",
+            "gap": "large",
+            "padding": "none"
           }
         }
       },
-      "block_order": ["title", "eyebrow", "description"],
+      "block_order": ["content"],
       "settings": {
         "color_scheme": "scheme_1",
         "content_width": "page",

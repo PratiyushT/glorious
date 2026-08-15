@@ -40,7 +40,9 @@ It also rejects missing/orphan snippets and invalid or over-limit JSON
 template/section-group composition, and protects the mandatory standalone
 Custom Liquid section on every section-capable template. Product-title checks
 also prevent truncating controls or CSS from hiding catalog names and require
-the visible card-title preset to link to its product.
+the visible card-title preset to link to its product. Collection checks require
+complete titles, data-adapted collection imagery, shared focal-point/LQIP media,
+and compliant defaults in both the collection header and collection cards.
 
 Every release must also pass:
 

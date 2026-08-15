@@ -6,7 +6,7 @@
   them without losing the automatic collection context.
 {%- endcomment -%}
 
-{%- capture header_content -%}{% content_for 'blocks' %}{%- endcapture -%}
+{%- capture header_content -%}{% content_for 'blocks', closest.collection: collection %}{%- endcapture -%}
 {% render 'catalog-header', header_settings: section.settings, content: header_content, search: false %}
 
 {% schema %}

@@ -13,6 +13,9 @@
   if closest.product != blank and block.settings.text == closest.product.title
     assign text_class = 'product-details__title product-title--legacy-text'
     assign preserve_content = true
+  elsif closest.collection != blank and block.settings.text == closest.collection.title
+    assign text_class = 'collection-details__title collection-title--legacy-text'
+    assign preserve_content = true
   endif
 -%}
 

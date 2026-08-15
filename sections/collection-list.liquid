@@ -3,7 +3,8 @@
 
   Its repeated private card explicitly targets the private collection-header
   layout, which is the only parent allowed to offer collection-count Text. Its
-  Media and Group are likewise Collection-card-only private blocks.
+  Group remains card-private; Collection title and Collection image are safe
+  public contextual blocks because both read `closest.collection`.
 
   Renamed from `category-grid`, and rebuilt on theme blocks. Two things follow
   from that and neither is optional:
@@ -346,14 +347,14 @@
                   "type": "_collection-card-group",
                   "settings": { "direction": "horizontal", "distribute": "start", "align": "baseline", "wrap": false, "items_width": "natural", "stack_below": "never", "gap": "tiny" },
                   "blocks": [
-                    { "type": "text", "settings": { "text": "{{ closest.collection.title }}", "style": "heading_4", "element": "span", "override_case": "uppercase", "override_tracking": "wider" } },
+                    { "type": "collection_title", "settings": { "style": "heading_4", "element": "span", "override_case": "uppercase", "override_tracking": "wider", "wrap": "balance" } },
                     { "type": "icon", "settings": { "icon": "arrow-right", "icon_size": "2xs", "show_frame": false, "hover_animation": "nudge" } }
                   ]
                 },
                 { "type": "_collection-count-text", "settings": { "style": "caption", "element": "span", "override_tracking": "wider" } }
               ]
             },
-            { "type": "_collection-card-media" }
+            { "type": "collection_image", "settings": { "ratio": "4 / 5", "fit": "cover" } }
           ]
         }
       ]
@@ -381,14 +382,14 @@
                   "type": "_collection-card-group",
                   "settings": { "direction": "horizontal", "distribute": "start", "align": "baseline", "wrap": false, "items_width": "natural", "stack_below": "never", "gap": "tiny" },
                   "blocks": [
-                    { "type": "text", "settings": { "text": "{{ closest.collection.title }}", "style": "heading_4", "element": "span", "override_case": "uppercase", "override_tracking": "wider" } },
+                    { "type": "collection_title", "settings": { "style": "heading_4", "element": "span", "override_case": "uppercase", "override_tracking": "wider", "wrap": "balance" } },
                     { "type": "icon", "settings": { "icon": "arrow-right", "icon_size": "2xs", "show_frame": false, "hover_animation": "nudge" } }
                   ]
                 },
                 { "type": "_collection-count-text", "settings": { "style": "caption", "element": "span", "override_tracking": "wider" } }
               ]
             },
-            { "type": "_collection-card-media" }
+            { "type": "collection_image", "settings": { "ratio": "4 / 5", "fit": "cover" } }
           ]
         }
       ]

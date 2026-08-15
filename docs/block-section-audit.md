@@ -69,7 +69,9 @@ into a generic block.
 | Block | Role | Audit decision |
 | --- | --- | --- |
 | `_collection-card` | Private collection shell | One collection-card composition. |
-| `_collection-card-media` | Closest-collection media | Correctly private contextual Media. |
+| `collection_image` | Closest-collection media | Public contextual Media without an uploader; shared renderer, focal point, responsive image and LQIP. |
+| `_collection-card-media` | Legacy closest-collection media | Saved-template compatibility; delegates to the same `media-block` renderer. |
+| `collection_title` | Closest-collection Text | Complete title with the non-truncating Text subset. |
 | `_collection-card-header` | Collection-safe Group | Complete Group contract and `layout-group`. |
 | `_collection-card-group` | Collection-safe Group | Complete Group contract and `layout-group`. |
 | `_collection-count-text` | Text | Collection supplies count; complete Text contract and renderer. |
