@@ -338,6 +338,7 @@
       var isHeader = root.hasAttribute('data-announcement-header');
       var heightObserver = null;
       var resizeFallback = null;
+      var close = root.querySelector('[data-announcement-close]');
 
       function syncAnnouncementHeight() {
         if (!isHeader) return;
@@ -348,7 +349,11 @@
         document.documentElement.style.setProperty('--announcement-bar-height', height + 'px');
       }
 
-      var dismissed = storageKey && safeStore(function () {
+      if (storageKey && !close) {
+        safeStore(function () { sessionStorage.removeItem(storageKey); });
+      }
+
+      var dismissed = storageKey && close && safeStore(function () {
         return sessionStorage.getItem(storageKey) === 'dismissed';
       }, false);
       if (dismissed) {
@@ -367,7 +372,6 @@
       syncAnnouncementHeight();
 
       var stop = function () {};
-      var close = root.querySelector('[data-announcement-close]');
       if (close) {
         close.addEventListener('click', function () {
           if (storageKey) {
@@ -3239,6 +3243,7 @@
      would be pointing at detached markup by the second piece. */
 
   var quickCache = Object.create(null);
+  var quickCloseTimer = null;
 
   function quickOverlay() {
     return overlays['quick-view'];
@@ -3249,12 +3254,49 @@
     return overlay ? overlay.el.querySelector('[data-quick-view-panel]') : null;
   }
 
+  function stopQuickCloseTimer() {
+    if (quickCloseTimer) window.clearTimeout(quickCloseTimer);
+    quickCloseTimer = null;
+  }
+
+  function syncQuickLoadingClose(panel, waiting) {
+    var close = panel && panel.querySelector('[data-quick-view-close]');
+    var loadingFocus = panel && panel.querySelector('[data-quick-view-loading-focus]');
+    if (!close || !loadingFocus) return;
+
+    stopQuickCloseTimer();
+    close.removeAttribute('data-loader-close-ready');
+
+    if (!waiting) {
+      close.hidden = false;
+      close.setAttribute('data-overlay-autofocus', '');
+      loadingFocus.removeAttribute('data-overlay-autofocus');
+      return;
+    }
+
+    close.hidden = true;
+    close.removeAttribute('data-overlay-autofocus');
+    loadingFocus.setAttribute('data-overlay-autofocus', '');
+
+    var delay = parseInt(panel.dataset.loaderCloseDelay, 10);
+    if (isNaN(delay)) delay = 8000;
+    quickCloseTimer = window.setTimeout(function () {
+      quickCloseTimer = null;
+      if (!document.contains(panel) || !panel.classList.contains('is-loading')) return;
+      close.hidden = false;
+      close.setAttribute('data-loader-close-ready', '');
+      close.setAttribute('data-overlay-autofocus', '');
+      loadingFocus.removeAttribute('data-overlay-autofocus');
+    }, Math.max(delay, 0));
+  }
+
   function quickFill(html) {
     var panel = quickPanel();
     var host = panel && panel.querySelector('[data-quick-view-contents]');
     if (!panel || !host) return;
 
     panel.classList.remove('is-loading');
+    syncQuickLoadingClose(panel, false);
     host.innerHTML = html;
     if (window.VeylinProducts && typeof window.VeylinProducts.init === 'function') {
       window.VeylinProducts.init(host);
@@ -3269,11 +3311,16 @@
     var host = panel && panel.querySelector('[data-quick-view-contents]');
     if (!overlay || !panel || !host || !url) return;
 
-    overlay.open();
-    if (quickCache[url]) { quickFill(quickCache[url]); return; }
+    if (quickCache[url]) {
+      quickFill(quickCache[url]);
+      overlay.open();
+      return;
+    }
 
     host.innerHTML = '';
     panel.classList.add('is-loading');
+    syncQuickLoadingClose(panel, true);
+    overlay.open();
 
     var requestUrl = new URL(url, window.location.origin);
     requestUrl.searchParams.set('section_id', overlay.el.dataset.quickViewSection || 'quick-view');
@@ -3307,6 +3354,7 @@
     document.addEventListener('overlay:close', function (event) {
       var el = event.target;
       if (!el.matches || !el.matches('[data-overlay="quick-view"]')) return;
+      stopQuickCloseTimer();
       el.querySelectorAll('video').forEach(function (video) {
         if (!video.paused) video.pause();
       });

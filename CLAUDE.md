@@ -1379,7 +1379,10 @@ it renders in normal flow exactly where the merchant places it and cannot move
 the nav or be dismissed. The header alone owns the session dismissal key. Both
 expose Compact, Standard, and Tall height presets that change only em-based
 vertical breathing room. Typography still determines the minimum natural
-height, so larger text cannot be clipped.
+height, so larger text cannot be clipped. Whenever the selected Header state
+renders no close control, initialization deletes any remembered session
+dismissal before deciding visibility, so a non-dismissible announcement always
+shows.
 
 The design states its own model: *"Four variants carry every action across the
 store. Pill geometry, uppercase Karla at .15em, and a single gold accent.
@@ -3354,21 +3357,25 @@ theme rather than a component's.
 
 ### Loading
 
-**The mark, its colour, and the veil behind it are merchant-facing now.**
-Theme settings → Colors → Loading holds `loader_style` (Diamond, Ring, Orbit —
-each variant reuses the same `loader__line`/`pathLength` contract, so the draw
-engine, stagger, exits, and reduced motion apply unchanged), `loader_color`
-(empty falls back to each surface's accent; the mark itself never has a
-background), and `veil_color`, which tints the translucent wash behind
-drawers, quick view, and popups through `--veil-tint` with the theme's noir as
-the fallback. A new variant is a sibling `icon-loader-*.liquid` with inline
-`--n`/`--exit` on each path and a `when` in the dispatcher — nothing else.
+**The mark, its timing, its colour, and the veil behind it are merchant-facing
+now.** Theme settings → Loading Animation contains only non-colour loading
+behavior: `loader_style` (Diamond, Ring, Orbit — each variant reuses the same
+`loader__line`/`pathLength` contract) and `loader_close_delay`, which defaults
+to eight seconds. Each color scheme keeps its own Loader and Overlay veil roles
+under Colors → Interface and feedback; nothing non-colour remains in Colors.
+The mark itself never has a background. A new variant is a sibling
+`icon-loader-*.liquid` with inline `--n`/`--exit` on each path and a `when` in
+the dispatcher — nothing else.
 
 **One mark for every wait in the theme**, from `snippets/loader.liquid`: the
 quick view while the piece is fetched, the search overlay while a query is in
 flight, and whatever waits next. `{% render 'loader', label: text, size: 'sm' %}`
 — `sm` / `md` / `lg`, 28 / 44 / 68px, and a label that defaults to
-`general.loading`.
+`general.loading`. Search remains an inline wait inside an already-dismissible
+interface. Quick View is the full-screen loading state: its visible shared
+Text/Icon close waits for `loader_close_delay`, while its veil and Escape work
+immediately; when product content arrives, the ordinary panel close is shown
+immediately.
 
 - **The diamond is a round brilliant in elevation**, drawn to a reference given
   on request: the table across the top at 43% of the width, five crown facets,

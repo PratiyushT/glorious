@@ -1989,21 +1989,6 @@
         "default": "scheme_2"
       },
       {
-        "type": "header",
-        "content": "t:settings_schema.colors.loading.header"
-      },
-      {
-        "type": "select",
-        "id": "loader_style",
-        "label": "t:settings_schema.colors.loading.style.label",
-        "options": [
-          { "value": "diamond", "label": "t:settings_schema.colors.loading.style.diamond" },
-          { "value": "ring", "label": "t:settings_schema.colors.loading.style.ring" },
-          { "value": "orbit", "label": "t:settings_schema.colors.loading.style.orbit" }
-        ],
-        "default": "diamond"
-      },
-      {
         "type": "color_scheme_group",
         "id": "color_schemes",
         "definition": [
@@ -2359,6 +2344,33 @@
           "links": "link_button_text",
           "icons": "accent"
         }
+      }
+    ]
+  },
+  {
+    "name": "t:settings_schema.loading_animation.name",
+    "settings": [
+      {
+        "type": "select",
+        "id": "loader_style",
+        "label": "t:settings_schema.loading_animation.style.label",
+        "options": [
+          { "value": "diamond", "label": "t:settings_schema.loading_animation.style.diamond" },
+          { "value": "ring", "label": "t:settings_schema.loading_animation.style.ring" },
+          { "value": "orbit", "label": "t:settings_schema.loading_animation.style.orbit" }
+        ],
+        "default": "diamond"
+      },
+      {
+        "type": "range",
+        "id": "loader_close_delay",
+        "label": "t:settings_schema.loading_animation.close_delay.label",
+        "info": "t:settings_schema.loading_animation.close_delay.info",
+        "min": 3,
+        "max": 30,
+        "step": 1,
+        "unit": "s",
+        "default": 8
       }
     ]
   },

@@ -286,15 +286,19 @@
       "dark_scheme": {
         "label": "Dark surface scheme",
         "info": "Used by the surfaces that stay dark whatever the page is — the menu and search overlays, the lookbook stage, image scrims."
+      }
+    },
+    "loading_animation": {
+      "name": "Loading Animation",
+      "style": {
+        "label": "Loader mark",
+        "diamond": "Diamond",
+        "ring": "Ring",
+        "orbit": "Orbit"
       },
-      "loading": {
-        "header": "Loader",
-        "style": {
-          "label": "Loader mark",
-          "diamond": "Diamond",
-          "ring": "Ring",
-          "orbit": "Orbit"
-        }
+      "close_delay": {
+        "label": "Show close after",
+        "info": "Used when a full-screen loading state is still waiting. The overlay background and Escape remain available immediately."
       }
     },
     "shape": {

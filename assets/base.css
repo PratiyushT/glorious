@@ -8947,8 +8947,9 @@ body:has(.announcement[data-announcement-header]:not([hidden])) .nav--pill {
    compounded entrances, and `.quick-view__close` is a sibling of the contents
    so it would fall out of an entrance the design includes.
 
-   The loading close stays present and focusable: the veil can dismiss a
-   pointer click, but keyboard focus still needs a visible place to land.    */
+   The loader itself receives initial modal focus. The visible close arrives
+   only after the merchant's Loading Animation delay; the veil and Escape can
+   still dismiss immediately.                                               */
 .quick-view.is-loading {
   width: auto;
   max-height: none;
@@ -8970,6 +8971,10 @@ body:has(.announcement[data-announcement-header]:not([hidden])) .nav--pill {
   position: fixed;
   top: clamp(0.625rem, 3vw, 2.5rem);
   inset-inline-end: clamp(0.625rem, 3vw, 2.5rem);
+}
+
+.quick-view.is-loading .quick-view__close[data-loader-close-ready] {
+  animation: gj-fade-in 0.3s ease both;
 }
 
 .quick-view__loading {

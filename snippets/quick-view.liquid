@@ -54,13 +54,14 @@
     aria-modal="true"
     aria-label="{{ 'products.quick_view' | t }}"
     data-quick-view-panel
+    data-loader-close-delay="{{ settings.loader_close_delay | default: 8 | times: 1000 }}"
   >
     {%- comment -%}
       Named as the focus target explicitly: the veil is also a close control and
       comes first in the document, so without this the overlay would open with
       focus on a full-screen invisible button.
     {%- endcomment -%}
-    {%- capture close_attributes -%}data-overlay-close="quick-view" data-overlay-autofocus data-tip="{{ 'navigation.close' | t }}"{%- endcapture -%}
+    {%- capture close_attributes -%}data-overlay-close="quick-view" data-overlay-autofocus data-quick-view-close data-tip="{{ 'navigation.close' | t }}"{%- endcapture -%}
     {% render 'overlay-close', class: 'quick-view__close', attributes: close_attributes %}
 
     <div class="quick-view__contents" data-quick-view-contents></div>
@@ -74,7 +75,7 @@
       finished product view; the real panel enters only after its markup lands.
     {%- endcomment -%}
     {%- assign quick_view_loading = 'products.quick_view_loading' | t -%}
-    <div class="quick-view__loading" data-quick-view-loading>
+    <div class="quick-view__loading" data-quick-view-loading data-quick-view-loading-focus tabindex="-1">
       {% render 'loader', label: quick_view_loading, size: 'lg' %}
     </div>
   </div>
