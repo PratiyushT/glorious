@@ -452,13 +452,14 @@
         timer = window.setTimeout(function () { show(active + 1); }, interval);
       }
 
-      function show(index) {
+      function show(index, direction) {
         if (busy || !messages.length) return;
         var nextIndex = (index + messages.length) % messages.length;
         if (nextIndex === active) { schedule(); return; }
 
         stopTimer();
         busy = true;
+        root.dataset.announcementDirection = direction === 'backward' ? 'backward' : 'forward';
         var current = messages[active];
         var next = messages[nextIndex];
         current.classList.add('is-leaving');
@@ -478,8 +479,8 @@
 
       var previous = root.querySelector('[data-announcement-prev]');
       var next = root.querySelector('[data-announcement-next]');
-      if (previous) previous.addEventListener('click', function () { show(active - 1); });
-      if (next) next.addEventListener('click', function () { show(active + 1); });
+      if (previous) previous.addEventListener('click', function () { show(active - 1, 'backward'); });
+      if (next) next.addEventListener('click', function () { show(active + 1, 'forward'); });
 
       root.addEventListener('mouseenter', function () { suspended = true; stopTimer(); });
       root.addEventListener('mouseleave', function () { suspended = false; schedule(); });
@@ -508,7 +509,7 @@
         if (selectedIndex >= 0) {
           autoplay = false;
           syncLiveRegion();
-          show(selectedIndex);
+          show(selectedIndex, selectedIndex < active ? 'backward' : 'forward');
         }
       });
 

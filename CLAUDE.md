@@ -1365,11 +1365,14 @@ to work while the editor-facing section is named Splash screens.
 
 **Announcement header and Announcement bar are two placements of one shared
 renderer.** Both expose Rotate (Previous/Next, no Pause), Marquee, the three
-speed presets, content width, typography, messages, links, and the theme-wide
-Text/Icon close choice. Motion pauses while out of view, on hover/focus, on a
-hidden tab, in reduced motion, and while a block is selected in the Theme
-Editor. `announcement-header` is header-group only, may show everywhere or on
-the home page only, stays sticky, and alone measures the fixed nav offset.
+speed presets, Fade/Vertical slide/Horizontal slide rotation transitions,
+content width, typography, messages, links, and the theme-wide Text/Icon close
+choice. Horizontal rotation follows the controls: Next and autoplay travel
+forward while Previous reverses. Motion pauses while out of view, on
+hover/focus, on a hidden tab, in reduced motion, and while a block is selected
+in the Theme Editor. `announcement-header` is header-group only, may show
+everywhere or on the home page only, stays sticky, and alone measures the fixed
+nav offset.
 `announcement-bar` is an ordinary addable page section with no Show on setting;
 it renders in normal flow exactly where the merchant places it and cannot move
 the nav. Each instance has its own session dismissal key. Both expose Compact,

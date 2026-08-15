@@ -1628,7 +1628,8 @@
       "animation_style": {
         "label": "Transition",
         "fade": "Elegant fade",
-        "slide": "Vertical slide"
+        "slide": "Vertical slide",
+        "slide_horizontal": "Horizontal slide"
       },
       "interval": {
         "label": "Time per message"
