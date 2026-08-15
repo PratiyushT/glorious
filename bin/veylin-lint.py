@@ -1302,6 +1302,27 @@ def R23_article_data_contract():
             'Main article must not fork Article image rendering')
 
 
+def R24_catalog_replacement_lifecycle():
+    """A server-rendered catalog replacement must rebind its own root.
+
+    querySelectorAll() searches descendants, never the scope itself. Catalog
+    changes replace the owning section and dispatch section:load from that new
+    root, so omitting the explicit self-match makes the first change enhanced
+    and the next one fall through to a full page navigation.
+    """
+    where = 'assets/theme.js'
+    source = read(os.path.join(ROOT, where))
+    if "scope.matches && scope.matches('[data-catalog-section]')" not in source:
+        err('R24', where,
+            'Catalog init must include a replacement scope that is itself the catalog root')
+    if 'catalogRoots.unshift(scope)' not in source:
+        err('R24', where,
+            'Catalog replacement root must be inserted into the rebinding set')
+    if "nextRoot.dispatchEvent(new CustomEvent('shopify:section:load'" not in source:
+        err('R24', where,
+            'Catalog replacement must dispatch the lifecycle event that rebinds it')
+
+
 RULES = OrderedDict([
     ('R01', (R01_range_steps, 'range steps are legal (Shopify validates server-side)')),
     ('R02', (R02_select_defaults, "a select's default is one of its options")),
@@ -1326,6 +1347,7 @@ RULES = OrderedDict([
     ('R21', (R21_product_titles_remain_complete, 'product titles remain complete and linked')),
     ('R22', (R22_collection_data_contract, 'collection titles and images stay data-adapted')),
     ('R23', (R23_article_data_contract, 'article cards and pages stay data-adapted')),
+    ('R24', (R24_catalog_replacement_lifecycle, 'catalog replacements rebind their own root')),
 ])
 
 

@@ -374,7 +374,10 @@ a merchant-entered filter label. No catalogue vocabulary belongs in Liquid.
   history. Editorial reveal, Gentle lift, Soft fade, and None are page-change
   choices; Product grid animation remains the independent entrance behavior
   after filtering, sorting, and pagination. The current collection stays
-  readable while both sections load. Reduced motion commits immediately.
+  readable while both sections load. A fast response shows no transient UI;
+  after 320ms the shared Loader appears over the configured veil, then clears
+  as soon as the complete response arrives so it never competes with the page
+  transition. Reduced motion commits immediately.
   Modified clicks, cross-route forms,
   unsupported browsers, missing section markup, failed requests, and no-script
   use native navigation. While a filter, sort, clear, or pagination request is
@@ -404,6 +407,12 @@ a merchant-entered filter label. No catalogue vocabulary belongs in Liquid.
   titles override Display's decorative single-line rule, remain complete, and
   wrap naturally at narrow collection/search widths without shrinking or
   truncating the resource name.
+- **A replaced catalogue section must bind itself, not only its descendants.**
+  `shopify:section:load` is dispatched from the new `[data-catalog-section]`
+  root. `querySelectorAll()` never includes that root, so `initCatalog` adds a
+  matching scope to its own binding set before walking descendants. Without
+  that line, the first collection/filter change is enhanced and the next click
+  falls through to a full page navigation. R24 protects this lifecycle rule.
 - **Search scope belongs to the Search form block; active scope belongs to
   Shopify.** `blocks/search-form.liquid` submits `type=` from its preset. Once a
   search has been performed, `main-search` reads `search.types` and carries

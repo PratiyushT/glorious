@@ -3848,15 +3848,28 @@ a {
   display: none;
 }
 
+/* Collection changes keep the current page readable for a quick request. If
+   Shopify takes longer, the same themed loader used everywhere else appears
+   on the configured veil instead of leaving an apparently inert storefront. */
+.catalog-page--collection-pending .catalog-loading {
+  color: var(--loader-on-veil-ink, var(--loader-ink, var(--c-text)));
+  background: color-mix(in srgb, var(--veil-tint, var(--c-text)) 42%, transparent);
+  animation: gj-fade-in 0.2s var(--ease-ui) both;
+}
+
+.catalog-page--collection-pending .catalog-loading .loader {
+  color: inherit;
+}
+
 .catalog-page[aria-busy='true'] .catalog-main > .catalog-shell {
   opacity: 0.28;
   transition: opacity 0.2s ease;
 }
 
 /* A collection change waits for both of Shopify's rendered sections before
-   anything leaves. The current collection therefore remains readable while
-   the request is in flight; these classes exist only for the short commit
-   transition after the complete response has arrived. */
+   anything leaves. The current collection therefore remains readable until
+   a delayed loading veil is needed; these classes otherwise exist only for
+   the short commit transition after the complete response has arrived. */
 .catalog-page.catalog-page--collection-pending[aria-busy='true'] .catalog-main > .catalog-shell {
   opacity: 1;
 }

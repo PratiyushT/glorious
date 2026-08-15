@@ -4698,6 +4698,7 @@
   var catalogMenusBound = false;
   var catalogRequestController = null;
   var catalogRequestId = 0;
+  var catalogLoadingDelayTimer = null;
 
   function prepareCatalogBlockHeaders(root) {
     var headers = Array.prototype.slice.call(root.querySelectorAll('[data-catalog-block-header]'));
@@ -4902,11 +4903,31 @@
     window.scrollTo({ top: Math.max(0, top), behavior: reduceMotion.matches ? 'auto' : 'smooth' });
   }
 
-  function showCatalogLoading(root, quiet) {
-    root.classList.toggle('catalog-page--collection-pending', Boolean(quiet));
+  function clearCatalogLoadingDelay(root, requestId) {
+    if (requestId !== catalogRequestId) return;
+    if (catalogLoadingDelayTimer) window.clearTimeout(catalogLoadingDelayTimer);
+    catalogLoadingDelayTimer = null;
+    var loader = root && root.querySelector('[data-catalog-loading]');
+    if (loader) loader.hidden = true;
+  }
+
+  function showCatalogLoading(root, delayed, requestId) {
+    if (catalogLoadingDelayTimer) window.clearTimeout(catalogLoadingDelayTimer);
+    catalogLoadingDelayTimer = null;
+    root.classList.toggle('catalog-page--collection-pending', Boolean(delayed));
     root.setAttribute('aria-busy', 'true');
     var loader = root.querySelector('[data-catalog-loading]');
-    if (loader) loader.hidden = Boolean(quiet);
+    if (!loader) return;
+
+    loader.hidden = Boolean(delayed);
+    if (!delayed) return;
+
+    catalogLoadingDelayTimer = window.setTimeout(function () {
+      catalogLoadingDelayTimer = null;
+      if (requestId !== catalogRequestId || !root.isConnected) return;
+      if (root.getAttribute('aria-busy') !== 'true') return;
+      loader.hidden = false;
+    }, 320);
   }
 
   function commitCatalogCollection(root, header, nextRoot, nextHeader, publicUrl, pushState, focusHeading, requestId) {
@@ -5045,7 +5066,7 @@
     catalogRequestId += 1;
     var requestId = catalogRequestId;
 
-    showCatalogLoading(root, collectionSwap);
+    showCatalogLoading(root, collectionSwap, requestId);
 
     var requestOptions = { headers: { 'X-Requested-With': 'XMLHttpRequest' } };
     if (catalogRequestController) requestOptions.signal = catalogRequestController.signal;
@@ -5057,6 +5078,7 @@
       })
       .then(function (responseBody) {
         if (requestId !== catalogRequestId) return;
+        clearCatalogLoadingDelay(root, requestId);
 
         var nextRoot;
         var nextHeader;
@@ -5083,6 +5105,7 @@
       .catch(function (error) {
         if (error && error.name === 'AbortError') return;
         if (requestId !== catalogRequestId) return;
+        clearCatalogLoadingDelay(root, requestId);
         window.location.assign(publicUrl.href);
       });
   }
@@ -5093,7 +5116,10 @@
     prepareCatalogSearch(scope);
     prepareCatalogPriceRanges(scope);
 
-    scope.querySelectorAll('[data-catalog-section]').forEach(function (root) {
+    var catalogRoots = Array.prototype.slice.call(scope.querySelectorAll('[data-catalog-section]'));
+    if (scope.matches && scope.matches('[data-catalog-section]')) catalogRoots.unshift(scope);
+
+    catalogRoots.forEach(function (root) {
       if (!bindOnce(root, 'boundCatalog')) return;
 
       root.addEventListener('click', function (event) {

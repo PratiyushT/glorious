@@ -178,6 +178,8 @@ Both product grids support responsive column and gap presets. Collection product
 
 JavaScript progressively enhances filtering, sorting, pagination, and collection-to-collection changes through Shopify's Section Rendering API. Collection changes fetch the destination header and product catalog together, animate the complete server-rendered result, and update the URL without a page flash. Main collection provides separate Transition style and Transition speed presets for these page changes; Product grid animation remains independent. Links and forms remain functional when JavaScript is unavailable, a request fails, or the browser cannot support the enhancement.
 
+Each server-rendered replacement rebinds the new catalog root before another interaction can occur. Consecutive collection, filter, sort, and pagination changes therefore remain enhanced instead of alternating between animation and a full page load. Collection requests keep the current content visible and show no flash when fast; after a short delay, the themed loader and configured veil provide feedback until both replacement sections are ready.
+
 Search can return products, articles, pages, and other enabled resource types. Predictive search uses Shopify's predictive search endpoint. Empty searches and searches with no results display a clear next step.
 
 Theme settings let Search behave as the art-directed menu overlay, a side
