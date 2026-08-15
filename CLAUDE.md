@@ -1366,19 +1366,20 @@ to work while the editor-facing section is named Splash screens.
 **Announcement header and Announcement bar are two placements of one shared
 renderer.** Both expose Rotate (Previous/Next, no Pause), Marquee, the three
 speed presets, Fade/Vertical slide/Horizontal slide rotation transitions,
-content width, typography, messages, links, and the theme-wide Text/Icon close
-choice. Horizontal rotation follows the controls: Next and autoplay travel
-forward while Previous reverses. Motion pauses while out of view, on
-hover/focus, on a hidden tab, in reduced motion, and while a block is selected
-in the Theme Editor. `announcement-header` is header-group only, may show
-everywhere or on the home page only, stays sticky, and alone measures the fixed
-nav offset.
+content width, typography, messages, and links. Horizontal rotation follows
+the controls: Next and autoplay travel forward while Previous reverses. Motion
+pauses while out of view, on hover/focus, on a hidden tab, in reduced motion,
+and while a block is selected in the Theme Editor. `announcement-header` is
+header-group only, may show everywhere or on the home page only, stays sticky,
+and alone measures the fixed nav offset. It alone may render the theme-wide
+Text/Icon close control: Show close, Show close except on the home page, or Do
+not show close.
 `announcement-bar` is an ordinary addable page section with no Show on setting;
 it renders in normal flow exactly where the merchant places it and cannot move
-the nav. Each instance has its own session dismissal key. Both expose Compact,
-Standard, and Tall height presets that change only em-based vertical breathing
-room. Typography still determines the minimum natural height, so larger text
-cannot be clipped.
+the nav or be dismissed. The header alone owns the session dismissal key. Both
+expose Compact, Standard, and Tall height presets that change only em-based
+vertical breathing room. Typography still determines the minimum natural
+height, so larger text cannot be clipped.
 
 The design states its own model: *"Four variants carry every action across the
 store. Pill geometry, uppercase Karla at .15em, and a single gold accent.
@@ -3547,9 +3548,9 @@ and the attributes that wire it — never appearance; a context class carrying
 visual style again is how quick view drifted in the first place. Both forms
 paint from `currentColor`, so one rule serves the noir overlay heads and the
 light panels, and both take their corner radius from the global button shape.
-Announcement header and Announcement bar use the same renderer and their
-context class only places it at the row's end; neither changes its padding,
-type size, or icon-disc dimensions.
+Announcement header alone may request that renderer and its context class only
+places it at the row's end; it does not change its padding, type size, or
+icon-disc dimensions. Announcement bar has no close control.
 Deliberately not `snippets/button.liquid`: a close is a purpose-built
 interface control, the R16 exemption. Veils, the cookie banner's
 Accept/Decline, and the newsletter's "No thanks" are dismissals, not close

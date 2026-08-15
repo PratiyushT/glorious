@@ -7976,13 +7976,21 @@ input.quantity-control__value::-webkit-outer-spin-button {
 }
 
 .announcement__inner--rotate {
-  grid-template-columns: 2em minmax(0, 1fr) 2em auto;
+  grid-template-columns: 2em minmax(0, 1fr) 2em;
   gap: clamp(0.125rem, 1vw, 0.75rem);
 }
 
 .announcement__inner--marquee {
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr);
   gap: clamp(0.375rem, 1vw, 0.75rem);
+}
+
+.announcement__inner--rotate.announcement__inner--closable {
+  grid-template-columns: 2em minmax(0, 1fr) 2em auto;
+}
+
+.announcement__inner--marquee.announcement__inner--closable {
+  grid-template-columns: minmax(0, 1fr) auto;
 }
 
 .announcement__inner--full {
@@ -8200,7 +8208,6 @@ body:has(.announcement[data-announcement-header]:not([hidden])) .nav--pill {
 
 @media (max-width: 34rem) {
   .announcement__inner--rotate {
-    grid-template-columns: 2em minmax(0, 1fr) 2em auto;
     padding-inline: 0.35rem;
   }
 

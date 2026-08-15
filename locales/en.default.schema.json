@@ -1591,7 +1591,13 @@
       }
     },
     "announcement_header": {
-      "name": "Announcement header"
+      "name": "Announcement header",
+      "close_visibility": {
+        "label": "Close control",
+        "all": "Show close",
+        "except_home": "Show close except on the home page",
+        "never": "Do not show close"
+      }
     },
     "announcement_bar": {
       "name": "Announcement bar",
