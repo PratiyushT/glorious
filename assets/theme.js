@@ -433,9 +433,14 @@
       if (active < 0) active = 0;
       var interval = Math.max(parseInt(root.dataset.announcementInterval, 10) || 6000, 3000);
       var autoplay = root.dataset.announcementAutoplay === 'true' && !reduceMotion.matches;
+      var inView = true;
+      var hovered = false;
+      var focused = false;
+      var editorPaused = false;
       var suspended = false;
       var busy = false;
       var timer = null;
+      var rotateObserver = null;
 
       function syncLiveRegion() {
         viewport.setAttribute('aria-live', !autoplay || suspended ? 'polite' : 'off');
@@ -450,6 +455,12 @@
         stopTimer();
         if (!autoplay || suspended || busy || !document.contains(root) || root.hidden) return;
         timer = window.setTimeout(function () { show(active + 1); }, interval);
+      }
+
+      function syncRotation() {
+        suspended = !inView || document.hidden || hovered || focused || editorPaused;
+        syncLiveRegion();
+        schedule();
       }
 
       function show(index, direction) {
@@ -482,40 +493,52 @@
       if (previous) previous.addEventListener('click', function () { show(active - 1, 'backward'); });
       if (next) next.addEventListener('click', function () { show(active + 1, 'forward'); });
 
-      root.addEventListener('mouseenter', function () { suspended = true; stopTimer(); });
-      root.addEventListener('mouseleave', function () { suspended = false; schedule(); });
+      if ('IntersectionObserver' in window) {
+        rotateObserver = new IntersectionObserver(function (entries) {
+          entries.forEach(function (entry) {
+            if (entry.target !== root) return;
+            inView = entry.isIntersecting && entry.intersectionRatio > 0;
+            syncRotation();
+          });
+        });
+        rotateObserver.observe(root);
+      }
+
+      root.addEventListener('mouseenter', function () { hovered = true; syncRotation(); });
+      root.addEventListener('mouseleave', function () { hovered = false; syncRotation(); });
       root.addEventListener('focusin', function () {
-        suspended = true;
-        stopTimer();
-        syncLiveRegion();
+        focused = true;
+        syncRotation();
       });
       root.addEventListener('focusout', function () {
         window.setTimeout(function () {
-          suspended = root.contains(document.activeElement);
-          syncLiveRegion();
-          schedule();
+          focused = root.contains(document.activeElement);
+          syncRotation();
         }, 0);
       });
 
-      document.addEventListener('visibilitychange', function () {
-        suspended = document.hidden || root.matches(':hover') || root.contains(document.activeElement);
-        syncLiveRegion();
-        schedule();
-      });
+      document.addEventListener('visibilitychange', syncRotation);
 
       root.addEventListener('shopify:block:select', function (event) {
         var selected = event.target.closest && event.target.closest('[data-announcement-message]');
         var selectedIndex = messages.indexOf(selected);
         if (selectedIndex >= 0) {
-          autoplay = false;
-          syncLiveRegion();
+          editorPaused = true;
+          syncRotation();
           show(selectedIndex, selectedIndex < active ? 'backward' : 'forward');
         }
       });
 
-      stop = stopTimer;
-      syncLiveRegion();
-      schedule();
+      root.addEventListener('shopify:block:deselect', function () {
+        editorPaused = false;
+        syncRotation();
+      });
+
+      stop = function () {
+        stopTimer();
+        if (rotateObserver) rotateObserver.disconnect();
+      };
+      syncRotation();
     });
   }
 
