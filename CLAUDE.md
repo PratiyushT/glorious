@@ -1324,14 +1324,18 @@ decorative arrow intact when JavaScript changes an action label.
 The Splash screens section is only the collection boundary for two addable and
 deletable popup-shell blocks. `_splash-screen` is Group-like: it accepts public
 theme and app children and uses the shared Group renderer/settings inside its
-modal shell. `_splash-newsletter` is the deliberately structured exception,
-because its customer form, success state, and offer delivery must remain a
-complete unit. Newsletter is the section's default preset, not a permanent or
-disableable setting. A public `discount-offer` child gives composable splashes
-the same real Shopify discount hand-off. Configured splashes wait their turn
-rather than replacing another open dialog. The cookie banner also calls the
-shared Button renderer. Popup behavior and consent behavior remain owned by
-their shells; their UI is not a separate button system.
+modal shell. `_splash-newsletter` uses that same Group contract and differs
+only in popup registration: it remains the target of `#newsletter` and of a
+successful customer-form return. Its preset is a horizontal Media + Group
+composition. Eyebrow, heading, copy, dismiss action, fine print, Media, and
+both Groups are ordinary public blocks that can be removed, reordered, or
+replaced. The public `email-signup` block is the one deliberate special child:
+it owns the Shopify customer form, validation/success state, and optional real
+discount hand-off. Newsletter is the section's default preset, not a permanent
+or disableable setting. Configured splashes wait their turn rather than
+replacing another open dialog. The cookie banner also calls the shared Button
+renderer. Popup behavior and consent behavior remain owned by their shells;
+their UI is not a separate button system.
 
 **A Splash discount is a real Shopify hand-off, not decorative code.** The
 merchant must create the matching active code in Shopify Admin. The shared
@@ -1349,9 +1353,12 @@ groups every nonblank Message into one seamless, duplicated visual track with
 Relaxed, Balanced, and Brisk speed presets. Motion pauses while out of view, on
 hover/focus, on a hidden tab, in reduced motion, and while a block is selected
 in the Theme Editor. The theme-wide Text/Icon close choice dismisses the bar
-for the session. Visibility can be every page or home only; adjustable height
-feeds the fixed nav offset through one CSS property, and the section exposes
-the same bounded typography presets and overrides as Text blocks.
+for the session. Visibility can be every page or home only. The bar has no
+height setting: its text line and em-based padding/controls determine its
+natural height, which the controller measures for the fixed nav offset. The
+inner row defaults to Full screen and may be switched back to the capped Page
+width. The section exposes the same bounded typography presets and overrides
+as Text blocks.
 
 The design states its own model: *"Four variants carry every action across the
 store. Pill geometry, uppercase Karla at .15em, and a single gold accent.
@@ -2762,12 +2769,13 @@ from `.1s`, and the design's decorative arcs rendered through the centralized
 Liquid icon library. The former sparkle layer, setting, Icon block option, and
 SVG snippet are removed.
 
-**A Collection tab's Media size belongs to its image, not the portrait
-frame.** The selected `.hero__portrait-image` stays in normal flow and its
-`img`/placeholder carries the chosen aspect ratio; `.hero__portrait-frame` has
-no ratio or height of its own and wraps the active image. Tab changes therefore
-swap one intrinsically sized image box for another instead of resizing a fixed
-container around absolutely positioned media.
+**A Collection tab's Media size and Media fit both reach the selected
+media.** The selected `.hero__portrait-image` stays in normal flow and carries
+the chosen aspect ratio; its `img`/placeholder fills that box so `cover` and
+`contain` have a definite width and height to act on. The outer
+`.hero__portrait-frame` has no ratio or height of its own and simply wraps the
+active media box. Keeping `height: auto` on the replaced image left its
+intrinsic ratio authoritative and made both editor controls appear inert.
 
 **The hero fits itself to the screen rather than clipping.** It is a
 screenful, and its content does not always agree — at 1280×560 the grid

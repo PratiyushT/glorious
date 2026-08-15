@@ -636,7 +636,7 @@ def R14_shared_setting_contracts():
             'blocks/product_buy_buttons.liquid',
             'blocks/_product-card-add.liquid',
             'blocks/_hotspot-add.liquid',
-            'blocks/_splash-newsletter.liquid',
+            'blocks/email-signup.liquid',
             'blocks/discount-offer.liquid',
         )),
         ('blocks/group.liquid', set(),
@@ -649,6 +649,7 @@ def R14_shared_setting_contracts():
             'blocks/_interactive-media-list-header.liquid',
             'blocks/accordion.liquid',
             'blocks/_splash-screen.liquid',
+            'blocks/_splash-newsletter.liquid',
         )),
         ('sections/main-product.liquid', set(), set(), (
             'sections/featured-product.liquid',
@@ -706,7 +707,7 @@ def R15_shared_renderers():
             'blocks/product_buy_buttons.liquid',
             'blocks/_product-card-add.liquid',
             'blocks/_hotspot-add.liquid',
-            'blocks/_splash-newsletter.liquid',
+            'blocks/email-signup.liquid',
             'sections/cookie-banner.liquid',
         ),
         'layout-group': (
@@ -719,6 +720,7 @@ def R15_shared_renderers():
             'blocks/_interactive-media-list-header.liquid',
             'blocks/accordion.liquid',
             'blocks/_splash-screen.liquid',
+            'blocks/_splash-newsletter.liquid',
             'sections/group.liquid',
         ),
         'card-price': (

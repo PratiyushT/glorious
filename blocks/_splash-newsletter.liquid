@@ -1,15 +1,13 @@
 {%- comment -%}
-  The structured Splash-screen child for newsletter capture. Unlike the
-  composable shell, its email form and success hand-off stay deliberately
-  fixed so Shopify's customer form remains complete and accessible.
+  A newsletter-aware Splash shell, composed exactly like Group. The shell owns
+  modal timing, persistence, accessibility, and registration as the target of
+  #newsletter links. Its children own every visible part. The Email signup
+  child is the only specialized piece because it owns Shopify's customer-form
+  state and the post-subscription discount hand-off.
 {%- endcomment -%}
 
-{%- liquid
-  assign overlay_name = 'splash-newsletter-' | append: block.id
-  assign layout = block.settings.layout | default: 'split'
-  assign content_alignment = block.settings.content_alignment | default: 'left'
-  assign form_id = 'SplashNewsletter-' | append: block.id
--%}
+{%- assign overlay_name = 'splash-newsletter-' | append: block.id -%}
+{%- capture newsletter_content -%}{% content_for 'blocks' %}{%- endcapture -%}
 
 <div
   class="overlay overlay--modal overlay--splash"
@@ -27,100 +25,17 @@
   </button>
 
   <div
-    class="modal modal--splash modal--splash-{{ layout }} modal--align-{{ content_alignment }} scheme-{{ block.settings.color_scheme }}"
+    class="modal modal--splash modal--splash-composed modal--splash-newsletter scheme-{{ block.settings.color_scheme }}"
     style="--splash-width: {{ block.settings.panel_width }}rem;"
     role="dialog"
     aria-modal="true"
-    aria-labelledby="SplashTitle-{{ block.id }}"
+    aria-label="{{ block.settings.accessibility_label | escape }}"
   >
     {%- capture close_attributes -%}data-overlay-close="{{ overlay_name }}"{%- endcapture -%}
     {% render 'overlay-close', class: 'modal__close', attributes: close_attributes %}
 
-    <div class="modal__grid" data-media-position="{{ block.settings.media_position | default: 'left' }}">
-      {%- if layout == 'split' -%}
-        <div class="modal__media">
-          {%- if block.settings.image != blank -%}
-            <img
-              src="{{ block.settings.image | image_url: width: 900 }}"
-              data-image-lqip="{{ block.settings.image | image_url: width: 40 }}"
-              srcset="{{ block.settings.image | image_url: width: 400 }} 400w, {{ block.settings.image | image_url: width: 700 }} 700w, {{ block.settings.image | image_url: width: 900 }} 900w"
-              sizes="(min-width: 56rem) 50vw, 100vw"
-              alt="{{ block.settings.image.alt | escape }}"
-              width="{{ block.settings.image.width }}"
-              height="{{ block.settings.image.height }}"
-              style="object-position: {{ block.settings.image.presentation.focal_point }};"
-              loading="lazy"
-            >
-          {%- else -%}
-            {{ 'lifestyle-1' | placeholder_svg_tag: 'placeholder-svg' }}
-          {%- endif -%}
-        </div>
-      {%- endif -%}
-
-      <div class="modal__body">
-        {%- form 'customer', class: 'modal__form', id: form_id -%}
-          <input type="hidden" name="contact[tags]" value="newsletter,splash-offer">
-
-          {%- if form.posted_successfully? -%}
-            <div class="splash-screen splash-screen--success">
-              <span class="micro splash-screen__eyebrow">{{ 'newsletter.welcome' | t }}</span>
-              <h2 class="modal__title" id="SplashTitle-{{ block.id }}">{{ block.settings.success_heading }}</h2>
-              {%- if block.settings.success_text != blank -%}
-                <p class="modal__text">{{ block.settings.success_text }}</p>
-              {%- endif -%}
-
-              {% render 'discount-offer',
-                code: block.settings.offer_code,
-                destination: block.settings.offer_destination,
-                button_label: block.settings.offer_button_label,
-                appearance: block.settings
-              %}
-            </div>
-          {%- else -%}
-            <div class="splash-screen">
-              {%- if block.settings.eyebrow != blank -%}
-                <span class="micro splash-screen__eyebrow">{{ block.settings.eyebrow }}</span>
-              {%- endif -%}
-              <h2 class="modal__title" id="SplashTitle-{{ block.id }}">{{ block.settings.heading }}</h2>
-              {%- if block.settings.text != blank -%}
-                <p class="modal__text">{{ block.settings.text }}</p>
-              {%- endif -%}
-
-              <label class="visually-hidden" for="SplashEmail-{{ block.id }}">{{ 'newsletter.email' | t }}</label>
-              <input
-                class="modal__field"
-                id="SplashEmail-{{ block.id }}"
-                type="email"
-                name="contact[email]"
-                placeholder="{{ 'newsletter.email' | t }}"
-                autocomplete="email"
-                required
-                data-overlay-autofocus
-              >
-
-              {%- if form.errors -%}
-                <p class="modal__error">{{ form.errors.messages['email'] }}</p>
-              {%- endif -%}
-
-              {%- render 'button',
-                label: block.settings.submit_label,
-                element: 'button',
-                button_type: 'submit',
-                appearance: block.settings,
-                class: 'modal__submit'
-              -%}
-
-              <button class="modal__decline" type="button" data-overlay-close="{{ overlay_name }}">
-                {{ block.settings.decline_label }}
-              </button>
-
-              {%- if block.settings.fine_print != blank -%}
-                <p class="modal__fine">{{ block.settings.fine_print }}</p>
-              {%- endif -%}
-            </div>
-          {%- endif -%}
-        {%- endform -%}
-      </div>
+    <div class="modal__body modal__body--composed">
+      {% render 'layout-group', layout_settings: block.settings, content: newsletter_content, class: 'splash-composition splash-newsletter-composition' %}
     </div>
   </div>
 </div>
@@ -129,6 +44,7 @@
 {
   "name": "t:blocks.splash_newsletter.name",
   "tag": null,
+  "blocks": [{ "type": "@theme" }, { "type": "@app" }],
   "settings": [
     {
       "type": "color_scheme",
@@ -148,272 +64,379 @@
       "default": 2
     },
     {
+      "type": "range",
+      "id": "panel_width",
+      "label": "t:sections.newsletter_popup.panel_width.label",
+      "min": 30,
+      "max": 64,
+      "step": 2,
+      "unit": "rem",
+      "default": 64
+    },
+    {
+      "type": "text",
+      "id": "accessibility_label",
+      "label": "t:sections.newsletter_popup.accessibility_label.label",
+      "info": "t:sections.newsletter_popup.accessibility_label.info",
+      "default": "Newsletter signup"
+    },
+    {
       "type": "header",
-      "content": "t:sections.newsletter_popup.layout_header"
+      "content": "t:sections.group.layout_header"
     },
     {
       "type": "select",
-      "id": "layout",
-      "label": "t:sections.newsletter_popup.layout.label",
+      "id": "direction",
+      "label": "t:blocks.group.direction.label",
+      "info": "t:blocks.group.direction.info",
       "options": [
-        { "value": "split", "label": "t:sections.newsletter_popup.layout.split" },
-        { "value": "content", "label": "t:sections.newsletter_popup.layout.content" }
+        { "value": "horizontal", "label": "t:blocks.group.direction.horizontal" },
+        { "value": "vertical", "label": "t:blocks.group.direction.vertical" }
       ],
-      "default": "split"
+      "default": "horizontal"
     },
     {
       "type": "select",
-      "id": "media_position",
-      "label": "t:sections.newsletter_popup.media_position.label",
+      "id": "distribute",
+      "label": "t:blocks.group.distribute.label",
+      "info": "t:blocks.group.distribute.info",
       "options": [
-        { "value": "left", "label": "t:settings_schema.options.left" },
-        { "value": "right", "label": "t:settings_schema.options.right" }
+        { "value": "start", "label": "t:blocks.group.distribute.start" },
+        { "value": "center", "label": "t:blocks.group.distribute.center" },
+        { "value": "end", "label": "t:blocks.group.distribute.end" },
+        { "value": "between", "label": "t:blocks.group.distribute.between" }
       ],
-      "default": "left",
-      "visible_if": "{{ block.settings.layout == 'split' }}"
+      "default": "between",
+      "visible_if": "{{ block.settings.direction == 'horizontal' }}"
+    },
+    {
+      "type": "select",
+      "id": "align",
+      "label": "t:blocks.group.align.label_horizontal",
+      "info": "t:blocks.group.align.info_horizontal",
+      "options": [
+        { "value": "baseline", "label": "t:blocks.group.align.text" },
+        { "value": "start", "label": "t:blocks.group.align.top" },
+        { "value": "center", "label": "t:blocks.group.align.middle" },
+        { "value": "end", "label": "t:blocks.group.align.bottom" },
+        { "value": "stretch", "label": "t:blocks.group.align.equal_height" }
+      ],
+      "default": "baseline",
+      "visible_if": "{{ block.settings.direction == 'horizontal' }}"
+    },
+    {
+      "type": "select",
+      "id": "align_vertical",
+      "label": "t:blocks.group.align.label_vertical",
+      "info": "t:blocks.group.align.info_vertical",
+      "options": [
+        { "value": "start", "label": "t:blocks.group.align.left" },
+        { "value": "center", "label": "t:blocks.group.align.centre" },
+        { "value": "end", "label": "t:blocks.group.align.right" },
+        { "value": "stretch", "label": "t:blocks.group.align.full_width" }
+      ],
+      "default": "stretch",
+      "visible_if": "{{ block.settings.direction == 'vertical' }}"
     },
     {
       "type": "select",
       "id": "content_alignment",
       "label": "t:sections.all.content_alignment.label",
+      "info": "t:sections.all.content_alignment.info",
       "options": [
+        { "value": "inherit", "label": "t:settings_schema.options.inherit" },
         { "value": "left", "label": "t:settings_schema.options.left" },
-        { "value": "center", "label": "t:settings_schema.options.center" }
+        { "value": "center", "label": "t:settings_schema.options.center" },
+        { "value": "right", "label": "t:settings_schema.options.right" }
       ],
       "default": "left"
     },
     {
+      "type": "checkbox",
+      "id": "wrap",
+      "label": "t:blocks.group.wrap.label",
+      "info": "t:blocks.group.wrap.info",
+      "default": true,
+      "visible_if": "{{ block.settings.direction == 'horizontal' }}"
+    },
+    {
+      "type": "select",
+      "id": "items_width",
+      "label": "t:blocks.group.items_width.label",
+      "info": "t:blocks.group.items_width.info",
+      "options": [
+        { "value": "natural", "label": "t:blocks.group.items_width.natural" },
+        { "value": "equal", "label": "t:blocks.group.items_width.equal" }
+      ],
+      "default": "natural",
+      "visible_if": "{{ block.settings.direction == 'horizontal' }}"
+    },
+    {
+      "type": "select",
+      "id": "items_height",
+      "label": "t:blocks.group.items_height.label",
+      "info": "t:blocks.group.items_height.info",
+      "options": [
+        { "value": "natural", "label": "t:blocks.group.items_height.natural" },
+        { "value": "equal", "label": "t:blocks.group.items_height.equal" }
+      ],
+      "default": "natural",
+      "visible_if": "{{ block.settings.direction == 'vertical' }}"
+    },
+    {
+      "type": "select",
+      "id": "stack_below",
+      "label": "t:blocks.group.stack_below.label",
+      "info": "t:blocks.group.stack_below.info",
+      "options": [
+        { "value": "never", "label": "t:blocks.group.stack_below.never" },
+        { "value": "tablet", "label": "t:blocks.group.stack_below.tablet" },
+        { "value": "mobile", "label": "t:blocks.group.stack_below.mobile" }
+      ],
+      "default": "mobile",
+      "visible_if": "{{ block.settings.direction == 'horizontal' }}"
+    },
+    {
+      "type": "select",
+      "id": "content_alignment_mobile",
+      "label": "t:blocks.group.content_alignment_mobile.label",
+      "info": "t:blocks.group.content_alignment_mobile.info",
+      "options": [
+        { "value": "inherit", "label": "t:blocks.group.content_alignment_mobile.inherit" },
+        { "value": "left", "label": "t:settings_schema.options.left" },
+        { "value": "center", "label": "t:settings_schema.options.center" },
+        { "value": "right", "label": "t:settings_schema.options.right" }
+      ],
+      "default": "inherit",
+      "visible_if": "{{ block.settings.direction == 'horizontal' and block.settings.stack_below != 'never' }}"
+    },
+    {
+      "type": "header",
+      "content": "t:blocks.all.spacing_header"
+    },
+    {
+      "type": "select",
+      "id": "gap",
+      "label": "t:blocks.group.gap.label",
+      "info": "t:blocks.group.gap.info",
+      "visible_if": "{{ block.settings.direction == 'horizontal' }}",
+      "options": [
+        { "value": "none", "label": "t:blocks.all.step.none" },
+        { "value": "minimal", "label": "t:blocks.all.step.minimal" },
+        { "value": "tiny", "label": "t:blocks.all.step.tiny" },
+        { "value": "small", "label": "t:blocks.all.step.small" },
+        { "value": "medium", "label": "t:blocks.all.step.medium" },
+        { "value": "large", "label": "t:blocks.all.step.large" },
+        { "value": "xlarge", "label": "t:blocks.all.step.xlarge" },
+        { "value": "maximum", "label": "t:blocks.all.step.maximum" }
+      ],
+      "default": "medium"
+    },
+    {
+      "type": "select",
+      "id": "vertical_gap",
+      "label": "t:blocks.group.vertical_gap_label",
+      "info": "t:blocks.group.vertical_gap_info",
+      "visible_if": "{{ block.settings.direction == 'vertical' }}",
+      "options": [
+        { "value": "inherit", "label": "t:blocks.group.vertical_gap_inherit" },
+        { "value": "none", "label": "t:blocks.all.step.none" },
+        { "value": "minimal", "label": "t:blocks.all.step.minimal" },
+        { "value": "tiny", "label": "t:blocks.all.step.tiny" },
+        { "value": "small", "label": "t:blocks.all.step.small" },
+        { "value": "medium", "label": "t:blocks.all.step.medium" },
+        { "value": "large", "label": "t:blocks.all.step.large" },
+        { "value": "xlarge", "label": "t:blocks.all.step.xlarge" },
+        { "value": "maximum", "label": "t:blocks.all.step.maximum" }
+      ],
+      "default": "small"
+    },
+    {
+      "type": "select",
+      "id": "padding",
+      "label": "t:blocks.group.padding.label",
+      "info": "t:blocks.group.padding.info",
+      "options": [
+        { "value": "none", "label": "t:blocks.all.step.none" },
+        { "value": "minimal", "label": "t:blocks.all.step.minimal" },
+        { "value": "tiny", "label": "t:blocks.all.step.tiny" },
+        { "value": "small", "label": "t:blocks.all.step.small" },
+        { "value": "medium", "label": "t:blocks.all.step.medium" },
+        { "value": "large", "label": "t:blocks.all.step.large" },
+        { "value": "xlarge", "label": "t:blocks.all.step.xlarge" },
+        { "value": "maximum", "label": "t:blocks.all.step.maximum" }
+      ],
+      "default": "none"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_borders",
+      "label": "t:blocks.group.show_borders_label",
+      "info": "t:blocks.group.show_borders_info",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "t:blocks.group.border_settings_header",
+      "visible_if": "{{ block.settings.show_borders }}"
+    },
+    {
       "type": "range",
-      "id": "panel_width",
-      "label": "t:sections.newsletter_popup.panel_width.label",
-      "min": 36,
-      "max": 64,
-      "step": 2,
-      "unit": "rem",
-      "default": 54
-    },
-    {
-      "type": "image_picker",
-      "id": "image",
-      "label": "t:sections.all.image.label",
-      "visible_if": "{{ block.settings.layout == 'split' }}"
-    },
-    {
-      "type": "header",
-      "content": "t:sections.newsletter_popup.content_header"
-    },
-    {
-      "type": "text",
-      "id": "eyebrow",
-      "label": "t:sections.all.subheading.label",
-      "default": "Private offer"
-    },
-    {
-      "type": "text",
-      "id": "heading",
-      "label": "t:sections.all.heading.label",
-      "default": "A Welcome, Just for You"
-    },
-    {
-      "type": "textarea",
-      "id": "text",
-      "label": "t:sections.all.text.label",
-      "default": "Join the private list for early access to new collections and a welcome offer for your first order."
-    },
-    {
-      "type": "text",
-      "id": "submit_label",
-      "label": "t:sections.newsletter_popup.submit_label.label",
-      "default": "Join the Private List"
-    },
-    {
-      "type": "text",
-      "id": "decline_label",
-      "label": "t:sections.newsletter_popup.decline_label.label",
-      "default": "Continue browsing"
-    },
-    {
-      "type": "textarea",
-      "id": "fine_print",
-      "label": "t:sections.newsletter_popup.fine_print.label",
-      "default": "By subscribing you agree to receive email from this shop. Unsubscribe anytime."
-    },
-    {
-      "type": "header",
-      "content": "t:sections.newsletter_popup.success_header"
-    },
-    {
-      "type": "text",
-      "id": "success_heading",
-      "label": "t:sections.all.heading.label",
-      "default": "Your Private Offer"
-    },
-    {
-      "type": "textarea",
-      "id": "success_text",
-      "label": "t:sections.all.text.label",
-      "default": "Your welcome code is ready. Copy it or apply it as you continue shopping."
-    },
-    {
-      "type": "header",
-      "content": "t:sections.newsletter_popup.discount_header"
-    },
-    {
-      "type": "text",
-      "id": "offer_code",
-      "label": "t:sections.newsletter_popup.offer_code.label",
-      "info": "t:sections.newsletter_popup.offer_code.info",
-      "default": "WELCOME10"
-    },
-    {
-      "type": "url",
-      "id": "offer_destination",
-      "label": "t:sections.newsletter_popup.offer_destination.label",
-      "info": "t:sections.newsletter_popup.offer_destination.info"
-    },
-    {
-      "type": "text",
-      "id": "offer_button_label",
-      "label": "t:sections.newsletter_popup.offer_button_label.label",
-      "default": "Apply Offer & Shop"
-    },
-    {
-      "type": "header",
-      "content": "t:blocks.button.appearance_header"
-    },
-    {
-      "type": "select",
-      "id": "button_style",
-      "label": "t:sections.all.button_style.label",
-      "options": [
-        { "value": "filled", "label": "t:settings_schema.button_style.filled" },
-        { "value": "outline", "label": "t:settings_schema.button_style.outline" },
-        { "value": "link", "label": "t:settings_schema.button_style.link" },
-        { "value": "quiet", "label": "t:settings_schema.button_style.quiet" },
-        { "value": "arrow", "label": "t:settings_schema.button_style.arrow" },
-        { "value": "arrow_outline", "label": "t:settings_schema.button_style.arrow_outline" }
-      ],
-      "default": "filled"
-    },
-    {
-      "type": "select",
-      "id": "button_size",
-      "label": "t:sections.all.button_size.label",
-      "options": [
-        { "value": "inherit", "label": "t:settings_schema.button_size.inherit" },
-        { "value": "xs", "label": "t:settings_schema.button_size.xs" },
-        { "value": "sm", "label": "t:settings_schema.button_size.sm" },
-        { "value": "md", "label": "t:settings_schema.button_size.md" },
-        { "value": "lg", "label": "t:settings_schema.button_size.lg" },
-        { "value": "xl", "label": "t:settings_schema.button_size.xl" }
-      ],
-      "default": "inherit"
-    },
-    {
-      "type": "select",
-      "id": "button_radius",
-      "label": "t:sections.all.button_radius.label",
-      "options": [
-        { "value": "inherit", "label": "t:settings_schema.button_radius.inherit" },
-        { "value": "square", "label": "t:settings_schema.button_radius.square" },
-        { "value": "soft", "label": "t:settings_schema.button_radius.soft" },
-        { "value": "rounded", "label": "t:settings_schema.button_radius.rounded" },
-        { "value": "pill", "label": "t:settings_schema.button_radius.pill" }
-      ],
-      "default": "inherit",
-      "visible_if": "{{ block.settings.button_style == 'filled' or block.settings.button_style == 'outline' or block.settings.button_style == 'arrow_outline' }}"
-    },
-    {
-      "type": "select",
-      "id": "button_border_width",
-      "label": "t:blocks.button.border_width.label",
-      "options": [
-        { "value": "inherit", "label": "t:blocks.button.inherit" },
-        { "value": "xs", "label": "t:settings_schema.buttons.button_border_width.options__xs" },
-        { "value": "sm", "label": "t:settings_schema.buttons.button_border_width.options__sm" },
-        { "value": "md", "label": "t:settings_schema.buttons.button_border_width.options__md" },
-        { "value": "lg", "label": "t:settings_schema.buttons.button_border_width.options__lg" },
-        { "value": "xl", "label": "t:settings_schema.buttons.button_border_width.options__xl" }
-      ],
-      "default": "inherit",
-      "visible_if": "{{ block.settings.button_style == 'outline' or block.settings.button_style == 'arrow_outline' }}"
-    },
-    {
-      "type": "color",
-      "id": "background_color",
-      "label": "t:blocks.button.background_color.label",
-      "info": "t:blocks.button.color_info",
-      "visible_if": "{{ block.settings.button_style == 'filled' }}"
-    },
-    {
-      "type": "color",
-      "id": "text_color",
-      "label": "t:blocks.button.text_color.label",
-      "info": "t:blocks.button.color_info"
+      "id": "group_border_width",
+      "label": "t:blocks.group.border_width_label",
+      "min": 1,
+      "max": 10,
+      "step": 1,
+      "unit": "px",
+      "default": 1,
+      "visible_if": "{{ block.settings.show_borders }}"
     },
     {
       "type": "color",
       "id": "border_color",
-      "label": "t:blocks.button.border_color.label",
-      "info": "t:blocks.button.color_info",
-      "visible_if": "{{ block.settings.button_style == 'outline' or block.settings.button_style == 'arrow_outline' }}"
+      "label": "t:blocks.group.border_color_label",
+      "info": "t:blocks.group.border_color_info",
+      "visible_if": "{{ block.settings.show_borders }}"
     },
     {
-      "type": "color",
-      "id": "underline_color",
-      "label": "t:blocks.button.underline_color.label",
-      "info": "t:blocks.button.color_info",
-      "visible_if": "{{ block.settings.button_style == 'link' or block.settings.button_style == 'quiet' }}"
+      "type": "checkbox",
+      "id": "border_top",
+      "label": "t:blocks.group.border_top_label",
+      "default": true,
+      "visible_if": "{{ block.settings.show_borders }}"
     },
     {
-      "type": "color",
-      "id": "arrow_color",
-      "label": "t:blocks.button.arrow_color.label",
-      "info": "t:blocks.button.color_info",
-      "visible_if": "{{ block.settings.button_style == 'arrow' }}"
+      "type": "checkbox",
+      "id": "border_right",
+      "label": "t:blocks.group.border_right_label",
+      "default": true,
+      "visible_if": "{{ block.settings.show_borders }}"
     },
     {
-      "type": "header",
-      "content": "t:blocks.button.hover_header"
+      "type": "checkbox",
+      "id": "border_bottom",
+      "label": "t:blocks.group.border_bottom_label",
+      "default": true,
+      "visible_if": "{{ block.settings.show_borders }}"
     },
     {
-      "type": "color",
-      "id": "hover_background_color",
-      "label": "t:blocks.button.hover_background_color.label",
-      "info": "t:blocks.button.color_info",
-      "visible_if": "{{ block.settings.button_style == 'filled' or block.settings.button_style == 'outline' or block.settings.button_style == 'arrow_outline' }}"
-    },
-    {
-      "type": "color",
-      "id": "hover_text_color",
-      "label": "t:blocks.button.hover_text_color.label",
-      "info": "t:blocks.button.color_info"
-    },
-    {
-      "type": "color",
-      "id": "hover_border_color",
-      "label": "t:blocks.button.hover_border_color.label",
-      "info": "t:blocks.button.color_info",
-      "visible_if": "{{ block.settings.button_style == 'outline' or block.settings.button_style == 'arrow_outline' }}"
-    },
-    {
-      "type": "color",
-      "id": "hover_underline_color",
-      "label": "t:blocks.button.hover_underline_color.label",
-      "info": "t:blocks.button.color_info",
-      "visible_if": "{{ block.settings.button_style == 'link' or block.settings.button_style == 'quiet' }}"
-    },
-    {
-      "type": "color",
-      "id": "hover_arrow_color",
-      "label": "t:blocks.button.hover_arrow_color.label",
-      "info": "t:blocks.button.color_info",
-      "visible_if": "{{ block.settings.button_style == 'arrow' }}"
+      "type": "checkbox",
+      "id": "border_left",
+      "label": "t:blocks.group.border_left_label",
+      "default": true,
+      "visible_if": "{{ block.settings.show_borders }}"
     }
   ],
   "presets": [
     {
-      "name": "t:blocks.splash_newsletter.name"
+      "name": "t:blocks.splash_newsletter.name",
+      "settings": {
+        "color_scheme": "scheme_1",
+        "delay": 2,
+        "panel_width": 64,
+        "accessibility_label": "Newsletter signup",
+        "direction": "horizontal",
+        "distribute": "start",
+        "align": "stretch",
+        "content_alignment": "left",
+        "wrap": false,
+        "items_width": "equal",
+        "stack_below": "tablet",
+        "content_alignment_mobile": "inherit",
+        "gap": "none",
+        "padding": "none",
+        "show_borders": false
+      },
+      "blocks": [
+        {
+          "type": "media",
+          "settings": {
+            "ratio": "adapt",
+            "fit": "cover",
+            "reveal": false,
+            "padding": "none"
+          }
+        },
+        {
+          "type": "group",
+          "settings": {
+            "direction": "vertical",
+            "align_vertical": "stretch",
+            "content_alignment": "left",
+            "items_height": "natural",
+            "vertical_gap": "small",
+            "padding": "xlarge",
+            "show_borders": false
+          },
+          "blocks": [
+            {
+              "type": "text",
+              "settings": {
+                "text": "Private offer",
+                "style": "subheading",
+                "layout": "eyebrow",
+                "element": "p",
+                "alignment": "inherit",
+                "padding": "none"
+              }
+            },
+            {
+              "type": "text",
+              "settings": {
+                "text": "A Welcome, Just for You",
+                "style": "heading_2",
+                "layout": "standard",
+                "element": "h2",
+                "alignment": "inherit",
+                "padding": "none"
+              }
+            },
+            {
+              "type": "rich-text",
+              "settings": {
+                "text": "<p>Join the private list for early access to new collections and a welcome offer for your first order.</p>",
+                "style": "paragraph",
+                "alignment": "inherit"
+              }
+            },
+            {
+              "type": "email-signup",
+              "settings": {
+                "input_label": "Email address",
+                "show_label": false,
+                "placeholder": "Email address",
+                "button_label": "Join the Private List",
+                "form_layout": "stacked",
+                "success_text": "Your welcome offer is ready.",
+                "show_offer": true,
+                "offer_code": "WELCOME10",
+                "offer_button_label": "Apply Offer & Shop",
+                "button_style": "filled",
+                "button_size": "inherit",
+                "button_radius": "inherit",
+                "button_border_width": "inherit"
+              }
+            },
+            {
+              "type": "button",
+              "settings": {
+                "button_label": "Continue browsing",
+                "button_link": "#close",
+                "button_style": "link",
+                "button_size": "inherit"
+              }
+            },
+            {
+              "type": "rich-text",
+              "settings": {
+                "text": "<p>By subscribing you agree to receive email from this shop. Unsubscribe anytime.</p>",
+                "style": "caption",
+                "alignment": "inherit"
+              }
+            }
+          ]
+        }
+      ]
     }
   ]
 }

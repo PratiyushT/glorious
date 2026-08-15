@@ -1,44 +1,309 @@
-{%- comment -%}Reusable newsletter form; Shopify customer tags provide the subscription source of truth.{%- endcomment -%}
-<div class="email-signup-block align-{{ block.settings.alignment }}" {{ block.shopify_attributes }}>
-  {%- if block.settings.heading != blank -%}<p style="{% render 'text-style', preset: block.settings.heading_style %}">{{ block.settings.heading }}</p>{%- endif -%}
-  {%- if block.settings.text != blank -%}<div class="rte">{{ block.settings.text }}</div>{%- endif -%}
-  {% form 'customer', class: 'email-signup-block__form' %}
-    <input type="hidden" name="contact[tags]" value="newsletter">
-    <label class="visually-hidden" for="EmailSignup-{{ block.id }}">{{ 'newsletter.email' | t }}</label>
-    <input id="EmailSignup-{{ block.id }}" class="field" type="email" name="contact[email]" value="{{ form.email }}" placeholder="{{ 'newsletter.email' | t | escape }}" autocorrect="off" autocapitalize="off" autocomplete="email" required>
-    <button class="button button--{{ block.settings.button_style }}" type="submit">{{ block.settings.button_label }}</button>
-    {%- if form.posted_successfully? -%}<p class="form-status form-status--success" role="status">{{ 'newsletter.success' | t }}</p>{%- endif -%}
-    {%- if form.errors -%}<div class="form-status form-status--error" role="alert">{{ form.errors | default_errors }}</div>{%- endif -%}
-  {% endform %}
+{%- comment -%}
+  The newsletter's one special child. The surrounding message, media, fine
+  print, and dismiss action stay ordinary composable blocks; this block owns
+  only the customer form state and the discount hand-off that can exist only
+  after a successful subscription.
+{%- endcomment -%}
+
+{%- liquid
+  assign form_id = 'EmailSignup-' | append: block.id
+  assign field_id = form_id | append: '-email'
+  assign input_label = block.settings.input_label
+  if input_label == blank
+    assign input_label = 'newsletter.email' | t
+  endif
+  assign placeholder = block.settings.placeholder | default: input_label
+  assign success_text = block.settings.success_text
+  if success_text == blank
+    assign success_text = 'newsletter.success' | t
+  endif
+-%}
+
+<div
+  class="email-signup-block"
+  data-form-layout="{{ block.settings.form_layout | default: 'stacked' }}"
+  {{ block.shopify_attributes }}
+>
+  {%- form 'customer', class: 'email-signup-block__form', id: form_id -%}
+    <input type="hidden" name="contact[tags]" value="newsletter,splash-offer">
+
+    {%- if form.posted_successfully? -%}
+      <div class="email-signup-block__success" role="status">
+        <p>{{ success_text }}</p>
+
+        {%- if block.settings.show_offer -%}
+          {% render 'discount-offer',
+            code: block.settings.offer_code,
+            destination: block.settings.offer_destination,
+            button_label: block.settings.offer_button_label,
+            appearance: block.settings
+          %}
+        {%- endif -%}
+      </div>
+    {%- else -%}
+      <div class="email-signup-block__fields">
+        <label{% unless block.settings.show_label %} class="visually-hidden"{% endunless %} for="{{ field_id }}">
+          {{- input_label -}}
+        </label>
+        <input
+          id="{{ field_id }}"
+          class="field"
+          type="email"
+          name="contact[email]"
+          value="{{ form.email | escape }}"
+          placeholder="{{ placeholder | escape }}"
+          autocorrect="off"
+          autocapitalize="off"
+          autocomplete="email"
+          required
+          data-overlay-autofocus
+        >
+        {%- render 'button',
+          label: block.settings.button_label,
+          element: 'button',
+          button_type: 'submit',
+          appearance: block.settings,
+          class: 'email-signup-block__submit'
+        -%}
+      </div>
+
+      {%- if form.errors -%}
+        <div class="form-status form-status--error" role="alert">{{ form.errors | default_errors }}</div>
+      {%- endif -%}
+    {%- endif -%}
+  {%- endform -%}
 </div>
 
 {% schema %}
 {
-  "name": "Email signup",
+  "name": "t:blocks.email_signup.name",
   "tag": null,
   "settings": [
-    { "type": "inline_richtext", "id": "heading", "label": "Heading", "default": "Join our list" },
     {
-      "type": "select", "id": "heading_style", "label": "Heading style",
-      "options": [
-        { "value": "heading_2", "label": "Heading 2" }, { "value": "heading_3", "label": "Heading 3" }, { "value": "subheading", "label": "Subheading" }
-      ], "default": "heading_3"
-    },
-    { "type": "richtext", "id": "text", "label": "Text" },
-    { "type": "text", "id": "button_label", "label": "Button label", "default": "Subscribe" },
-    {
-      "type": "select", "id": "button_style", "label": "Button style",
-      "options": [
-        { "value": "filled", "label": "Filled" }, { "value": "outline", "label": "Outline" }
-      ], "default": "filled"
+      "type": "text",
+      "id": "input_label",
+      "label": "t:blocks.email_signup.input_label.label",
+      "default": "Email address"
     },
     {
-      "type": "select", "id": "alignment", "label": "Alignment",
+      "type": "checkbox",
+      "id": "show_label",
+      "label": "t:blocks.email_signup.show_label.label",
+      "default": false
+    },
+    {
+      "type": "text",
+      "id": "placeholder",
+      "label": "t:blocks.email_signup.placeholder.label",
+      "default": "Email address"
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "t:sections.newsletter_popup.submit_label.label",
+      "default": "Join the Private List"
+    },
+    {
+      "type": "select",
+      "id": "form_layout",
+      "label": "t:blocks.email_signup.form_layout.label",
       "options": [
-        { "value": "left", "label": "Left" }, { "value": "center", "label": "Center" }, { "value": "right", "label": "Right" }
-      ], "default": "left"
+        { "value": "stacked", "label": "t:blocks.email_signup.form_layout.stacked" },
+        { "value": "inline", "label": "t:blocks.email_signup.form_layout.inline" }
+      ],
+      "default": "stacked"
+    },
+    {
+      "type": "header",
+      "content": "t:sections.newsletter_popup.success_header"
+    },
+    {
+      "type": "textarea",
+      "id": "success_text",
+      "label": "t:sections.all.text.label",
+      "default": "Your welcome offer is ready."
+    },
+    {
+      "type": "checkbox",
+      "id": "show_offer",
+      "label": "t:blocks.email_signup.show_offer.label",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "offer_code",
+      "label": "t:sections.newsletter_popup.offer_code.label",
+      "info": "t:sections.newsletter_popup.offer_code.info",
+      "default": "WELCOME10",
+      "visible_if": "{{ block.settings.show_offer }}"
+    },
+    {
+      "type": "url",
+      "id": "offer_destination",
+      "label": "t:sections.newsletter_popup.offer_destination.label",
+      "info": "t:sections.newsletter_popup.offer_destination.info",
+      "visible_if": "{{ block.settings.show_offer }}"
+    },
+    {
+      "type": "text",
+      "id": "offer_button_label",
+      "label": "t:sections.newsletter_popup.offer_button_label.label",
+      "default": "Apply Offer & Shop",
+      "visible_if": "{{ block.settings.show_offer }}"
+    },
+    {
+      "type": "header",
+      "content": "t:blocks.button.appearance_header"
+    },
+    {
+      "type": "select",
+      "id": "button_style",
+      "label": "t:sections.all.button_style.label",
+      "options": [
+        { "value": "filled", "label": "t:settings_schema.button_style.filled" },
+        { "value": "outline", "label": "t:settings_schema.button_style.outline" },
+        { "value": "link", "label": "t:settings_schema.button_style.link" },
+        { "value": "quiet", "label": "t:settings_schema.button_style.quiet" },
+        { "value": "arrow", "label": "t:settings_schema.button_style.arrow" },
+        { "value": "arrow_outline", "label": "t:settings_schema.button_style.arrow_outline" }
+      ],
+      "default": "filled"
+    },
+    {
+      "type": "select",
+      "id": "button_size",
+      "label": "t:sections.all.button_size.label",
+      "options": [
+        { "value": "inherit", "label": "t:settings_schema.button_size.inherit" },
+        { "value": "xs", "label": "t:settings_schema.button_size.xs" },
+        { "value": "sm", "label": "t:settings_schema.button_size.sm" },
+        { "value": "md", "label": "t:settings_schema.button_size.md" },
+        { "value": "lg", "label": "t:settings_schema.button_size.lg" },
+        { "value": "xl", "label": "t:settings_schema.button_size.xl" }
+      ],
+      "default": "inherit"
+    },
+    {
+      "type": "select",
+      "id": "button_radius",
+      "label": "t:sections.all.button_radius.label",
+      "options": [
+        { "value": "inherit", "label": "t:settings_schema.button_radius.inherit" },
+        { "value": "square", "label": "t:settings_schema.button_radius.square" },
+        { "value": "soft", "label": "t:settings_schema.button_radius.soft" },
+        { "value": "rounded", "label": "t:settings_schema.button_radius.rounded" },
+        { "value": "pill", "label": "t:settings_schema.button_radius.pill" }
+      ],
+      "default": "inherit",
+      "visible_if": "{{ block.settings.button_style == 'filled' or block.settings.button_style == 'outline' or block.settings.button_style == 'arrow_outline' }}"
+    },
+    {
+      "type": "select",
+      "id": "button_border_width",
+      "label": "t:blocks.button.border_width.label",
+      "options": [
+        { "value": "inherit", "label": "t:blocks.button.inherit" },
+        { "value": "xs", "label": "t:settings_schema.buttons.button_border_width.options__xs" },
+        { "value": "sm", "label": "t:settings_schema.buttons.button_border_width.options__sm" },
+        { "value": "md", "label": "t:settings_schema.buttons.button_border_width.options__md" },
+        { "value": "lg", "label": "t:settings_schema.buttons.button_border_width.options__lg" },
+        { "value": "xl", "label": "t:settings_schema.buttons.button_border_width.options__xl" }
+      ],
+      "default": "inherit",
+      "visible_if": "{{ block.settings.button_style == 'outline' or block.settings.button_style == 'arrow_outline' }}"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "t:blocks.button.background_color.label",
+      "info": "t:blocks.button.color_info",
+      "visible_if": "{{ block.settings.button_style == 'filled' }}"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "t:blocks.button.text_color.label",
+      "info": "t:blocks.button.color_info"
+    },
+    {
+      "type": "color",
+      "id": "border_color",
+      "label": "t:blocks.button.border_color.label",
+      "info": "t:blocks.button.color_info",
+      "visible_if": "{{ block.settings.button_style == 'outline' or block.settings.button_style == 'arrow_outline' }}"
+    },
+    {
+      "type": "color",
+      "id": "underline_color",
+      "label": "t:blocks.button.underline_color.label",
+      "info": "t:blocks.button.color_info",
+      "visible_if": "{{ block.settings.button_style == 'link' or block.settings.button_style == 'quiet' }}"
+    },
+    {
+      "type": "color",
+      "id": "arrow_color",
+      "label": "t:blocks.button.arrow_color.label",
+      "info": "t:blocks.button.color_info",
+      "visible_if": "{{ block.settings.button_style == 'arrow' }}"
+    },
+    {
+      "type": "header",
+      "content": "t:blocks.button.hover_header"
+    },
+    {
+      "type": "color",
+      "id": "hover_background_color",
+      "label": "t:blocks.button.hover_background_color.label",
+      "info": "t:blocks.button.color_info",
+      "visible_if": "{{ block.settings.button_style == 'filled' or block.settings.button_style == 'outline' or block.settings.button_style == 'arrow_outline' }}"
+    },
+    {
+      "type": "color",
+      "id": "hover_text_color",
+      "label": "t:blocks.button.hover_text_color.label",
+      "info": "t:blocks.button.color_info"
+    },
+    {
+      "type": "color",
+      "id": "hover_border_color",
+      "label": "t:blocks.button.hover_border_color.label",
+      "info": "t:blocks.button.color_info",
+      "visible_if": "{{ block.settings.button_style == 'outline' or block.settings.button_style == 'arrow_outline' }}"
+    },
+    {
+      "type": "color",
+      "id": "hover_underline_color",
+      "label": "t:blocks.button.hover_underline_color.label",
+      "info": "t:blocks.button.color_info",
+      "visible_if": "{{ block.settings.button_style == 'link' or block.settings.button_style == 'quiet' }}"
+    },
+    {
+      "type": "color",
+      "id": "hover_arrow_color",
+      "label": "t:blocks.button.hover_arrow_color.label",
+      "info": "t:blocks.button.color_info",
+      "visible_if": "{{ block.settings.button_style == 'arrow' }}"
     }
   ],
-  "presets": [{ "name": "Email signup" }]
+  "presets": [
+    {
+      "name": "t:blocks.email_signup.name",
+      "settings": {
+        "input_label": "Email address",
+        "show_label": false,
+        "placeholder": "Email address",
+        "button_label": "Join the Private List",
+        "form_layout": "stacked",
+        "success_text": "Your welcome offer is ready.",
+        "show_offer": true,
+        "offer_code": "WELCOME10",
+        "offer_button_label": "Apply Offer & Shop",
+        "button_style": "filled",
+        "button_size": "inherit",
+        "button_radius": "inherit",
+        "button_border_width": "inherit"
+      }
+    }
+  ]
 }
 {% endschema %}

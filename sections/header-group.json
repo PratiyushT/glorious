@@ -35,7 +35,7 @@
       "settings": {
         "color_scheme": "scheme_2",
         "visibility": "everywhere",
-        "bar_height": 40,
+        "content_width": "full",
         "mode": "marquee",
         "marquee_speed": "balanced",
         "auto_rotate": true,
@@ -177,37 +177,183 @@
           "settings": {
             "color_scheme": "scheme_1",
             "delay": 2,
-            "layout": "split",
-            "media_position": "left",
+            "panel_width": 64,
+            "accessibility_label": "Newsletter signup",
+            "direction": "horizontal",
+            "distribute": "start",
+            "align": "stretch",
+            "align_vertical": "stretch",
             "content_alignment": "left",
-            "panel_width": 54,
-            "image": "",
-            "eyebrow": "Private offer",
-            "heading": "A Welcome, Just for You",
-            "text": "Join the private list for early access to new collections and a welcome offer for your first order.",
-            "submit_label": "Join the Private List",
-            "decline_label": "Continue browsing",
-            "fine_print": "By subscribing you agree to receive email from this shop. Unsubscribe anytime.",
-            "success_heading": "Your Private Offer",
-            "success_text": "Your welcome code is ready. Copy it or apply it as you continue shopping.",
-            "offer_code": "WELCOME10",
-            "offer_destination": "/collections/all",
-            "offer_button_label": "Apply Offer & Shop",
-            "button_style": "filled",
-            "button_size": "inherit",
-            "button_radius": "inherit",
-            "button_border_width": "inherit",
-            "background_color": "",
-            "text_color": "",
+            "wrap": false,
+            "items_width": "equal",
+            "items_height": "natural",
+            "stack_below": "tablet",
+            "content_alignment_mobile": "inherit",
+            "gap": "none",
+            "vertical_gap": "small",
+            "padding": "none",
+            "show_borders": false,
+            "group_border_width": 1,
             "border_color": "",
-            "underline_color": "",
-            "arrow_color": "",
-            "hover_background_color": "",
-            "hover_text_color": "",
-            "hover_border_color": "",
-            "hover_underline_color": "",
-            "hover_arrow_color": ""
-          }
+            "border_top": true,
+            "border_right": true,
+            "border_bottom": true,
+            "border_left": true
+          },
+          "blocks": {
+            "media": {
+              "type": "media",
+              "settings": {
+                "video": "",
+                "image": "",
+                "autoplay": true,
+                "loop": true,
+                "ratio": "adapt",
+                "fit": "cover",
+                "arch": false,
+                "frame": false,
+                "reveal": false,
+                "reveal_delay": 0,
+                "caption_left": "",
+                "caption_right": "",
+                "padding": "none"
+              },
+              "blocks": {}
+            },
+            "content": {
+              "type": "group",
+              "settings": {
+                "direction": "vertical",
+                "distribute": "between",
+                "align": "baseline",
+                "align_vertical": "stretch",
+                "content_alignment": "left",
+                "wrap": true,
+                "items_width": "natural",
+                "items_height": "natural",
+                "stack_below": "mobile",
+                "content_alignment_mobile": "inherit",
+                "gap": "medium",
+                "vertical_gap": "small",
+                "padding": "xlarge",
+                "show_borders": false,
+                "group_border_width": 1,
+                "border_color": "",
+                "border_top": true,
+                "border_right": true,
+                "border_bottom": true,
+                "border_left": true
+              },
+              "blocks": {
+                "eyebrow": {
+                  "type": "text",
+                  "settings": {
+                    "style": "subheading",
+                    "layout": "eyebrow",
+                    "element": "p",
+                    "alignment": "inherit",
+                    "text": "Private offer",
+                    "padding": "none"
+                  },
+                  "blocks": {}
+                },
+                "heading": {
+                  "type": "text",
+                  "settings": {
+                    "style": "heading_2",
+                    "layout": "standard",
+                    "element": "h2",
+                    "alignment": "inherit",
+                    "text": "A Welcome, Just for You",
+                    "padding": "none"
+                  },
+                  "blocks": {}
+                },
+                "intro": {
+                  "type": "rich-text",
+                  "settings": {
+                    "style": "paragraph",
+                    "alignment": "inherit",
+                    "text": "<p>Join the private list for early access to new collections and a welcome offer for your first order.</p>"
+                  },
+                  "blocks": {}
+                },
+                "form": {
+                  "type": "email-signup",
+                  "settings": {
+                    "input_label": "Email address",
+                    "show_label": false,
+                    "placeholder": "Email address",
+                    "button_label": "Join the Private List",
+                    "form_layout": "stacked",
+                    "success_text": "Your welcome offer is ready.",
+                    "show_offer": true,
+                    "offer_code": "WELCOME10",
+                    "offer_destination": "/collections/all",
+                    "offer_button_label": "Apply Offer & Shop",
+                    "button_style": "filled",
+                    "button_size": "inherit",
+                    "button_radius": "inherit",
+                    "button_border_width": "inherit",
+                    "background_color": "",
+                    "text_color": "",
+                    "border_color": "",
+                    "underline_color": "",
+                    "arrow_color": "",
+                    "hover_background_color": "",
+                    "hover_text_color": "",
+                    "hover_border_color": "",
+                    "hover_underline_color": "",
+                    "hover_arrow_color": ""
+                  },
+                  "blocks": {}
+                },
+                "dismiss": {
+                  "type": "button",
+                  "settings": {
+                    "button_label": "Continue browsing",
+                    "button_link": "#close",
+                    "button_style": "link",
+                    "button_size": "inherit",
+                    "button_radius": "inherit",
+                    "button_border_width": "inherit",
+                    "background_color": "",
+                    "text_color": "",
+                    "border_color": "",
+                    "underline_color": "",
+                    "arrow_color": "",
+                    "hover_background_color": "",
+                    "hover_text_color": "",
+                    "hover_border_color": "",
+                    "hover_underline_color": "",
+                    "hover_arrow_color": ""
+                  },
+                  "blocks": {}
+                },
+                "fine-print": {
+                  "type": "rich-text",
+                  "settings": {
+                    "style": "caption",
+                    "alignment": "inherit",
+                    "text": "<p>By subscribing you agree to receive email from this shop. Unsubscribe anytime.</p>"
+                  },
+                  "blocks": {}
+                }
+              },
+              "block_order": [
+                "eyebrow",
+                "heading",
+                "intro",
+                "form",
+                "dismiss",
+                "fine-print"
+              ]
+            }
+          },
+          "block_order": [
+            "media",
+            "content"
+          ]
         }
       },
       "block_order": [

@@ -18,7 +18,39 @@
     {
       "name": "t:sections.newsletter_popup.name",
       "blocks": [
-        { "type": "_splash-newsletter" }
+        {
+          "type": "_splash-newsletter",
+          "settings": {
+            "color_scheme": "scheme_1",
+            "delay": 2,
+            "panel_width": 64,
+            "accessibility_label": "Newsletter signup",
+            "direction": "horizontal",
+            "distribute": "start",
+            "align": "stretch",
+            "content_alignment": "left",
+            "wrap": false,
+            "items_width": "equal",
+            "stack_below": "tablet",
+            "gap": "none",
+            "padding": "none"
+          },
+          "blocks": [
+            { "type": "media", "settings": { "ratio": "adapt", "fit": "cover", "reveal": false, "padding": "none" } },
+            {
+              "type": "group",
+              "settings": { "direction": "vertical", "align_vertical": "stretch", "content_alignment": "left", "vertical_gap": "small", "padding": "xlarge" },
+              "blocks": [
+                { "type": "text", "settings": { "text": "Private offer", "style": "subheading", "layout": "eyebrow", "element": "p" } },
+                { "type": "text", "settings": { "text": "A Welcome, Just for You", "style": "heading_2", "element": "h2" } },
+                { "type": "rich-text", "settings": { "text": "<p>Join the private list for early access to new collections and a welcome offer for your first order.</p>" } },
+                { "type": "email-signup", "settings": { "button_label": "Join the Private List", "form_layout": "stacked", "show_offer": true, "offer_code": "WELCOME10", "offer_button_label": "Apply Offer & Shop" } },
+                { "type": "button", "settings": { "button_label": "Continue browsing", "button_link": "#close", "button_style": "link" } },
+                { "type": "rich-text", "settings": { "text": "<p>By subscribing you agree to receive email from this shop. Unsubscribe anytime.</p>", "style": "caption" } }
+              ]
+            }
+          ]
+        }
       ]
     }
   ],

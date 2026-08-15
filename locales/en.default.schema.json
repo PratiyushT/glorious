@@ -1437,6 +1437,26 @@
     "splash_newsletter": {
       "name": "Newsletter"
     },
+    "email_signup": {
+      "name": "Newsletter form",
+      "input_label": {
+        "label": "Email label"
+      },
+      "show_label": {
+        "label": "Show email label"
+      },
+      "placeholder": {
+        "label": "Email placeholder"
+      },
+      "form_layout": {
+        "label": "Form layout",
+        "stacked": "Stacked",
+        "inline": "Side by side"
+      },
+      "show_offer": {
+        "label": "Show a discount after signup"
+      }
+    },
     "discount_offer": {
       "name": "Discount offer"
     }
@@ -1575,8 +1595,10 @@
         "everywhere": "Every page",
         "home": "Home page only"
       },
-      "bar_height": {
-        "label": "Bar thickness"
+      "content_width": {
+        "label": "Content width",
+        "full": "Full screen",
+        "page": "Page width"
       },
       "mode": {
         "label": "Mode",
@@ -2417,6 +2439,11 @@
     },
     "newsletter_popup": {
       "name": "Splash screens",
+      "blocks": {
+        "splash": {
+          "name": "Splash screen"
+        }
+      },
       "delay": {
         "label": "Delay before it appears",
         "info": "Each splash is shown once per visitor. If another dialog is open, this one waits its turn."

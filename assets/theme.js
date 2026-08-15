@@ -334,13 +334,31 @@
       if (!bindOnce(root, 'boundAnnouncement')) return;
 
       var storageKey = root.dataset.announcementStorageKey || '';
+      var heightObserver = null;
+      var resizeFallback = null;
+
+      function syncAnnouncementHeight() {
+        var height = root.hidden ? 0 : Math.ceil(root.getBoundingClientRect().height);
+        document.documentElement.style.setProperty('--announcement-bar-height', height + 'px');
+      }
+
       var dismissed = storageKey && safeStore(function () {
         return sessionStorage.getItem(storageKey) === 'dismissed';
       }, false);
       if (dismissed) {
         root.hidden = true;
+        syncAnnouncementHeight();
         return;
       }
+
+      if ('ResizeObserver' in window) {
+        heightObserver = new ResizeObserver(syncAnnouncementHeight);
+        heightObserver.observe(root);
+      } else {
+        resizeFallback = syncAnnouncementHeight;
+        window.addEventListener('resize', resizeFallback);
+      }
+      syncAnnouncementHeight();
 
       var stop = function () {};
       var close = root.querySelector('[data-announcement-close]');
@@ -351,6 +369,9 @@
           }
           stop();
           root.hidden = true;
+          syncAnnouncementHeight();
+          if (heightObserver) heightObserver.disconnect();
+          if (resizeFallback) window.removeEventListener('resize', resizeFallback);
         });
       }
 
@@ -662,6 +683,17 @@
       if (close) {
         var closing = overlays[close.dataset.overlayClose];
         if (closing) closing.close(true);
+        return;
+      }
+
+      var dismiss = target.closest('[data-overlay-dismiss]');
+      if (dismiss) {
+        var dismissHost = dismiss.closest('[data-overlay]');
+        var dismissing = dismissHost && overlays[dismissHost.dataset.overlay];
+        if (dismissing) {
+          event.preventDefault();
+          dismissing.close(true);
+        }
         return;
       }
 

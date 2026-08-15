@@ -12,6 +12,19 @@
 {%- liquid
   assign button_link = block.settings.button_link
   assign external = false
+  assign button_element = 'a'
+  capture button_attributes
+    echo block.shopify_attributes
+  endcapture
+
+  if button_link == '#close'
+    assign button_element = 'button'
+    capture button_attributes
+      echo 'data-overlay-dismiss '
+      echo block.shopify_attributes
+    endcapture
+  endif
+
   if button_link contains '://'
     assign external = true
   endif
@@ -20,6 +33,7 @@
 {%- render 'button',
   label: block.settings.button_label,
   link: button_link,
+  element: button_element,
   new_tab: external,
   style: block.settings.button_style,
   size: block.settings.button_size,
@@ -35,7 +49,7 @@
   hover_border_color: block.settings.hover_border_color,
   hover_underline_color: block.settings.hover_underline_color,
   hover_arrow_color: block.settings.hover_arrow_color,
-  attributes: block.shopify_attributes -%}
+  attributes: button_attributes -%}
 
 {% schema %}
 {

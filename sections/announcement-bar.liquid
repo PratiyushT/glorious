@@ -36,9 +36,6 @@
 -%}
 
 {%- if show_announcement and message_count > 0 -%}
-  <style>
-    :root { --announcement-bar-height: {{ section.settings.bar_height }}px; }
-  </style>
   <div
     class="announcement announcement--{{ mode }}{% if mode == 'rotate' %} announcement--{{ section.settings.animation_style | default: 'slide' }}{% endif %} scheme-{{ section.settings.color_scheme }}"
     data-announcement
@@ -49,7 +46,7 @@
     style="--announcement-marquee-duration: {{ marquee_duration }}s;{{ announcement_text_style }}{% unless section.settings.alignment == 'inherit' %}text-align:{{ section.settings.alignment }};{% endunless %}"
   >
     {%- if mode == 'marquee' -%}
-      <div class="announcement__inner announcement__inner--marquee page-width">
+      <div class="announcement__inner announcement__inner--marquee{% if section.settings.content_width == 'page' %} page-width{% else %} announcement__inner--full{% endif %}">
         <div class="announcement__marquee" data-announcement-marquee>
           <div class="announcement__marquee-track" data-announcement-marquee-track>
             {%- for copy_index in (1..2) -%}
@@ -74,7 +71,7 @@
         {% render 'overlay-close', class: 'announcement__close', attributes: close_attributes %}
       </div>
     {%- else -%}
-      <div class="announcement__inner announcement__inner--rotate page-width">
+      <div class="announcement__inner announcement__inner--rotate{% if section.settings.content_width == 'page' %} page-width{% else %} announcement__inner--full{% endif %}">
         {%- if message_count > 1 -%}
           <button class="announcement__control announcement__control--previous" type="button" data-announcement-prev aria-label="{{ 'announcement.previous' | t }}">
             {% render 'icon', icon: 'chevron-left', width: 8, height: 12 %}
@@ -145,14 +142,14 @@
       "default": "everywhere"
     },
     {
-      "type": "range",
-      "id": "bar_height",
-      "label": "t:sections.announcement_bar.bar_height.label",
-      "min": 40,
-      "max": 72,
-      "step": 4,
-      "unit": "px",
-      "default": 40
+      "type": "select",
+      "id": "content_width",
+      "label": "t:sections.announcement_bar.content_width.label",
+      "options": [
+        { "value": "full", "label": "t:sections.announcement_bar.content_width.full" },
+        { "value": "page", "label": "t:sections.announcement_bar.content_width.page" }
+      ],
+      "default": "full"
     },
     {
       "type": "select",
