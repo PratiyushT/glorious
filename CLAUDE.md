@@ -2322,6 +2322,10 @@ unit:
 | `button_size` | Extra small…Extra large | 28 / 16 / 12 |
 | `button_radius` | Square / Soft / Rounded / Pill | Pill |
 
+- **A zero rung is named for what it does, not as a size.** `radius_base` `xs`
+  is Square; `border_width` and `button_border_width` `xs` are None. The plain
+  Arrow is the deliberate exception: its same internal `xs` rung remains
+  Extra small because the icon formula keeps a real 1px minimum stroke.
 - **`micro` and `button_size` are merges, on the same argument as the fluid
   scales.** Micro size and micro tracking are one decision about a label;
   button padding-x, padding-y and label size are one decision about a button,

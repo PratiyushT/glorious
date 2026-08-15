@@ -303,7 +303,7 @@
       "radius_base": {
         "label": "Corner radius",
         "info": "The reference design is square.",
-        "options__xs": "Extra small",
+        "options__xs": "Square",
         "options__sm": "Small",
         "options__md": "Medium",
         "options__lg": "Large",
@@ -320,7 +320,7 @@
       },
       "border_width": {
         "label": "Border width",
-        "options__xs": "Extra small",
+        "options__xs": "None",
         "options__sm": "Small",
         "options__md": "Medium",
         "options__lg": "Large",
@@ -379,7 +379,7 @@
       },
       "button_border_width": {
         "label": "Button border width",
-        "options__xs": "Extra small",
+        "options__xs": "None",
         "options__sm": "Small",
         "options__md": "Medium",
         "options__lg": "Large",
@@ -392,7 +392,8 @@
         "label": "Underline width"
       },
       "arrow_width": {
-        "label": "Arrow stroke width"
+        "label": "Arrow stroke width",
+        "options__xs": "Extra small"
       },
       "hover_motion": {
         "label": "Hover animation",

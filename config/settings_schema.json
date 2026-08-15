@@ -2698,7 +2698,7 @@
         "id": "arrow_button_border_width",
         "label": "t:settings_schema.buttons.arrow_width.label",
         "options": [
-          { "value": "xs", "label": "t:settings_schema.buttons.button_border_width.options__xs" },
+          { "value": "xs", "label": "t:settings_schema.buttons.arrow_width.options__xs" },
           { "value": "sm", "label": "t:settings_schema.buttons.button_border_width.options__sm" },
           { "value": "md", "label": "t:settings_schema.buttons.button_border_width.options__md" },
           { "value": "lg", "label": "t:settings_schema.buttons.button_border_width.options__lg" },
