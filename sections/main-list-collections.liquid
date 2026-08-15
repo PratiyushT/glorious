@@ -24,19 +24,25 @@
   class="section content-surface scheme-{{ section.settings.color_scheme }}"
   style="{% render 'section-style', padding_top: section.settings.padding_top, padding_bottom: section.settings.padding_bottom %} --content-columns: {{ section.settings.columns }}; --content-grid-gap: {{ content_gap }};"
 >
-  <div class="page-width">
-    <div class="collection-index-grid">
-      {%- for collection in collections -%}
-        {%- unless hidden_handles contains collection.handle -%}
-          {% content_for 'block', type: '_collection-card', id: 'collection-card', closest.collection: collection %}
-        {%- endunless -%}
-      {%- else -%}
-        {%- for i in (1..section.settings.columns) -%}
-          {% content_for 'block', type: '_collection-card', id: 'collection-card', closest.collection: blank %}
+  {%- paginate collections by section.settings.collections_per_page -%}
+    <div class="page-width">
+      <div class="collection-index-grid">
+        {%- for collection in collections -%}
+          {%- unless hidden_handles contains collection.handle -%}
+            {% content_for 'block', type: '_collection-card', id: 'collection-card', closest.collection: collection %}
+          {%- endunless -%}
+        {%- else -%}
+          {%- for i in (1..section.settings.columns) -%}
+            {% content_for 'block', type: '_collection-card', id: 'collection-card', closest.collection: blank %}
+          {%- endfor -%}
         {%- endfor -%}
-      {%- endfor -%}
+      </div>
+
+      <div class="catalog-pagination-wrap">
+        {% render 'catalog-pagination', paginate: paginate %}
+      </div>
     </div>
-  </div>
+  {%- endpaginate -%}
 </section>
 
 {% schema %}
@@ -46,6 +52,7 @@
   "settings": [
     { "type": "color_scheme", "id": "color_scheme", "label": "t:sections.all.color_scheme.label", "default": "scheme_1" },
     { "type": "range", "id": "columns", "label": "t:sections.collection_list.columns.label", "min": 1, "max": 5, "step": 1, "default": 3 },
+    { "type": "range", "id": "collections_per_page", "label": "t:sections.main_list_collections.collections_per_page", "min": 6, "max": 48, "step": 6, "default": 24 },
     {
       "type": "select", "id": "gap", "label": "t:sections.catalog.card_gap",
       "options": [

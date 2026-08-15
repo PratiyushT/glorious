@@ -251,8 +251,7 @@
         "hover_background": "Hover background",
         "hover_text": "Hover text",
         "hover_border": "Hover border",
-        "hover_underline": "Hover underline",
-        "hover_arrow": "Hover arrow"
+        "hover_underline": "Hover underline"
       },
       "interface": {
         "header": "Interface and feedback",
@@ -260,7 +259,11 @@
         "scrollbar": "Scrollbar",
         "scrollbar_hover": "Scrollbar on hover",
         "loader": "Loader",
+        "loader_info": "Inline waits such as search and catalog updates.",
+        "loader_on_veil": "Loader on veil",
+        "loader_on_veil_info": "Full-screen waits shown over the overlay veil.",
         "veil": "Overlay veil",
+        "veil_info": "The translucent wash behind drawers, Quick View, and splash screens.",
         "success": "Success",
         "error": "Error"
       },
@@ -2103,7 +2106,8 @@
       "addresses_per_page": "Addresses per page"
     },
     "main_list_collections": {
-      "name": "Collection index"
+      "name": "Collection index",
+      "collections_per_page": "Collections per page"
     },
     "contact_form": {
       "name": "Contact form",

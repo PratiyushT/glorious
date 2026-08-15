@@ -83,6 +83,9 @@
 
   {%- paginate collection.products by section.settings.products_per_page -%}
     <main class="catalog-main">
+      <div class="catalog-loading" data-catalog-loading hidden>
+        {% render 'loader', size: 'lg' %}
+      </div>
       <div class="catalog-shell">
         <div class="catalog-grid-header{% unless section.settings.show_result_count %} catalog-grid-header--search-only{% endunless %}">
           {%- if section.settings.show_search -%}

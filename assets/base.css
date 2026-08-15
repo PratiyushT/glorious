@@ -3624,7 +3624,26 @@ a {
 }
 
 .catalog-main {
+  position: relative;
   padding-block: var(--space-sm) clamp(4.5rem, 9vw, 6.875rem);
+}
+
+.catalog-loading {
+  position: fixed;
+  inset: 0;
+  z-index: 140;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}
+
+.catalog-loading[hidden] {
+  display: none;
+}
+
+.catalog-page[aria-busy='true'] .catalog-main > .catalog-shell {
+  opacity: 0.28;
+  transition: opacity 0.2s ease;
 }
 
 .catalog-grid-header {
@@ -8968,7 +8987,7 @@ body:has(.announcement[data-announcement-header]:not([hidden])) .nav--pill {
 }
 
 .quick-view.is-loading .loader {
-  color: var(--loader-fullscreen-ink, var(--loader-ink, var(--c-text)));
+  color: var(--loader-on-veil-ink, var(--loader-ink, var(--c-text)));
 }
 
 .quick-view.is-loading .quick-view__close {

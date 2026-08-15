@@ -2187,12 +2187,6 @@
             "default": "#80601F"
           },
           {
-            "type": "color",
-            "id": "arrow_button_hover_arrow",
-            "label": "t:settings_schema.colors.button_colors.hover_arrow",
-            "default": "#80601F"
-          },
-          {
             "type": "header",
             "content": "t:settings_schema.colors.arrow_outline.header"
           },
@@ -2246,12 +2240,21 @@
             "type": "color",
             "id": "loader",
             "label": "t:settings_schema.colors.interface.loader",
+            "info": "t:settings_schema.colors.interface.loader_info",
             "default": "#80601F"
+          },
+          {
+            "type": "color",
+            "id": "loader_on_veil",
+            "label": "t:settings_schema.colors.interface.loader_on_veil",
+            "info": "t:settings_schema.colors.interface.loader_on_veil_info",
+            "default": "#F4F0E8"
           },
           {
             "type": "color",
             "id": "veil",
             "label": "t:settings_schema.colors.interface.veil",
+            "info": "t:settings_schema.colors.interface.veil_info",
             "default": "#0D0C0A"
           },
           {

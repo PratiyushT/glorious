@@ -4718,6 +4718,12 @@
     return url;
   }
 
+  function showCatalogLoading(root) {
+    root.setAttribute('aria-busy', 'true');
+    var loader = root.querySelector('[data-catalog-loading]');
+    if (loader) loader.hidden = false;
+  }
+
   function renderCatalog(root, targetUrl, pushState, scrollToResults) {
     if (!root || root.dataset.catalogAjax !== 'true') {
       window.location.assign(targetUrl);
@@ -4731,7 +4737,7 @@
     if (catalogRequestController) catalogRequestController.abort();
     catalogRequestController = typeof AbortController !== 'undefined' ? new AbortController() : null;
 
-    root.setAttribute('aria-busy', 'true');
+    showCatalogLoading(root);
 
     fetch(requestUrl.href, catalogRequestController ? { signal: catalogRequestController.signal } : undefined)
       .then(function (response) {

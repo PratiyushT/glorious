@@ -306,7 +306,7 @@
     --c-arrow-button-text: {{ scheme.settings.arrow_button_text | default: scheme.settings.text }};
     --c-arrow-button-arrow: {{ scheme.settings.arrow_button_arrow | default: scheme.settings.accent }};
     --c-arrow-button-text-hover: {{ scheme.settings.arrow_button_hover_text | default: scheme.settings.accent }};
-    --c-arrow-button-arrow-hover: {{ scheme.settings.arrow_button_hover_arrow | default: scheme.settings.accent }};
+    --c-arrow-button-arrow-hover: {{ scheme.settings.arrow_button_hover_text | default: scheme.settings.accent }};
     --c-arrow-outline-bg: {{ scheme.settings.arrow_outline_background | default: 'transparent' }};
     --c-arrow-outline-text: {{ scheme.settings.arrow_outline_text | default: scheme.settings.text }};
     --c-arrow-outline-border: {{ scheme.settings.arrow_outline_border | default: scheme.settings.border | default: scheme.settings.accent }};
@@ -323,7 +323,7 @@
     --c-warning: {{ scheme.settings.accent | default: scheme.settings.text }};
     --c-error: {{ scheme.settings.error | default: scheme.settings.accent }};
     --loader-ink: {{ scheme.settings.loader | default: scheme.settings.accent }};
-    --loader-fullscreen-ink: {{ dark.settings.text | default: scheme.settings.background | default: scheme.settings.text }};
+    --loader-on-veil-ink: {{ scheme.settings.loader_on_veil | default: dark.settings.text | default: scheme.settings.background }};
     --veil-tint: {{ scheme.settings.veil | default: dark.settings.background }};
     --scrollbar-thumb: {{ scheme.settings.scrollbar | default: scheme.settings.muted }};
     --scrollbar-thumb-hover: {{ scheme.settings.scrollbar_hover | default: scheme.settings.text }};

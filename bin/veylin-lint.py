@@ -662,7 +662,8 @@ def R14_shared_setting_contracts():
          {'padding_top', 'padding_bottom'}, (
             'sections/product-recommendations.liquid',
         )),
-        ('sections/main-list-collections.liquid', {'columns'}, {'padding_bottom'}, (
+        ('sections/main-list-collections.liquid',
+         {'columns', 'collections_per_page'}, {'padding_bottom'}, (
             'sections/main-blog.liquid',
         )),
     )

@@ -347,7 +347,9 @@ a merchant-entered filter label. No catalogue vocabulary belongs in Liquid.
 
 - Every control is still a real GET link or form. `initCatalog` progressively
   enhances those URLs with the Section Rendering endpoint, replaces only the
-  owning `[data-catalog-section]`, and updates browser history. Never build a
+  owning `[data-catalog-section]`, and updates browser history. While a filter,
+  sort, clear, or pagination request is in flight, that root is `aria-busy` and
+  shows the shared surface Loader over the dimmed results. Never build a
   client-side filter table or calculate result counts in JavaScript.
 - **Catalogue headers are sections made from global blocks.**
   `collection-header` and `search-header` own only their colour, measure,
@@ -3299,10 +3301,10 @@ Quick view is a separate overlay shell, not a separate product implementation.
 - The loading state is a transparent carrier for the shared loader; the actual
   modal entrance begins after its product markup arrives. Keep the close action
   focusable throughout loading. The carrier retains the Quick View's selected
-  scheme: the full-screen mark uses the nominated dark scheme's text role for
-  contrast with the veil, while the close control uses the carrier scheme's
-  text, surface, and universal close style. Never replace those with literal
-  brand colors merely because the carrier sits over a veil.
+  scheme: the full-screen mark uses that scheme's Loader on veil role, while
+  the close control uses the carrier scheme's text, surface, and universal
+  close style. Never replace those with literal brand colors merely because
+  the carrier sits over a veil.
 
 The acceptance test is behavioral parity: select the same option in Main
 product, Featured product, and Quick view and confirm the selected value, hidden
@@ -3362,10 +3364,11 @@ theme rather than a component's.
 now.** Theme settings → Loading Animation contains only non-colour loading
 behavior: `loader_style` (Diamond, Ring, Orbit — each variant reuses the same
 `loader__line`/`pathLength` contract) and `loader_close_delay`, which defaults
-to eight seconds. Each color scheme keeps its own Loader and Overlay veil roles
-under Colors → Interface and feedback; nothing non-colour remains in Colors.
-Inline waits use Loader. Full-screen waits use the nominated dark scheme's text
-role so the mark stays legible on the veil without a hard-coded color.
+to eight seconds. Each color scheme keeps its own Loader, Loader on veil, and
+Overlay veil roles under Colors → Interface and feedback; nothing non-colour
+remains in Colors. Inline and catalogue waits use Loader. Full-screen waits use
+Loader on veil so its contrast can be tuned independently from both the surface
+mark and the veil.
 The mark itself never has a background. A new variant is a sibling
 `icon-loader-*.liquid` with inline `--n`/`--exit` on each path and a `when` in
 the dispatcher — nothing else.
@@ -4032,7 +4035,9 @@ Shopify checkout, and the subtotal carries the note.
   those objects remains merchant-composed blocks.
 - **The collection index reuses Collection card exactly.** Its title, count,
   media, reveal and arrow therefore inherit one card contract instead of a
-  lookalike maintained by the template.
+  lookalike maintained by the template. The native `collections` array is
+  paginated by the section's Collections per page setting and uses the shared
+  catalogue pager rather than rendering an unbounded index.
 - **`policy` is the platform exception, and the wrap lives in the layout.**
   Shopify has no policy template type at all: `/policies/*` renders the
   platform's own `.shopify-policy__*` markup through `content_for_layout`,

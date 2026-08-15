@@ -104,6 +104,9 @@
   </div>
 
   <main class="catalog-main catalog-main--search">
+    <div class="catalog-loading" data-catalog-loading hidden>
+      {% render 'loader', size: 'lg' %}
+    </div>
     <div class="catalog-shell">
       {%- unless search.performed -%}
         {%- if section.settings.popular_source != 'none' -%}
