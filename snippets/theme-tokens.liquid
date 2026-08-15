@@ -323,6 +323,7 @@
     --c-warning: {{ scheme.settings.accent | default: scheme.settings.text }};
     --c-error: {{ scheme.settings.error | default: scheme.settings.accent }};
     --loader-ink: {{ scheme.settings.loader | default: scheme.settings.accent }};
+    --loader-fullscreen-ink: {{ dark.settings.text | default: scheme.settings.background | default: scheme.settings.text }};
     --veil-tint: {{ scheme.settings.veil | default: dark.settings.background }};
     --scrollbar-thumb: {{ scheme.settings.scrollbar | default: scheme.settings.muted }};
     --scrollbar-thumb-hover: {{ scheme.settings.scrollbar_hover | default: scheme.settings.text }};

@@ -3299,9 +3299,10 @@ Quick view is a separate overlay shell, not a separate product implementation.
 - The loading state is a transparent carrier for the shared loader; the actual
   modal entrance begins after its product markup arrives. Keep the close action
   focusable throughout loading. The carrier retains the Quick View's selected
-  scheme: the mark uses that scheme's Loader color, and the close control uses
-  the same scheme's text, surface, and universal close style. Never replace
-  those with global brand aliases merely because the carrier sits over a veil.
+  scheme: the full-screen mark uses the nominated dark scheme's text role for
+  contrast with the veil, while the close control uses the carrier scheme's
+  text, surface, and universal close style. Never replace those with literal
+  brand colors merely because the carrier sits over a veil.
 
 The acceptance test is behavioral parity: select the same option in Main
 product, Featured product, and Quick view and confirm the selected value, hidden
@@ -3363,6 +3364,8 @@ behavior: `loader_style` (Diamond, Ring, Orbit — each variant reuses the same
 `loader__line`/`pathLength` contract) and `loader_close_delay`, which defaults
 to eight seconds. Each color scheme keeps its own Loader and Overlay veil roles
 under Colors → Interface and feedback; nothing non-colour remains in Colors.
+Inline waits use Loader. Full-screen waits use the nominated dark scheme's text
+role so the mark stays legible on the veil without a hard-coded color.
 The mark itself never has a background. A new variant is a sibling
 `icon-loader-*.liquid` with inline `--n`/`--exit` on each path and a `when` in
 the dispatcher — nothing else.

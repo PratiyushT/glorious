@@ -8961,10 +8961,14 @@ body:has(.announcement[data-announcement-header]:not([hidden])) .nav--pill {
      veil. */
   border: 0;
   box-shadow: none;
-  /* The transparent carrier keeps its selected scheme. The Loader color is
-     `--loader-ink` from that scheme, while the shared close control inherits
-     the same scheme's text and surface instead of a brand-colour override. */
+  /* The full-screen mark uses the nominated dark scheme's text role for veil
+     contrast. The transparent carrier keeps its selected scheme so the shared
+     close control still inherits that scheme's text and surface. */
   animation: gj-fade-in 0.3s ease both;
+}
+
+.quick-view.is-loading .loader {
+  color: var(--loader-fullscreen-ink, var(--loader-ink, var(--c-text)));
 }
 
 .quick-view.is-loading .quick-view__close {
@@ -9300,8 +9304,8 @@ body:has(.announcement[data-announcement-header]:not([hidden])) .nav--pill {
 
   display: grid;
   place-items: center;
-  /* The merchant's loader colour first — Theme settings → Colors → Loading —
-     then each surface's own accent, and never a background of its own. */
+  /* The selected color scheme's Loader role comes first, then the same
+     surface's accent. The mark never paints a background of its own. */
   color: var(--loader-ink, var(--c-accent));
 }
 
