@@ -13,17 +13,20 @@
     assign direction = 'column'
   endif
 
+  assign distribution_choice = layout_settings.distribute
+  if layout_settings.direction == 'vertical'
+    assign distribution_choice = layout_settings.distribute_vertical | default: 'start'
+  endif
+
   assign justify = 'flex-start'
-  unless layout_settings.direction == 'vertical'
-    case layout_settings.distribute
-      when 'center'
-        assign justify = 'center'
-      when 'end'
-        assign justify = 'flex-end'
-      when 'between'
-        assign justify = 'space-between'
-    endcase
-  endunless
+  case distribution_choice
+    when 'center'
+      assign justify = 'center'
+    when 'end'
+      assign justify = 'flex-end'
+    when 'between'
+      assign justify = 'space-between'
+  endcase
 
   assign align_choice = layout_settings.align
   if layout_settings.direction == 'vertical'

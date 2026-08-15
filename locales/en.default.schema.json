@@ -1225,23 +1225,31 @@
       "name": "Layout group",
       "direction": {
         "label": "Children layout",
-        "info": "Place this Group's direct children in a row or a vertical stack.",
+        "info": "Place this Group's direct children horizontally or vertically.",
         "horizontal": "Side by side",
         "vertical": "Stacked"
       },
       "distribute": {
-        "label": "Children across the row",
-        "info": "Positions the child boxes horizontally within the available row.",
+        "label": "Horizontal alignment",
+        "info": "Positions children left, center, right, or distributes the available horizontal space.",
         "start": "Left",
         "center": "Center",
         "end": "Right",
-        "between": "Spread apart"
+        "between": "Space between"
+      },
+      "distribute_vertical": {
+        "label": "Vertical alignment",
+        "info": "Positions children at the top, middle, bottom, or distributes the available vertical space.",
+        "start": "Top",
+        "center": "Middle",
+        "end": "Bottom",
+        "between": "Space between"
       },
       "align": {
-        "label_horizontal": "Children vertically",
-        "label_vertical": "Children across the stack",
-        "info_horizontal": "Lines up the child boxes vertically. Text baseline is useful for a label beside a button.",
-        "info_vertical": "Positions each child box horizontally, or stretches every child to the Group's full width.",
+        "label_horizontal": "Vertical alignment",
+        "label_vertical": "Horizontal alignment",
+        "info_horizontal": "Positions children vertically. Text baseline is useful for a label beside a button.",
+        "info_vertical": "Positions children left, center, right, or stretches them to the Group's full width.",
         "text": "Text baseline",
         "top": "Top",
         "middle": "Middle",
@@ -1253,12 +1261,12 @@
         "full_width": "Full width"
       },
       "wrap": {
-        "label": "Allow a second row",
-        "info": "Off keeps every child on one row however narrow it gets, so they squeeze instead of wrapping."
+        "label": "Allow wrapping",
+        "info": "Off keeps every child on one horizontal line however narrow it gets, so they squeeze instead of wrapping."
       },
       "items_width": {
         "label": "Side-by-side child widths",
-        "info": "Choose whether side-by-side children fit their content or divide the available row evenly.",
+        "info": "Choose whether side-by-side children fit their content or divide the available horizontal space evenly.",
         "natural": "Fit content",
         "equal": "Equal width"
       },
@@ -1296,14 +1304,14 @@
       "border_left_label": "Left border",
       "stack_below": {
         "label": "Responsive layout",
-        "info": "Fluid uses the available space and follows Allow a second row. The stacking presets switch to one column based on the Group's own width rather than the screen's.",
+        "info": "Fluid uses the available space and follows Allow wrapping. The stacking presets switch to a vertical layout based on the Group's own width rather than the screen's.",
         "never": "Fluid",
         "tablet": "On tablet and smaller",
         "mobile": "On phone only"
       },
       "content_alignment_mobile": {
         "label": "Content after stacking",
-        "info": "When this responsive row becomes a stack, align its text and inline content independently.",
+        "info": "When this horizontal layout becomes vertical, align its text and inline content independently.",
         "inherit": "Use desktop content alignment"
       }
     },
@@ -2470,7 +2478,7 @@
       },
       "block_gap": {
         "label": "Section vertical spacing",
-        "info": "The default space down the page: between wrapped rows, between stacked children set to Use section default, and inside nested stacked Groups that inherit it."
+        "info": "The default space down the page: between wrapped horizontal lines, between stacked children set to Use section default, and inside nested stacked Groups that inherit it."
       },
       "content_alignment": {
         "label": "Default child content alignment",

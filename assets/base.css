@@ -259,6 +259,20 @@ a {
   min-height: 100svh;
 }
 
+/* A full-height Group section gives its shared layout the available height.
+   Horizontal and Vertical alignment can then place its children within the
+   section instead of moving only inside a content-height wrapper. */
+.group-section.section--tall > :first-child,
+.group-section.section--tall .group-section__layout {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
+.group-section.section--tall .group-section__layout > .layout-group__inner {
+  flex: 1;
+}
+
 .stack {
   display: flex;
   flex-direction: column;
@@ -927,7 +941,9 @@ a {
 .layout-group[data-direction="vertical"][data-items="equal"] > .layout-group__inner {
   display: grid;
   grid-auto-rows: minmax(0, 1fr);
+  align-content: var(--group-justify, start);
   align-items: stretch;
+  justify-content: stretch;
   justify-items: var(--group-grid-align, start);
 }
 

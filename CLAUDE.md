@@ -1530,21 +1530,22 @@ component margin follows this shape or it will reintroduce the tie.
 its text blocks follow; a block carries its own `alignment`, defaulting to
 `inherit`, and overrides the section when set.
 
-A Group names its two alignment jobs rather than presenting both as generic
-Alignment. **Children across the row/stack** positions the child boxes;
-**Content inside children** aligns text and inline content inside those boxes.
+A Group names physical axes rather than exposing Flexbox terms. Every layout
+shows **Horizontal alignment** and **Vertical alignment**; their choices adapt
+to whether children are side by side or stacked. **Content inside children**
+separately aligns text and inline content inside those boxes.
 The Group section publishes **Default child content alignment** and a nested
 Group defaults to **Use section default**. The Group override appears only for
-equal-width row children or full-width stacked children, where the boxes offer
+equal-width horizontal children or full-width stacked children, where the boxes offer
 real space for the choice to affect. Stored values continue to render when a
 control is contextually hidden.
 
 Horizontal Groups expose **Content after stacking** only when a responsive
-stacking preset is active. The same container query that changes the row to one
-column applies that choice, so it responds to the Group's available width
+stacking preset is active. The same container query that changes the horizontal
+layout to a vertical one applies that choice, so it responds to the Group's available width
 rather than the device name. `Use desktop content alignment` preserves the
 desktop answer. Spacing follows the same axis language: Horizontal children
-spacing is the column gap, Stacked children spacing is the local row gap, and
+spacing is the horizontal gap, Stacked children spacing is the local vertical gap, and
 the Group section's Section vertical spacing is the inherited fallback.
 
 - **The section publishes a custom property; it does not add a wrapper.**

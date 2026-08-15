@@ -117,7 +117,7 @@ Group is the primary layout primitive. It can contain theme blocks, app blocks, 
 
 Group has no reverse-order control because blocks can be reordered directly in the editor. Equal-width Groups wrap automatically without a minimum-width slider.
 
-Alignment controls distinguish the child boxes from the content inside them. Children across the row or stack positions the boxes; Content inside children aligns text and inline content within boxes that have shared width. The Group section supplies the default child content alignment, and nested Groups can inherit or override it. Controls that cannot affect the selected row or stack are hidden. Horizontal children spacing and Stacked children spacing likewise apply only to their matching layout direction.
+Alignment controls distinguish child placement from the content inside each child. Every Group exposes Horizontal alignment and Vertical alignment using physical terms; the available choices adapt to side-by-side or stacked children. Content inside children aligns text and inline content within boxes that have shared width. The Group section supplies the default child content alignment, and nested Groups can inherit or override it. Controls that cannot affect the selected direction are hidden. Horizontal children spacing and Stacked children spacing likewise apply only to their matching layout direction.
 
 Optional Group borders support independent top, right, bottom, and left sides, border width, color override, internal spacing, and vertical alignment. Turning borders on does not change the Group's arrangement.
 
