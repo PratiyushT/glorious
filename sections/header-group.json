@@ -228,7 +228,7 @@
                 "distribute": "between",
                 "align": "baseline",
                 "align_vertical": "stretch",
-                "content_alignment": "left",
+                "content_alignment": "inherit",
                 "wrap": true,
                 "items_width": "natural",
                 "items_height": "natural",

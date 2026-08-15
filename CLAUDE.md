@@ -1332,10 +1332,12 @@ both Groups are ordinary public blocks that can be removed, reordered, or
 replaced. The public `email-signup` block is the one deliberate special child:
 it owns the Shopify customer form, validation/success state, and optional real
 discount hand-off. Newsletter is the section's default preset, not a permanent
-or disableable setting. Configured splashes wait their turn rather than
-replacing another open dialog. The cookie banner also calls the shared Button
-renderer. Popup behavior and consent behavior remain owned by their shells;
-their UI is not a separate button system.
+or disableable setting. The preset's nested content Group inherits the Splash
+shell's Content alignment, just like a normal Group child; merchants can still
+override that child deliberately. Configured splashes wait their turn rather
+than replacing another open dialog. The cookie banner also calls the shared
+Button renderer. Popup behavior and consent behavior remain owned by their
+shells; their UI is not a separate button system.
 
 **A Splash discount is a real Shopify hand-off, not decorative code.** The
 merchant must create the matching active code in Shopify Admin. The shared
