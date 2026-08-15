@@ -5,14 +5,19 @@
   line-height: normal;
 }
 
-/* Transparent nav mode: the bar reserves nothing, so the product layout must
-   stop assuming it does. Zeroing the one token does the whole job — the
-   gallery grows to a full 100dvh (the design's own product page), the
-   showcase and details minimums follow, and the sticky column pins at the
-   very top, flush under the bar that floats over it. The details column
-   needs no compensation: its own top padding already clears the fixed bar. */
+/* Transparent nav mode: the fixed navigation reserves nothing, so the product
+   layout does not subtract its height. The header-group Announcement header
+   is different: it remains in document flow and consumes part of the visible
+   viewport. When present, use its measured height for the gallery, showcase,
+   details and sticky edge; otherwise a 100dvh gallery that starts below the
+   announcement ends one bar-height beneath the screen. Closing the bar sets
+   `[hidden]`, this selector falls away, and the gallery returns to 100dvh. */
 body:has([data-nav-transparent]) .main-product {
   --product-nav-offset: 0rem;
+}
+
+body:has([data-nav-transparent]):has(.announcement[data-announcement-header]:not([hidden])) .main-product {
+  --product-nav-offset: var(--announcement-layout-height, var(--announcement-bar-height, 2.5rem));
 }
 
 .product-showcase {

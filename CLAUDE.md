@@ -408,6 +408,15 @@ may grow a second product UI. Those blocks are contextual because their value
 is the current product or selected variant; ordinary editorial copy remains a
 global Text/Rich text concern elsewhere.
 
+**A transparent product navigation does not make the Announcement header part
+of the viewport.** The fixed nav reserves no layout height, but the header-group
+announcement remains in flow. Product gallery height and sticky position use
+the announcement controller's unrounded `--announcement-layout-height` while
+that bar is visible, so the first carousel frame ends exactly at the viewport
+edge. The separately rounded `--announcement-bar-height` remains the nav's
+subpixel-overlap guard. Closing or omitting the announcement restores the full
+`100dvh` gallery.
+
 - **A contextual product block extends a global base; it does not invent an
   editor.** Product title, vendor, and price carry the complete Text appearance
   contract minus editable content. Product description carries Rich text minus

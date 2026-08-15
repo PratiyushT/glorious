@@ -344,9 +344,14 @@
         if (!isHeader) return;
         /* The nav is fixed independently from the sticky announcement. Round
            down so a fractional bar height can overlap it by a subpixel, never
-           round up and expose the page as a hairline between both surfaces. */
-        var height = root.hidden ? 0 : Math.floor(root.getBoundingClientRect().height);
-        document.documentElement.style.setProperty('--announcement-bar-height', height + 'px');
+           round up and expose the page as a hairline between both surfaces.
+           Product's viewport math needs the unrounded flow height as well: its
+           gallery starts after this bar, so even the discarded fraction would
+           otherwise put the gallery fractionally below the viewport edge. */
+        var layoutHeight = root.hidden ? 0 : root.getBoundingClientRect().height;
+        var navHeight = Math.floor(layoutHeight);
+        document.documentElement.style.setProperty('--announcement-bar-height', navHeight + 'px');
+        document.documentElement.style.setProperty('--announcement-layout-height', layoutHeight + 'px');
       }
 
       if (storageKey && !close) {
