@@ -1564,6 +1564,15 @@ desktop answer. Spacing follows the same axis language: Horizontal children
 spacing is the horizontal gap, Stacked children spacing is the local vertical gap, and
 the Group section's Section vertical spacing is the inherited fallback.
 
+**Vertical placement needs available height, and nested Groups now receive
+it.** `.layout-group__inner` has `min-height: 100%`: it remains content-height
+when its Group has no definite height, but fills a Group stretched by a parent
+row or grid. That makes a stacked Group's Top / Middle / Bottom / Space between
+choices effective beside tall media. Collection header does not override this
+contract: the section positions the complete composition, the outer Group
+aligns the copy column against the image, and the nested stacked Group places
+its own title/copy children. R25 protects the shared height and axis rules.
+
 - **The section publishes a custom property; it does not add a wrapper.**
   Ordinary sections put `--section-align` and `--section-align-jc` on the
   section root. The Group section puts them once on its existing shared

@@ -1323,6 +1323,29 @@ def R24_catalog_replacement_lifecycle():
             'Catalog replacement must dispatch the lifecycle event that rebinds it')
 
 
+def R25_group_physical_axes():
+    """Nested and adapted Groups keep both physical alignment axes effective."""
+    css_where = 'assets/base.css'
+    source = read(os.path.join(ROOT, css_where))
+    group_start = source.find('\n.layout-group__inner {')
+    group_rule = source[group_start:source.find('}', group_start) + 1] if group_start >= 0 else ''
+    if 'min-height: 100%;' not in group_rule:
+        err('R25', css_where,
+            'Group inner layout must fill a definite stretched height')
+    collection_rule = (
+        '.catalog-block-header--layout-side-by-side '
+        '.catalog-block-header__content > .layout-group > .layout-group__inner')
+    start = source.find(collection_rule)
+    rule = source[start:source.find('}', start) + 1] if start >= 0 else ''
+    if 'align-items: var(--group-align, stretch);' not in rule:
+        err('R25', css_where,
+            'Collection header side-by-side layout must respect Group vertical alignment')
+    if 'catalog-block-header--vertical-center' in source[source.find(collection_rule):
+                                                            source.find('catalog-block-header--has-overlay')]:
+        err('R25', css_where,
+            'Collection header must not override a nested Group vertical alignment')
+
+
 RULES = OrderedDict([
     ('R01', (R01_range_steps, 'range steps are legal (Shopify validates server-side)')),
     ('R02', (R02_select_defaults, "a select's default is one of its options")),
@@ -1348,6 +1371,7 @@ RULES = OrderedDict([
     ('R22', (R22_collection_data_contract, 'collection titles and images stay data-adapted')),
     ('R23', (R23_article_data_contract, 'article cards and pages stay data-adapted')),
     ('R24', (R24_catalog_replacement_lifecycle, 'catalog replacements rebind their own root')),
+    ('R25', (R25_group_physical_axes, 'nested Groups keep both physical alignment axes effective')),
 ])
 
 

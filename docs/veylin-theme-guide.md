@@ -119,6 +119,8 @@ Group has no reverse-order control because blocks can be reordered directly in t
 
 Alignment controls distinguish child placement from the content inside each child. Every Group exposes Horizontal alignment and Vertical alignment using physical terms; the available choices adapt to side-by-side or stacked children. Content inside children aligns text and inline content within boxes that have shared width. The Group section supplies the default child content alignment, and nested Groups can inherit or override it. Controls that cannot affect the selected direction are hidden. Horizontal children spacing and Stacked children spacing likewise apply only to their matching layout direction.
 
+Vertical alignment becomes visible when a Group has height beyond its content—for example, a full-height Group section or a copy Group stretched beside an image. A stretched nested Group passes that height to its inner layout, so Top, Middle, Bottom, and Space between work consistently. In Collection header, the section positions the complete header composition, the outer Group aligns the copy column with the image, and the nested copy Group positions its own children.
+
 Optional Group borders support independent top, right, bottom, and left sides, border width, color override, internal spacing, and vertical alignment. Turning borders on does not change the Group's arrangement.
 
 ### Custom Liquid
