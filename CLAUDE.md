@@ -3525,6 +3525,9 @@ and the attributes that wire it — never appearance; a context class carrying
 visual style again is how quick view drifted in the first place. Both forms
 paint from `currentColor`, so one rule serves the noir overlay heads and the
 light panels, and both take their corner radius from the global button shape.
+Announcement header and Announcement bar use the same renderer and their
+context class only places it at the row's end; neither changes its padding,
+type size, or icon-disc dimensions.
 Deliberately not `snippets/button.liquid`: a close is a purpose-built
 interface control, the R16 exemption. Veils, the cookie banner's
 Accept/Decline, and the newsletter's "No thanks" are dismissals, not close

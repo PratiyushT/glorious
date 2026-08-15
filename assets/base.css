@@ -8061,17 +8061,6 @@ input.quantity-control__value::-webkit-outer-spin-button {
   justify-self: end;
 }
 
-.announcement__close.overlay-head__close {
-  padding: 0.35em 0.8em;
-  font-size: inherit;
-  line-height: 1;
-}
-
-.announcement__close.overlay-close--icon {
-  width: 2em;
-  height: 2em;
-}
-
 .announcement__message.is-leaving,
 .announcement__message.is-entering {
   display: block;
@@ -8193,9 +8182,6 @@ body:has(.announcement[data-announcement-header]:not([hidden])) .nav--pill {
     padding-inline: 0.25rem;
   }
 
-  .announcement__close.overlay-head__close {
-    padding-inline: 0.7em;
-  }
 }
 
 /* ---- Footer ------------------------------------------------------ */
