@@ -341,7 +341,10 @@
 
       function syncAnnouncementHeight() {
         if (!isHeader) return;
-        var height = root.hidden ? 0 : Math.ceil(root.getBoundingClientRect().height);
+        /* The nav is fixed independently from the sticky announcement. Round
+           down so a fractional bar height can overlap it by a subpixel, never
+           round up and expose the page as a hairline between both surfaces. */
+        var height = root.hidden ? 0 : Math.floor(root.getBoundingClientRect().height);
         document.documentElement.style.setProperty('--announcement-bar-height', height + 'px');
       }
 
