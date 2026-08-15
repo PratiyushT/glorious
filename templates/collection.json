@@ -61,13 +61,14 @@
               "settings": {}
             },
             "title": {
-              "type": "text",
+              "type": "product_title",
               "settings": {
-                "text": "{{ closest.product.title }}",
                 "style": "small",
                 "element": "h2",
                 "override_case": "uppercase",
-                "override_tracking": "wide"
+                "override_tracking": "wide",
+                "wrap": "balance",
+                "link_to_product": true
               }
             },
             "option": {

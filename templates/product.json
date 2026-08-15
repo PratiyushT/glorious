@@ -50,7 +50,7 @@
           "blocks": {
             "media": { "type": "_product-card-media", "settings": { "image_ratio": "1/1", "image_fit": "contain" } },
             "badges": { "type": "product_badges", "settings": {} },
-            "title": { "type": "text", "settings": { "text": "{{ closest.product.title }}", "style": "small", "element": "h3", "override_case": "uppercase", "override_tracking": "wide" } },
+            "title": { "type": "product_title", "settings": { "style": "small", "element": "h3", "override_case": "uppercase", "override_tracking": "wide", "wrap": "balance", "link_to_product": true } },
             "option": { "type": "_product-card-option-control", "settings": { "target_by": "auto", "control": "auto", "swatch_shape": "round" } },
             "price": { "type": "_product-card-price", "settings": {} },
             "add": { "type": "_product-card-add", "settings": { "variant_action": "choose_options", "button_style": "outline" } }

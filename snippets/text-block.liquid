@@ -7,6 +7,7 @@
   - block: the theme block whose settings and editor attributes are rendered
   - content: the text or contextual value to render
   - marker: optional data attribute name used by the owning component
+  - preserve_content: ignore stored truncating wrap values
 {%- endcomment -%}
 
 {%- liquid
@@ -22,6 +23,9 @@
   endcomment
   assign wrap_class = ''
   assign wraps = 'pretty,balance,nowrap,two_line,three_line' | split: ','
+  if preserve_content
+    assign wraps = 'pretty,balance' | split: ','
+  endif
   if wraps contains block.settings.wrap
     assign wrap_class = block.settings.wrap | replace: '_', '-' | prepend: ' text-wrap--'
   endif

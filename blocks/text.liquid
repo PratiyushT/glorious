@@ -7,7 +7,16 @@
   blocks owned by those components, so this global block stays unsurprising.
 {%- endcomment -%}
 
-{% render 'text-block', block: block, content: block.settings.text %}
+{%- liquid
+  assign text_class = ''
+  assign preserve_content = false
+  if closest.product != blank and block.settings.text == closest.product.title
+    assign text_class = 'product-details__title product-title--legacy-text'
+    assign preserve_content = true
+  endif
+-%}
+
+{% render 'text-block', block: block, content: block.settings.text, class: text_class, preserve_content: preserve_content %}
 
 {% schema %}
 {

@@ -1584,9 +1584,14 @@ diligent, and this theme has already paid for that twice — see the footer unde
 | R11 | `assets/*.js` stays ES5 — ES6 stops Shopify auto-minifying the file |
 | R12 | an icon whose SVG declares an id is rendered with a `uid` |
 | R13 | all icon SVGs and glyphs live in the centralized Liquid icon library |
-| R14 | specialised Text, Rich text, Button, Group, and product-section surfaces retain the complete base settings contract |
+| R14 | specialised Text, Rich text, Button, Group, and product-section surfaces retain the base settings contract, with Product title's non-truncating Wrap subset |
 | R15 | every shared settings contract calls one canonical runtime renderer |
 | R16 | CTA-style `.btn` markup is emitted only by `snippets/button.liquid` |
+| R17 | snippet calls resolve and no snippet is orphaned |
+| R18 | JSON templates and section groups use real sections within Shopify limits |
+| R19 | runtime colours use scheme tokens rather than literals |
+| R20 | the required Custom Liquid section is addable on every template |
+| R21 | Product title stays complete, expandable, and linked on cards |
 
 **R05 is the one written from a scar.** `section-style.liquid` stopped
 understanding numbers when padding became a step, the footer kept its range, and
@@ -2302,21 +2307,18 @@ height Tight … Loose, letter spacing Tighter … Wider and case one of the nam
 choices. Font colour is the only free picker. `Default` inherits the preset;
 `As typed` is a distinct case override that explicitly emits no transform.
 
-**Word breaks are a preset on the whole Text contract, not a product-title
-special.** `wrap` — Default, Pretty (`text-wrap: pretty`, no orphan word),
-Balanced lines (`text-wrap: balance`), Single line (ellipsis), and At most
-two/three lines (the card caption's clamp offered as a choice) — rendered as
-a `text-wrap--*` class by the one `text-block` snippet, so the product page,
-Featured product, Quick view, every card title, and Product-card Option values
-get it from the same setting. R14 keeps the shared schema copies identical.
-Inside a composed card
-the preset re-sizes the reserved caption box to its own line count (1.5em /
-3em / 4.5em), so a row of cards stays level at whatever height the merchant
-chose — the 3em two-line reservation is the default, not the law. An
-unknown stored value emits no class, the same guard as the element tag.
-Product title adds one content-aware extension beside that shared contract:
-`Always use two lines` inserts a balanced word-boundary split and ellipsizes
-either fixed row if its half cannot fit, so it never produces row three.
+**Word breaks are a preset on the whole Text contract, with one
+content-safety exception.** Generic Text offers Default, Pretty
+(`text-wrap: pretty`), Balanced lines (`text-wrap: balance`), Single line
+(ellipsis), and At most two/three lines. Product title keeps the same Wrap
+setting but offers only Default, Pretty, and Balanced because Shopify requires
+the complete title on product pages and collection grids. The shared
+`text-block` renderer also ignores retired truncating values stored on an older
+Product title block. In a composed card the title reserves a two-line minimum
+so short names align, then expands to a third line or beyond instead of hiding
+words. Generic Text and product metadata retain their explicit line-count
+choices. R14 permits only this narrowed option list; R21 protects the complete,
+linked title contract.
 
 **`snippets/text-style.liquid` is the one resolver.** It guards every stored
 value and prints inline declarations so a chosen preset or override wins over a
@@ -3049,12 +3051,11 @@ The old `snippets/product-card.liquid` remains only on the design-system page.
   `rich-text-block`. They can be added directly to Product card or its private
   Group, keep the same settings they have on Product page, Featured product,
   and Quick view, and always read the card's current `closest.product`. The
-  Product card title preset starts as an `h3` with a two-line limit, while the
-  ordinary Product title preset remains the product-page `h1`. Product title's
-  `Always use two lines` extension chooses the word boundary with the closest
-  character counts and fixes each half to one row; multi-word names therefore
-  occupy exactly two rows, while a one-word name cannot be split and stays on
-  one.
+  Product card title preset starts as a linked `h3` with balanced wrapping,
+  while the ordinary Product title preset remains the product-page `h1`.
+  Cards reserve two rows for visual alignment but expand for longer names;
+  Product title never offers a clamp or ellipsis, and the renderer ignores
+  retired truncation values saved by an older theme version.
 - **Option values is contextual Text, not a second typography system.** It
   locks the content to a merchant-named product option and adds only a
   separator. All layout, semantic element, typography, alignment, wrap/line

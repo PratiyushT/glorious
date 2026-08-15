@@ -15,7 +15,7 @@
                   "type": "_product-card-group",
                   "blocks": {
                     "kind": { "type": "text", "settings": { "text": "{{ closest.product.vendor }}", "style": "caption", "element": "span", "override_case": "uppercase", "override_tracking": "wide" } },
-                    "title": { "type": "text", "settings": { "text": "{{ closest.product.title }}", "style": "small", "element": "h3" } },
+                    "title": { "type": "product_title", "settings": { "style": "small", "element": "h3", "wrap": "balance", "link_to_product": true } },
                     "price": { "type": "_product-card-price", "settings": {} }
                   },
                   "block_order": ["kind", "title", "price"],

@@ -984,12 +984,6 @@
     "product_card_title": {
       "name": "Product card title"
     },
-    "product_title": {
-      "always_two_lines": {
-        "label": "Always use two lines",
-        "info": "When the title has more than one word, split it into two balanced lines. A single-word title stays on one line."
-      }
-    },
     "spacer": {
       "name": "Spacer",
       "line_break": "Line break",

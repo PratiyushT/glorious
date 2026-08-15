@@ -477,22 +477,6 @@ a {
 .text-wrap--two-line { -webkit-line-clamp: 2; text-wrap: balance; }
 .text-wrap--three-line { -webkit-line-clamp: 3; text-wrap: pretty; }
 
-/* Product title's explicit two-row choice divides the words at the most even
-   boundary. Each half stays on one row, so "always" remains true at every
-   container width; an overlong half truncates instead of creating row three. */
-.product-title--always-two-lines,
-.product-title--always-two-lines > a {
-  display: block;
-  min-width: 0;
-}
-
-.product-title--always-two-lines .product-title__line {
-  display: block;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
 .section-eyebrow .text-block {
   padding: 0;
   /* The wrapper owns the eyebrow's spacing; its inner label must not pick up
@@ -2903,9 +2887,9 @@ a {
   margin-block-start: var(--card-price-top);
 }
 
-/* Product names may be ordinary Text with a dynamic source or the contextual
-   Product title block. The card owns the structural link, so either choice is
-   presentational and neither one is required for navigation. */
+/* Product names may be legacy Text with a dynamic source or the contextual
+   Product title block. New title blocks link the visible name; the card keeps
+   its structural link so navigation survives merchant rearrangement. */
 .card--composed > .text-block {
   min-height: 3em;
   color: var(--c-heading);
@@ -2916,6 +2900,11 @@ a {
   inset: 0;
   z-index: 1;
   padding: 0;
+}
+
+.card--composed .product-details__title a {
+  position: relative;
+  z-index: 2;
 }
 
 .card__option-control > .card__meta {
@@ -3171,10 +3160,10 @@ a {
   margin: var(--card-meta-gap, 0) 0 var(--card-price-gap, 0);
 }
 
-/* A composed card can use global Text or contextual Product title for its
-   product name. The shared two-line box makes every card caption start and
-   finish on the same rows without taking typography control away from it. */
-.card--composed > .text-block {
+/* Ordinary Text can still use its explicit line-count choices. Product title
+   is excluded below: cards reserve two rows for alignment, then grow to keep
+   every word of a longer product name visible. */
+.card--composed > .text-block:not(.product-details__title) {
   display: -webkit-box;
   min-height: 3em;
   max-height: 3em;
@@ -3190,22 +3179,27 @@ a {
    -webkit-box); three lines grows it to 4.5em and outranks the box's own
    clamp at three classes. Two lines is the box's own shape and needs no
    rule; Pretty and Balanced change only how words divide inside it. */
-.card--composed > .text-block.text-wrap--nowrap {
+.card--composed > .text-block:not(.product-details__title).text-wrap--nowrap {
   display: block;
   min-height: 1.5em;
   max-height: 1.5em;
 }
 
-.card--composed > .text-block.text-wrap--three-line {
+.card--composed > .text-block:not(.product-details__title).text-wrap--three-line {
   min-height: 4.5em;
   max-height: 4.5em;
   -webkit-line-clamp: 3;
 }
 
-.card--composed > .text-block.product-title--always-two-lines {
+.card--composed > .product-details__title,
+.card--composed > .product-details__title > .text-block {
   display: block;
   min-height: 3em;
-  max-height: 3em;
+  max-height: none;
+  overflow: visible;
+  white-space: normal;
+  text-overflow: clip;
+  -webkit-box-orient: initial;
   -webkit-line-clamp: unset;
 }
 

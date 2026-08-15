@@ -38,7 +38,9 @@ types, dead destinations, shop-data leakage, LQIP contracts, ES5 delivery,
 central icon use, shared block schemas/renderers, and shared CTA markup.
 It also rejects missing/orphan snippets and invalid or over-limit JSON
 template/section-group composition, and protects the mandatory standalone
-Custom Liquid section on every section-capable template.
+Custom Liquid section on every section-capable template. Product-title checks
+also prevent truncating controls or CSS from hiding catalog names and require
+the visible card-title preset to link to its product.
 
 Every release must also pass:
 
@@ -61,8 +63,9 @@ upload, or visual quality.
    and full-details URL in all three Product surfaces.
 2. Media: carousel and stacked layouts, video-first ordering, large-first tile,
    zoom, model/video controls, variant media, and adaptive sticky behavior.
-3. Product cards: fixed and fluid sizing, sparse rows, quick view, option
-   controls, badges, sale/unit prices, sold-out state, and add/choose actions.
+3. Product cards: fixed and fluid sizing, sparse rows, complete linked titles
+   that expand beyond their two-row minimum, quick view, option controls,
+   badges, sale/unit prices, sold-out state, and add/choose actions.
 4. Discovery: predictive search, drawer/menu/page modes, no-results state,
    collection filters/sort/pagination, recommendations, and cart upsells.
 5. Commerce: drawer/page cart, quantity/removal errors, cart note, localization,

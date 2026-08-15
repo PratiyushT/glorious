@@ -594,8 +594,9 @@ def R14_shared_setting_contracts():
     Button whose action submits a product form. Their behaviour is allowed to
     differ, but their appearance controls are one editor contract. This catches
     the quiet drift where one copy gains an option, label or visibility rule
-    and its siblings do not. Group's private contextual copies are covered for
-    the same reason.
+    and its siblings do not. Product title has one deliberate content-safety
+    exception: its Wrap setting omits the three values that hide title text.
+    Group's private contextual copies are covered for the same reason.
     """
     def top_settings(path):
         full = os.path.join(ROOT, path)
@@ -681,7 +682,15 @@ def R14_shared_setting_contracts():
                         % (base_path, setting_id))
                     continue
                 role_default = setting_id in role_defaults
-                if normalise(base_setting, role_default) != normalise(
+                expected_setting = base_setting
+                if (target_path == 'blocks/product_title.liquid'
+                        and setting_id == 'wrap'):
+                    expected_setting = json.loads(json.dumps(base_setting))
+                    expected_setting['options'] = [
+                        option for option in expected_setting.get('options', [])
+                        if option.get('value') in ('default', 'pretty', 'balance')
+                    ]
+                if normalise(expected_setting, role_default) != normalise(
                         target[setting_id], role_default):
                     err('R14', target_path, "%s setting '%s' has drifted from %s"
                         % (base_path, setting_id, base_path))
@@ -957,6 +966,51 @@ def R20_custom_liquid_section():
         err('R20', where, 'section needs a preset so merchants can add it')
 
 
+def R21_product_titles_remain_complete():
+    """Product title never offers or emits a text-hiding presentation."""
+    path = os.path.join(ROOT, 'blocks', 'product_title.liquid')
+    where = 'blocks/product_title.liquid'
+    match = SCHEMA_RE.search(read(path))
+    if not match:
+        return  # R00 and R14 own missing or invalid block schema details.
+    try:
+        schema = json.loads(match.group(1))
+    except json.JSONDecodeError:
+        return
+
+    settings = {
+        setting.get('id'): setting for setting in schema.get('settings', [])
+        if setting.get('id')
+    }
+    if 'always_two_lines' in settings:
+        err('R21', where, 'obsolete split-and-ellipsis setting must be removed')
+
+    wrap = settings.get('wrap', {})
+    values = [option.get('value') for option in wrap.get('options', [])]
+    if values != ['default', 'pretty', 'balance']:
+        err('R21', where, 'Wrap may arrange words but must never hide them')
+
+    source = strip_comments(read(path))
+    if 'preserve_content: true' not in source:
+        err('R21', where, 'shared Text renderer must reject saved truncation values')
+
+    card_presets = [
+        preset for preset in schema.get('presets', [])
+        if preset.get('settings', {}).get('element') == 'h3'
+    ]
+    if not card_presets or not all(
+            preset.get('settings', {}).get('link_to_product') is True
+            for preset in card_presets):
+        err('R21', where, 'Product card title preset must link the visible title')
+
+    css_where = 'assets/base.css'
+    css = strip_comments(read(os.path.join(ROOT, css_where)))
+    if 'product-title--always-two-lines' in css or 'product-title__line' in css:
+        err('R21', css_where, 'obsolete title splitting CSS remains')
+    if '.card--composed > .product-details__title' not in css:
+        err('R21', css_where, 'cards do not reserve an expandable title row')
+
+
 RULES = OrderedDict([
     ('R01', (R01_range_steps, 'range steps are legal (Shopify validates server-side)')),
     ('R02', (R02_select_defaults, "a select's default is one of its options")),
@@ -978,6 +1032,7 @@ RULES = OrderedDict([
     ('R18', (R18_json_composition, 'JSON templates/groups use real sections within limits')),
     ('R19', (R19_no_runtime_color_literals, 'runtime colours use scheme tokens, never literals')),
     ('R20', (R20_custom_liquid_section, 'Custom Liquid section is addable on every template')),
+    ('R21', (R21_product_titles_remain_complete, 'product titles remain complete and linked')),
 ])
 
 
