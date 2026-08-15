@@ -1402,6 +1402,18 @@ def R27_collection_filters_use_shared_buttons():
             'Legacy catalog pill styles must not override the shared Button contract')
 
 
+def R28_mobile_filter_sheet_closes_downward():
+    """The mobile bottom sheet must outrank the shared side-drawer exit rule."""
+    where = 'assets/base.css'
+    source = read(os.path.join(ROOT, where))
+    selector = '.drawer.catalog-filter-overlay--mobile-sheet.is-closing .drawer__panel'
+    start = source.find(selector)
+    rule = source[start:source.find('}', start) + 1] if start >= 0 else ''
+    if 'animation: catalog-sheet-out ' not in rule:
+        err('R28', where,
+            'Mobile filter sheet close must use the downward catalog-sheet-out animation')
+
+
 RULES = OrderedDict([
     ('R01', (R01_range_steps, 'range steps are legal (Shopify validates server-side)')),
     ('R02', (R02_select_defaults, "a select's default is one of its options")),
@@ -1430,6 +1442,7 @@ RULES = OrderedDict([
     ('R25', (R25_group_physical_axes, 'nested Groups keep both physical alignment axes effective')),
     ('R26', (R26_collection_pills_follow_filter_contract, 'collection pills use the filter interaction contract')),
     ('R27', (R27_collection_filters_use_shared_buttons, 'collection filters use the shared Button contract')),
+    ('R28', (R28_mobile_filter_sheet_closes_downward, 'mobile filter sheet closes on its vertical axis')),
 ])
 
 

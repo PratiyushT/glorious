@@ -387,6 +387,11 @@ search-control presentation. No catalogue vocabulary belongs in Liquid.
   in flight, its root is `aria-busy` and shows the shared surface Loader over
   the dimmed results. Never build a client-side filter table or calculate result
   counts in JavaScript.
+- **The mobile filter sheet exits on the same physical axis it enters.** Its
+  close selector includes the shared `.drawer` class so it outranks the generic
+  side-drawer close rule declared later in the stylesheet. Mobile Sheet moves
+  down; Mobile Side drawer moves horizontally. Equal-specificity close rules
+  make the later generic `gj-drawer-out` silently win and must not be restored.
 - **Catalogue headers are sections made from global blocks.**
   `collection-header` and `search-header` own only their colour, measure,
   minimum-height preset, alignment, block gap, animation, and section padding.

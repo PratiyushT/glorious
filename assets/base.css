@@ -4863,7 +4863,7 @@ a {
     animation: catalog-sheet-in 0.55s var(--ease) both;
   }
 
-  .catalog-filter-overlay--mobile-sheet.is-closing .drawer__panel {
+  .drawer.catalog-filter-overlay--mobile-sheet.is-closing .drawer__panel {
     animation: catalog-sheet-out 0.4s cubic-bezier(.4, 0, .2, 1) both;
   }
 
