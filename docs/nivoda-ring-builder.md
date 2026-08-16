@@ -14,6 +14,13 @@ preserves any merchant-written page title or body. Removing the app block, or
 uninstalling the app, removes the integration without leaving theme-owned Ring
 Builder code behind.
 
+The app owns its cards and Quick Views but follows the storefront's shared
+product presentation contract, including loaders, media transitions, option
+pills, prices, buttons, and selected states. Builder cards never navigate to a
+product page. Merchants can enable or disable each relevant product-card and
+Quick View capability from the app block settings; all selection actions remain
+inside the builder.
+
 ## Shopify cart and checkout
 
 The completed ring is added through Shopify's Ajax Cart API as two linked line

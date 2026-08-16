@@ -22,6 +22,16 @@ Cart, discounts, taxes, shipping, payment, Shop Pay, checkout, and the final
 order all remain Shopify-native. The app does not provide a second cart or a
 custom checkout.
 
+## Storefront presentation
+
+The app block renders setting and diamond results with the storefront's shared
+product-card, loader, button, option-pill, price, motion, and selected-state
+contracts. Product details stay inside the app-owned Quick View; builder cards
+do not link to product pages. The app block exposes the relevant card and Quick
+View capabilities—media, badges, vendor, title, options, price, description,
+diamond specifications, media controls, and selection action—as merchant
+settings.
+
 ## Local setup
 
 1. Copy `.env.example` to `.env` and add the Shopify app values. The example

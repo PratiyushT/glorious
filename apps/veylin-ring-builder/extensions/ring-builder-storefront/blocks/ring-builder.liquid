@@ -1,5 +1,19 @@
 <script src="{{ 'ring-builder.js' | asset_url }}" defer="defer"></script>
 
+{%- capture builder_loader_markup -%}
+  <span class="loader loader--lg" role="status">
+    {%- case settings.loader_style -%}
+      {%- when 'ring' -%}
+        <svg class="icon-svg loader__mark" viewBox="0 0 96 84" fill="none" aria-hidden="true" focusable="false"><path class="loader__line" style="--n: 0; --exit: gj-loader-exit-outline;" pathLength="100" d="M48 26a26 26 0 1 0 0 52a26 26 0 1 0 0-52z"/><path class="loader__line" style="--n: 2; --exit: gj-loader-exit-girdle;" pathLength="100" d="M48 4L58 14L48 24L38 14z"/><path class="loader__line" style="--n: 3; --exit: gj-loader-exit-inner-3;" pathLength="100" d="M38 14h20"/></svg>
+      {%- when 'orbit' -%}
+        <svg class="icon-svg loader__mark" viewBox="0 0 96 84" fill="none" aria-hidden="true" focusable="false"><path class="loader__line" style="--n: 0; --exit: gj-loader-exit-outline;" pathLength="100" d="M14 42a34 34 0 0 1 34-34"/><path class="loader__line" style="--n: 0; --exit: gj-loader-exit-outline;" pathLength="100" d="M82 42a34 34 0 0 1-34 34"/><path class="loader__line" style="--n: 2; --exit: gj-loader-exit-inner-2;" pathLength="100" d="M48 32L57 42L48 52L39 42z"/><path class="loader__line" style="--n: 3; --exit: gj-loader-exit-girdle;" pathLength="100" d="M39 42h18"/></svg>
+      {%- else -%}
+        <svg class="icon-svg loader__mark" viewBox="2 10 96 84" fill="none" aria-hidden="true" focusable="false"><path class="loader__line" style="--n: 0; --exit: gj-loader-exit-outline;" pathLength="100" d="M30 12h40l26 26-46 54-46-54z"/><path class="loader__line" style="--n: 1; --exit: gj-loader-exit-girdle;" pathLength="100" d="M4 38h92"/><path class="loader__line" style="--n: 2; --exit: gj-loader-exit-inner-2;" pathLength="100" d="M30 12L50 38"/><path class="loader__line" style="--n: 2; --exit: gj-loader-exit-inner-2;" pathLength="100" d="M70 12L50 38"/><path class="loader__line" style="--n: 3; --exit: gj-loader-exit-inner-3;" pathLength="100" d="M30 12L26 38"/><path class="loader__line" style="--n: 3; --exit: gj-loader-exit-inner-3;" pathLength="100" d="M70 12L74 38"/><path class="loader__line" style="--n: 4; --exit: gj-loader-exit-inner-4;" pathLength="100" d="M50 38L50 92"/><path class="loader__line" style="--n: 5; --exit: gj-loader-exit-inner-5;" pathLength="100" d="M26 38L50 92"/><path class="loader__line" style="--n: 5; --exit: gj-loader-exit-inner-5;" pathLength="100" d="M74 38L50 92"/></svg>
+    {%- endcase -%}
+    <span class="visually-hidden">{{ 'ring_builder.loading' | t }}</span>
+  </span>
+{%- endcapture -%}
+
 <div
   class="ring-builder"
   data-ring-builder
@@ -8,6 +22,29 @@
   data-results-per-page="24"
   data-currency="{{ cart.currency.iso_code | default: localization.country.currency.iso_code | default: 'USD' }}"
   data-sticky-summary
+  data-card-text-align="{{ block.settings.card_text_align }}"
+  data-card-image-ratio="{{ block.settings.card_image_ratio }}"
+  data-card-image-fit="{{ block.settings.card_image_fit }}"
+  data-card-animation="{{ block.settings.card_animation }}"
+  data-show-card-media="{{ block.settings.show_card_media }}"
+  data-show-card-badges="{{ block.settings.show_card_badges }}"
+  data-show-card-vendor="{{ block.settings.show_card_vendor }}"
+  data-show-card-title="{{ block.settings.show_card_title }}"
+  data-show-card-options="{{ block.settings.show_card_options }}"
+  data-show-card-price="{{ block.settings.show_card_price }}"
+  data-show-card-action="{{ block.settings.show_card_action }}"
+  data-quick-view-desktop="{{ block.settings.quick_view_desktop }}"
+  data-quick-view-compact="{{ block.settings.quick_view_compact }}"
+  data-show-quick-media="{{ block.settings.show_quick_media }}"
+  data-quick-media-controls="{{ block.settings.quick_media_controls }}"
+  data-show-quick-badges="{{ block.settings.show_quick_badges }}"
+  data-show-quick-vendor="{{ block.settings.show_quick_vendor }}"
+  data-show-quick-title="{{ block.settings.show_quick_title }}"
+  data-show-quick-price="{{ block.settings.show_quick_price }}"
+  data-show-quick-options="{{ block.settings.show_quick_options }}"
+  data-show-quick-description="{{ block.settings.show_quick_description }}"
+  data-show-quick-specs="{{ block.settings.show_quick_specs }}"
+  data-show-quick-action="{{ block.settings.show_quick_action }}"
 >
   <header class="ring-builder__header ring-builder__header--center">
     <p class="ring-builder__eyebrow">{{ 'ring_builder.eyebrow' | t }}</p>
@@ -42,7 +79,7 @@
     <div class="ring-builder__workspace">
       <div class="ring-builder__notice" data-builder-notice hidden>
         <p data-builder-notice-text></p>
-        <button class="ring-builder__button ring-builder__button--secondary" type="button" data-builder-retry hidden>
+        <button class="btn btn--outline" type="button" data-builder-retry hidden>
           {{ 'ring_builder.actions.retry' | t }}
         </button>
       </div>
@@ -56,7 +93,7 @@
           <p>{{ 'ring_builder.setting_help' | t }}</p>
         </div>
         <div class="ring-builder__loader" data-settings-loader aria-live="polite">
-          {{ 'ring_builder.loading_settings' | t }}
+          {{ builder_loader_markup }}
         </div>
         <div class="ring-builder__settings-grid" data-setting-results></div>
         <div class="ring-builder__empty" data-settings-empty hidden>
@@ -122,7 +159,7 @@
               </select>
             </label>
           </div>
-          <button class="ring-builder__button ring-builder__button--primary" type="submit">
+          <button class="btn btn--primary" type="submit">
             {{ 'ring_builder.actions.search' | t }}
           </button>
         </form>
@@ -133,11 +170,11 @@
         </div>
         <div class="ring-builder__diamonds-grid" data-diamond-results></div>
         <nav class="ring-builder__pagination" aria-label="{{ 'ring_builder.pagination' | t }}" data-diamond-pagination hidden>
-          <button class="ring-builder__button ring-builder__button--secondary" type="button" data-diamond-previous>
+          <button class="btn btn--outline" type="button" data-diamond-previous>
             {{ 'ring_builder.actions.previous' | t }}
           </button>
           <span data-diamond-page></span>
-          <button class="ring-builder__button ring-builder__button--secondary" type="button" data-diamond-next>
+          <button class="btn btn--outline" type="button" data-diamond-next>
             {{ 'ring_builder.actions.next' | t }}
           </button>
         </nav>
@@ -152,7 +189,7 @@
           <p>{{ 'ring_builder.review_help' | t }}</p>
         </div>
         <div class="ring-builder__review" data-builder-review></div>
-        <button class="ring-builder__button ring-builder__button--primary ring-builder__add" type="button" data-ring-add disabled>
+        <button class="btn btn--primary ring-builder__add" type="button" data-ring-add disabled>
           <span data-button-label>{{ 'ring_builder.actions.add_ring' | t }}</span>
         </button>
       </div>
@@ -177,8 +214,32 @@
     </aside>
   </div>
 
+  <dialog class="ring-builder__quick-view-dialog" data-builder-quick-view-dialog aria-label="{{ 'ring_builder.quick_view.label' | t }}">
+    <button class="ring-builder__quick-view-veil" type="button" data-builder-quick-view-close aria-label="{{ 'ring_builder.quick_view.close' | t }}"></button>
+    <div class="quick-view ring-builder__quick-view-panel" data-builder-quick-view-panel>
+      {%- if settings.close_style == 'icon' -%}
+        <button class="overlay-close--icon quick-view__close" type="button" data-builder-quick-view-close>
+          <span class="visually-hidden">{{ 'ring_builder.quick_view.close' | t }}</span>
+          <svg class="icon-svg" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" aria-hidden="true" focusable="false"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </button>
+      {%- else -%}
+        <button class="overlay-head__close quick-view__close" type="button" data-builder-quick-view-close>{{ 'ring_builder.quick_view.close' | t }}</button>
+      {%- endif -%}
+      <div class="quick-view__contents" data-builder-quick-view-contents></div>
+    </div>
+  </dialog>
+
   <template data-builder-loader>
-    <span class="ring-builder__loader">{{ 'ring_builder.loading' | t }}</span>
+    {{ builder_loader_markup }}
+  </template>
+  <template data-builder-eye>
+    <svg class="icon-svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true" focusable="false"><path d="M2.5 12S6 6.5 12 6.5 21.5 12 21.5 12 18 17.5 12 17.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="2.6"/></svg>
+  </template>
+  <template data-builder-chevron-previous>
+    <svg class="icon-svg" width="12" height="24" viewBox="0 0 12 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M10 2L2 12l8 10" /></svg>
+  </template>
+  <template data-builder-chevron-next>
+    <svg class="icon-svg" width="12" height="24" viewBox="0 0 12 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M2 2l8 10-8 10" /></svg>
   </template>
   <script type="application/json" data-builder-translations>
     {
@@ -201,16 +262,53 @@
       "connectionError": {{ 'ring_builder.connection_error' | t | json }},
       "settingsError": {{ 'ring_builder.settings_error' | t | json }},
       "stillLoading": {{ 'ring_builder.still_loading' | t | json }}
+      ,"quickView": {{ 'ring_builder.quick_view.label' | t | json }}
+      ,"closeQuickView": {{ 'ring_builder.quick_view.close' | t | json }}
+      ,"settingDetails": {{ 'ring_builder.quick_view.setting_details' | t | json }}
+      ,"diamondDetails": {{ 'ring_builder.quick_view.diamond_details' | t | json }}
+      ,"description": {{ 'ring_builder.quick_view.description' | t | json }}
+      ,"specifications": {{ 'ring_builder.quick_view.specifications' | t | json }}
+      ,"video": {{ 'ring_builder.quick_view.video' | t | json }}
+      ,"productMedia": {{ 'ring_builder.quick_view.product_media' | t | json }}
+      ,"goToView": {{ 'ring_builder.quick_view.go_to_view' | t | json }}
+      ,"previousMedia": {{ 'ring_builder.quick_view.previous_media' | t | json }}
+      ,"nextMedia": {{ 'ring_builder.quick_view.next_media' | t | json }}
     }
   </script>
 </div>
 
 {% schema %}
 {
-  "name": "Ring Builder",
+  "name": "t:ring_builder.editor.name",
   "target": "section",
   "stylesheet": "ring-builder.css",
   "enabled_on": { "templates": ["page"] },
-  "settings": []
+  "settings": [
+    { "type": "header", "content": "t:ring_builder.editor.product_cards" },
+    { "type": "select", "id": "card_text_align", "label": "t:ring_builder.editor.text_alignment", "options": [{ "value": "left", "label": "t:ring_builder.editor.left" }, { "value": "center", "label": "t:ring_builder.editor.center" }], "default": "left" },
+    { "type": "select", "id": "card_image_ratio", "label": "t:ring_builder.editor.media_ratio", "options": [{ "value": "1 / 1", "label": "t:ring_builder.editor.square" }, { "value": "3 / 4", "label": "t:ring_builder.editor.portrait" }, { "value": "4 / 3", "label": "t:ring_builder.editor.landscape" }], "default": "1 / 1" },
+    { "type": "select", "id": "card_image_fit", "label": "t:ring_builder.editor.media_fit", "options": [{ "value": "contain", "label": "t:ring_builder.editor.contain" }, { "value": "cover", "label": "t:ring_builder.editor.cover" }], "default": "contain" },
+    { "type": "checkbox", "id": "card_animation", "label": "t:ring_builder.editor.animate_cards", "default": true },
+    { "type": "checkbox", "id": "show_card_media", "label": "t:ring_builder.editor.show_media", "default": true },
+    { "type": "checkbox", "id": "show_card_badges", "label": "t:ring_builder.editor.show_badges", "default": false },
+    { "type": "checkbox", "id": "show_card_vendor", "label": "t:ring_builder.editor.show_vendor", "default": false },
+    { "type": "checkbox", "id": "show_card_title", "label": "t:ring_builder.editor.show_title", "default": true },
+    { "type": "checkbox", "id": "show_card_options", "label": "t:ring_builder.editor.show_option_controls", "default": true },
+    { "type": "checkbox", "id": "show_card_price", "label": "t:ring_builder.editor.show_price", "default": true },
+    { "type": "checkbox", "id": "show_card_action", "label": "t:ring_builder.editor.show_selection_action", "default": true },
+    { "type": "checkbox", "id": "quick_view_desktop", "label": "t:ring_builder.editor.quick_view_desktop", "default": true },
+    { "type": "checkbox", "id": "quick_view_compact", "label": "t:ring_builder.editor.quick_view_mobile", "default": true },
+    { "type": "header", "content": "t:ring_builder.editor.quick_view_blocks" },
+    { "type": "checkbox", "id": "show_quick_media", "label": "t:ring_builder.editor.media_gallery", "default": true },
+    { "type": "select", "id": "quick_media_controls", "label": "t:ring_builder.editor.media_controls", "options": [{ "value": "arrows_dots", "label": "t:ring_builder.editor.arrows_dots" }, { "value": "arrows", "label": "t:ring_builder.editor.arrows" }, { "value": "dots", "label": "t:ring_builder.editor.dots" }, { "value": "none", "label": "t:ring_builder.editor.none" }], "default": "arrows_dots" },
+    { "type": "checkbox", "id": "show_quick_badges", "label": "t:ring_builder.editor.badges", "default": false },
+    { "type": "checkbox", "id": "show_quick_vendor", "label": "t:ring_builder.editor.vendor", "default": true },
+    { "type": "checkbox", "id": "show_quick_title", "label": "t:ring_builder.editor.title", "default": true },
+    { "type": "checkbox", "id": "show_quick_price", "label": "t:ring_builder.editor.price", "default": true },
+    { "type": "checkbox", "id": "show_quick_options", "label": "t:ring_builder.editor.options", "default": true },
+    { "type": "checkbox", "id": "show_quick_description", "label": "t:ring_builder.editor.description", "default": false },
+    { "type": "checkbox", "id": "show_quick_specs", "label": "t:ring_builder.editor.specifications", "default": true },
+    { "type": "checkbox", "id": "show_quick_action", "label": "t:ring_builder.editor.selection_action", "default": true }
+  ]
 }
 {% endschema %}

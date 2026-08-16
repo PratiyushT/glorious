@@ -22,24 +22,62 @@ const SETTING_COLLECTION = `#graphql
       title
       products(first: $productLimit, sortKey: TITLE) {
         nodes {
-          id
-          title
-          vendor
-          featuredImage {
-            url
-            altText
-            width
-            height
-          }
-          variants(first: 100) {
-            nodes {
-              id
-              title
-              availableForSale
-              price
+        id
+        title
+        handle
+        vendor
+        description
+        featuredImage {
+          url
+          altText
+          width
+          height
+        }
+        media(first: 10) {
+          nodes {
+            mediaContentType
+            alt
+            preview {
               image {
                 url
                 altText
+                width
+                height
+              }
+            }
+            ... on MediaImage {
+              image {
+                url
+                altText
+                width
+                height
+              }
+            }
+            ... on Video {
+              sources {
+                url
+                format
+                mimeType
+                width
+                height
+              }
+            }
+          }
+        }
+        variants(first: 100) {
+          nodes {
+            id
+            title
+            availableForSale
+            price
+            compareAtPrice
+            selectedOptions {
+              name
+              value
+            }
+            image {
+              url
+              altText
                 width
                 height
               }
@@ -69,6 +107,30 @@ export function normalizeSettingCollection(collection, shopCurrency = "USD") {
   if (!collection) return null;
 
   const items = collection.products.nodes.flatMap((product) => {
+    const media = (product.media?.nodes || []).flatMap((item) => {
+      const image = item.image || item.preview?.image || null;
+      if (item.mediaContentType === "VIDEO") {
+        const source = (item.sources || []).find((entry) => entry.format === "mp4")
+          || (item.sources || [])[0];
+        if (!source?.url) return [];
+        return [{
+          type: "video",
+          url: source.url,
+          mimeType: source.mimeType || "video/mp4",
+          width: source.width,
+          height: source.height,
+          preview: image,
+          altText: item.alt || image?.altText || product.title,
+        }];
+      }
+      if (!image?.url) return [];
+      return [{
+        type: "image",
+        ...image,
+        altText: item.alt || image.altText || product.title,
+      }];
+    });
+
     const variants = product.variants.nodes
       .filter((variant) => variant.availableForSale)
       .map((variant) => {
@@ -84,6 +146,12 @@ export function normalizeSettingCollection(collection, shopCurrency = "USD") {
           title: variant.title,
           price,
           currency,
+          compareAtPrice: variant.compareAtPrice == null
+            ? null
+            : typeof variant.compareAtPrice === "object"
+              ? variant.compareAtPrice.amount
+              : String(variant.compareAtPrice),
+          selectedOptions: variant.selectedOptions || [],
           image,
         };
       });
@@ -92,8 +160,15 @@ export function normalizeSettingCollection(collection, shopCurrency = "USD") {
     return [{
       id: product.id,
       title: product.title,
+      handle: product.handle,
       vendor: product.vendor,
+      description: product.description || "",
       image: product.featuredImage,
+      media: media.length
+        ? media
+        : product.featuredImage
+          ? [{ type: "image", ...product.featuredImage }]
+          : [],
       variants,
     }];
   });
