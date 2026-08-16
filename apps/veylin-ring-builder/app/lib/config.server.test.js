@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import process from "node:process";
 import {
+  isAutomaticDiamondOrderingReady,
   isDiamondProviderReady,
   ringBuilderConfig,
 } from "./config.server.js";
@@ -86,4 +87,25 @@ test("development defaults to fixtures when Nivoda is not configured", () => {
       else process.env[key] = value;
     }
   }
+});
+
+test("automatic diamond ordering is production-only", () => {
+  const ready = {
+    providerMode: "nivoda",
+    providerEnvironment: "production",
+    orderMode: "paid",
+    nivodaDestinationId: "destination-1",
+    nivodaUsername: "user",
+    nivodaPassword: "password",
+  };
+
+  assert.equal(isAutomaticDiamondOrderingReady(ready), true);
+  assert.equal(isAutomaticDiamondOrderingReady({
+    ...ready,
+    providerEnvironment: "staging",
+  }), false);
+  assert.equal(isAutomaticDiamondOrderingReady({
+    ...ready,
+    nivodaDestinationId: "",
+  }), false);
 });

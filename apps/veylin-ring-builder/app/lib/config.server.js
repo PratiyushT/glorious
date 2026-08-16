@@ -67,6 +67,16 @@ export function isDiamondProviderReady(config = ringBuilderConfig()) {
   return config.providerMode === "fixture" || isNivodaConfigured(config);
 }
 
+export function isAutomaticDiamondOrderingReady(config = ringBuilderConfig()) {
+  return Boolean(
+    config.providerMode === "nivoda"
+    && config.providerEnvironment === "production"
+    && config.orderMode === "paid"
+    && config.nivodaDestinationId
+    && isNivodaConfigured(config),
+  );
+}
+
 export function assertAllowedShop(shop, config = ringBuilderConfig()) {
   if (config.allowedShop && config.allowedShop !== String(shop).toLowerCase()) {
     throw new Response("Ring builder is not enabled for this shop", {

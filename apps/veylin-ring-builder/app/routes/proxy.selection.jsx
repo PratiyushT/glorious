@@ -1,11 +1,16 @@
 import crypto from "node:crypto";
 import { authenticate } from "../shopify.server";
+import prisma from "../db.server";
 import { assertAllowedShop, ringBuilderConfig } from "../lib/config.server";
 import { getDiamond } from "../lib/nivoda.server";
 import {
   assertSettingAvailable,
   ensureDiamondVariant,
 } from "../lib/shopify-products.server";
+import {
+  normalizeSupplierOrderTarget,
+  supplierOrderCartProperty,
+} from "../lib/supplier-order-targets";
 import { CURRENCIES, parseSelection } from "../lib/validation";
 
 export const action = async ({ request }) => {
@@ -27,6 +32,12 @@ export const action = async ({ request }) => {
     const selection = parseSelection(input);
     const requestedCurrency = String(input.currency || "USD").toUpperCase();
     const currency = CURRENCIES.includes(requestedCurrency) ? requestedCurrency : "USD";
+    const shopConfig = await prisma.shopConfiguration.findUnique({
+      where: { shop: session.shop },
+    });
+    const supplierOrderTarget = normalizeSupplierOrderTarget(
+      shopConfig?.supplierOrderTarget,
+    );
     await assertSettingAvailable(admin, selection.settingVariantId);
     const diamond = await getDiamond(selection.diamondId, currency, config);
     if (diamond.availability !== "AVAILABLE" || diamond.offerId !== selection.offerId) {
@@ -73,13 +84,17 @@ export const action = async ({ request }) => {
           quantity: 1,
           properties: {
             "_Veylin Ring Builder": bundleId,
+            [supplierOrderCartProperty]: supplierOrderTarget,
             "Ring selection": "Custom ring setting",
           },
         },
         {
           id: Number(mapping.numericVariantId),
           quantity: 1,
-          properties: diamondProperties,
+          properties: {
+            ...diamondProperties,
+            [supplierOrderCartProperty]: supplierOrderTarget,
+          },
         },
       ],
     });

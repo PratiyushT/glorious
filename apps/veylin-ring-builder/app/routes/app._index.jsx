@@ -8,15 +8,27 @@ import {
 import { boundary } from "@shopify/shopify-app-react-router/server";
 import { authenticate } from "../shopify.server";
 import prisma from "../db.server";
-import { isDiamondProviderReady, ringBuilderConfig } from "../lib/config.server";
+import {
+  isAutomaticDiamondOrderingReady,
+  isDiamondProviderReady,
+  ringBuilderConfig,
+} from "../lib/config.server";
 import { fixtureDiamondCount } from "../lib/diamond-fixtures.server";
 import { listSettingCollections } from "../lib/setting-collections.server";
 import { builderPagePath, ensureBuilderPage } from "../lib/shopify-content.server";
+import {
+  DIAMOND_ORDER_TARGET,
+  RING_ORDER_TARGET,
+  normalizeSupplierOrderTarget,
+} from "../lib/supplier-order-targets";
 
 export const action = async ({ request }) => {
   const { session, admin } = await authenticate.admin(request);
   const formData = await request.formData();
   const collectionId = String(formData.get("settingCollectionId") || "");
+  const supplierOrderTarget = normalizeSupplierOrderTarget(
+    formData.get("supplierOrderTarget"),
+  );
   const collections = await listSettingCollections(admin);
   const collection = collections.find((item) => item.id === collectionId) || null;
 
@@ -30,16 +42,19 @@ export const action = async ({ request }) => {
       shop: session.shop,
       settingCollectionId: collection?.id || null,
       settingCollectionTitle: collection?.title || null,
+      supplierOrderTarget,
     },
     update: {
       settingCollectionId: collection?.id || null,
       settingCollectionTitle: collection?.title || null,
+      supplierOrderTarget,
     },
   });
 
   return {
     saved: true,
     collectionTitle: collection?.title || null,
+    supplierOrderTarget,
   };
 };
 
@@ -77,6 +92,7 @@ export const loader = async ({ request }) => {
     providerReady: isDiamondProviderReady(config),
     fixtureDiamondCount,
     orderMode: config.orderMode,
+    automaticDiamondOrderingReady: isAutomaticDiamondOrderingReady(config),
     destinationReady: Boolean(config.nivodaDestinationId),
     variants,
     orders,
@@ -91,6 +107,10 @@ export default function Index() {
   const actionData = useActionData();
   const navigation = useNavigation();
   const fixtureMode = data.providerMode === "fixture";
+  const supplierOrderTarget = normalizeSupplierOrderTarget(
+    data.shopConfig?.supplierOrderTarget,
+  );
+  const completeRingTarget = supplierOrderTarget === RING_ORDER_TARGET;
   const actionRequired =
     data.orders.find((item) => item.status === "action_required")?._count?._all || 0;
   const manualReview =
@@ -127,13 +147,31 @@ export default function Index() {
           <s-paragraph>
             Ordering: {fixtureMode
               ? "Disabled in development"
-              : data.orderMode === "paid"
+              : completeRingTarget
+                ? "Complete-ring review and approved integration handoff"
+                : data.automaticDiamondOrderingReady
                 ? "Automatic after payment"
+                : data.orderMode === "paid"
+                  ? "Blocked until every production ordering gate is ready"
                 : "Disabled; paid orders require manual supplier review"}
           </s-paragraph>
-          {data.orderMode === "paid" && !data.destinationReady && (
+          {data.orderMode === "paid" && !completeRingTarget && !data.destinationReady && (
             <s-banner tone="critical" heading="Destination ID required">
               Automatic ordering cannot run until NIVODA_DESTINATION_ID is configured.
+            </s-banner>
+          )}
+          {data.orderMode === "paid" && !completeRingTarget
+            && data.destinationReady && !data.automaticDiamondOrderingReady && (
+            <s-banner tone="critical" heading="Production connection required">
+              Paid-order submission remains blocked until production Nivoda credentials and the
+              production endpoint are active.
+            </s-banner>
+          )}
+          {completeRingTarget && (
+            <s-banner tone="info" heading="Complete-ring routing selected">
+              The app preserves the full setting and diamond bundle for fulfilment. It never sends
+              this target through Nivoda&apos;s loose-diamond order mutation; production submission
+              requires Nivoda Connect or a Nivoda-approved ring-order adapter.
             </s-banner>
           )}
         </s-stack>
@@ -145,7 +183,7 @@ export default function Index() {
             The app owns the builder. The theme supplies only the /build page shell.
           </s-paragraph>
           {actionData?.saved && (
-            <s-banner tone="success" heading="Setting collection saved">
+            <s-banner tone="success" heading="Builder setup saved">
               {actionData.collectionTitle
                 ? `${actionData.collectionTitle} is now used by the storefront app.`
                 : "The setting collection was cleared."}
@@ -170,12 +208,24 @@ export default function Index() {
                   </s-option>
                 ))}
               </s-select>
+              <s-select
+                label="Supplier fulfilment target"
+                name="supplierOrderTarget"
+                value={supplierOrderTarget}
+              >
+                <s-option value={DIAMOND_ORDER_TARGET}>
+                  Loose diamond only — Nivoda Pro API
+                </s-option>
+                <s-option value={RING_ORDER_TARGET}>
+                  Complete ring — Nivoda Connect or approved ring adapter
+                </s-option>
+              </s-select>
               <s-button
                 type="submit"
                 variant="primary"
                 loading={navigation.state === "submitting"}
               >
-                Save setting collection
+                Save builder setup
               </s-button>
             </s-stack>
           </Form>
@@ -207,7 +257,9 @@ export default function Index() {
           <s-list-item>Add this app’s Ring Builder block to the /build shell.</s-list-item>
           <s-list-item>{fixtureMode
             ? "Supplier ordering stays disabled while fixture diamonds are active."
-            : "Keep supplier ordering disabled until Nivoda Pro is verified in production."}</s-list-item>
+            : completeRingTarget
+              ? "Connect Nivoda Connect or an approved ring-order adapter before submitting complete rings."
+              : "Keep supplier ordering disabled until Nivoda Pro is verified in production."}</s-list-item>
         </s-ordered-list>
       </s-section>
     </s-page>

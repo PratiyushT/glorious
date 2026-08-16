@@ -1,6 +1,10 @@
 import crypto from "node:crypto";
 import prisma from "../db.server.js";
-import { ringBuilderConfig, isNivodaConfigured } from "./config.server.js";
+import {
+  isAutomaticDiamondOrderingReady,
+  isNivodaConfigured,
+  ringBuilderConfig,
+} from "./config.server.js";
 import {
   getFixtureDiamond,
   searchFixtureDiamonds,
@@ -285,8 +289,9 @@ export async function createNivodaOrder({ offerId, reference }, config = ringBui
   if (config.providerMode === "fixture") {
     throw new Error("Supplier ordering is unavailable for fixture diamonds");
   }
-  if (config.orderMode !== "paid") throw new Error("Automatic Nivoda ordering is disabled");
-  if (!config.nivodaDestinationId) throw new Error("Nivoda destination is not configured");
+  if (!isAutomaticDiamondOrderingReady(config)) {
+    throw new Error("Automatic Nivoda diamond ordering is not production-ready");
+  }
   const productId = offerId.replace(/^DIAMOND\//, "");
   const mutation = `#graphql
     mutation NivodaCreateOrder($token: String!, $productId: String!, $reference: String!, $destinationId: String!) {

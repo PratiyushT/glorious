@@ -35,13 +35,19 @@ the theme's existing cart drawer. Shopify remains the authority for inventory,
 discounts, tax, shipping, currency presentation, checkout, payment, order
 creation, and customer notifications.
 
+The cart also snapshots the merchant-selected supplier fulfilment target. This
+prevents a later settings change from rerouting an order that was already in a
+customer's cart.
+
 ## Merchant setup
 
 1. Open **Veylin Ring Builder** in Shopify admin and confirm `/build` is ready.
 2. Select the Shopify collection containing the ring-setting products and save.
-3. Use **Add the Ring Builder app integration to the /build shell**.
-4. Save the app block in the theme editor.
-5. Add `/build` to the desired Shopify navigation menu.
+3. Select **Loose diamond only** or **Complete ring** as the supplier
+   fulfilment target.
+4. Use **Add the Ring Builder app integration to the /build shell**.
+5. Save the app block in the theme editor.
+6. Add `/build` to the desired Shopify navigation menu.
 
 Ring settings are ordinary Shopify products and variants. Keep unavailable
 settings unpublished or out of stock; the app rechecks the selected variant
@@ -73,10 +79,38 @@ When the provider mode is omitted during local development and no Nivoda
 credentials exist, the app also falls back to fixture mode automatically.
 Production never uses that implicit fallback.
 
-The app requires product, publication, app-proxy, content, and online-store
-navigation scopes. Content write access maintains the Shopify page; navigation
-write access maintains only the `/build` redirect. Nivoda credentials never
-enter Liquid, JavaScript, cart properties, or metafields.
+The supplier fulfilment target is stored per shop in the app rather than in
+the theme:
+
+- `diamond_only` means a paid bundle may submit only its Nivoda diamond offer
+  through the Pro API. Automatic submission additionally requires production
+  Nivoda credentials, a production endpoint, `NIVODA_ORDER_MODE=paid`, and a
+  verified destination ID.
+- `complete_ring` means the app stores the linked setting and diamond as one
+  non-PII order snapshot for Nivoda Connect or another Nivoda-approved ring
+  integration. It deliberately does not call the Diamonds API's
+  `create_order` mutation, because that mutation orders a stone rather than a
+  manufactured ring.
+
+Nivoda Connect documents both fully automatic and two-click review flows for
+ring orders. Until that app or an approved ring-order contract is connected,
+complete-ring records remain in `manual_review` and include the reason.
+
+- Ring ordering in Nivoda Connect: <https://buyerhelp.nivoda.com/hc/en-gb/articles/34879363922065-How-can-I-order-rings-from-Nivoda-Connect>
+- Nivoda Diamonds API guide: <https://engineering.nivoda.net/hubfs/Nivoda%20API%20Installation%20Guide%20-%20Help%20Centre.pdf>
+
+The app requires product, publication, app-proxy, content, online-store
+navigation, and order-read scopes. Content write access maintains the Shopify
+page; navigation write access maintains only the `/build` redirect;
+`read_orders` is used by the paid-order webhook. Nivoda credentials never enter
+Liquid, JavaScript, cart properties, or metafields.
+
+The default `shopify.app.toml` omits `read_orders` and `orders/paid` so local
+fixture development remains installable before protected-order-data approval.
+After approval, use `shopify.app.production.toml`, add `read_orders` to the
+production host's `SCOPES`, reauthorize the app, and confirm the paid-order
+subscription in the deployed configuration. Do not use the production config
+as a workaround before Shopify grants access.
 
 ## Proof before Nivoda access
 
@@ -114,8 +148,10 @@ Do not enable automatic supplier ordering until all of these are true:
 - the production destination ID is verified;
 - Shopify has approved protected order data for the app;
 - the paid-order webhook is present in the deployed app configuration;
-- a complete test order has been reconciled against Nivoda without duplicate
-  submission.
+- for loose-diamond routing, a complete test order has been reconciled against
+  the Diamonds API without duplicate submission;
+- for complete-ring routing, Nivoda Connect or the approved ring adapter has
+  been reconciled against the captured setting/diamond bundle.
 
 Until then, keep supplier ordering disabled. Shopify cart and checkout remain
 Shopify-managed, but fulfilment must not be represented as Nivoda-connected.

@@ -2,47 +2,54 @@ import { authenticate } from "../shopify.server";
 import prisma from "../db.server";
 import { createNivodaOrder } from "../lib/nivoda.server";
 import { ringBuilderConfig } from "../lib/config.server";
-
-function property(line, name) {
-  return line.properties?.find((item) => item.name === name)?.value || "";
-}
+import {
+  paidOrderBundles,
+  supplierSubmissionDecision,
+} from "../lib/supplier-orders.server";
 
 export const action = async ({ request }) => {
   const { payload, shop } = await authenticate.webhook(request);
   const config = ringBuilderConfig();
   const shopifyOrderId = String(payload.admin_graphql_api_id || payload.id);
-  const diamondLines = (payload.line_items || []).filter((line) =>
-    property(line, "_Nivoda Offer ID"),
-  );
+  const bundles = paidOrderBundles(payload);
 
-  for (const line of diamondLines) {
-    const offerId = property(line, "_Nivoda Offer ID");
+  for (const bundle of bundles) {
+    const { offerId } = bundle;
     const mapping = await prisma.diamondVariant.findUnique({
       where: { shop_offerId: { shop, offerId } },
     });
-    if (!mapping || !mapping.variantId.endsWith(`/${line.variant_id}`)) continue;
+    if (!mapping || !mapping.variantId.endsWith(`/${bundle.snapshot.diamond.variantId}`)) {
+      continue;
+    }
 
     const existing = await prisma.nivodaOrder.findUnique({
       where: { shop_shopifyOrderId_offerId: { shop, shopifyOrderId, offerId } },
     });
     if (existing) continue;
 
+    const decision = supplierSubmissionDecision(bundle, config);
     const record = await prisma.nivodaOrder.create({
       data: {
         shop,
         shopifyOrderId,
         offerId,
-        status: config.orderMode === "paid" ? "submitting" : "manual_review",
-        attempts: config.orderMode === "paid" ? 1 : 0,
+        orderTarget: bundle.orderTarget,
+        bundleId: bundle.bundleId || null,
+        settingProductId: bundle.settingProductId,
+        settingVariantId: bundle.settingVariantId,
+        snapshot: JSON.stringify(bundle.snapshot),
+        reviewReason: decision.reason,
+        status: decision.automatic ? "submitting" : "manual_review",
+        attempts: decision.automatic ? 1 : 0,
       },
     });
-    if (config.orderMode !== "paid") continue;
+    if (!decision.automatic) continue;
 
     try {
       const result = await createNivodaOrder({
         offerId,
         reference: `Shopify ${payload.name || payload.order_number || payload.id}`,
-      });
+      }, config);
       await prisma.nivodaOrder.update({
         where: { id: record.id },
         data: {

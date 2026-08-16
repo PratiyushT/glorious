@@ -13,7 +13,9 @@ rendered inside that page shell.
 - searches and revalidates live diamond offers;
 - creates short-lived, hidden Shopify diamond products at the confirmed price;
 - returns the setting and diamond as one atomic Shopify cart request;
-- records the Nivoda offer snapshot needed for fulfilment;
+- records the complete setting and diamond snapshot needed for fulfilment;
+- routes each paid bundle to either loose-diamond fulfilment or complete-ring
+  review/handoff, according to the merchant's saved app setting;
 - creates or repairs the published builder page and its Shopify-managed
   `/build` route without replacing an existing page's merchant title or
   content.
@@ -78,6 +80,29 @@ Keep `NIVODA_ORDER_MODE=disabled` until Nivoda has approved production API
 access, the production destination ID is verified, and Shopify has granted the
 app access to protected order data. Search and Shopify checkout work while
 ordering is disabled; paid orders then require manual supplier review.
+
+The default `shopify.app.toml` intentionally omits protected order access so
+fixture and storefront development work before approval. After Shopify grants
+protected order data, deploy `shopify.app.production.toml`, add `read_orders`
+to the production host's `SCOPES`, and reauthorize the app. That configuration
+registers the `orders/paid` webhook used by supplier-order processing.
+
+The app exposes two supplier fulfilment targets:
+
+- **Loose diamond only — Nivoda Pro API** may use Nivoda's `create_order`
+  mutation after payment, but only when the provider, destination, credentials,
+  and production environment gates all pass.
+- **Complete ring — Nivoda Connect or approved ring adapter** preserves the
+  linked Shopify setting and diamond as one fulfilment snapshot. It never sends
+  the bundle through the loose-diamond mutation. It remains in manual review
+  until Nivoda Connect or a Nivoda-approved ring-order contract is connected.
+
+Nivoda's public Diamonds GraphQL API documents stone ordering, not ring
+manufacturing orders. Do not map complete rings to `ProductType: "DIAMOND"`.
+Nivoda Connect supports automatic or two-click ring ordering as a separate
+Shopify fulfilment path.
+
+Official ring-order guide: <https://buyerhelp.nivoda.com/hc/en-gb/articles/34879363922065-How-can-I-order-rings-from-Nivoda-Connect>
 
 Production also requires a permanent HTTPS app host. A Shopify CLI development
 tunnel is for local testing only.
