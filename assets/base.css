@@ -60,6 +60,12 @@ html body {
 }
 
 body {
+  /* One offset contract for every merchant-controlled sticky surface. The
+     pill's 0.875rem inset plus its 3.25rem height deliberately equals the
+     full bar height, so both navigation shapes reserve the same edge. */
+  --navigation-bar-height: 4.125rem;
+  --sticky-header-offset: var(--navigation-bar-height);
+
   margin: 0;
   font-family: var(--font-body);
   font-weight: var(--font-body-weight);
@@ -69,6 +75,29 @@ body {
   color: var(--c-text);
   background-color: var(--c-bg);
   -webkit-font-smoothing: antialiased;
+}
+
+/* The announcement and navigation are independent sticky/fixed surfaces,
+   but content that opts into sticky behavior must clear their combined
+   visible edge. The transparent product rest is the exception: its gallery
+   is designed to run under the navigation, while still clearing the real
+   announcement row. Once that same nav becomes solid, the default combined
+   offset takes over without another section-specific scroll listener. */
+body:has(.announcement[data-announcement-header]:not([hidden])) {
+  --sticky-header-offset: calc(
+    var(--announcement-bar-height, 2.5rem) + var(--navigation-bar-height)
+  );
+}
+
+body:has([data-nav-transparent]:not(.is-solid)) {
+  --sticky-header-offset: 0rem;
+}
+
+body:has([data-nav-transparent]:not(.is-solid)):has(.announcement[data-announcement-header]:not([hidden])) {
+  --sticky-header-offset: var(
+    --announcement-layout-height,
+    var(--announcement-bar-height, 2.5rem)
+  );
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -3585,7 +3614,7 @@ a {
 
 .catalog-page--sticky-controls .catalog-sticky-bar {
   position: sticky;
-  top: 4.125rem;
+  top: var(--sticky-header-offset, var(--navigation-bar-height, 4.125rem));
   z-index: 90;
 }
 
@@ -6403,7 +6432,7 @@ a {
   align-items: center;
   justify-content: space-between;
   gap: var(--space-3xs);
-  height: 4.125rem;
+  height: var(--navigation-bar-height);
   padding: 0 clamp(1rem, 4vw, 2.5rem);
   background-color: color-mix(in srgb, var(--c-bg) 88%, transparent);
   backdrop-filter: blur(14px);
@@ -6508,7 +6537,7 @@ a {
 }
 
 .nav-spacer {
-  height: 4.125rem;
+  height: var(--navigation-bar-height);
 }
 
 .nav__menu-button {

@@ -1,24 +1,16 @@
 .main-product {
-  --product-nav-offset: 4.125rem;
+  --product-nav-offset: var(--sticky-header-offset, var(--navigation-bar-height, 4.125rem));
   background: var(--c-bg);
   color: var(--c-text);
   line-height: normal;
 }
 
-/* Transparent nav mode: the fixed navigation reserves nothing, so the product
-   layout does not subtract its height. The header-group Announcement header
-   is different: it remains in document flow and consumes part of the visible
-   viewport. When present, use its measured height for the gallery, showcase,
-   details and sticky edge; otherwise a 100dvh gallery that starts below the
-   announcement ends one bar-height beneath the screen. Closing the bar sets
-   `[hidden]`, this selector falls away, and the gallery returns to 100dvh. */
-body:has([data-nav-transparent]) .main-product {
-  --product-nav-offset: 0rem;
-}
-
-body:has([data-nav-transparent]):has(.announcement[data-announcement-header]:not([hidden])) .main-product {
-  --product-nav-offset: var(--announcement-layout-height, var(--announcement-bar-height, 2.5rem));
-}
+/* The shared sticky-header contract follows the header's actual visible
+   state: announcement plus full/pill bar normally, announcement alone while
+   the product bar is transparent, then both again after it turns solid. The
+   gallery, showcase and selected sticky column use the same value, so a
+   merchant's Gallery/Details/Adaptive choice cannot slide under a solid nav
+   or grow a bar-height beyond the viewport. */
 
 .product-showcase {
   display: grid;
