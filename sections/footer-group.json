@@ -1,18 +1,29 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
 {
   "name": "t:sections.footer.name",
   "type": "footer",
   "sections": {
     "footer": {
       "type": "footer",
-      "settings": {
-        "color_scheme": "scheme_2",
-        "huge_text_value": "STORE NAME",
-        "copyright": "Store name · City, State"
-      },
       "blocks": {
         "social": {
           "type": "social",
-          "settings": {}
+          "settings": {
+            "instagram": "",
+            "facebook": "",
+            "pinterest": "",
+            "tiktok": "",
+            "youtube": "",
+            "x": ""
+          }
         },
         "navigation": {
           "type": "menu",
@@ -43,8 +54,28 @@
           }
         }
       },
-      "block_order": ["social", "navigation", "collections", "policies", "contact-details"]
+      "block_order": [
+        "social",
+        "navigation",
+        "collections",
+        "policies",
+        "contact-details"
+      ],
+      "settings": {
+        "color_scheme": "scheme_2",
+        "huge_text_value": "Veylin",
+        "brand_display": "wordmark",
+        "brand_logo_side": "start",
+        "brand_logo_variant": "auto",
+        "show_follow_on_shop": true,
+        "show_payment_icons": true,
+        "copyright": "Store name · City, State",
+        "padding_top": "sm",
+        "padding_bottom": "2xs"
+      }
     }
   },
-  "order": ["footer"]
+  "order": [
+    "footer"
+  ]
 }
