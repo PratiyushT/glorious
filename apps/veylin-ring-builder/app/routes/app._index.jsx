@@ -11,24 +11,85 @@ import prisma from "../db.server";
 import {
   isAutomaticDiamondOrderingReady,
   isDiamondProviderReady,
+  isRingOrderAdapterReady,
+  isSupplierOrderWorkerReady,
   ringBuilderConfig,
 } from "../lib/config.server";
 import { fixtureDiamondCount } from "../lib/diamond-fixtures.server";
 import { listSettingCollections } from "../lib/setting-collections.server";
 import { builderPagePath, ensureBuilderPage } from "../lib/shopify-content.server";
 import {
+  AUTOMATIC_ORDER_POLICY,
   DIAMOND_ORDER_TARGET,
   RING_ORDER_TARGET,
+  REVIEW_ORDER_POLICY,
+  normalizeSupplierOrderPolicy,
   normalizeSupplierOrderTarget,
 } from "../lib/supplier-order-targets";
+import {
+  createFixtureSupplierOrder,
+  processSupplierOrderById,
+  queueSupplierOrder,
+} from "../lib/supplier-order-processing.server";
 
 export const action = async ({ request }) => {
   const { session, admin } = await authenticate.admin(request);
   const formData = await request.formData();
+  const intent = String(formData.get("intent") || "save_setup");
+  const config = ringBuilderConfig();
+
+  if (intent === "create_fixture_order") {
+    if (config.providerMode !== "fixture") {
+      return { saved: false, error: "Fixture orders are available only in development mode." };
+    }
+    const shopConfig = await prisma.shopConfiguration.findUnique({
+      where: { shop: session.shop },
+    });
+    const order = await createFixtureSupplierOrder({
+      shop: session.shop,
+      orderTarget: shopConfig?.supplierOrderTarget,
+      settingTitle: shopConfig?.settingCollectionTitle,
+    });
+    return { createdFixtureOrder: true, orderId: order.id };
+  }
+
+  if (["approve_order", "retry_order"].includes(intent)) {
+    const id = String(formData.get("orderId") || "");
+    try {
+      await queueSupplierOrder({ id, shop: session.shop }, config);
+      const order = await processSupplierOrderById({ id, shop: session.shop }, config);
+      return { processedOrder: true, orderId: id, orderStatus: order?.status };
+    } catch (error) {
+      return { saved: false, error: String(error.message) };
+    }
+  }
+
   const collectionId = String(formData.get("settingCollectionId") || "");
   const supplierOrderTarget = normalizeSupplierOrderTarget(
     formData.get("supplierOrderTarget"),
   );
+  const supplierOrderPolicy = normalizeSupplierOrderPolicy(
+    formData.get("supplierOrderPolicy"),
+  );
+  if (supplierOrderPolicy === AUTOMATIC_ORDER_POLICY) {
+    if (!isSupplierOrderWorkerReady(config)) {
+      return {
+        saved: false,
+        error: "Configure the authenticated supplier-order worker before enabling automatic submission.",
+      };
+    }
+    const adapterReady = supplierOrderTarget === RING_ORDER_TARGET
+      ? isRingOrderAdapterReady(config)
+      : isAutomaticDiamondOrderingReady(config);
+    if (!adapterReady) {
+      return {
+        saved: false,
+        error: supplierOrderTarget === RING_ORDER_TARGET
+          ? "Connect the production complete-ring adapter before enabling automatic submission."
+          : "Connect production Nivoda ordering before enabling automatic submission.",
+      };
+    }
+  }
   const collections = await listSettingCollections(admin);
   const collection = collections.find((item) => item.id === collectionId) || null;
 
@@ -43,11 +104,13 @@ export const action = async ({ request }) => {
       settingCollectionId: collection?.id || null,
       settingCollectionTitle: collection?.title || null,
       supplierOrderTarget,
+      supplierOrderPolicy,
     },
     update: {
       settingCollectionId: collection?.id || null,
       settingCollectionTitle: collection?.title || null,
       supplierOrderTarget,
+      supplierOrderPolicy,
     },
   });
 
@@ -55,18 +118,24 @@ export const action = async ({ request }) => {
     saved: true,
     collectionTitle: collection?.title || null,
     supplierOrderTarget,
+    supplierOrderPolicy,
   };
 };
 
 export const loader = async ({ request }) => {
   const { session, admin } = await authenticate.admin(request);
   const config = ringBuilderConfig();
-  const [variants, orders, builderPageResult, shopConfig, collections] = await Promise.all([
+  const [variants, orders, recentOrders, builderPageResult, shopConfig, collections] = await Promise.all([
     prisma.diamondVariant.count({ where: { shop: session.shop } }),
     prisma.nivodaOrder.groupBy({
       by: ["status"],
       where: { shop: session.shop },
       _count: { _all: true },
+    }),
+    prisma.nivodaOrder.findMany({
+      where: { shop: session.shop },
+      orderBy: { createdAt: "desc" },
+      take: 10,
     }),
     ensureBuilderPage(admin)
       .then((page) => ({ page, error: null }))
@@ -93,9 +162,35 @@ export const loader = async ({ request }) => {
     fixtureDiamondCount,
     orderMode: config.orderMode,
     automaticDiamondOrderingReady: isAutomaticDiamondOrderingReady(config),
+    ringOrderAdapterReady: isRingOrderAdapterReady(config),
+    workerReady: isSupplierOrderWorkerReady(config),
     destinationReady: Boolean(config.nivodaDestinationId),
     variants,
     orders,
+    recentOrders: recentOrders.map((order) => {
+      let snapshot = {};
+      try {
+        snapshot = JSON.parse(order.snapshot || "{}");
+      } catch {
+        snapshot = {};
+      }
+      return {
+        id: order.id,
+        reference: snapshot.shopifyOrderName || order.shopifyOrderId,
+        orderTarget: order.orderTarget,
+        orderPolicy: order.orderPolicy,
+        status: order.status,
+        settingTitle: snapshot.setting?.title || "Setting unavailable",
+        diamondTitle: snapshot.diamond?.title || snapshot.diamond?.offerId || order.offerId,
+        provider: order.provider,
+        providerOrderId: order.providerOrderId,
+        reviewReason: order.reviewReason,
+        error: order.error,
+        attempts: order.attempts,
+        isFixture: order.isFixture,
+        createdAt: order.createdAt.toISOString(),
+      };
+    }),
     shopConfig,
     collections,
     activationUrl,
@@ -110,11 +205,18 @@ export default function Index() {
   const supplierOrderTarget = normalizeSupplierOrderTarget(
     data.shopConfig?.supplierOrderTarget,
   );
+  const supplierOrderPolicy = normalizeSupplierOrderPolicy(
+    data.shopConfig?.supplierOrderPolicy,
+  );
   const completeRingTarget = supplierOrderTarget === RING_ORDER_TARGET;
   const actionRequired =
     data.orders.find((item) => item.status === "action_required")?._count?._all || 0;
   const manualReview =
     data.orders.find((item) => item.status === "manual_review")?._count?._all || 0;
+  const queued =
+    data.orders.find((item) => item.status === "queued")?._count?._all || 0;
+  const submitted =
+    data.orders.find((item) => item.status === "submitted")?._count?._all || 0;
 
   return (
     <s-page heading="Veylin Ring Builder">
@@ -146,14 +248,14 @@ export default function Index() {
           )}
           <s-paragraph>
             Ordering: {fixtureMode
-              ? "Disabled in development"
-              : completeRingTarget
-                ? "Complete-ring review and approved integration handoff"
-                : data.automaticDiamondOrderingReady
-                ? "Automatic after payment"
-                : data.orderMode === "paid"
-                  ? "Blocked until every production ordering gate is ready"
-                : "Disabled; paid orders require manual supplier review"}
+              ? "Fixture supplier workflow available; no real order can be placed"
+              : supplierOrderPolicy === REVIEW_ORDER_POLICY
+                ? "Two-click merchant review"
+                : completeRingTarget && data.ringOrderAdapterReady
+                  ? "Automatic complete-ring queue"
+                  : !completeRingTarget && data.automaticDiamondOrderingReady
+                    ? "Automatic loose-diamond queue"
+                    : "Blocked until the selected production adapter is ready"}
           </s-paragraph>
           {data.orderMode === "paid" && !completeRingTarget && !data.destinationReady && (
             <s-banner tone="critical" heading="Destination ID required">
@@ -168,10 +270,22 @@ export default function Index() {
             </s-banner>
           )}
           {completeRingTarget && (
-            <s-banner tone="info" heading="Complete-ring routing selected">
-              The app preserves the full setting and diamond bundle for fulfilment. It never sends
-              this target through Nivoda&apos;s loose-diamond order mutation; production submission
-              requires Nivoda Connect or a Nivoda-approved ring-order adapter.
+            <s-banner
+              tone={data.ringOrderAdapterReady ? "success" : "warning"}
+              heading={data.ringOrderAdapterReady
+                ? "Complete-ring adapter ready"
+                : "Complete-ring adapter not connected"}
+            >
+              The app preserves and submits the setting and diamond as one versioned order. It
+              never sends a complete ring through Nivoda&apos;s loose-diamond mutation. Production
+              requires the signed supplier-approved webhook adapter. Nivoda Connect is a separate
+              Shopify integration and is not impersonated by this app.
+            </s-banner>
+          )}
+          {!fixtureMode && supplierOrderPolicy === AUTOMATIC_ORDER_POLICY && !data.workerReady && (
+            <s-banner tone="critical" heading="Order worker required">
+              Automatic policy is blocked until SUPPLIER_ORDER_WORKER_SECRET and the production
+              scheduler are configured.
             </s-banner>
           )}
         </s-stack>
@@ -190,12 +304,13 @@ export default function Index() {
             </s-banner>
           )}
           {actionData?.error && (
-            <s-banner tone="critical" heading="Collection not saved">
+            <s-banner tone="critical" heading="Action not completed">
               {actionData.error}
             </s-banner>
           )}
           <Form method="post">
             <s-stack direction="block" gap="base">
+              <input type="hidden" name="intent" value="save_setup" />
               <s-select
                 label="Ring setting collection"
                 name="settingCollectionId"
@@ -209,6 +324,18 @@ export default function Index() {
                 ))}
               </s-select>
               <s-select
+                label="Supplier order policy"
+                name="supplierOrderPolicy"
+                value={supplierOrderPolicy}
+              >
+                <s-option value={REVIEW_ORDER_POLICY}>
+                  Review before submission — recommended
+                </s-option>
+                <s-option value={AUTOMATIC_ORDER_POLICY}>
+                  Queue automatically after Shopify payment
+                </s-option>
+              </s-select>
+              <s-select
                 label="Supplier fulfilment target"
                 name="supplierOrderTarget"
                 value={supplierOrderTarget}
@@ -217,7 +344,7 @@ export default function Index() {
                   Loose diamond only — Nivoda Pro API
                 </s-option>
                 <s-option value={RING_ORDER_TARGET}>
-                  Complete ring — Nivoda Connect or approved ring adapter
+                  Complete ring — approved ring-order adapter
                 </s-option>
               </s-select>
               <s-button
@@ -239,7 +366,73 @@ export default function Index() {
         <s-stack direction="block" gap="base">
           <s-paragraph>Temporary diamond products: {data.variants}</s-paragraph>
           <s-paragraph>Orders awaiting manual review: {manualReview}</s-paragraph>
+          <s-paragraph>Orders queued for the worker: {queued}</s-paragraph>
           <s-paragraph>Orders requiring attention: {actionRequired}</s-paragraph>
+          <s-paragraph>Orders submitted to an adapter: {submitted}</s-paragraph>
+          {fixtureMode && (
+            <Form method="post">
+              <input type="hidden" name="intent" value="create_fixture_order" />
+              <s-button type="submit" loading={navigation.state === "submitting"}>
+                Create test supplier order
+              </s-button>
+            </Form>
+          )}
+          {actionData?.createdFixtureOrder && (
+            <s-banner tone="success" heading="Test order created">
+              Review the fixture order below, then approve it to exercise the complete adapter
+              lifecycle without contacting Nivoda.
+            </s-banner>
+          )}
+          {actionData?.processedOrder && (
+            <s-banner
+              tone={actionData.orderStatus === "submitted" ? "success" : "critical"}
+              heading={actionData.orderStatus === "submitted"
+                ? "Supplier workflow completed"
+                : "Supplier workflow needs attention"}
+            >
+              Order status: {actionData.orderStatus}.
+            </s-banner>
+          )}
+          {data.recentOrders.length === 0 ? (
+            <s-paragraph>No supplier orders have been captured yet.</s-paragraph>
+          ) : data.recentOrders.map((order) => (
+            <s-section key={order.id} heading={`${order.reference} · ${order.status}`}>
+              <s-stack direction="block" gap="small">
+                <s-paragraph>
+                  {order.orderTarget === RING_ORDER_TARGET ? "Complete ring" : "Loose diamond"}
+                  {order.isFixture ? " · Test only" : ""}
+                </s-paragraph>
+                <s-paragraph>{order.settingTitle} + {order.diamondTitle}</s-paragraph>
+                <s-paragraph>Attempts: {order.attempts}</s-paragraph>
+                {order.providerOrderId && (
+                  <s-paragraph>
+                    Provider: {order.provider} · Reference: {order.providerOrderId}
+                  </s-paragraph>
+                )}
+                {order.reviewReason && <s-paragraph>{order.reviewReason}</s-paragraph>}
+                {order.error && (
+                  <s-banner tone="critical" heading="Submission error">
+                    {order.error}
+                  </s-banner>
+                )}
+                {["manual_review", "action_required"].includes(order.status) && (
+                  <Form method="post">
+                    <input
+                      type="hidden"
+                      name="intent"
+                      value={order.status === "action_required" ? "retry_order" : "approve_order"}
+                    />
+                    <input type="hidden" name="orderId" value={order.id} />
+                    <s-button type="submit" loading={navigation.state === "submitting"}>
+                      {order.status === "action_required"
+                        ? "Retry after supplier reconciliation"
+                        : "Approve and submit"}
+                    </s-button>
+                  </Form>
+                )}
+              </s-stack>
+            </s-section>
+          ))}
         </s-stack>
       </s-section>
 
@@ -256,7 +449,7 @@ export default function Index() {
           <s-list-item>Select the ring setting collection in this app.</s-list-item>
           <s-list-item>Add this app’s Ring Builder block to the /build shell.</s-list-item>
           <s-list-item>{fixtureMode
-            ? "Supplier ordering stays disabled while fixture diamonds are active."
+            ? "Use the test supplier order to prove review, submission, and status handling."
             : completeRingTarget
               ? "Connect Nivoda Connect or an approved ring-order adapter before submitting complete rings."
               : "Keep supplier ordering disabled until Nivoda Pro is verified in production."}</s-list-item>

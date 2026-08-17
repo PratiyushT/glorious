@@ -14,8 +14,9 @@ rendered inside that page shell.
 - creates short-lived, hidden Shopify diamond products at the confirmed price;
 - returns the setting and diamond as one atomic Shopify cart request;
 - records the complete setting and diamond snapshot needed for fulfilment;
-- routes each paid bundle to either loose-diamond fulfilment or complete-ring
-  review/handoff, according to the merchant's saved app setting;
+- records each paid bundle in an idempotent supplier-order queue, then routes it
+  to either loose-diamond or complete-ring fulfilment under the merchant's
+  saved review policy;
 - creates or repairs the published builder page and its Shopify-managed
   `/build` route without replacing an existing page's merchant title or
   content.
@@ -55,10 +56,12 @@ filters, pagination, detail revalidation, temporary Shopify product creation,
 and the native Shopify cart handoff can therefore be tested without a Nivoda
 account.
 
-Fixture mode always forces `NIVODA_ORDER_MODE=disabled`. Its Shopify products
-are prefixed `[TEST]`, use the `Veylin Test` vendor, and omit the private cart
-property consumed by the Nivoda paid-order webhook. It does not prove Nivoda
-authentication, live inventory, live pricing, media, or supplier ordering.
+Fixture mode always forces real Nivoda ordering off. Its Shopify products are
+prefixed `[TEST]` and use the `Veylin Test` vendor. The app's Operations page
+can also create a test supplier order, require merchant approval, and submit it
+through a no-network fixture adapter. This proves the app's queue, review,
+attempt, and completion states; it does not prove Nivoda authentication, live
+inventory, live pricing, media, or receipt of a real supplier order.
 
 ## Official Nivoda staging proof
 
@@ -87,22 +90,52 @@ protected order data, deploy `shopify.app.production.toml`, add `read_orders`
 to the production host's `SCOPES`, and reauthorize the app. That configuration
 registers the `orders/paid` webhook used by supplier-order processing.
 
-The app exposes two supplier fulfilment targets:
+The app exposes two supplier fulfilment targets and two policies. **Review
+before submission** is the default and requires an explicit merchant approval
+in Operations. **Queue automatically after Shopify payment** can be saved only
+when the selected production adapter and authenticated worker are configured.
+
+The paid-order webhook never calls a supplier. It validates and records a
+durable, idempotent job, then returns to Shopify. Manual approval processes one
+job immediately; automatic mode uses `POST /tasks/supplier-orders` with
+`Authorization: Bearer $SUPPLIER_ORDER_WORKER_SECRET` from the production
+scheduler. The worker and ring-adapter secrets must be independent random
+values of at least 32 characters.
+
+The two fulfilment targets are:
 
 - **Loose diamond only — Nivoda Pro API** may use Nivoda's `create_order`
   mutation after payment, but only when the provider, destination, credentials,
   and production environment gates all pass.
-- **Complete ring — Nivoda Connect or approved ring adapter** preserves the
-  linked Shopify setting and diamond as one fulfilment snapshot. It never sends
-  the bundle through the loose-diamond mutation. It remains in manual review
-  until Nivoda Connect or a Nivoda-approved ring-order contract is connected.
+- **Complete ring — approved ring-order adapter** preserves the linked Shopify
+  setting and diamond as one fulfilment snapshot. It never sends the bundle
+  through the loose-diamond mutation. The app can submit it only to an HTTPS
+  endpoint contract approved by the supplier and configured with
+  `NIVODA_RING_ORDER_MODE=webhook`, `NIVODA_RING_ORDER_URL`, and
+  `NIVODA_RING_ORDER_SECRET`.
 
 Nivoda's public Diamonds GraphQL API documents stone ordering, not ring
 manufacturing orders. Do not map complete rings to `ProductType: "DIAMOND"`.
 Nivoda Connect supports automatic or two-click ring ordering as a separate
-Shopify fulfilment path.
+Shopify integration. This app does not call or imitate Nivoda Connect, because
+Nivoda does not publish a public complete-ring order mutation. Its signed
+webhook is an app-side adapter contract that must be approved and implemented
+with the supplier before production use.
 
-Official ring-order guide: <https://buyerhelp.nivoda.com/hc/en-gb/articles/34879363922065-How-can-I-order-rings-from-Nivoda-Connect>
+Official ring-order guide: <https://buyerhelp.nivoda.com/hc/en-gb/articles/37483986639889-How-can-I-order-rings-from-Nivoda-Connect>
+
+### Signed complete-ring adapter contract
+
+The adapter receives a versioned JSON body containing the idempotency key,
+Shopify order reference, optional destination ID, and the non-PII linked
+setting/diamond snapshot. Requests include `Idempotency-Key`,
+`X-Veylin-Contract-Version`, and an `X-Veylin-Signature` HMAC-SHA256 of the
+exact request body. The receiver must return an order ID and must treat a
+repeated idempotency key as the same supplier order.
+
+A timeout or provider error moves the job to `action_required`; the app does
+not automatically replay an ambiguous purchase. Reconcile the idempotency key
+with the supplier first, then use **Retry after supplier reconciliation**.
 
 Production also requires a permanent HTTPS app host. A Shopify CLI development
 tunnel is for local testing only.

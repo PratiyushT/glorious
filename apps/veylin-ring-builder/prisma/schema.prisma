@@ -48,6 +48,7 @@ model ShopConfiguration {
   settingCollectionId    String?
   settingCollectionTitle String?
   supplierOrderTarget    String   @default("diamond_only")
+  supplierOrderPolicy    String   @default("review")
   createdAt              DateTime @default(now())
   updatedAt              DateTime @updatedAt
 }
@@ -76,15 +77,23 @@ model NivodaOrder {
   shopifyOrderId String
   offerId        String
   orderTarget    String   @default("diamond_only")
+  orderPolicy    String   @default("review")
   bundleId       String?
   settingProductId String?
   settingVariantId String?
   snapshot       String?
   status         String
   nivodaOrderId  String?
+  provider       String?
+  providerOrderId String?
+  providerStatus String?
+  idempotencyKey String?  @unique
   reviewReason   String?
   error          String?
   attempts       Int      @default(0)
+  isFixture      Boolean  @default(false)
+  lastAttemptAt  DateTime?
+  submittedAt    DateTime?
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 

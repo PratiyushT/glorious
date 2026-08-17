@@ -4,6 +4,8 @@ import process from "node:process";
 import {
   isAutomaticDiamondOrderingReady,
   isDiamondProviderReady,
+  isRingOrderAdapterReady,
+  isSupplierOrderWorkerReady,
   ringBuilderConfig,
 } from "./config.server.js";
 
@@ -108,4 +110,27 @@ test("automatic diamond ordering is production-only", () => {
     ...ready,
     nivodaDestinationId: "",
   }), false);
+});
+
+test("ring-order webhooks require a production HTTPS endpoint and secret", () => {
+  const ready = {
+    providerMode: "nivoda",
+    providerEnvironment: "production",
+    ringOrderMode: "webhook",
+    ringOrderUrl: "https://orders.example.com/nivoda/rings",
+    ringOrderSecret: "a-secure-ring-order-secret-at-least-32",
+  };
+
+  assert.equal(isRingOrderAdapterReady(ready), true);
+  assert.equal(isRingOrderAdapterReady({ ...ready, ringOrderUrl: "http://example.com" }), false);
+  assert.equal(isRingOrderAdapterReady({ ...ready, providerEnvironment: "staging" }), false);
+  assert.equal(isRingOrderAdapterReady({ ...ready, ringOrderSecret: "" }), false);
+  assert.equal(isRingOrderAdapterReady({
+    providerMode: "fixture",
+    ringOrderMode: "fixture",
+  }), true);
+  assert.equal(isSupplierOrderWorkerReady({
+    supplierOrderWorkerSecret: "a-secure-worker-secret-at-least-32-chars",
+  }), true);
+  assert.equal(isSupplierOrderWorkerReady({ supplierOrderWorkerSecret: "short" }), false);
 });

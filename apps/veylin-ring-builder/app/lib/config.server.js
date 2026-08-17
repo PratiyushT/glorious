@@ -11,6 +11,19 @@ function nonNegativeNumber(value, fallback) {
   return Number.isFinite(parsed) && parsed >= 0 ? parsed : fallback;
 }
 
+function validHttpsUrl(value) {
+  if (!value) return false;
+  try {
+    return new URL(value).protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
+function validSecret(value) {
+  return typeof value === "string" && value.length >= 32;
+}
+
 export function ringBuilderConfig() {
   const nivodaUrl = process.env.NIVODA_API_URL || DEFAULT_NIVODA_URL;
   const nivodaUsername = process.env.NIVODA_USERNAME || "";
@@ -28,6 +41,9 @@ export function ringBuilderConfig() {
       ? "staging"
       : "production";
   const requestedOrderMode = process.env.NIVODA_ORDER_MODE || "disabled";
+  const ringOrderUrl = process.env.NIVODA_RING_ORDER_URL || "";
+  const ringOrderSecret = process.env.NIVODA_RING_ORDER_SECRET || "";
+  const requestedRingOrderMode = process.env.NIVODA_RING_ORDER_MODE || "disabled";
 
   return {
     providerMode,
@@ -37,6 +53,12 @@ export function ringBuilderConfig() {
     nivodaPassword,
     nivodaDestinationId: process.env.NIVODA_DESTINATION_ID || "",
     orderMode: providerMode === "fixture" ? "disabled" : requestedOrderMode,
+    ringOrderMode: providerMode === "fixture"
+      ? "fixture"
+      : requestedRingOrderMode === "webhook" ? "webhook" : "disabled",
+    ringOrderUrl,
+    ringOrderSecret,
+    supplierOrderWorkerSecret: process.env.SUPPLIER_ORDER_WORKER_SECRET || "",
     cacheSeconds: Math.max(
       30,
       positiveNumber(process.env.RING_BUILDER_CACHE_SECONDS, 30),
@@ -75,6 +97,21 @@ export function isAutomaticDiamondOrderingReady(config = ringBuilderConfig()) {
     && config.nivodaDestinationId
     && isNivodaConfigured(config),
   );
+}
+
+export function isRingOrderAdapterReady(config = ringBuilderConfig()) {
+  if (config.providerMode === "fixture") return config.ringOrderMode === "fixture";
+  return Boolean(
+    config.providerMode === "nivoda"
+    && config.providerEnvironment === "production"
+    && config.ringOrderMode === "webhook"
+    && validHttpsUrl(config.ringOrderUrl)
+    && validSecret(config.ringOrderSecret),
+  );
+}
+
+export function isSupplierOrderWorkerReady(config = ringBuilderConfig()) {
+  return validSecret(config.supplierOrderWorkerSecret);
 }
 
 export function assertAllowedShop(shop, config = ringBuilderConfig()) {

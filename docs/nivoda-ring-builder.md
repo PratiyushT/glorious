@@ -35,19 +35,21 @@ the theme's existing cart drawer. Shopify remains the authority for inventory,
 discounts, tax, shipping, currency presentation, checkout, payment, order
 creation, and customer notifications.
 
-The cart also snapshots the merchant-selected supplier fulfilment target. This
-prevents a later settings change from rerouting an order that was already in a
-customer's cart.
+The cart also snapshots the merchant-selected supplier fulfilment target and
+review policy. This prevents a later settings change from rerouting or
+automating an order that was already in a customer's cart.
 
 ## Merchant setup
 
 1. Open **Veylin Ring Builder** in Shopify admin and confirm `/build` is ready.
 2. Select the Shopify collection containing the ring-setting products and save.
-3. Select **Loose diamond only** or **Complete ring** as the supplier
+3. Select **Review before submission** (recommended) or the gated automatic
+   policy.
+4. Select **Loose diamond only** or **Complete ring** as the supplier
    fulfilment target.
-4. Use **Add the Ring Builder app integration to the /build shell**.
-5. Save the app block in the theme editor.
-6. Add `/build` to the desired Shopify navigation menu.
+5. Use **Add the Ring Builder app integration to the /build shell**.
+6. Save the app block in the theme editor.
+7. Add `/build` to the desired Shopify navigation menu.
 
 Ring settings are ordinary Shopify products and variants. Keep unavailable
 settings unpublished or out of stock; the app rechecks the selected variant
@@ -71,6 +73,11 @@ Use the values documented in `apps/veylin-ring-builder/.env.example`.
 - `RING_BUILDER_SEARCH_PRICE_MODE=retail` displays Nivoda's search retail
   price; selection is always revalidated from the live detail response.
 - `NIVODA_ORDER_MODE=disabled` is the safe default.
+- `NIVODA_RING_ORDER_MODE=disabled` is the safe complete-ring default.
+- `NIVODA_RING_ORDER_URL` and `NIVODA_RING_ORDER_SECRET` configure a
+  supplier-approved signed HTTPS adapter; they are not a public Nivoda API.
+- `SUPPLIER_ORDER_WORKER_SECRET` authenticates the production queue worker.
+  Use independent random values of at least 32 characters for both secrets.
 - `RING_BUILDER_PROVIDER_MODE=nivoda` is the live integration. Set it to
   `fixture` only on a development or staging app to expose 24 deterministic
   test diamonds without Nivoda credentials.
@@ -79,8 +86,8 @@ When the provider mode is omitted during local development and no Nivoda
 credentials exist, the app also falls back to fixture mode automatically.
 Production never uses that implicit fallback.
 
-The supplier fulfilment target is stored per shop in the app rather than in
-the theme:
+The supplier fulfilment target and review policy are stored per shop in the app
+rather than in the theme:
 
 - `diamond_only` means a paid bundle may submit only its Nivoda diamond offer
   through the Pro API. Automatic submission additionally requires production
@@ -92,12 +99,45 @@ the theme:
   `create_order` mutation, because that mutation orders a stone rather than a
   manufactured ring.
 
-Nivoda Connect documents both fully automatic and two-click review flows for
-ring orders. Until that app or an approved ring-order contract is connected,
-complete-ring records remain in `manual_review` and include the reason.
+`review` is the default policy and every paid bundle waits in `manual_review`
+until a merchant approves it. `automatic` can be saved only after the selected
+production adapter and the authenticated worker have passed their safety
+gates.
 
-- Ring ordering in Nivoda Connect: <https://buyerhelp.nivoda.com/hc/en-gb/articles/34879363922065-How-can-I-order-rings-from-Nivoda-Connect>
+Nivoda Connect documents both fully automatic and two-click review flows for
+ring orders, but it is a separate Shopify integration. This app does not call
+or imitate Nivoda Connect. Until a supplier-approved ring-order endpoint is
+connected, complete-ring records remain in `manual_review` and include the
+reason.
+
+- Ring ordering in Nivoda Connect: <https://buyerhelp.nivoda.com/hc/en-gb/articles/37483986639889-How-can-I-order-rings-from-Nivoda-Connect>
 - Nivoda Diamonds API guide: <https://engineering.nivoda.net/hubfs/Nivoda%20API%20Installation%20Guide%20-%20Help%20Centre.pdf>
+
+### Supplier-order lifecycle
+
+The `orders/paid` webhook validates each linked setting/diamond bundle and
+upserts a durable job with a stable idempotency key. It does not make supplier
+network calls, so Shopify webhook retries cannot directly duplicate a purchase.
+
+- Review policy: the job enters `manual_review`. **Approve and submit** claims
+  and processes that one job.
+- Automatic policy: the job enters `queued`. A production scheduler sends
+  `POST /tasks/supplier-orders` with
+  `Authorization: Bearer $SUPPLIER_ORDER_WORKER_SECRET`.
+- A worker claim changes `queued` to `submitting` atomically and increments the
+  attempt counter.
+- A supplier reference changes the job to `submitted`.
+- Any timeout or adapter error changes the job to `action_required`. There is
+  no automatic retry because the supplier may have accepted an order before a
+  response was lost. Reconcile the idempotency key first, then use the explicit
+  retry control.
+
+The complete-ring HTTPS adapter uses contract version `2026-08-15`. Its JSON
+body contains the idempotency key, Shopify order reference, optional destination
+ID, and the non-PII linked bundle. It sends `Idempotency-Key`,
+`X-Veylin-Contract-Version`, and `X-Veylin-Signature`; the last value is an
+HMAC-SHA256 of the exact body. The receiver must return an order ID and dedupe
+repeated idempotency keys.
 
 The app requires product, publication, app-proxy, content, online-store
 navigation, and order-read scopes. Content write access maintains the Shopify
@@ -117,13 +157,15 @@ as a workaround before Shopify grants access.
 Fixture mode exercises the app UI and Shopify side of the contract: setting
 selection, 24-diamond search, filters, pagination, detail revalidation,
 temporary product creation, linked native cart submission, and the normal
-Shopify checkout handoff. Test products are prefixed `[TEST]`, use the
-`Veylin Test` vendor, and paid-order supplier submission is forced off.
+Shopify checkout handoff. Test products are prefixed `[TEST]` and use the
+`Veylin Test` vendor. Operations can create a fixture supplier order, hold it
+for review, and submit it to a no-network adapter, proving the queue and status
+lifecycle without a Nivoda account.
 
 Fixture mode is intentionally not presented as live Nivoda evidence. It cannot
 prove Nivoda authentication, live inventory, supplier images or videos,
-current supplier pricing, or supplier-order submission. Those require Nivoda
-staging or production access and separate verification.
+current supplier pricing, or receipt of an order by Nivoda. Those require
+Nivoda staging or production access and separate verification.
 
 ### Official Nivoda staging
 
@@ -148,6 +190,7 @@ Do not enable automatic supplier ordering until all of these are true:
 - the production destination ID is verified;
 - Shopify has approved protected order data for the app;
 - the paid-order webhook is present in the deployed app configuration;
+- the authenticated worker endpoint is scheduled and monitored;
 - for loose-diamond routing, a complete test order has been reconciled against
   the Diamonds API without duplicate submission;
 - for complete-ring routing, Nivoda Connect or the approved ring adapter has

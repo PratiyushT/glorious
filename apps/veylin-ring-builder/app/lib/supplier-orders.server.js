@@ -1,7 +1,14 @@
-import { isAutomaticDiamondOrderingReady } from "./config.server.js";
+import crypto from "node:crypto";
 import {
+  isAutomaticDiamondOrderingReady,
+  isRingOrderAdapterReady,
+} from "./config.server.js";
+import {
+  AUTOMATIC_ORDER_POLICY,
   RING_ORDER_TARGET,
+  normalizeSupplierOrderPolicy,
   normalizeSupplierOrderTarget,
+  supplierOrderPolicyCartProperty,
   supplierOrderCartProperty,
 } from "./supplier-order-targets.js";
 
@@ -46,12 +53,16 @@ export function paidOrderBundles(payload) {
     const orderTarget = normalizeSupplierOrderTarget(
       lineProperty(line, supplierOrderCartProperty),
     );
+    const orderPolicy = normalizeSupplierOrderPolicy(
+      lineProperty(line, supplierOrderPolicyCartProperty),
+    );
 
     return [{
       bundleId,
       offerId,
       diamondId: lineProperty(line, DIAMOND_PROPERTY),
       orderTarget,
+      orderPolicy,
       settingProductId: setting?.product_id == null
         ? null
         : String(setting.product_id),
@@ -62,6 +73,7 @@ export function paidOrderBundles(payload) {
         shopifyOrderName: payload.name || String(payload.order_number || payload.id || ""),
         currency: payload.currency || "",
         orderTarget,
+        orderPolicy,
         bundleId,
         diamond: {
           ...lineSnapshot(line),
@@ -74,18 +86,37 @@ export function paidOrderBundles(payload) {
   });
 }
 
+export function supplierOrderIdempotencyKey({ shop, shopifyOrderId, offerId, orderTarget }) {
+  const digest = crypto.createHash("sha256").update([
+    shop,
+    shopifyOrderId,
+    offerId,
+    orderTarget,
+  ].join("\u0000")).digest("hex");
+  return `veylin-${digest}`;
+}
+
 export function supplierSubmissionDecision(bundle, config) {
-  if (bundle.orderTarget === RING_ORDER_TARGET) {
+  if (bundle.orderPolicy !== AUTOMATIC_ORDER_POLICY) {
     return {
-      automatic: false,
-      reason: "Complete-ring orders require Nivoda Connect or an approved Nivoda ring-order adapter; the loose-diamond API was not called.",
+      status: "manual_review",
+      reason: "Merchant review is required before this supplier order can be queued.",
+    };
+  }
+  if (bundle.orderTarget === RING_ORDER_TARGET) {
+    if (isRingOrderAdapterReady(config)) {
+      return { status: "queued", reason: null };
+    }
+    return {
+      status: "manual_review",
+      reason: "The complete-ring adapter is not production-ready; the loose-diamond API was not called.",
     };
   }
   if (!isAutomaticDiamondOrderingReady(config)) {
     return {
-      automatic: false,
+      status: "manual_review",
       reason: "Automatic loose-diamond ordering is not production-ready for this app environment.",
     };
   }
-  return { automatic: true, reason: null };
+  return { status: "queued", reason: null };
 }

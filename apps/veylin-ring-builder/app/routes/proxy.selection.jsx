@@ -8,7 +8,9 @@ import {
   ensureDiamondVariant,
 } from "../lib/shopify-products.server";
 import {
+  normalizeSupplierOrderPolicy,
   normalizeSupplierOrderTarget,
+  supplierOrderPolicyCartProperty,
   supplierOrderCartProperty,
 } from "../lib/supplier-order-targets";
 import { CURRENCIES, parseSelection } from "../lib/validation";
@@ -37,6 +39,9 @@ export const action = async ({ request }) => {
     });
     const supplierOrderTarget = normalizeSupplierOrderTarget(
       shopConfig?.supplierOrderTarget,
+    );
+    const supplierOrderPolicy = normalizeSupplierOrderPolicy(
+      shopConfig?.supplierOrderPolicy,
     );
     await assertSettingAvailable(admin, selection.settingVariantId);
     const diamond = await getDiamond(selection.diamondId, currency, config);
@@ -85,6 +90,7 @@ export const action = async ({ request }) => {
           properties: {
             "_Veylin Ring Builder": bundleId,
             [supplierOrderCartProperty]: supplierOrderTarget,
+            [supplierOrderPolicyCartProperty]: supplierOrderPolicy,
             "Ring selection": "Custom ring setting",
           },
         },
@@ -94,6 +100,7 @@ export const action = async ({ request }) => {
           properties: {
             ...diamondProperties,
             [supplierOrderCartProperty]: supplierOrderTarget,
+            [supplierOrderPolicyCartProperty]: supplierOrderPolicy,
           },
         },
       ],
